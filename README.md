@@ -1,4 +1,4 @@
-# Traffic estimation from video DATA 
+# Traffic estimation from video data 
 
 Write project summary
 
