@@ -50,14 +50,16 @@ def get_videos_and_upload_to_s3(local_video_dir: str,
 
 def collect_video_data(local_video_dir: str,
                        camera_list: list,
-                       num_iterations: int = None):
+                       num_iterations: int = None,
+                       website: str = "http://jamcams.tfl.gov.uk/00001.",):
     upload_num = 0
 
     if num_iterations is None:
         print('Starting infinite data collection.')
         while True:
             get_videos_and_upload_to_s3(local_video_dir=local_video_dir,
-                                        camera_list=camera_list)
+                                        camera_list=camera_list,
+                                        website=website)
             upload_num += 1
             print('Completed {} iterations'.format(upload_num))
             time.sleep(3 * 60)
@@ -66,7 +68,8 @@ def collect_video_data(local_video_dir: str,
         print('Starting data collection.')
         while upload_num < num_iterations:
             get_videos_and_upload_to_s3(local_video_dir=local_video_dir,
-                                        camera_list=camera_list)
+                                        camera_list=camera_list,
+                                        website=website)
             upload_num += 1
             print('Completed {}/{} iterations'.format(upload_num,
                                                       num_iterations))
