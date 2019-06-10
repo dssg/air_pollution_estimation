@@ -1,6 +1,7 @@
 # Project title
+Open Source Traffic Data for better Traffic Optimization and improved London Air Pollution estimates
 
-Write project summary
+An open source library for inferring traffic dynamics.
 
 ## Table of Contents
 
@@ -34,8 +35,7 @@ Show a new user how to use the package.
 Describe and show how to run the tests with code examples.
 
 ## Contributors
-
-Specify who has worked on  the project
+Mickey Mouse
 
 ## License
 
