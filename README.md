@@ -35,7 +35,7 @@ Describe and show how to run the tests with code examples.
 
 ## Contributors
 
-contributers3
+Jack Hensley, Oluwafunmilola Kesa, Sam Blakeman, Caroline Wang
 
 ## License
 
