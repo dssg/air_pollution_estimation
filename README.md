@@ -1,6 +1,6 @@
-Air Pollution Project
+Open Source Traffic Data for better Traffic Optimization and improved London Air Pollution estimates
 
-Write project summary
+An open source library for inferring traffic dynamics.
 
 ## Table of Contents
 
