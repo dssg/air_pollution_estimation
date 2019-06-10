@@ -5,7 +5,7 @@ Write project summary
 ## Table of Contents
 
 1. [Introduction](#introduction)
-2. [Installation and setup](#setup)
+2. [Installation and setup](#setups)
 3. [Code Example](#setup)
 4. [Tests](#tests)
 5. [Contributors](#contributors)
