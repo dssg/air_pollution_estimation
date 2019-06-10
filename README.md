@@ -1,4 +1,3 @@
-# Project title
 Open Source Traffic Data for better Traffic Optimization and improved London Air Pollution estimates
 
 An open source library for inferring traffic dynamics.
