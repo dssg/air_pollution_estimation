@@ -1,6 +1,5 @@
 import urllib.request
 import datetime
-import logging
 import os
 import subprocess
 import time
@@ -49,9 +48,9 @@ def get_videos_and_upload_to_s3(local_video_dir: str,
                            ])
 
 
-def video_data_collection(local_video_dir: str,
-                          camera_list: list,
-                          num_iterations: int = None):
+def collect_video_data(local_video_dir: str,
+                       camera_list: list,
+                       num_iterations: int = None):
     upload_num = 0
 
     if num_iterations is None:
