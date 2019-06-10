@@ -17,7 +17,12 @@ For three months they learn, hone, and apply their data science, analytical, and
 
 ### Partners
 
-Introduce the partners of your project
+The partners of this project include:
+1. Transport and Environmental Laboratory, Centre for Transport Studies, Department of Civil and Environmental Engineering, Imperial College London (principal partner)
+2. Transport for London (principal partner and main beneficiary - to be confirmed)
+3. City of London Corporation (principal partner - to be confirmed)
+4. King’s College London (supporting partner - to be confirmed)
+5. Greater London Authority (to be confirmed)
 
 
 ## Installation and setup
