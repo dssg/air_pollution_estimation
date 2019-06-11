@@ -39,7 +39,7 @@ Describe and show how to run the tests with code examples.
 
 ## Contributors
 
-Specify who has worked on  the project
+Jack Hensley, Oluwafunmilola Kesa, Sam Blakeman, Caroline Wang
 
 ## License
 
