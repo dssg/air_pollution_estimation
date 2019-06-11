@@ -42,7 +42,9 @@ def get_videos_and_upload_to_s3(local_video_dir: str,
                            's3://air-pollution-uk/raw/video_data/',
                            '--recursive',
                            '--profile',
-                           'air-quality'])
+                           'dssg'])
+
+    print(res)
     res = subprocess.call(["rm", "-r",
                            local_video_dir
                            ])

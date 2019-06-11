@@ -33,9 +33,12 @@ def get_tims_data_and_upload_to_s3(local_tims_dir: str,
                                's3://air-pollution-uk/raw/tims_data/',
                                '--recursive',
                                '--profile',
-                               'air-quality'])
+                               'dssg'])
+        print(res)
 
     # delete local tims directory
     res = subprocess.call(["rm", "-r",
                            local_tims_dir
                            ])
+
+    
