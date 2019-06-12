@@ -8,17 +8,13 @@ import ast
 
 if __name__ == "__main__":
     setup_dir = os.path.join(os.getcwd(),'.')
-    src_dir = os.path.join(setup_dir, 'src')
-    sys.path.append(src_dir)
     print(os.path.join(setup_dir, 'conf', 'base', 'parameters.yml'))
 
     # credentials
     config = configparser.ConfigParser()
-    config.read(os.path.join(setup_dir, 'conf', 'local', 'credentials.yml'))
     config.read(os.path.join(setup_dir, 'conf', 'base', 'parameters.yml'))
 
     # local data folder
-    video_dir = os.path.join(setup_dir, 'data', '01_raw', 'video_data')
     tims_dir = os.path.join(setup_dir, 'data', '01_raw', 'tims')
 
     uploaded_file = os.path.join(setup_dir, 'data', '01_raw', 'uploaded_file.txt')

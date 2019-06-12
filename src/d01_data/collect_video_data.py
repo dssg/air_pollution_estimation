@@ -3,6 +3,7 @@ import datetime
 import os
 import subprocess
 import time
+import json
 
 
 def download_jam_cams(website, camera, extension, video_dir):
@@ -76,6 +77,49 @@ def collect_video_data(local_video_dir: str,
             print('Completed {}/{} iterations'.format(upload_num,
                                                       num_iterations))
             time.sleep(3 * 60)
+
+
+def collect_camera_videos(local_video_dir:str,
+    num_iterations:int = None,
+    website:str = "https://api.tfl.gov.uk/Place/Type/JamCam",
+    cam_file:str="cam_file.json"):
+
+    # check if api is working
+    if not os.path.exists(local_video_dir):
+        os.makedirs(local_video_dir)
+
+    res = urllib.request.urlopen(website)
+    data = json.loads(res.read())
+    
+    videoUrls = dict()
+
+    # parse data
+    for item in data:
+        additionalProperties = item['additionalProperties']
+        for prop in additionalProperties:
+            videoUrl = prop['key']
+            if  videoUrl == 'videoUrl':
+                filename = videoUrl.split('/')[-1]
+                timestamp = prop['modified']
+                file_path = os.path.join(local_video_dir, timestamp+"_"+filename)
+
+                # download video
+                urllib.request.urlretrieve(prop['value'], file_path)
+                videoUrls[prop['value']] = prop['modified']
+
+    with open(cam_file, 'w') as f:
+        json.dump(videoUrls, f)
+def upload_videos(local_video_dir):
+    res = subprocess.call(["aws", "s3", 'cp',
+                           local_video_dir,
+                           's3://air-pollution-uk/raw/video_data/',
+                           '--recursive',
+                           '--profile',
+                           'dssg'])
+
+
+
+
 
 
 
