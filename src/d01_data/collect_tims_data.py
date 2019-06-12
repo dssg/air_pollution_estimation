@@ -67,9 +67,10 @@ def get_tims_data_and_upload_to_s3_in_chunk(local_tims_dir: str,
         uploaded_files_list = []
     else:
         with open(uploaded_file, 'r') as f:
-            uploaded_files_list = f.readlines()
+            uploaded_files_list = f.read().splitlines() 
 
     files = [filename for filename in  files if filename not in uploaded_files_list]
+    print(uploaded_files_list)
     while files:
         # delete local tims directory
         res = subprocess.call(["rm", "-r",
