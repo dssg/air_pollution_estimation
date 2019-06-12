@@ -6,6 +6,7 @@ import time
 import smtplib
 import ssl
 import configparser
+import ast
 
 
 def download_jam_cams(website, camera, extension, video_dir):
@@ -71,27 +72,7 @@ def collect_video_data(local_video_dir: str,
               time.sleep(3 * 60)
 
             except:
-
-              setup_dir = os.path.join(os.getcwd(), '..', '..')
-              config = configparser.ConfigParser()
-              config.read(os.path.join(setup_dir, 'conf', 'local', 'credentials.yml'))
-              
-              sender_email = config.get('EMAIL', 'address')
-              password = config.get('EMAIL', 'password')
-              recipients = config.get('EMAIL', 'recipients')
-
-              port = 465  # For SSL
-              smtp_server = "smtp.gmail.com"
-              message = """\
-              Subject: ERROR - Traffic Camera Download Failed
-
-              The script responsible for downloading the traffic camera data has been stopped."""
-
-              context = ssl.create_default_context()
-              with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
-                  server.login(sender_email, password)
-                  server.sendmail(sender_email, recipients, message)
-
+              SendEmailWarning()
               print('Download Failed!')
               break;
 
@@ -105,6 +86,30 @@ def collect_video_data(local_video_dir: str,
             print('Completed {}/{} iterations'.format(upload_num,
                                                       num_iterations))
             time.sleep(3 * 60)
+
+
+def SendEmailWarning():
+
+    setup_dir = os.path.join(os.getcwd(), '..', '..')
+    config = configparser.ConfigParser()
+    config.read(os.path.join(setup_dir, 'conf', 'local', 'credentials.yml'))
+
+    sender_email = config.get('EMAIL', 'address')
+    password = config.get('EMAIL', 'password')
+    recipients = ast.literal_eval(config.get('EMAIL', 'recipients'))
+
+    port = 465  # For SSL
+    smtp_server = "smtp.gmail.com"
+    subject = 'ERROR - Traffic Camera Download Failed'
+    text = 'The script responsible for downloading the traffic camera data has been stopped. Please check EC2 instance.'
+    message = 'Subject: {}\n\n{}'.format(subject, text)
+
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
+        server.login(sender_email, password)
+        server.sendmail(sender_email, recipients, message)
+
+    return
 
 
 
