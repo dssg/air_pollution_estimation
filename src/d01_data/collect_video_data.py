@@ -3,6 +3,10 @@ import datetime
 import os
 import subprocess
 import time
+import smtplib
+import ssl
+import configparser
+import ast
 
 
 def download_jam_cams(website, camera, extension, video_dir):
@@ -42,7 +46,9 @@ def get_videos_and_upload_to_s3(local_video_dir: str,
                            's3://air-pollution-uk/raw/video_data/',
                            '--recursive',
                            '--profile',
-                           'air-quality'])
+                           'dssg'])
+
+    print(res)
     res = subprocess.call(["rm", "-r",
                            local_video_dir
                            ])
@@ -52,17 +58,23 @@ def collect_video_data(local_video_dir: str,
                        camera_list: list,
                        num_iterations: int = None,
                        website: str = "http://jamcams.tfl.gov.uk/00001.",):
+
     upload_num = 0
 
     if num_iterations is None:
         print('Starting infinite data collection.')
         while True:
-            get_videos_and_upload_to_s3(local_video_dir=local_video_dir,
-                                        camera_list=camera_list,
-                                        website=website)
-            upload_num += 1
-            print('Completed {} iterations'.format(upload_num))
-            time.sleep(3 * 60)
+            try:
+              get_videos_and_upload_to_s3(local_video_dir=local_video_dir,
+                                          camera_list=camera_list,
+                                          website=website)
+              print('Completed Iteration')
+              time.sleep(3 * 60)
+
+            except:
+              SendEmailWarning()
+              print('Download Failed!')
+              break;
 
     else:
         print('Starting data collection.')
@@ -74,6 +86,30 @@ def collect_video_data(local_video_dir: str,
             print('Completed {}/{} iterations'.format(upload_num,
                                                       num_iterations))
             time.sleep(3 * 60)
+
+
+def SendEmailWarning():
+
+    setup_dir = os.path.join(os.getcwd(), '..', '..')
+    config = configparser.ConfigParser()
+    config.read(os.path.join(setup_dir, 'conf', 'local', 'credentials.yml'))
+
+    sender_email = config.get('EMAIL', 'address')
+    password = config.get('EMAIL', 'password')
+    recipients = ast.literal_eval(config.get('EMAIL', 'recipients'))
+
+    port = 465  # For SSL
+    smtp_server = "smtp.gmail.com"
+    subject = 'ERROR - Traffic Camera Download Failed'
+    text = 'The script responsible for downloading the traffic camera data has been stopped. Please check EC2 instance.'
+    message = 'Subject: {}\n\n{}'.format(subject, text)
+
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
+        server.login(sender_email, password)
+        server.sendmail(sender_email, recipients, message)
+
+    return
 
 
 
