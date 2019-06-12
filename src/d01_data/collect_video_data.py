@@ -4,6 +4,7 @@ import os
 import subprocess
 import time
 import json
+from collections import defaultdict
 
 
 def download_jam_cams(website, camera, extension, video_dir):
@@ -91,31 +92,41 @@ def collect_camera_videos(local_video_dir:str,
     res = urllib.request.urlopen(website)
     data = json.loads(res.read())
     
-    videoUrls = dict()
+    new_video_urls = defaultdict()
+
+    if not os.path.exists(cam_file):
+        video_urls_dict = defaultdict(str)
+    else:
+        with open(cam_file, 'r') as f:
+            video_urls_dict = dict(json.loads(f.read()))
 
     # parse data
     for item in data:
         additionalProperties = item['additionalProperties']
         for prop in additionalProperties:
-            videoUrl = prop['key']
-            if  videoUrl == 'videoUrl':
-                filename = videoUrl.split('/')[-1]
+            video_url = prop['value']
+            if  prop['key'] == 'videoUrl':
+                filename = prop['value'].split('/')[-1]
                 timestamp = prop['modified']
                 file_path = os.path.join(local_video_dir, timestamp+"_"+filename)
 
-                # download video
-                urllib.request.urlretrieve(prop['value'], file_path)
-                videoUrls[prop['value']] = prop['modified']
+                print("Checking if video already exist")
 
-    with open(cam_file, 'w') as f:
-        json.dump(videoUrls, f)
-def upload_videos(local_video_dir):
-    res = subprocess.call(["aws", "s3", 'cp',
-                           local_video_dir,
-                           's3://air-pollution-uk/raw/video_data/',
-                           '--recursive',
-                           '--profile',
-                           'dssg'])
+
+                # check if video already exist
+                if filename in video_urls_dict and video_urls_dict[filename] == timestamp:
+                    print("Video already exist")
+                    continue
+
+                # download video
+                print("Downloading videos to ", file_path)
+                urllib.request.urlretrieve(prop['value'], file_path)
+                new_video_urls[filename] = prop['modified']
+
+                with open(cam_file, 'w') as f:
+                    json.dump(new_video_urls, f)
+        
+ 
 
 
 
