@@ -25,6 +25,6 @@ if __name__ == "__main__":
 
     while True:
         upload_videos(local_video_dir=video_dir)
-        time.sleep(5 * 60)
+        time.sleep(2 * 60)
 
   

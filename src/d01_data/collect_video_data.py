@@ -188,9 +188,12 @@ def upload_videos(local_video_dir:str, chunk_size:int = 5):
                             # '--recursive',
                             '--profile',
                             'dssg'])
+        print(type(res),res)
 
-        # delete file
-        res = subprocess.call(["rm", 
-                           filepath
+        # delete file if it was successfully uploaded
+        if res == 0:
+            # delete file
+            res = subprocess.call(["rm", 
+                            filepath
                            ])
 
