@@ -1,17 +1,20 @@
-import urllib
+import urllib.request
 import json
 import csv
 import os
 
+# Get the json from the TFL API
 website = 'https://api.tfl.gov.uk/Place/Type/JamCam'
 res = urllib.request.urlopen(website)
 data = json.loads(res.read())
 
+# List of fields to be removed from the json
 fields_to_remove = ['$type', 'url',
                     'placeType',
                     'children',
                     'childrenUrls']
 
+# Remove the fields and create a list of dictionaries for each camera
 processed_data = []
 
 for cam in data:
@@ -26,6 +29,7 @@ for cam in data:
 
     processed_data.append(processed_cam)
 
+# Save the list of dictionaries as a csv file in the processed data folder
 save_dir = os.path.join(os.getcwd(),'..', '..', 'data/02_processed/JamCam/JamCamDetails.csv')
 keys = processed_data[0].keys()
 with open(save_dir, 'w') as output_file:
