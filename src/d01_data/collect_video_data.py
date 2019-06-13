@@ -176,11 +176,21 @@ def collect_available_camera_videos(local_video_dir:str,
             with open(cam_file, 'w') as f:
                 json.dump(new_video_urls, f)
         
+def upload_videos(local_video_dir:str, chunk_size:int = 5):
 
+    for filename in os.listdir(local_video_dir):
+        filepath = os.path.join(local_video_dir, filename)
+        f = open(filepath, 'r')
 
+        res = subprocess.call(["aws", "s3", 'cp',
+                            filepath,
+                            's3://air-pollution-uk/raw/video_data_new/',
+                            # '--recursive',
+                            '--profile',
+                            'dssg'])
 
-
-
-
-
+        # delete file
+        res = subprocess.call(["rm", 
+                           filepath
+                           ])
 
