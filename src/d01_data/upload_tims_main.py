@@ -1,6 +1,6 @@
 import collect_tims_data
 from collect_video_data import collect_video_data
-from collect_tims_data import get_tims_data_and_upload_to_s3_in_chunk
+from collect_tims_data import get_tims_data_and_upload_to_s3
 import os
 import sys
 import configparser
@@ -16,9 +16,7 @@ if __name__ == "__main__":
 
     # local data folder
     tims_dir = os.path.join(setup_dir, 'data', '01_raw', 'tims')
-
     uploaded_file = os.path.join(setup_dir, 'data', '01_raw', 'uploaded_file.txt')
-
     
     # tims data
     get_tims_data_and_upload_to_s3_in_chunk(local_tims_dir = tims_dir,
