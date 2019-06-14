@@ -22,7 +22,11 @@ if __name__ == "__main__":
     tims_dir = os.path.join(setup_dir, 'data', '01_raw', 'tims')
     uploaded_file = os.path.join(setup_dir, 'data', '01_raw', 'uploaded_file.json')
     while True:
-        upload_videos(local_video_dir=video_dir)
-        time.sleep(2 * 60)
+        try:
+            upload_videos(local_video_dir=video_dir)
+            time.sleep(2 * 60)
+        
+        except expression as identifier:
+            pass
+            
 
-  
