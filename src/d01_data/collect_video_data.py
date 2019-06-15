@@ -6,7 +6,6 @@ import time
 import json
 from collections import defaultdict
 
-
 def collect_camera_videos(local_video_dir:str,
     website:str = "https://api.tfl.gov.uk/Place/Type/JamCam",
     cam_file:str="cam_file.json"):
@@ -50,7 +49,12 @@ def collect_available_camera_videos(local_video_dir:str,
     num_iterations:int = None,
     website:str = "https://api.tfl.gov.uk/Place/Type/JamCam",
     cam_file:str="cam_file.json"):
+    '''
+    This function was created to download videos from cameras that are marked as available in th tfl data. The json data returned by tfl api contains a key, in the "additionalProperties" field, called "available". Our assumption was that the "available" property means that the camera is available if the value is "true" and not available otherwise. 
+    However, after going through the data, we discovered that somee cameras are working when the "available" property is "false".
 
+    We plan to investigate this before removing this function.
+    '''
     # check if api is working
     if not os.path.exists(local_video_dir):
         os.makedirs(local_video_dir)
@@ -62,7 +66,7 @@ def collect_available_camera_videos(local_video_dir:str,
     else:
         with open(cam_file, 'r') as f:
             video_urls_dict = dict(json.loads(f.read()))
-            
+
     # parse data
     for item in data:
         additionalProperties = item['additionalProperties']
