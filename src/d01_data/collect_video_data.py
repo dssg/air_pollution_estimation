@@ -16,6 +16,8 @@ def collect_camera_videos(local_video_dir:str,
     res = urllib.request.urlopen(website)
     data = json.loads(res.read())
     new_video_urls = defaultdict()
+
+    # check if there is a camera file to see the last time the camera video was modified
     if not os.path.exists(cam_file):
         video_urls_dict = defaultdict(str)
     else:

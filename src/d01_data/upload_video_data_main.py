@@ -21,7 +21,6 @@ if __name__ == "__main__":
     # local data folder
     video_dir = os.path.join(setup_dir, 'data', '01_raw', 'video_data')
     tims_dir = os.path.join(setup_dir, 'data', '01_raw', 'tims')
-    uploaded_file = os.path.join(setup_dir, 'data', '01_raw', 'uploaded_file.json')
     while True:
         try:
             upload_videos(local_video_dir=video_dir)
