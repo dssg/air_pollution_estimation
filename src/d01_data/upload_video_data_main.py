@@ -6,6 +6,7 @@ import sys
 import configparser
 import ast
 import time
+from email_service import send_email
 
 
 if __name__ == "__main__":
@@ -26,7 +27,7 @@ if __name__ == "__main__":
             upload_videos(local_video_dir=video_dir)
             time.sleep(2 * 60)
         
-        except expression as identifier:
-            pass
+        except Exception as e:
+            send_email()
             
 
