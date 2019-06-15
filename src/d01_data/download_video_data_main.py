@@ -15,12 +15,10 @@ if __name__ == "__main__":
     # local data folder
     video_dir = os.path.join(setup_dir, 'data', '01_raw', 'video_data')
     tims_dir = os.path.join(setup_dir, 'data', '01_raw', 'tims')
-    uploaded_file = os.path.join(setup_dir, 'data', '01_raw', 'uploaded_file.json')
+    cam_file = os.path.join(setup_dir, 'data', '01_raw', 'cam_file.json')
     while True:
         try:
-            send_email()
-            collect_camera_videos(local_video_dir=video_dir)
+            collect_camera_videos(local_video_dir=video_dir, cam_file=cam_file)
             time.sleep(2 * 60)
-            send_email()
         except Exception as e:
             send_email()
