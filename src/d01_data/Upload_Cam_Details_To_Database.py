@@ -26,7 +26,8 @@ for cam in data:
 
     processed_data.append(processed_cam)
 
-save_dir = os.path.join(os.getcwd(),'..', '..', 'data/02_processed/JamCam/JamCamDetails.csv')
+save_dir = os.path.join(os.getcwd(), '..', '..',
+                        'data/02_processed/JamCam/JamCamDetails.csv')
 keys = processed_data[0].keys()
 with open(save_dir, 'w') as output_file:
     dict_writer = csv.DictWriter(output_file, keys)

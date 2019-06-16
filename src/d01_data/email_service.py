@@ -4,6 +4,7 @@ import configparser
 import os
 import ast
 
+
 def send_email():
     setup_dir = os.path.join(os.getcwd(), '..', '..')
     config = configparser.ConfigParser()
