@@ -3,6 +3,8 @@ import json
 import csv
 import os
 
+# TODO: Move to a function and integrate into a pipeline
+
 # Get the json from the TFL API
 website = 'https://api.tfl.gov.uk/Place/Type/JamCam'
 res = urllib.request.urlopen(website)
