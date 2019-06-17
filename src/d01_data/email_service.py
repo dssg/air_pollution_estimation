@@ -6,7 +6,7 @@ import ast
 
 
 def send_email():
-    setup_dir = os.path.join(os.getcwd(), '..', '..')
+    setup_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
     config = configparser.ConfigParser()
     config.read(os.path.join(setup_dir, 'conf', 'local', 'credentials.yml'))
 
@@ -24,5 +24,4 @@ def send_email():
     with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
         server.login(sender_email, password)
         server.sendmail(sender_email, recipients, message)
-
     return
