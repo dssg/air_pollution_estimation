@@ -30,7 +30,8 @@ for cam in data:
     processed_data.append(processed_cam)
 
 # Save the list of dictionaries as a csv file in the processed data folder
-save_dir = os.path.join(os.getcwd(),'..', '..', 'data/02_processed/JamCam/JamCamDetails.csv')
+setup_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
+save_dir = os.path.join(setup_dir, 'data/02_processed/JamCam/JamCamDetails.csv')
 keys = processed_data[0].keys()
 with open(save_dir, 'w') as output_file:
     dict_writer = csv.DictWriter(output_file, keys)
