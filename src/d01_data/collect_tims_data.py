@@ -8,7 +8,7 @@ import requests
 def get_tims_data_and_upload_to_s3(local_tims_dir: str,
                                    file_website: str = 'https://s3-eu-west-1.amazonaws.com/roads.data.tfl.gov.uk',
                                    download_website: str = "http://roads.data.tfl.gov.uk/TIMS/",
-                                   tims_data_file: str = "tims_data_file.txt",
+                                   uploaded_tims_data_file: str = "data/00_ref/uploaded_tims_data_file.txt",
                                    chunk_size=5
                                    ):
 
@@ -21,7 +21,7 @@ def get_tims_data_and_upload_to_s3(local_tims_dir: str,
 
         download_website: url where the files are stored for download
 
-        tims_data_file: a text file containing the names of files that have been downloaded from tims website and uploaded to s3
+        uploaded_tims_data_file: a text file containing the names of files that have been downloaded from tims website and uploaded to s3
 
         chunk_size: number of files to download at a single time and upload to s3
     '''
@@ -41,10 +41,10 @@ def get_tims_data_and_upload_to_s3(local_tims_dir: str,
         os.makedirs(local_tims_dir)
 
     # get a list of uploaded tims data, create an empty list if the tims data file does not exist
-    if not os.path.exists(tims_data_file):
+    if not os.path.exists(uploaded_tims_data_file):
         uploaded_files_list = []
     else:
-        with open(tims_data_file, 'r') as f:
+        with open(uploaded_tims_data_file, 'r+') as f:
             uploaded_files_list = f.read().splitlines()
 
     # remove files that have already been downloaded to avoid duplicate download
@@ -72,7 +72,7 @@ def get_tims_data_and_upload_to_s3(local_tims_dir: str,
                                'dssg'])
 
         # append recently saved file to the tims data file
-        with open(tims_data_file, "a") as f:
+        with open(uploaded_tims_data_file, "a+") as f:
             print("\n".join(chunk), file=f)
             print("Saved ", chunk)
         files = files[chunk_size:]
