@@ -9,7 +9,7 @@ from collections import defaultdict
 
 def collect_camera_videos(local_video_dir: str,
                           website: str = "https://api.tfl.gov.uk/Place/Type/JamCam",
-                          cam_file: str = "cam_file.json",
+                          cam_file: str = "data/00_ref/cam_file.json",
                           check_if_video_is_available=False):
     '''
     This function was created to download videos from cameras using the tfl api.
