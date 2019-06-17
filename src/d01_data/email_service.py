@@ -5,7 +5,7 @@ import os
 import ast
 
 
-def send_email():
+def send_email(msg:str):
     setup_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
     config = configparser.ConfigParser()
     config.read(os.path.join(setup_dir, 'conf', 'local', 'credentials.yml'))
@@ -18,6 +18,7 @@ def send_email():
     smtp_server = "smtp.gmail.com"
     subject = 'ERROR - Traffic Camera Download Failed'
     text = 'The script responsible for downloading the traffic camera data has been stopped. Please check EC2 instance.'
+    text += "\n"+msg
     message = 'Subject: {}\n\n{}'.format(subject, text)
 
     context = ssl.create_default_context()

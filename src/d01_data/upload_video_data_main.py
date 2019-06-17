@@ -21,4 +21,4 @@ if __name__ == "__main__":
             upload_videos(local_video_dir=video_dir)
             time.sleep(2 * 60)
         except Exception as e:
-            send_email()
+            send_email(str(e))

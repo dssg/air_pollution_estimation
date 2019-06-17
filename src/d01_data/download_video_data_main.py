@@ -9,7 +9,6 @@ if __name__ == "__main__":
     # local data folder
     setup_dir = os.path.join(os.getcwd(), '.')
     video_dir = os.path.join(setup_dir, 'data', '01_raw', 'video_data')
-    tims_dir = os.path.join(setup_dir, 'data', '01_raw', 'tims')
     cam_file = os.path.join(setup_dir, 'data', '01_raw', 'cam_file.json')
     while True:
         try:
@@ -19,4 +18,4 @@ if __name__ == "__main__":
                 check_if_video_is_available=False)
             time.sleep(2 * 60)
         except Exception as e:
-            send_email()
+            send_email(str(e))
