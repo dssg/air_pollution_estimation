@@ -68,7 +68,7 @@ def retrieve_videos_from_s3(bDownload=True, from_date=None, to_date=None):
     return data
 
 
-def retireve_tims_from_database():
+def retrieve_tims_from_s3():
 
 
 
@@ -109,6 +109,3 @@ def describe_s3_bucket():
     plt.close()
 
     return
-
-retrieve_videos_from_s3(from_date='2019-06-06', to_date='2019-06-07')
-#describe_s3_bucket()
