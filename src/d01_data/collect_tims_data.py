@@ -7,7 +7,24 @@ import requests
 
 def get_tims_data_and_upload_to_s3(local_tims_dir: str,
                                    file_website: str = 'https://s3-eu-west-1.amazonaws.com/roads.data.tfl.gov.uk',
-                                   download_website: str = "http://roads.data.tfl.gov.uk/TIMS/"):
+                                   download_website: str = "http://roads.data.tfl.gov.uk/TIMS/",
+                                   uploaded_tims_data_file: str = "data/00_ref/uploaded_tims_data_file.txt",
+                                   chunk_size=5
+                                   ):
+
+    '''
+    This function downloads tims data by crawling the links on the tims website. The function first checks if the file has already been downloaded by checking a text file that contains names of downloaded files.
+
+        local_tims_dir: the local filepath used to save the tims data before uploading to S3.
+
+        file_website: url containing names of files in tims data
+
+        download_website: url where the files are stored for download
+
+        uploaded_tims_data_file: a text file containing the names of files that have been downloaded from tims website and uploaded to s3
+
+        chunk_size: number of files to download at a single time and upload to s3
+    '''
     # get html file from website
     r = requests.get(file_website)
     data = r.text
@@ -23,10 +40,29 @@ def get_tims_data_and_upload_to_s3(local_tims_dir: str,
     if not os.path.exists(local_tims_dir):
         os.makedirs(local_tims_dir)
 
-    for file in files:
-        url = download_website + file
-        file_path = local_tims_dir + "/" + file
-        urllib.request.urlretrieve(url, file_path)
+    # get a list of uploaded tims data, create an empty list if the tims data file does not exist
+    if not os.path.exists(uploaded_tims_data_file):
+        uploaded_files_list = []
+    else:
+        with open(uploaded_tims_data_file, 'r+') as f:
+            uploaded_files_list = f.read().splitlines()
+
+    # remove files that have already been downloaded to avoid duplicate download
+    files = [filename for filename in files if filename not in uploaded_files_list]
+    print(uploaded_files_list)
+    while files:
+        # delete local tims directory
+        res = subprocess.call(["rm", "-r",
+                               local_tims_dir
+                               ])
+
+        # create tims directory if it doesn't exist
+        if not os.path.exists(local_tims_dir):
+            os.makedirs(local_tims_dir)
+
+        chunk = files[:chunk_size]
+        resp = [urllib.request.urlretrieve(
+            download_website + filename, local_tims_dir + "/" + filename) for filename in chunk]
 
         res = subprocess.call(["aws", "s3", 'cp',
                                local_tims_dir,
@@ -34,11 +70,9 @@ def get_tims_data_and_upload_to_s3(local_tims_dir: str,
                                '--recursive',
                                '--profile',
                                'dssg'])
-        print(res)
 
-    # delete local tims directory
-    res = subprocess.call(["rm", "-r",
-                           local_tims_dir
-                           ])
-
-    
+        # append recently saved file to the tims data file
+        with open(uploaded_tims_data_file, "a+") as f:
+            print("\n".join(chunk), file=f)
+            print("Saved ", chunk)
+        files = files[chunk_size:]

@@ -26,6 +26,9 @@ results/**
 out/
 .idea_modules/
 
+# vscode
+.vscode/
+
 ### macOS
 *.DS_Store
 .AppleDouble

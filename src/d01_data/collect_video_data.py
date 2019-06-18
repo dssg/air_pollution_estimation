@@ -3,116 +3,88 @@ import datetime
 import os
 import subprocess
 import time
-import smtplib
-import ssl
-import configparser
-import ast
+import json
+from collections import defaultdict
 
 
-def download_jam_cams(website, camera, extension, video_dir):
+def collect_camera_videos(local_video_dir: str,
+                          website: str = "https://api.tfl.gov.uk/Place/Type/JamCam",
+                          cam_file: str = "data/00_ref/cam_file.json",
+                          check_if_video_is_available=False):
+    '''
+    This function was created to download videos from cameras using the tfl api.
+        local_video_dir: local directly to download the videos in.
 
-    now = datetime.datetime.now()
-    timestamp = now.strftime("%Y-%m-%d_%H.%M")
-    url = website + camera + extension
-    file_path = video_dir + "/" + camera + "/" + timestamp + extension
-    urllib.request.urlretrieve(url, file_path)
+        website: The tfl api to download traffic camera videos
 
+        cam_file: Stores the last time the camera was modified. The file is checked in ordere to download new videos.
 
-def create_folder_structure(local_video_dir: str,
-                            camera_list: list):
+        check_if_video_is_available: if set to True, check the "available" of the camera data to see if it's set to "true" before downloading the video. The json data returned by tfl api contains a key, in the "additionalProperties" field, called "available". Our assumption is that the "available" property means the camera is available and working if the value is "true" and not available otherwise. However, after going through the data, we discovered that some cameras are working when the "available" property is "false".We plan to investigate this before removing the check_if_video_is_available argument.
+    '''
+    # check if the local directory exists.
     if not os.path.exists(local_video_dir):
         os.makedirs(local_video_dir)
-    for camera in camera_list:
-        this_camera_dir = os.path.join(local_video_dir, camera)
-        if not os.path.exists(this_camera_dir):
-            os.makedirs(this_camera_dir)
 
+    # get the traffic cameras data
+    res = urllib.request.urlopen(website)
+    data = json.loads(res.read())
+    new_video_urls = defaultdict()
 
-def get_videos_and_upload_to_s3(local_video_dir: str,
-                                camera_list: list,
-                                website: str = "http://jamcams.tfl.gov.uk/00001.",
-                                extension: str ='.mp4',
-                                ):
-
-    create_folder_structure(local_video_dir=local_video_dir,
-                            camera_list=camera_list)
-
-    for camera in camera_list:
-        download_jam_cams(website, camera, extension, local_video_dir)
-
-    time.sleep(1 * 60)
-    res = subprocess.call(["aws", "s3", 'cp',
-                           local_video_dir,
-                           's3://air-pollution-uk/raw/video_data/',
-                           '--recursive',
-                           '--profile',
-                           'dssg'])
-
-    print(res)
-    res = subprocess.call(["rm", "-r",
-                           local_video_dir
-                           ])
-
-
-def collect_video_data(local_video_dir: str,
-                       camera_list: list,
-                       num_iterations: int = None,
-                       website: str = "http://jamcams.tfl.gov.uk/00001.",):
-
-    upload_num = 0
-
-    if num_iterations is None:
-        print('Starting infinite data collection.')
-        while True:
-            try:
-              get_videos_and_upload_to_s3(local_video_dir=local_video_dir,
-                                          camera_list=camera_list,
-                                          website=website)
-              print('Completed Iteration')
-              time.sleep(3 * 60)
-
-            except:
-              SendEmailWarning()
-              print('Download Failed!')
-              break;
-
+    # get all the data in the cam_file to check the last time the video data were modified
+    if not os.path.exists(cam_file):
+        video_urls_dict = defaultdict(str)
     else:
-        print('Starting data collection.')
-        while upload_num < num_iterations:
-            get_videos_and_upload_to_s3(local_video_dir=local_video_dir,
-                                        camera_list=camera_list,
-                                        website=website)
-            upload_num += 1
-            print('Completed {}/{} iterations'.format(upload_num,
-                                                      num_iterations))
-            time.sleep(3 * 60)
+        with open(cam_file, 'r') as f:
+            video_urls_dict = dict(json.loads(f.read()))
+
+    # parse data
+    for item in data:
+        additional_properties = item['additionalProperties']
+        properties = {val["key"]: val for val in additional_properties}
+        available_prop = properties["available"]
+        if not check_if_video_is_available or available_prop["value"] == "true":
+            video_prop = properties["videoUrl"]
+            video_url = video_prop['value']
+            filename = video_url.split('/')[-1]
+            timestamp = video_prop['modified']
+            file_path = os.path.join(local_video_dir, timestamp+"_"+filename)
+
+            # check if the video data has been modified
+            print("Checking if video already exist")
+            if filename in video_urls_dict and video_urls_dict[filename] == timestamp:
+                print("Video already exist")
+                continue
+
+            # download video
+            print("Downloading videos to ", file_path)
+            urllib.request.urlretrieve(video_prop['value'], file_path)
+            new_video_urls[filename] = video_prop['modified']
+
+            # store the modified time of video in cam_file
+            with open(cam_file, 'w') as f:
+                json.dump(new_video_urls, f)
+        else:
+            print("%s video not available." % (item['id']))
 
 
-def SendEmailWarning():
+def upload_videos(local_video_dir: str):
+    '''
+    This function uploads the video in the local_video_dir to S3. Each video is deleted after an upload.
+    '''
+    if not os.path.exists(local_video_dir):
+        os.makedirs(local_video_dir)
+    for filename in os.listdir(local_video_dir):
+        filepath = os.path.join(local_video_dir, filename)
+        f = open(filepath, 'r')
+        res = subprocess.call(["aws", "s3", 'cp',
+                               filepath,
+                               's3://air-pollution-uk/raw/video_data_new/',
+                               '--profile',
+                               'dssg'])
 
-    setup_dir = os.path.join(os.getcwd(), '..', '..')
-    config = configparser.ConfigParser()
-    config.read(os.path.join(setup_dir, 'conf', 'local', 'credentials.yml'))
-
-    sender_email = config.get('EMAIL', 'address')
-    password = config.get('EMAIL', 'password')
-    recipients = ast.literal_eval(config.get('EMAIL', 'recipients'))
-
-    port = 465  # For SSL
-    smtp_server = "smtp.gmail.com"
-    subject = 'ERROR - Traffic Camera Download Failed'
-    text = 'The script responsible for downloading the traffic camera data has been stopped. Please check EC2 instance.'
-    message = 'Subject: {}\n\n{}'.format(subject, text)
-
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
-        server.login(sender_email, password)
-        server.sendmail(sender_email, recipients, message)
-
-    return
-
-
-
-
-
-
+        # delete file if it was successfully uploaded
+        if res == 0:
+            # delete file
+            res = subprocess.call(["rm",
+                                   filepath
+                                   ])
