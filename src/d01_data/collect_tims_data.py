@@ -1,78 +1,71 @@
 import urllib.request
 import os
 import subprocess
-from bs4 import BeautifulSoup
 import requests
+import shutil
+import datetime
+import time
+from email_service import send_email_warning
 
 
-def get_tims_data_and_upload_to_s3(local_tims_dir: str,
-                                   file_website: str = 'https://s3-eu-west-1.amazonaws.com/roads.data.tfl.gov.uk',
-                                   download_website: str = "http://roads.data.tfl.gov.uk/TIMS/",
-                                   uploaded_tims_data_file: str = "data/00_ref/uploaded_tims_data_file.txt",
-                                   chunk_size=5
-                                   ):
+def get_tims_data_and_upload_to_s3():
+    """Retrieve TIMS data from tfl website and upload to s3 bucket.
+        Downloads any backlogs and then continually checks for new files every 15 minutes
+            Args:
 
-    '''
-    This function downloads tims data by crawling the links on the tims website. The function first checks if the file has already been downloaded by checking a text file that contains names of downloaded files.
+            Returns:
 
-        local_tims_dir: the local filepath used to save the tims data before uploading to S3.
+            Raises:
+    """
+    website = "http://roads.data.tfl.gov.uk/TIMS/"
 
-        file_website: url containing names of files in tims data
+    # Set up the local directory for temporary downloading
+    local_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                             '..', '..', 'data/01_raw/tims/')
+    if (os.path.isdir(local_dir)):
+        shutil.rmtree(local_dir)
+    os.mkdir(local_dir)
 
-        download_website: url where the files are stored for download
+    # Check every second of the datetime stored in 'date' for a csv file
+    # If a csv file exists then we are not up to date and we should check the next 15 minutes
+    # If we are up to date then just wait 15 minutes before checking again
+    date = datetime.datetime(2019, 1, 1, 0, 0)
+    counter = 0
 
-        uploaded_tims_data_file: a text file containing the names of files that have been downloaded from tims website and uploaded to s3
+    while(True):
+        counter += 1
+        bUp_to_date = True
 
-        chunk_size: number of files to download at a single time and upload to s3
-    '''
-    # get html file from website
-    r = requests.get(file_website)
-    data = r.text
-    soup = BeautifulSoup(data, features="html.parser")
+        for i in range(60):
+            # File to check for
+            name = "detdata" + date.strftime("%d%m%Y-%H%M") + '{num:02d}'.format(num=i) + ".csv"
+            url = website + name
+            if requests.head(url).status_code  == requests.codes.ok:
+                # Download
+                urllib.request.urlretrieve(url, local_dir + name)
+                # Upload
+                res = subprocess.call(["aws", "s3", 'cp',
+                                       local_dir + name,
+                                       's3://air-pollution-uk/raw/tims_data/',
+                                       '--recursive',
+                                       '--profile',
+                                       'dssg'])
+                # Delete the file
+                os.remove(local_dir + name)
+                print('Processed TIMS file: ' + name)
+                # Not up to date so wait 15 minutes
+                bUp_to_date = False
+                date += datetime.timedelta(minutes=15)
+                break
 
-    # extract the list of available file names
-    keys = list(soup.find_all('key'))
-    keys = [str(key) for key in keys]
-    files = [key.replace('<key>', '').replace('</key>', '').replace('TIMS/', '') for key in keys
-             if 'TIMS' in key and '.csv' in key]
+        # Up to date so wait 15 minutes before checking again
+        if(bUp_to_date):
+            time.sleep(900)
 
-    # create tims directory if it doesn't exist
-    if not os.path.exists(local_tims_dir):
-        os.makedirs(local_tims_dir)
+        # Every 24 hours send an email to say we are up to date
+        if(counter % 96 == 0):
+            send_email_warning(msg='TIMS data successfully collected in the last 24 hours',
+                               subj='TIMS Data Collection Successful')
+            counter = 0
 
-    # get a list of uploaded tims data, create an empty list if the tims data file does not exist
-    if not os.path.exists(uploaded_tims_data_file):
-        uploaded_files_list = []
-    else:
-        with open(uploaded_tims_data_file, 'r+') as f:
-            uploaded_files_list = f.read().splitlines()
-
-    # remove files that have already been downloaded to avoid duplicate download
-    files = [filename for filename in files if filename not in uploaded_files_list]
-    print(uploaded_files_list)
-    while files:
-        # delete local tims directory
-        res = subprocess.call(["rm", "-r",
-                               local_tims_dir
-                               ])
-
-        # create tims directory if it doesn't exist
-        if not os.path.exists(local_tims_dir):
-            os.makedirs(local_tims_dir)
-
-        chunk = files[:chunk_size]
-        resp = [urllib.request.urlretrieve(
-            download_website + filename, local_tims_dir + "/" + filename) for filename in chunk]
-
-        res = subprocess.call(["aws", "s3", 'cp',
-                               local_tims_dir,
-                               's3://air-pollution-uk/raw/tims_data/',
-                               '--recursive',
-                               '--profile',
-                               'dssg'])
-
-        # append recently saved file to the tims data file
-        with open(uploaded_tims_data_file, "a+") as f:
-            print("\n".join(chunk), file=f)
-            print("Saved ", chunk)
-        files = files[chunk_size:]
+    return
