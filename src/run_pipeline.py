@@ -1,4 +1,4 @@
-from src.d00_utils.data_retrieval import retrieve_videos_from_s3, describe_s3_bucket
+from src.d00_utils.data_retrieval import retrieve_videos_from_s3, describe_s3_bucket, \
+    retrieve_cam_details_from_database
 
-describe_s3_bucket()
-videos = retrieve_videos_from_s3(from_date='2019-06-06', to_date='2019-06-07')
+retrieve_cam_details_from_database()

@@ -3,10 +3,11 @@ import cv2
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from io import BytesIO
 import re
 import shutil
 import datetime
+import psycopg2
+import configparser
 
 def retrieve_videos_from_s3(bKeep_data=True, from_date=None, to_date=None):
     """Retrieve jamcam videos from the s3 bucket based on the dates specified.
@@ -88,8 +89,35 @@ def retrieve_tims_from_s3():
 
 def retrieve_cam_details_from_database():
 
+    # Get Credentials
+    setup_dir = os.path.join(os.getcwd(), '..', '..')
+    config = configparser.ConfigParser()
+    config.read(os.path.join(setup_dir, 'conf', 'local', 'credentials.yml'))
+    user = config.get('POSTGRES', 'user')
+    password = config.get('POSTGRES', 'passphrase')
 
-
+    # Connect to the Postgres database
+    try:
+        connection = psycopg2.connect(user=user,
+                                      password=password,
+                                      host="dssg-london.ck0oseycrr7s.eu-west-2.rds.amazonaws.com",
+                                      port="5432",
+                                      database="airquality")
+        cursor = connection.cursor()
+        # Print PostgreSQL Connection properties
+        print(connection.get_dsn_parameters(), "\n")
+        # Print PostgreSQL version
+        cursor.execute("SELECT version();")
+        record = cursor.fetchone()
+        print("You are connected to - ", record, "\n")
+    except (Exception, psycopg2.Error) as error:
+        print("Error while connecting to PostgreSQL", error)
+    finally:
+        # closing database connection.
+        if (connection):
+            cursor.close()
+            connection.close()
+            print("PostgreSQL connection is closed")
 
     return
 
