@@ -28,7 +28,6 @@ def collect_camera_videos(local_video_dir: str,
     # get the traffic cameras data
     res = urllib.request.urlopen(website)
     data = json.loads(res.read())
-    new_video_urls = defaultdict()
 
     # get all the data in the cam_file to check the last time the video data were modified
     if not os.path.exists(cam_file):
@@ -52,17 +51,17 @@ def collect_camera_videos(local_video_dir: str,
             # check if the video data has been modified
             print("Checking if video already exist")
             if filename in video_urls_dict and video_urls_dict[filename] == timestamp:
-                print("Video already exist")
+                print("Video %s already exist"%(filename))
                 continue
 
             # download video
             print("Downloading videos to ", file_path)
             urllib.request.urlretrieve(video_prop['value'], file_path)
-            new_video_urls[filename] = video_prop['modified']
+            video_urls_dict[filename] = video_prop['modified']
 
             # store the modified time of video in cam_file
             with open(cam_file, 'w') as f:
-                json.dump(new_video_urls, f)
+                json.dump(video_urls_dict, f)
         else:
             print("%s video not available." % (item['id']))
 
