@@ -35,7 +35,6 @@ def get_tims_data_and_upload_to_s3():
 
     while(True):
         counter += 1
-        bUp_to_date = True
 
         for i in range(60):
             # File to check for
@@ -53,14 +52,13 @@ def get_tims_data_and_upload_to_s3():
                 # Delete the file
                 os.remove(local_dir + name)
                 print('Processed TIMS file: ' + name)
-                # Not up to date so wait 15 minutes
-                bUp_to_date = False
-                date += datetime.timedelta(minutes=15)
                 break
 
         # Up to date so wait 15 minutes before checking again
-        if(bUp_to_date):
+        if(date > datetime.datetime.now()):
             time.sleep(900)
+        else:
+            date += datetime.timedelta(minutes=15)
 
         # Every 24 hours send an email to say we are up to date
         if(counter % 96 == 0):
