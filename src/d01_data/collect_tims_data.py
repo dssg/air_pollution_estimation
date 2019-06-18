@@ -43,7 +43,9 @@ def get_tims_data_and_upload_to_s3():
             url = website + name
             if requests.head(url).status_code  == requests.codes.ok:
                 # Download
-                urllib.request.urlretrieve(url, local_dir + name)
+                t = threading.Thread(name='upload_to_s3', target=download_from_site(url, local_dir + name))
+                t.start()
+                t.join()
                 # Upload
                 t = threading.Thread(name='upload_to_s3', target=upload_to_s3(local_dir + name))
                 t.start()
@@ -68,11 +70,15 @@ def get_tims_data_and_upload_to_s3():
 
     return
 
+def download_from_site(url, file):
+    urllib.request.urlretrieve(url, file)
+
+
+
 
 def upload_to_s3(file):
     res = subprocess.call(["aws", "s3", 'cp',
                            file,
                            's3://air-pollution-uk/raw/tims_data/',
-                           '--recursive',
                            '--profile',
                            'dssg'])
