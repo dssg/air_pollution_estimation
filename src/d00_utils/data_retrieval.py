@@ -90,7 +90,7 @@ def retrieve_tims_from_s3():
 def retrieve_cam_details_from_database():
 
     # Get Credentials
-    setup_dir = os.path.join(os.getcwd(), '..', '..')
+    setup_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
     config = configparser.ConfigParser()
     config.read(os.path.join(setup_dir, 'conf', 'local', 'credentials.yml'))
     user = config.get('POSTGRES', 'user')
