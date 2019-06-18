@@ -6,6 +6,7 @@ import shutil
 import datetime
 import time
 from email_service import send_email_warning
+import threading
 
 
 def get_tims_data_and_upload_to_s3():
@@ -44,12 +45,9 @@ def get_tims_data_and_upload_to_s3():
                 # Download
                 urllib.request.urlretrieve(url, local_dir + name)
                 # Upload
-                res = subprocess.call(["aws", "s3", 'cp',
-                                       local_dir + name,
-                                       's3://air-pollution-uk/raw/tims_data/',
-                                       '--recursive',
-                                       '--profile',
-                                       'dssg'])
+                t = threading.Thread(name='upload_to_s3', target=upload_to_s3(local_dir + name))
+                t.start()
+                t.join()
                 # Delete the file
                 os.remove(local_dir + name)
                 print('Processed TIMS file: ' + name)
@@ -69,3 +67,12 @@ def get_tims_data_and_upload_to_s3():
             counter = 0
 
     return
+
+
+def upload_to_s3(file):
+    res = subprocess.call(["aws", "s3", 'cp',
+                           file,
+                           's3://air-pollution-uk/raw/tims_data/',
+                           '--recursive',
+                           '--profile',
+                           'dssg'])
