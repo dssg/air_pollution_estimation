@@ -224,8 +224,9 @@ def describe_s3_tims():
 	for fp in filepaths:
 		#get dates for each fp
 		filename = fp.split("/")[-1]
-		date_str = re.search("(detdata)([0-9]*)", filename).group(2)
-		datecounter_dict[date_str] +=1
+		if filename.startswith("detdata"): 
+			date_str = re.search("(detdata)([0-9]*)", filename).group(2)
+			datecounter_dict[date_str] +=1
 		
 	dates = []
 	counts = []
