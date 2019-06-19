@@ -14,9 +14,5 @@ if __name__ == "__main__":
 
     # local data folder
     video_dir = os.path.join(setup_dir, 'data', '01_raw', 'video_data')
-    while True:
-        try:
-            upload_videos(local_video_dir=video_dir)
-            time.sleep(2 * 60)
-        except Exception as e:
-            send_email_warning(str(e))
+    upload_videos(local_video_dir=video_dir)
+        
