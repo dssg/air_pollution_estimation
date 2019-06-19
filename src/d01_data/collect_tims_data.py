@@ -33,9 +33,8 @@ def get_tims_data_and_upload_to_s3():
     date = datetime.datetime(2019, 1, 1, 0, 0)
     counter = 0
 
-    while(True):
+    while True:
         counter += 1
-
         for i in range(60):
             # File to check for
             name = "detdata" + date.strftime("%d%m%Y-%H%M") + '{num:02d}'.format(num=i) + ".csv"
