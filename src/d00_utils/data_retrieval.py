@@ -3,17 +3,17 @@ import cv2
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from io import BytesIO
 import re
 import shutil
 import datetime
 
-def retrieve_videos_from_s3(bKeep_data=True, from_date=None, to_date=None):
+
+def retrieve_videos_from_s3(bool_keep_data=True, from_date=None, to_date=None):
     """Retrieve jamcam videos from the s3 bucket based on the dates specified.
     Downloads to a local directory and then loads them into numpy arrays.
 
         Args:
-            bKeep_data: boolean for keeping the downloaded data in the local folder
+            bool_keep_data: boolean for keeping the downloaded data in the local folder
             from_date: start date (inclusive) for retrieving videos, if None then will retrieve from 2019-06-01 onwards
             to_date: end date (inclusive) for retrieving vidoes, if None then will retrieve up to current day
         Returns:
@@ -59,21 +59,21 @@ def retrieve_videos_from_s3(bKeep_data=True, from_date=None, to_date=None):
     for file in os.listdir(local_dir):
         cap = cv2.VideoCapture(local_dir + file)
 
-        frameCount = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        frameWidth = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        frameHeight = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-        buf = np.empty((frameCount, frameHeight, frameWidth, 3), np.dtype('uint8'))
+        buf = np.empty((frame_count, frame_height, frame_width, 3), np.dtype('uint8'))
         fc = 0
         ret = True
-        while (fc < frameCount and ret):
+        while (fc < frame_count and ret):
             ret, buf[fc] = cap.read()
             fc += 1
         cap.release()
         data.append(buf)
 
     # Delete local data unless specified
-    if(not bKeep_data):
+    if(not bool_keep_data):
         shutil.rmtree(local_dir)
 
     return data
