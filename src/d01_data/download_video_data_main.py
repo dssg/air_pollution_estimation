@@ -1,9 +1,8 @@
-from collect_video_data import collect_camera_videos, download_camera_data
+from collect_video_data import collect_camera_videos
 import os
 import sys
 import configparser
 import time
-from email_service import send_email_warning
 
 if __name__ == "__main__":
     # local data folder

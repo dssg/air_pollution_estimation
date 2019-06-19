@@ -6,6 +6,7 @@ import time
 import json
 from collections import defaultdict
 import re
+from email_service import send_email_warning
 
 
 def download_camera_data(tfl_cam_api: str = "https://api.tfl.gov.uk/Place/Type/JamCam", cam_file: str = "data/00_ref/cam_file.json"):
@@ -61,7 +62,8 @@ def collect_camera_videos(local_video_dir: str,
             filename = camera_id + ".mp4"
             file_path = os.path.join(download_url, filename)
             timestamp = time.time()
-            local_path = os.path.join(local_video_dir,"%s_%s" %(timestamp,filename))
+            local_path = os.path.join(
+                local_video_dir, "%s_%s" % (timestamp, filename))
 
             # download video
             print("Downloading videos to ", file_path)

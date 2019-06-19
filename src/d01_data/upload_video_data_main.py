@@ -3,7 +3,6 @@ import os
 import sys
 import configparser
 import time
-from email_service import send_email_warning
 
 
 if __name__ == "__main__":
