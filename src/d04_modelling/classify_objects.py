@@ -67,7 +67,3 @@ def classify_objects(local_mp4_path, vid_time_length=10, make_video=True):
 
     print('Run time is %s seconds' % (time.time() - start_time))
     return obj_bounds, obj_labels, obj_label_confidences
-
-
-if __name__ == "__main__":
-    classify_objects('C:/Users/joh3146/Desktop/video001.mp4', vid_time_length=10, make_video=True)

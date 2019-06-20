@@ -10,14 +10,14 @@ with open('../../conf/base/paths.yml') as f:
     path = yaml.safe_load(f)['s3_paths']
 
 
-def s3_to_local_mp4(camera, date, time, extension='mp4', local_vid_dir):
+def s3_to_local_mp4(camera, date, time, local_vid_dir, extension='mp4'):
     """ download mp4 to working directory
         Args:
             camera (str): camera name
             date (str): date of selected clip in YYYY-MM-DD
             time (str): time of selected clip in HH:MM
-            extension (str): file extension
             local_vid_dir (str): local directory where the video will be stored
+            extension (str): file extension
 
         Returns:
             local_vid_path (str): local path to the video file
@@ -73,7 +73,3 @@ def mp4_to_npy(local_vid_path):
     np.save(pre, vid_array)
 
     return vid_array
-
-if __name__ == "__main__":
-    s3_to_local_mp4(camera, date, time, extension='mp4', local_vid_dir='C:/Users/joh3146/Desktop/')
-    mp4_to_npy(local_vid_path='C:/Users/joh3146/Desktop/video001.mp4')
