@@ -83,6 +83,7 @@ def yolo_output_df(obj_bounds, obj_labels, obj_label_confidences, camera_id, dat
 
     #yolo_df index is the index of an objected detected over a frame
     yolo_df.index.name = "obj_ind"
+    yolo_df = yolo_df[["camera_id", "frame_id", "date", "time", "obj_bounds", "obj_classification", "confidence"]]
     return yolo_df
 
 
@@ -116,3 +117,5 @@ if __name__ == '__main__':
 
     print(yolo_df.columns.tolist())
     yolo_df.to_csv(save_path)
+
+    #stats: group on frame,  vehicle type, number 
