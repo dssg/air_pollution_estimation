@@ -5,17 +5,18 @@ import numpy as np
 import os
 from cvlib.object_detection import draw_bbox
 import cvlib as cv
-import imageio
-imageio.plugins.ffmpeg.download()
+import imageio  
+# imageio.plugins.ffmpeg.download()
 import time
 
 
 def s3_to_local_mp4(camera, date, time, extension, local_mp4_path):
-    """ download mp4 to working directory """
+    """ 
+    Download mp4 to working directory 
+    """
 
     # create s3 file path based on desired camera
-    timestamp = date[:4] + "-" + date[4:6] + "-" + date[6:] + "_" + time[:2] + '.' + time[
-                                                                                     2:]  # assumes datetime = date as yyyymmdd + time as hhmm
+    timestamp = date[:4] + "-" + date[4:6] + "-" + date[6:] + "_" + time[:2] + '.' + time[2:]  # assumes datetime = date as yyyymmdd + time as hhmm
     s3_vid_key = "raw" + "/" + "video_data" + "/" + camera + "/" + timestamp + extension
 
     # convert to s3 bucket
@@ -23,13 +24,17 @@ def s3_to_local_mp4(camera, date, time, extension, local_mp4_path):
     s3_resource = s3_session.resource('s3')
     bucket_name = 'air-pollution-uk'
     s3_bucket = s3_resource.Bucket(bucket_name)
-
+    print("local_mp4_path", local_mp4_path)
+    print("s3_vid_key", s3_vid_key)
     # download to working directory of choice
     s3_bucket.download_file(s3_vid_key, local_mp4_path)
+    return 
 
 
 def mp4_to_npy(local_mp4_path):
-    """ create np array file from mp4 file in same directory """
+    """ 
+    create np array file from mp4 file in same directory 
+    """
 
     # use cv2 to read in mp4 file
     vid_mp4 = cv2.VideoCapture(local_mp4_path)
@@ -59,7 +64,9 @@ def mp4_to_npy(local_mp4_path):
 
 
 def classify_objects(local_mp4_path, confidence_threshold=0.25, vid_time_length=10, make_video=True):
-    """ classify objects from local mp4 with cvlib """
+    """ 
+    Classify objects from local mp4 with cvlib 
+    """
 
     start_time = time.time()
 
@@ -105,3 +112,5 @@ def classify_objects(local_mp4_path, confidence_threshold=0.25, vid_time_length=
 
     print('Run time is %s seconds' % (time.time() - start_time))
     return obj_bounds, obj_labels, obj_label_confidences
+
+

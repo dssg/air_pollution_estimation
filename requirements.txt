@@ -1,5 +1,10 @@
 ipython>=7.0.0, <8.0
 jupyter>=1.0.0, <2.0
 nbstripout==0.3.3
+imageio-ffmpeg
 bs4
 requests
+cvlib
+opencv-python
+time
+boto3
