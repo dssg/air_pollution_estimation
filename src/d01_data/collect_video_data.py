@@ -84,6 +84,32 @@ def collect_camera_videos(local_video_dir: str,
             time.sleep(delay * 60)
 
 
+def rename_filenames():
+    # get files I want to rename
+    ps = subprocess.Popen(("aws", "s3", 'ls',
+                           's3://air-pollution-uk/raw/video_data_new/','--profile',
+                           'dssg'), stdout=subprocess.PIPE)
+    output = subprocess.check_output(('grep', '[0-9]+\.[0-9]+*.mp4'), stdin=ps.stdout)
+    # res = subprocess.call(["aws", "s3", 'ls',
+    #                        's3://air-pollution-uk/raw/video_data_new/',
+    #                        subprocess.PIPE,
+    #                        'egrep [0-9]+\.[0-9]+*.mp4',
+    #                        '--profile',
+    #                        'dssg'])
+    print(output)
+
+    # for each file get the timestamp part of the filename
+
+    # rename the file
+
+    # save to s3
+    # res = subprocess.call(["aws", "s3", 'mv',
+    #                                    file_path,
+    #                                    's3://air-pollution-uk/raw/video_data_new/' + new_filename,
+    #                                    '--profile',
+    #                                    'dssg'])
+
+
 def upload_videos(local_video_dir: str, iterations=None, delay: int = None):
     '''
     This function uploads the video in the local_video_dir to S3. Each video is deleted after an upload.
@@ -121,3 +147,6 @@ def upload_videos(local_video_dir: str, iterations=None, delay: int = None):
             break
         if delay:
             time.sleep(delay * 60)
+
+if __name__ == "__main__":
+    rename_filenames()
