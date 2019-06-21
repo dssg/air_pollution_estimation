@@ -8,7 +8,7 @@ import shutil
 import datetime
 
 
-def retrieve_single_video(camera, date, time, bool_keep_data=True):
+def retrieve_single_video(camera, date, time, paths, bool_keep_data=True):
     """Retrieve one jamcam video from the s3 bucket based on the details specified.
         Downloads to a local directory and then loads into a numpy array.
 
@@ -22,22 +22,22 @@ def retrieve_single_video(camera, date, time, bool_keep_data=True):
             Raises:
 
         """
-    local_dir = create_local_dir()
+    create_local_dir(paths['local_video'])
     timestamp = date[:4] + "-" + date[4:6] + "-" + date[6:] + "_" + time[:2] + '.' + time[2:]
-    s3_vid_key = "raw" + "/" + "video_data" + "/" + camera + "/" + timestamp + '.mp4'
-    s3_bucket = connect_to_bucket()
+    s3_vid_key = paths['s3_video'] + "/" + camera + "/" + timestamp + '.mp4'
+    s3_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
 
-    file_dir = local_dir + date + "_" + time + "_" + camera + '.mp4'
+    file_dir = paths['local_video'] + date + "_" + time + "_" + camera + '.mp4'
     s3_bucket.download_file(s3_vid_key, file_dir)
     buf = mp4_to_npy(file_dir)
 
     if (not bool_keep_data):
-        shutil.rmtree(local_dir)
+        shutil.rmtree(paths['local_video'])
 
     return buf
 
 
-def retrieve_videos_based_on_dates(from_date='2019-06-01', to_date=str(datetime.datetime.now())[:10], bool_keep_data=True):
+def retrieve_videos_based_on_dates(paths, from_date='2019-06-01', to_date=str(datetime.datetime.now())[:10], bool_keep_data=True):
     """Retrieve jamcam videos from the s3 bucket based on the dates specified.
     Downloads to a local directory and then loads them into numpy arrays.
 
@@ -50,8 +50,8 @@ def retrieve_videos_based_on_dates(from_date='2019-06-01', to_date=str(datetime.
         Raises:
 
     """
-    local_dir = create_local_dir()
-    my_bucket = connect_to_bucket()
+    create_local_dir(paths['local_video'])
+    my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
 
     # Get list of files in s3 based on dates provided
     selected_files = []
@@ -68,29 +68,27 @@ def retrieve_videos_based_on_dates(from_date='2019-06-01', to_date=str(datetime.
 
     # Download the selected files
     for file in selected_files:
-        my_bucket.download_file(file, local_dir + file.split('/')[-1])
+        my_bucket.download_file(file, paths['local_video'] + file.split('/')[-1])
 
     # Load files into a list of numpy arrays using opencv
     data = []
-    for file in os.listdir(local_dir):
-        data.append(mp4_to_npy(local_dir + file))
+    for file in os.listdir(paths['local_video']):
+        data.append(mp4_to_npy(paths['local_video'] + file))
 
     # Delete local data unless specified
     if(not bool_keep_data):
-        shutil.rmtree(local_dir)
+        shutil.rmtree(paths['local_video'])
 
     return data
 
 
-def create_local_dir():
+def create_local_dir(local_dir):
     """Creates the local directory for downloading from s3"""
     # Set local directory for downloading data, will overwrite whatever is currently there
-    local_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                             '..', '..', 'data/01_raw/jamcams/')
     if (os.path.isdir(local_dir)):
         shutil.rmtree(local_dir)
     os.mkdir(local_dir)
-    return local_dir
+    return
 
 
 def mp4_to_npy(local_mp4_path):
@@ -111,11 +109,10 @@ def mp4_to_npy(local_mp4_path):
     return buf
 
 
-def connect_to_bucket():
+def connect_to_bucket(profile_dir, bucket_name):
     """Connects to the s3 bucket"""
     # Set up boto3 session
-    s3_session = boto3.Session(profile_name='dssg')
-    bucket_name = 'air-pollution-uk'
+    s3_session = boto3.Session(profile_name=profile_dir)
     s3_resource = s3_session.resource('s3')
     my_bucket = s3_resource.Bucket(bucket_name)
 
@@ -136,7 +133,7 @@ def retrieve_cam_details_from_database():
     return
 
 
-def describe_s3_bucket():
+def describe_s3_bucket(paths):
     """Plot the number of videos in the s3 bucket for each date.
     Plot is saved locally under plots/01_exploratory.
 
@@ -147,7 +144,7 @@ def describe_s3_bucket():
             Raises:
 
         """
-    my_bucket = connect_to_bucket()
+    my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
 
     # Get list of all dates in the s3 bucket
     objects = my_bucket.objects.filter(Prefix="raw/video_data_new/")
@@ -165,8 +162,7 @@ def describe_s3_bucket():
     plt.xlabel('Date')
     plt.ylabel('Number of Videos')
     plt.tight_layout()
-    plt.savefig(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                             '..', '..', 'plots/01_exploratory/s3_description.pdf'))
+    plt.savefig(paths['plots'] + '01_exploratory/s3_description.pdf')
     plt.close()
 
     return
