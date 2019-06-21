@@ -1,13 +1,17 @@
 import numpy as np
+import pandas as pd
 import xml.etree.ElementTree as ET
 
-def evaluate_yolo_predictions(videos, yolo_output):
+paths = {'annotations': '../../annotations/'}
+
+def evaluate_yolo_predictions(videos, yolo_output, paths):
 
     for video in videos:
         # load the annotated xml file
-        root = ET.parse('../../annotations/' + video + '.xml').getroot()
+        root = ET.parse(paths['annotations'] + video + '.xml').getroot()
 
-        annotated_results = {'id': [], 'type': [], 'x_coords': [], 'y_coords': [], 'width': [], 'height': [], 'parked': [], 'num_stops': [], 'stopped_frames': []}
+        annotated_results = {'id': [], 'frame': [], 'occluded': [], 'bounds': [],
+                             'type': [], 'parked': [], 'stopped': []}
 
         num_vehicles = 0
         num_parked = 0
@@ -16,39 +20,23 @@ def evaluate_yolo_predictions(videos, yolo_output):
 
         for track in root.iter('track'):
             if(track.attrib['label'] == 'vehicle'):
-
-                annotated_results['id'].append(int(track.attrib['id']))
-
-                print(track.attrib)
-
-                for frame_num, frame in enumerate(track.iter('box')):
-                    print(frame.attrib)
-
-
-
+                for frame in track.iter('box'):
+                    annotated_results['id'].append(int(track.attrib['id']))
+                    annotated_results['frame'].append(int(frame.attrib['frame']))
+                    annotated_results['occluded'].append(int(frame.attrib['occluded']))
+                    annotated_results['bounds'].append([float(frame.attrib['xtl']), float(frame.attrib['ytl']),
+                                                        float(frame.attrib['xbr']), float(frame.attrib['ybr'])])
                     for attr in frame.iter('attribute'):
-                        print(attr.attrib)
+                        annotated_results[attr.attrib['name']].append(attr.text)
 
-                        if(attr.attrib['name'] == 'parked' and attr.text == 'true'):
-                            b_parked = True
+        df = pd.DataFrame.from_dict(annotated_results)
 
-                        if (attr.attrib['name'] == 'type' and frame_num == 0):
-                            types.append(attr.text)
+        print('Number of vehicles:')
+        print(df.groupby('type')['id'].nunique())
 
-                        if (attr.attrib['name'] == 'stopped' and attr.text == 'true'):
-                            b_stopped = True
+        print('Parked vehicles:')
+        print(df.groupby('id')['parked'].unique())
 
-                        if(b_stopped and attr.attrib['name'] == 'stopped' and attr.text == 'false'):
-                            num_stops += 1
-
-                if(b_parked):
-                    num_parked += 1
-
-                if (b_stopped):
-                    num_stops += 1
-
-        print('Number of vehicles: ' + str(num_vehicles))
-        print('Number of parked vehicles: ' + str(num_parked))
         print('Number of stops: ' + str(num_stops))
         vals, counts = np.unique(types, return_counts=True)
         print('Vehicle Types: ' + str(vals))
@@ -57,4 +45,4 @@ def evaluate_yolo_predictions(videos, yolo_output):
     return
 
 
-evaluate_yolo_predictions(['video001'], None)
+evaluate_yolo_predictions(['video001'], None, paths)
