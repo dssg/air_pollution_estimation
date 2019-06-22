@@ -57,7 +57,7 @@ def get_stop_counts(annotations_df):
     for group in df_grouped:
         bool_stopped = False
         num_stops = 0
-        for val in group[1]['stopped']:
+        for val in group[1]['stopped'].tolist():
             if (val == 'true' and not bool_stopped):
                 bool_stopped = True
             elif (val == 'false' and bool_stopped):
