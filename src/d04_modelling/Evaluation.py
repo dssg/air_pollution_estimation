@@ -2,6 +2,24 @@ import numpy as np
 import pandas as pd
 import xml.etree.ElementTree as ET
 
+def compare_yolo_to_annotations(videos, paths):
+
+    # Get the two dataframes
+    annotations_df = parse_annotations(videos, paths, False)
+    yolo_df = 
+
+    # Get the stats of the two dataframes
+
+
+
+
+    # Compare and plot them
+
+
+
+
+    return
+
 
 def parse_annotations(xml_files, paths, bool_print_summary=False):
     """ Parse the XML files containing the manual annotations
@@ -69,3 +87,5 @@ def get_stop_counts(annotations_df):
         counts.append(num_stops)
     stops_df = pd.DataFrame(data=np.array(list(zip(ids, counts))), columns=['id', 'num_stops'])
     return stops_df
+
+
