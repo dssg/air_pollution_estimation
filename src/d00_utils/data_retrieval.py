@@ -16,6 +16,7 @@ def retrieve_single_video(camera, date, time, paths, bool_keep_data=True):
                 camera: camera number as a string
                 date: date as a string (YYYYMMDD)
                 time: time as a string (HHMM)
+                paths: dictionary containing local_video, s3_video, s3_profile and bucket_name paths
                 bool_keep_data: boolean for keeping the downloaded data in the local folder
             Returns:
                 numpy array containing the jamcam video
@@ -42,6 +43,7 @@ def retrieve_videos_based_on_dates(paths, from_date='2019-06-01', to_date=str(da
     Downloads to a local directory and then loads them into numpy arrays.
 
         Args:
+            paths: dictionary containing local_video, s3_profile and bucket_name paths
             from_date: start date (inclusive) for retrieving videos, if None then will retrieve from 2019-06-01 onwards
             to_date: end date (inclusive) for retrieving vidoes, if None then will retrieve up to current day
             bool_keep_data: boolean for keeping the downloaded data in the local folder
