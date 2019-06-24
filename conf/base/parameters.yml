@@ -1,5 +1,3 @@
-# Parameters to be used in the pipeline
-
 data_collection:
   jam_cam_website: "http://jamcams.tfl.gov.uk/00001."
   camera_list: ["06641", "06640", "06595", "06508", "06597", "06607", "06608", "06598",
