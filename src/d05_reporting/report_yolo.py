@@ -1,4 +1,5 @@
-from ..d02_intermediate.view_jam_cams import s3_to_local_mp4, classify_objects
+# from ..d02_intermediate.view_jam_cams import s3_to_local_mp4, classify_objects
+from ..d00_utils.data_retrieval import retrieve_single_video
 from os import path
 import numpy as np
 import pandas as pd
