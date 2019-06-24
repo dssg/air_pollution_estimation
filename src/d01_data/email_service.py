@@ -5,9 +5,10 @@ import os
 import ast
 
 
-def send_email_warning(msg:str = 'The script responsible for downloading the traffic camera data has been stopped. Please check EC2 instance.',
-                       subj:str = 'ERROR - Data Download Failed'):
-    setup_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
+def send_email_warning(msg: str = 'The script responsible for downloading the traffic camera data has been stopped. Please check EC2 instance.',
+                       subj: str = 'ERROR - Data Download Failed'):
+    setup_dir = os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), '..', '..')
     config = configparser.ConfigParser()
     config.read(os.path.join(setup_dir, 'conf', 'local', 'credentials.yml'))
 
