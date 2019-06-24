@@ -12,6 +12,7 @@ data/**
 logs/**
 references/**
 results/**
+plots/**
 
 # also keep all .gitkeep files
 !.gitkeep
@@ -25,6 +26,9 @@ results/**
 *.iml
 out/
 .idea_modules/
+
+# vscode
+.vscode/
 
 ### macOS
 *.DS_Store
