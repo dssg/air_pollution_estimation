@@ -28,7 +28,7 @@ def collect_camera_videos(local_video_dir: str,
                           download_url: str = "https://s3-eu-west-1.amazonaws.com/jamcams.tfl.gov.uk/",
                           cam_file: str = "data/00_ref/cam_file.json",
                           iterations: int = None,
-                          delay: int = 1):
+                          delay: int = 4):
     '''
     This function was created to download videos from cameras using the tfl api.
         local_video_dir: local directly to download the videos in
@@ -71,12 +71,12 @@ def collect_camera_videos(local_video_dir: str,
             try:
                 urllib.request.urlretrieve(file_path, local_path)
             except Exception as e:
-                send_email_warning(str(e))
+                send_email_warning(str(e), "Video download failed!")
 
         end = time.time()
         time_diff = end - start
-        print("Downloaded %s videos from tfl in %s secs." %
-              (count, time_diff))
+        send_email_warning("Downloaded %s videos from tfl in %s secs." %
+              (count, time_diff), "Download Successful")
         iteration += 1
         if iteration == iterations:
             break
@@ -115,7 +115,7 @@ def upload_videos(local_video_dir: str, iterations=None, delay: int = None):
                                            file_path
                                            ])
             except Exception as e:
-                send_email_warning(str(e))
+                send_email_warning(str(e), "Video upload failed.")
         iteration += 1
         if iteration == iterations:
             break
