@@ -1,5 +1,5 @@
-# from ..d02_intermediate.view_jam_cams import s3_to_local_mp4, classify_objects
-from ..d00_utils.data_retrieval import retrieve_single_video
+## from ..d02_intermediate.view_jam_cams import s3_to_local_mp4, classify_objects
+# from ..d00_utils.data_retrieval import retrieve_single_video
 from os import path
 import numpy as np
 import pandas as pd
@@ -30,23 +30,6 @@ def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date,time):
     return frame_df
 
 
-def process_datetime(date, time): 
-    """ Converts string date times into Python datetime objects
-
-    Keyword arguments: 
-    date -- string date, format yyyymmdd
-    time -- string time, format hhmm
-    """
-
-    year, month, day = int(date[:4]), int(date[4:6]), int(date[6:])
-    hour, minute = int(time[:2]), int(time[2:])
-
-    date_typed = datetime.date(year = year, month = month, day = day)
-    time_typed = datetime.time(hour = hour, minute = minute, second = 0)
-
-    return date_typed, time_typed
-
-
 def yolo_output_df(obj_bounds, obj_labels, obj_label_confidences, camera_id, date, time):
     """Formats the output of yolo on one video. Returns as pandas df. 
 
@@ -67,7 +50,8 @@ def yolo_output_df(obj_bounds, obj_labels, obj_label_confidences, camera_id, dat
     assert obj_labels.shape[0] == num_frames 
     assert obj_label_confidences.shape[0] == num_frames 
 
-    date,time = process_datetime(date, time)
+    date = datetime.datetime.strptime(date, '%Y%m%d').date()
+    time = datetime.datetime.strptime(time, '%H%M').time()
 
     frame_df_list = []
 
@@ -116,19 +100,20 @@ def yolo_report_stats(yolo_df):
 
     return obj_counts_frame, video_summary
 
+
 if __name__ == '__main__':
     #example of how to interface functions above with yolo code 
     local_mp4_path=path.abspath(path.join(basepath,"..", "..", "data/sample_video_data/testvid.mp4"))
     pkl_path=path.abspath(path.join(basepath,"..", "..", "data/pickled/", "yolo_res"))
     save_path = path.abspath(path.join(basepath,"..", "..", "data/sample_yolo_output", "sample_yolo_output.csv"))
 
-    # #sample input 
-    # camera="06508"
-    # date="20190603"
-    # time="1145"
-    # extension=".mp4"
+    #sample input 
+    camera="06508"
+    date="20190603" #yyyymmdd
+    time="1145"
+    extension=".mp4"
 
-    ##load video from s3, run csvlib YOLO, dump output as PKL to decrease development time
+    ##1. load video from s3, run csvlib YOLO, dump output as PKL to decrease development time
     # s3_to_local_mp4(camera=camera, date=date, time=time,
     #                 extension=extension, local_mp4_path=local_mp4_path)
     # obj_bounds, obj_labels, obj_label_confidences=classify_objects(local_mp4_path=local_mp4_path)
@@ -136,7 +121,7 @@ if __name__ == '__main__':
     # with open(pkl_path, 'wb') as fh:
     #     pkl.dump([obj_bounds, obj_labels, obj_label_confidences], fh)
 
-
+    ## 2. load output from pkl file, process and write as csv
     # with open(pkl_path, 'rb') as fh:
     #         yolo_res = pkl.load(fh)
 
@@ -147,8 +132,8 @@ if __name__ == '__main__':
     # print(yolo_df.columns.tolist())
     # yolo_df.to_csv(save_path)
 
-    ##generate stats: group on frame,  vehicle type, number 
+    ## 3. Reload csv, generate stats: group on frame,  vehicle type, number 
 
-    yolo_df = pd.read_csv(save_path)
-    obj_counts_frame, video_summary = yolo_report_stats(yolo_df)
-    print(obj_counts_frame.head(), video_summary.head())
+    # yolo_df = pd.read_csv(save_path)
+    # obj_counts_frame, video_summary = yolo_report_stats(yolo_df)
+    # print(obj_counts_frame.head(), video_summary.head())
