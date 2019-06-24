@@ -76,7 +76,7 @@ def collect_camera_videos(local_video_dir: str,
         end = time.time()
         time_diff = end - start
         send_email_warning("Downloaded %s videos from tfl in %s secs." %
-              (count, time_diff), "Download Successful")
+                           (count, time_diff), "Download Successful")
         iteration += 1
         if iteration == iterations:
             break
@@ -98,24 +98,15 @@ def upload_videos(local_video_dir: str, iterations=None, delay: int = None):
 
     iteration = 0
     while True:
-        for filename in os.listdir(local_video_dir):
-            file_path = os.path.join(local_video_dir, filename)
-            try:
-                f = open(file_path, 'r')
-                res = subprocess.call(["aws", "s3", 'cp',
-                                       file_path,
-                                       's3://air-pollution-uk/raw/video_data_new/',
-                                       '--profile',
-                                       'dssg'])
-
-                # delete file if it was successfully uploaded
-                if res == 0:
-                    # delete file
-                    res = subprocess.call(["rm",
-                                           file_path
-                                           ])
-            except Exception as e:
-                send_email_warning(str(e), "Video upload failed.")
+        try:
+            res = subprocess.call(["aws", "s3", 'mv',
+                                   local_video_dir,
+                                   's3://air-pollution-uk/raw/video_data_new/',
+                                   '--recursive',
+                                   '--profile',
+                                   'dssg'])
+        except Exception as e:
+            send_email_warning(str(e), "Video upload failed.")
         iteration += 1
         if iteration == iterations:
             break
