@@ -12,6 +12,7 @@ data/**
 logs/**
 references/**
 results/**
+plots/**
 
 # also keep all .gitkeep files
 !.gitkeep
