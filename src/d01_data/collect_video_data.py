@@ -28,7 +28,7 @@ def collect_camera_videos(local_video_dir: str,
                           download_url: str = "https://s3-eu-west-1.amazonaws.com/jamcams.tfl.gov.uk/",
                           cam_file: str = "data/00_ref/cam_file.json",
                           iterations: int = None,
-                          delay: int = 4):
+                          delay: int = 3):
     '''
     This function was created to download videos from cameras using the tfl api.
         local_video_dir: local directly to download the videos in
