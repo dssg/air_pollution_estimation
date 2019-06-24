@@ -1,24 +1,6 @@
 import numpy as np
 import pandas as pd
-import xml.etree.ElementTree as ET
-
-def compare_yolo_to_annotations(videos, paths):
-
-    # Get the two dataframes
-    annotations_df = parse_annotations(videos, paths, False)
-    yolo_df = 
-
-    # Get the stats of the two dataframes
-
-
-
-
-    # Compare and plot them
-
-
-
-
-    return
+import xml.etree.ElementTree as ElementTree
 
 
 def parse_annotations(xml_files, paths, bool_print_summary=False):
@@ -33,7 +15,7 @@ def parse_annotations(xml_files, paths, bool_print_summary=False):
     """
 
     for xml_file in xml_files:
-        root = ET.parse(paths['annotations'] + xml_file + '.xml').getroot()
+        root = ElementTree.parse(paths['annotations'] + xml_file + '.xml').getroot()
         annotated_results = {'id': [], 'frame': [], 'occluded': [], 'bounds': [],
                              'type': [], 'parked': [], 'stopped': []}
 
