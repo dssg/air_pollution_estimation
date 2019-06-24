@@ -1,9 +1,10 @@
-# from ..d02_intermediate.view_jam_cams import s3_to_local_mp4, classify_objects
+from ..d02_intermediate.view_jam_cams import s3_to_local_mp4, classify_objects
 from os import path
 import numpy as np
 import pandas as pd
 import pickle as pkl
 import datetime
+
 basepath=path.dirname(__file__) #path of current script
 
 
@@ -46,7 +47,7 @@ def process_datetime(date, time):
 
 
 def yolo_output_df(obj_bounds, obj_labels, obj_label_confidences, camera_id, date, time):
-    """Formats the output of yolo 
+    """Formats the output of yolo on one video. Returns as pandas df. 
 
     Keyword arguments: 
     obj_bounds -- nested list (top level is frames, next level is objs detected
@@ -87,6 +88,32 @@ def yolo_output_df(obj_bounds, obj_labels, obj_label_confidences, camera_id, dat
     return yolo_df
 
 
+def yolo_report_stats(yolo_df):
+    '''Report summary statistics for the output of YOLO on one video. 
+
+    Keyword arguments: 
+    yolo_df -- pandas df containing formatted output of YOLO for one video (takes the output of yolo_output_df())
+
+    Returns: 
+    obj_counts_frame: counts of various types of objects per frame
+    video_summary: summary statistics over whole video 
+
+
+    '''
+    obj_counts_frame=yolo_df.groupby(["frame_id", "obj_classification"]).size().reset_index(name = 'obj_count')
+
+    #long to wide format
+    #some object types were not detected in a frame, so we fill these NAs with 0s
+    obj_counts_frame=obj_counts_frame.pivot(index='frame_id', columns='obj_classification', values='obj_count').fillna(value = 0)
+    
+    #get the sum of each type of object over all frames
+    sums = obj_counts_frame.aggregate(func = "sum")
+
+    #drop count because it is just the number of rows in the df
+    video_summary = obj_counts_frame.describe().drop(["count", "25%", "75%"], axis = 0)
+    video_summary.loc['sum'] = sums
+
+    return obj_counts_frame, video_summary
 
 if __name__ == '__main__':
     #example of how to interface functions above with yolo code 
@@ -94,12 +121,13 @@ if __name__ == '__main__':
     pkl_path=path.abspath(path.join(basepath,"..", "..", "data/pickled/", "yolo_res"))
     save_path = path.abspath(path.join(basepath,"..", "..", "data/sample_yolo_output", "sample_yolo_output.csv"))
 
-    camera="06508"
-    date="20190603"
-    time="1145"
-    extension=".mp4"
+    # #sample input 
+    # camera="06508"
+    # date="20190603"
+    # time="1145"
+    # extension=".mp4"
 
-    # #need to test this but don't really need this? 
+    ##load video from s3, run csvlib YOLO, dump output as PKL to decrease development time
     # s3_to_local_mp4(camera=camera, date=date, time=time,
     #                 extension=extension, local_mp4_path=local_mp4_path)
     # obj_bounds, obj_labels, obj_label_confidences=classify_objects(local_mp4_path=local_mp4_path)
@@ -108,14 +136,18 @@ if __name__ == '__main__':
     #     pkl.dump([obj_bounds, obj_labels, obj_label_confidences], fh)
 
 
-    with open(pkl_path, 'rb') as fh:
-            yolo_res = pkl.load(fh)
+    # with open(pkl_path, 'rb') as fh:
+    #         yolo_res = pkl.load(fh)
 
-    obj_bounds, obj_labels, obj_label_confidences = yolo_res
+    # obj_bounds, obj_labels, obj_label_confidences = yolo_res
 
-    yolo_df=yolo_output_df(obj_bounds, obj_labels, obj_label_confidences, camera, date, time)
+    # yolo_df=yolo_output_df(obj_bounds, obj_labels, obj_label_confidences, camera, date, time)
 
-    print(yolo_df.columns.tolist())
-    yolo_df.to_csv(save_path)
+    # print(yolo_df.columns.tolist())
+    # yolo_df.to_csv(save_path)
 
-    #stats: group on frame,  vehicle type, number 
+    ##generate stats: group on frame,  vehicle type, number 
+
+    yolo_df = pd.read_csv(save_path)
+    obj_counts_frame, video_summary = yolo_report_stats(yolo_df)
+    print(obj_counts_frame.head(), video_summary.head())
