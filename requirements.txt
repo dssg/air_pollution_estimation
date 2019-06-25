@@ -5,3 +5,9 @@ bs4
 requests
 boto3
 opencv-python
+csvkit
+numpy
+cvlib
+datetime
+imageio-ffmpeg
+imageio

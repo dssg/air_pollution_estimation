@@ -1,44 +1,81 @@
 import urllib.request
 import os
 import subprocess
-from bs4 import BeautifulSoup
 import requests
+import shutil
+import datetime
+import time
+from email_service import send_email_warning
+import threading
 
 
-def get_tims_data_and_upload_to_s3(local_tims_dir: str,
-                                   file_website: str = 'https://s3-eu-west-1.amazonaws.com/roads.data.tfl.gov.uk',
-                                   download_website: str = "http://roads.data.tfl.gov.uk/TIMS/"):
-    # get html file from website
-    r = requests.get(file_website)
-    data = r.text
-    soup = BeautifulSoup(data, features="html.parser")
+def get_tims_data_and_upload_to_s3():
+    """Retrieve TIMS data from tfl website and upload to s3 bucket.
+        Downloads any backlogs and then continually checks for new files every 15 minutes
+            Args:
 
-    # extract the list of available file names
-    keys = list(soup.find_all('key'))
-    keys = [str(key) for key in keys]
-    files = [key.replace('<key>', '').replace('</key>', '').replace('TIMS/', '') for key in keys
-             if 'TIMS' in key and '.csv' in key]
+            Returns:
 
-    # create tims directory if it doesn't exist
-    if not os.path.exists(local_tims_dir):
-        os.makedirs(local_tims_dir)
+            Raises:
+    """
+    website = "http://roads.data.tfl.gov.uk/TIMS/"
 
-    for file in files:
-        url = download_website + file
-        file_path = local_tims_dir + "/" + file
-        urllib.request.urlretrieve(url, file_path)
+    # Set up the local directory for temporary downloading
+    local_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                             '..', '..', 'data/01_raw/tims/')
+    if (os.path.isdir(local_dir)):
+        shutil.rmtree(local_dir)
+    os.mkdir(local_dir)
 
-        res = subprocess.call(["aws", "s3", 'cp',
-                               local_tims_dir,
-                               's3://air-pollution-uk/raw/tims_data/',
-                               '--recursive',
-                               '--profile',
-                               'dssg'])
-        print(res)
+    # Check every second of the datetime stored in 'date' for a csv file
+    # If a csv file exists then we are not up to date and we should check the next 15 minutes
+    # If we are up to date then just wait 15 minutes before checking again
+    date = datetime.datetime(2019, 1, 1, 0, 0)
+    counter = 0
 
-    # delete local tims directory
-    res = subprocess.call(["rm", "-r",
-                           local_tims_dir
-                           ])
+    while True:
+        counter += 1
+        for i in range(60):
+            # File to check for
+            name = "detdata" + date.strftime("%d%m%Y-%H%M") + '{num:02d}'.format(num=i) + ".csv"
+            url = website + name
+            if requests.head(url).status_code  == requests.codes.ok:
+                # Download
+                t = threading.Thread(name='upload_to_s3', target=download_from_site(url, local_dir + name))
+                t.start()
+                t.join()
+                # Upload
+                t = threading.Thread(name='upload_to_s3', target=upload_to_s3(local_dir + name))
+                t.start()
+                t.join()
+                # Delete the file
+                os.remove(local_dir + name)
+                print('Processed TIMS file: ' + name)
+                break
 
-    
+        # Up to date so wait 15 minutes before checking again
+        if(date > datetime.datetime.now()):
+            time.sleep(900)
+        else:
+            date += datetime.timedelta(minutes=15)
+
+        # Every 24 hours send an email to say we are up to date
+        if(counter % 96 == 0):
+            send_email_warning(msg='TIMS data successfully collected in the last 24 hours',
+                               subj='TIMS Data Collection Successful')
+            counter = 0
+
+    return
+
+def download_from_site(url, file):
+    urllib.request.urlretrieve(url, file)
+
+
+
+
+def upload_to_s3(file):
+    res = subprocess.call(["aws", "s3", 'cp',
+                           file,
+                           's3://air-pollution-uk/raw/tims_data/',
+                           '--profile',
+                           'dssg'])
