@@ -5,12 +5,12 @@ import subprocess
 import time
 import json
 from collections import defaultdict
-import re
 from email_service import send_email_warning
 import datetime
 
 
-def download_camera_data(tfl_cam_api: str = "https://api.tfl.gov.uk/Place/Type/JamCam", cam_file: str = "data/00_ref/cam_file.json"):
+def download_camera_data(tfl_cam_api: str = "https://api.tfl.gov.uk/Place/Type/JamCam",
+                         cam_file: str = "data/00_ref/cam_file.json"):
     '''
     Gets a list of camera ids and info from tfl api
     '''
@@ -28,7 +28,7 @@ def collect_camera_videos(local_video_dir: str,
                           download_url: str = "https://s3-eu-west-1.amazonaws.com/jamcams.tfl.gov.uk/",
                           cam_file: str = "data/00_ref/cam_file.json",
                           iterations: int = None,
-                          delay: int = 1):
+                          delay: int = 3):
     '''
     This function was created to download videos from cameras using the tfl api.
         local_video_dir: local directly to download the videos in
@@ -71,12 +71,12 @@ def collect_camera_videos(local_video_dir: str,
             try:
                 urllib.request.urlretrieve(file_path, local_path)
             except Exception as e:
-                send_email_warning(str(e))
+                send_email_warning(str(e), "Video download failed!")
 
         end = time.time()
         time_diff = end - start
-        print("Downloaded %s videos from tfl in %s secs." %
-              (count, time_diff))
+        send_email_warning("Downloaded %s videos from tfl in %s secs." %
+                           (count, time_diff), "Download Successful")
         iteration += 1
         if iteration == iterations:
             break
@@ -124,24 +124,15 @@ def upload_videos(local_video_dir: str, iterations=None, delay: int = None):
 
     iteration = 0
     while True:
-        for filename in os.listdir(local_video_dir):
-            file_path = os.path.join(local_video_dir, filename)
-            try:
-                f = open(file_path, 'r')
-                res = subprocess.call(["aws", "s3", 'cp',
-                                       file_path,
-                                       's3://air-pollution-uk/raw/video_data_new/',
-                                       '--profile',
-                                       'dssg'])
-
-                # delete file if it was successfully uploaded
-                if res == 0:
-                    # delete file
-                    res = subprocess.call(["rm",
-                                           file_path
-                                           ])
-            except Exception as e:
-                send_email_warning(str(e))
+        try:
+            res = subprocess.call(["aws", "s3", 'mv',
+                                   local_video_dir,
+                                   's3://air-pollution-uk/raw/video_data_new/',
+                                   '--recursive',
+                                   '--profile',
+                                   'dssg'])
+        except Exception as e:
+            send_email_warning(str(e), "Video upload failed.")
         iteration += 1
         if iteration == iterations:
             break

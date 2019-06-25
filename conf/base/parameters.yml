@@ -1,9 +1,10 @@
-# Parameters to be used in the pipeline
+data_collection:
+  jam_cam_website: "http://jamcams.tfl.gov.uk/00001."
+  camera_list: ["06641", "06640", "06595", "06508", "06597", "06607", "06608", "06598",
+                '07452', '08860', '08859', '08858', '08863', "08753", "07301"]
+  tims_file_website: 'https://s3-eu-west-1.amazonaws.com/roads.data.tfl.gov.uk'
+  tims_download_website: "http://roads.data.tfl.gov.uk/TIMS/"
 
-[DATA_COLLECTION]
-jam_cam_website: "http://jamcams.tfl.gov.uk/00001."
-camera_list: ["06641", "06640", "06595", "06508", "06597", "06607", "06608", "06598",
-              '07452', '08860', '08859', '08858', '08863', "08753", "07301"]
-tims_file_website: 'https://s3-eu-west-1.amazonaws.com/roads.data.tfl.gov.uk'
-tims_download_website: "http://roads.data.tfl.gov.uk/TIMS/"
-
+modelling:
+  yolo_model: "yolov3_tiny"
+  confidence_threshold: 0.2
