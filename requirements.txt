@@ -6,3 +6,5 @@ requests
 boto3
 opencv-python
 csvkit
+numpy
+cvlib
