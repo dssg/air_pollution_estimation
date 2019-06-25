@@ -13,9 +13,9 @@ def retrieve_single_video(camera, date, time, paths, bool_keep_data=True):
         Downloads to a local directory and then loads into a numpy array.
 
             Args:
-                camera: camera number as a string
-                date: date as a string (YYYYMMDD)
-                time: time as a string (HHMM)
+                camera: camera number as a string (XXXXX)
+                date: date as a string (YYYY-MM-DD)
+                time: time as a string (HH:MM:SS.)
                 paths: dictionary containing local_video, s3_video, s3_profile and bucket_name paths
                 bool_keep_data: boolean for keeping the downloaded data in the local folder
             Returns:
@@ -23,9 +23,12 @@ def retrieve_single_video(camera, date, time, paths, bool_keep_data=True):
             Raises:
 
         """
+    # 2019-06-20 13:25:31.321785_00001.03675.mp4
+
+
     create_local_dir(paths['local_video'])
-    timestamp = date[:4] + "-" + date[4:6] + "-" + date[6:] + "_" + time[:2] + '.' + time[2:]
-    s3_vid_key = paths['s3_video'] + "/" + camera + "/" + timestamp + '.mp4'
+    timestamp = date + " " + time + "_00001." + camera
+    s3_vid_key = paths['s3_video'] + timestamp + '.mp4'
     s3_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
 
     file_dir = paths['local_video'] + date + "_" + time + "_" + camera + '.mp4'

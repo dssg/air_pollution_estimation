@@ -7,7 +7,7 @@ import time
 import os
 
 
-def classify_objects(local_mp4_path, vid_time_length=10, params, make_video=True):
+def classify_objects(local_mp4_path, params, vid_time_length=10, make_video=True):
     """ this function classifies objects from local mp4 with cvlib python package.
         Args:
             local_mp4_path (str): path to mp4 file in directory
