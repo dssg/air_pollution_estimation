@@ -103,7 +103,6 @@ def yolo_report_stats(yolo_df):
 
 if __name__ == '__main__':
     #example of how to interface functions above with yolo code 
-    local_mp4_path=path.abspath(path.join(basepath,"..", "..", "data/sample_video_data/testvid.mp4"))
     pkl_path=path.abspath(path.join(basepath,"..", "..", "data/pickled/", "yolo_res"))
     save_path = path.abspath(path.join(basepath,"..", "..", "data/sample_yolo_output", "sample_yolo_output.csv"))
 
@@ -112,6 +111,7 @@ if __name__ == '__main__':
     date="20190603" #yyyymmdd
     time="1145"
 
+    #load params and paths
     os.chdir(".")
     with open('../../conf/base/parameters.yml') as f:
        params = yaml.safe_load(f)['modelling']
@@ -120,10 +120,7 @@ if __name__ == '__main__':
        paths = yaml.safe_load(f)['paths']
     
     #1. load video from s3, run csvlib YOLO, dump output as PKL to decrease development time
-
-    retrieve_single_video(camera=camera, date=date, time=time, paths=paths)
-    # s3_to_local_mp4(camera=camera, date=date, time=time,
-    #                 local_mp4_path=local_mp4_path)
+    retrieve_single_video_s3_to_np(camera=camera, date=date, time=time, paths=paths)
     obj_bounds, obj_labels, obj_label_confidences=classify_objects(local_mp4_path=local_mp4_path, params = params)
 
     with open(pkl_path, 'wb') as fh:
@@ -141,7 +138,6 @@ if __name__ == '__main__':
     yolo_df.to_csv(save_path)
 
     # 3. Reload csv, generate stats: group on frame,  vehicle type, number
-
     yolo_df = pd.read_csv(save_path)
     obj_counts_frame, video_summary = yolo_report_stats(yolo_df)
     print(obj_counts_frame.head(), video_summary.head())
