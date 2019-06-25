@@ -15,7 +15,7 @@ def retrieve_single_video(camera, date, time, paths, bool_keep_data=True):
             Args:
                 camera: camera number as a string (XXXXX)
                 date: date as a string (YYYY-MM-DD)
-                time: time as a string (HH:MM:SS.)
+                time: time as a string (HH:MM:SS.MsMsMsMsMsMs)
                 paths: dictionary containing local_video, s3_video, s3_profile and bucket_name paths
                 bool_keep_data: boolean for keeping the downloaded data in the local folder
             Returns:
@@ -24,7 +24,6 @@ def retrieve_single_video(camera, date, time, paths, bool_keep_data=True):
 
         """
     # 2019-06-20 13:25:31.321785_00001.03675.mp4
-
 
     create_local_dir(paths['local_video'])
     timestamp = date + " " + time + "_00001." + camera
