@@ -4,6 +4,11 @@ nbstripout==0.3.3
 bs4
 requests
 boto3
+opencv-python
+csvkit
+numpy
+cvlib
+
 datetime
 imageio-ffmpeg
 imageio

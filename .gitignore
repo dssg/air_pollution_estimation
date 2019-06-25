@@ -8,6 +8,7 @@ conf/local/**
 conf/**/*credentials*
 
 # ignore everything in the following folders
+annotations/**
 data/**
 logs/**
 references/**
