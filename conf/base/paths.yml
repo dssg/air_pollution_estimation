@@ -3,5 +3,6 @@ paths:
     s3_video: "raw/video_data/" #path to video data in s3 bucket
     tims: "data/01_raw/tims/"
     local_video: "data/01_raw/jamcams/"
+    temp: "data/01_raw/jamcams/"
     s3_profile: "dssg"
     plots: "plots/"
