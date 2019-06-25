@@ -1,5 +1,5 @@
-## from ..d02_intermediate.view_jam_cams import s3_to_local_mp4, classify_objects
-# from ..d00_utils.data_retrieval import retrieve_single_video
+from ..d00_utils.data_retrieval import get_single_video_s3_to_np
+from ..d04_modelling.classify_objects import classify_objects
 from os import path
 import numpy as np
 import pandas as pd
@@ -111,29 +111,37 @@ if __name__ == '__main__':
     camera="06508"
     date="20190603" #yyyymmdd
     time="1145"
-    extension=".mp4"
 
-    ##1. load video from s3, run csvlib YOLO, dump output as PKL to decrease development time
+    os.chdir(".")
+    with open('../../conf/base/parameters.yml') as f:
+       params = yaml.safe_load(f)['modelling']
+    os.chdir(".")
+    with open('../../conf/base/paths.yml') as f:
+       paths = yaml.safe_load(f)['paths']
+    
+    #1. load video from s3, run csvlib YOLO, dump output as PKL to decrease development time
+
+    retrieve_single_video(camera=camera, date=date, time=time, paths=paths)
     # s3_to_local_mp4(camera=camera, date=date, time=time,
-    #                 extension=extension, local_mp4_path=local_mp4_path)
-    # obj_bounds, obj_labels, obj_label_confidences=classify_objects(local_mp4_path=local_mp4_path)
+    #                 local_mp4_path=local_mp4_path)
+    obj_bounds, obj_labels, obj_label_confidences=classify_objects(local_mp4_path=local_mp4_path, params = params)
 
-    # with open(pkl_path, 'wb') as fh:
-    #     pkl.dump([obj_bounds, obj_labels, obj_label_confidences], fh)
+    with open(pkl_path, 'wb') as fh:
+        pkl.dump([obj_bounds, obj_labels, obj_label_confidences], fh)
 
-    ## 2. load output from pkl file, process and write as csv
-    # with open(pkl_path, 'rb') as fh:
-    #         yolo_res = pkl.load(fh)
+    # 2. load output from pkl file, process and write as csv
+    with open(pkl_path, 'rb') as fh:
+            yolo_res = pkl.load(fh)
 
-    # obj_bounds, obj_labels, obj_label_confidences = yolo_res
+    obj_bounds, obj_labels, obj_label_confidences = yolo_res
 
-    # yolo_df=yolo_output_df(obj_bounds, obj_labels, obj_label_confidences, camera, date, time)
+    yolo_df=yolo_output_df(obj_bounds, obj_labels, obj_label_confidences, camera, date, time)
 
-    # print(yolo_df.columns.tolist())
-    # yolo_df.to_csv(save_path)
+    print(yolo_df.columns.tolist())
+    yolo_df.to_csv(save_path)
 
-    ## 3. Reload csv, generate stats: group on frame,  vehicle type, number 
+    # 3. Reload csv, generate stats: group on frame,  vehicle type, number
 
-    # yolo_df = pd.read_csv(save_path)
-    # obj_counts_frame, video_summary = yolo_report_stats(yolo_df)
-    # print(obj_counts_frame.head(), video_summary.head())
+    yolo_df = pd.read_csv(save_path)
+    obj_counts_frame, video_summary = yolo_report_stats(yolo_df)
+    print(obj_counts_frame.head(), video_summary.head())
