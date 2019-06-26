@@ -8,5 +8,6 @@ opencv-python
 csvkit
 numpy
 cvlib
-imageio
+datetime
 imageio-ffmpeg
+imageio
