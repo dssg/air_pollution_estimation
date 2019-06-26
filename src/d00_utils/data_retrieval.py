@@ -173,7 +173,15 @@ def describe_s3_bucket(paths):
     return
 
 def load_videos_from_local(paths):
+    """Load video data from the local raw jamcam folder and return it as a list of numpy arrays
 
+            Args:
+                paths: dictionary containing local_video, s3_profile and bucket_name paths
+            Returns:
+                list of numpy arrays containing all the jamcam videos from the local raw jamcam folder
+            Raises:
+
+        """
     files = glob.glob(paths['local_video'] + '*.mp4')
     names = [vals.split('/')[-1] for vals in files]
     videos = []

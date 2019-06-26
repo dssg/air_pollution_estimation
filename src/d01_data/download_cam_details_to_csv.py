@@ -6,7 +6,7 @@ import os
 # TODO: Move to a function and integrate into a pipeline
 
 # Get the json from the TFL API
-website = 'https://api.tfl.gov.uk/Place/Type/JamCam'
+website = 'https://api.tfl.gov.uk/Place/Type/jamcams'
 res = urllib.request.urlopen(website)
 data = json.loads(res.read())
 
@@ -33,7 +33,7 @@ for cam in data:
 
 # Save the list of dictionaries as a csv file in the processed data folder
 setup_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
-save_dir = os.path.join(setup_dir, 'data/02_processed/JamCam/JamCamDetails.csv')
+save_dir = os.path.join(setup_dir, 'data/02_processed/jamcams/JamCamDetails.csv')
 keys = processed_data[0].keys()
 with open(save_dir, 'w') as output_file:
     dict_writer = csv.DictWriter(output_file, keys)
