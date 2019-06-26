@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import re
 import shutil
 import datetime
+import glob
 
 
 def retrieve_single_video(camera, date, time, paths, bool_keep_data=True):
@@ -40,7 +41,7 @@ def retrieve_single_video(camera, date, time, paths, bool_keep_data=True):
     return buf
 
 
-def retrieve_videos_based_on_dates(paths, from_date='2019-06-01', to_date=str(datetime.datetime.now())[:10], bool_keep_data=True):
+def retrieve_daterange_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime.datetime.now())[:10], bool_keep_data=True):
     """Retrieve jamcam videos from the s3 bucket based on the dates specified.
     Downloads to a local directory and then loads them into numpy arrays.
 
@@ -170,3 +171,13 @@ def describe_s3_bucket(paths):
     plt.close()
 
     return
+
+def load_videos_from_local(paths):
+
+    files = glob.glob(paths['local_video'] + '*.mp4')
+    names = [vals.split('/')[-1] for vals in files]
+    videos = []
+    for file in files:
+        videos.append(mp4_to_npy(file))
+
+    return videos, names
