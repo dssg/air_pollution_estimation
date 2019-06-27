@@ -48,7 +48,7 @@ def retrieve_daterange_videos_s3_to_np(paths, from_date='2019-06-01', to_date=st
     """Retrieve jamcam videos from the s3 bucket based on the dates specified.
     Downloads to a local temp directory and then loads them into numpy arrays, before 
     deleting the temp directory (default behavior). If bool_keep_data is True, the videos will be 
-        saved to local_video dir instead, and then loaded into np array. 
+    saved to local_video dir instead, and then loaded into np array. 
 
         Args:
             paths: dictionary containing temp folder, s3_profile and bucket_name paths
@@ -96,8 +96,10 @@ def retrieve_daterange_videos_s3_to_np(paths, from_date='2019-06-01', to_date=st
 
 
 def create_local_dir(local_dir):
-    """Creates the local directory for downloading from s3"""
-    # Set local directory for downloading data, will overwrite whatever is currently there
+    """
+    Creates an empty local directory for downloading from s3. 
+    Will wipe local_dir if already a directory
+    """
     if (os.path.isdir(local_dir)):
         shutil.rmtree(local_dir)
     os.mkdir(local_dir)
