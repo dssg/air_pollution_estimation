@@ -18,27 +18,27 @@ def retrieve_single_video_s3_to_np(camera, date, time, paths, bool_keep_data=Fal
                 camera: camera number as a string
                 date: date as a string (YYYYMMDD)
                 time: time as a string (HHMM)
-                paths: dictionary containing temp, local_video, s3_video, s3_profile and bucket_name paths
+                paths: dictionary containing temp_video, local_video, s3_video, s3_profile and bucket_name paths
                 bool_keep_data: boolean for keeping the downloaded data in the local folder
             Returns:
                 numpy array containing the jamcam video
             Raises:
 
         """
-    create_local_dir(paths['temp'])
+    create_local_dir(paths['temp_video'])
     timestamp = date[:4] + "-" + date[4:6] + "-" + date[6:] + "_" + time[:2] + '.' + time[2:]
     s3_vid_key = paths['s3_video'] + "/" + camera + "/" + timestamp + '.mp4'
     s3_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
 
-    save_folder ='local_video' if bool_keep_data else 'temp'
+    save_folder ='local_video' if bool_keep_data else 'temp_video'
 
     file_dir = paths[save_folder] + date + "_" + time + "_" + camera + '.mp4'
     s3_bucket.download_file(s3_vid_key, file_dir)
     buf = mp4_to_npy(file_dir)
 
-    # Delete the folder temp 
+    # Delete the folder temp_video
     if !bool_keep_data:
-        assert save_folder=='temp'
+        assert save_folder=='temp_video'
         shutil.rmtree(paths[save_folder])
 
     return buf
@@ -51,7 +51,7 @@ def retrieve_daterange_videos_s3_to_np(paths, from_date='2019-06-01', to_date=st
     saved to local_video dir instead, and then loaded into np array. 
 
         Args:
-            paths: dictionary containing temp folder, s3_profile and bucket_name paths
+            paths: dictionary containing temp_video folder, s3_profile and bucket_name paths
             from_date: start date (inclusive) for retrieving videos, if None then will retrieve from 2019-06-01 onwards
             to_date: end date (inclusive) for retrieving vidoes, if None then will retrieve up to current day
             bool_keep_data: boolean for keeping the downloaded data in the local folder
@@ -60,7 +60,7 @@ def retrieve_daterange_videos_s3_to_np(paths, from_date='2019-06-01', to_date=st
         Raises:
 
     """
-    create_local_dir(paths['temp'])
+    create_local_dir(paths['temp_video'])
     my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
 
     # Get list of files in s3 based on dates provided
@@ -76,7 +76,7 @@ def retrieve_daterange_videos_s3_to_np(paths, from_date='2019-06-01', to_date=st
         except:
             print('Could not find date for: ' + file)
 
-    save_folder ='local_video' if bool_keep_data else 'temp'
+    save_folder ='local_video' if bool_keep_data else 'temp_video'
 
     # Download the selected files
     for file in selected_files:
@@ -89,7 +89,7 @@ def retrieve_daterange_videos_s3_to_np(paths, from_date='2019-06-01', to_date=st
 
     # Delete the folder temp 
     if !bool_keep_data:
-        assert save_folder=='temp'
+        assert save_folder=='temp_video'
         shutil.rmtree(paths[save_folder])
 
     return data
