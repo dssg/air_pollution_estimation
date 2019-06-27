@@ -30,16 +30,16 @@ def retrieve_single_video_s3_to_np(camera, date, time, paths, bool_keep_data=Fal
     s3_vid_key = paths['s3_video'] + "/" + camera + "/" + timestamp + '.mp4'
     s3_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
 
-    if bool_keep_data:
-        file_dir = paths['temp'] + date + "_" + time + "_" + camera + '.mp4'
-        s3_bucket.download_file(s3_vid_key, file_dir)
-        buf = mp4_to_npy(file_dir)
-        shutil.rmtree(paths['temp'])
+    save_folder ='local_video' if bool_keep_data else 'temp'
 
-    else:
-        file_dir = paths['local_video'] + date + "_" + time + "_" + camera + '.mp4'
-        s3_bucket.download_file(s3_vid_key, file_dir)
-        buf = mp4_to_npy(file_dir)
+    file_dir = paths[save_folder] + date + "_" + time + "_" + camera + '.mp4'
+    s3_bucket.download_file(s3_vid_key, file_dir)
+    buf = mp4_to_npy(file_dir)
+
+    # Delete the folder temp 
+    if !bool_keep_data:
+        assert save_folder=='temp'
+        shutil.rmtree(paths[save_folder])
 
     return buf
 
@@ -47,7 +47,8 @@ def retrieve_single_video_s3_to_np(camera, date, time, paths, bool_keep_data=Fal
 def retrieve_daterange_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime.datetime.now())[:10], bool_keep_data=True):
     """Retrieve jamcam videos from the s3 bucket based on the dates specified.
     Downloads to a local temp directory and then loads them into numpy arrays, before 
-    deleting the temp directory.
+    deleting the temp directory (default behavior). If bool_keep_data is True, the videos will be 
+        saved to local_video dir instead, and then loaded into np array. 
 
         Args:
             paths: dictionary containing temp folder, s3_profile and bucket_name paths
@@ -75,18 +76,21 @@ def retrieve_daterange_videos_s3_to_np(paths, from_date='2019-06-01', to_date=st
         except:
             print('Could not find date for: ' + file)
 
+    save_folder ='local_video' if bool_keep_data else 'temp'
+
     # Download the selected files
     for file in selected_files:
-        my_bucket.download_file(file, paths['temp'] + file.split('/')[-1])
+        my_bucket.download_file(file, paths[save_folder] + file.split('/')[-1])
 
     # Load files into a list of numpy arrays using opencv
     data = []
-    for file in os.listdir(paths['temp']):
-        data.append(mp4_to_npy(paths['temp'] + file))
+    for file in os.listdir(paths[save_folder]):
+        data.append(mp4_to_npy(paths[save_folder] + file))
 
-    # Delete local data unless specified
-    if(not bool_keep_data):
-        shutil.rmtree(paths['temp'])
+    # Delete the folder temp 
+    if !bool_keep_data:
+        assert save_folder=='temp'
+        shutil.rmtree(paths[save_folder])
 
     return data
 
