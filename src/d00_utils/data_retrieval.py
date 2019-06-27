@@ -7,9 +7,10 @@ import re
 import shutil
 import datetime
 import glob
+import threading
 
 
-def retrieve_single_video(camera, date, time, paths, bool_keep_data=True):
+def retrieve_single_video_s3_to_np(camera, date, time, paths, bool_keep_data=True):
     """Retrieve one jamcam video from the s3 bucket based on the details specified.
         Downloads to a local directory and then loads into a numpy array.
 
@@ -41,7 +42,8 @@ def retrieve_single_video(camera, date, time, paths, bool_keep_data=True):
     return buf
 
 
-def retrieve_daterange_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime.datetime.now())[:10], bool_keep_data=True):
+def retrieve_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime.datetime.now())[:10],
+                             from_time='00-00-00', to_time='23-59-59', bool_keep_data=True):
     """Retrieve jamcam videos from the s3 bucket based on the dates specified.
     Downloads to a local directory and then loads them into numpy arrays.
 
@@ -51,40 +53,59 @@ def retrieve_daterange_videos_s3_to_np(paths, from_date='2019-06-01', to_date=st
             to_date: end date (inclusive) for retrieving vidoes, if None then will retrieve up to current day
             bool_keep_data: boolean for keeping the downloaded data in the local folder
         Returns:
-            list of numpy arrays containing all the jamcam videos between the selected dates
+            videos: list of numpy arrays containing all the jamcam videos between the selected dates
+            names: list of video file names
         Raises:
 
     """
     create_local_dir(paths['local_video'])
     my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
 
-    # Get list of files in s3 based on dates provided
-    selected_files = []
-    objects = my_bucket.objects.filter(Prefix="raw/video_data_new/")
+    from_date = datetime.datetime.strptime(from_date, '%Y-%m-%d').date()
+    to_date = datetime.datetime.strptime(to_date, '%Y-%m-%d').date()
+    from_time = datetime.datetime.strptime(from_time, '%H-%M-%S').time()
+    to_time = datetime.datetime.strptime(to_time, '%H-%M-%S').time()
 
-    for obj in objects:
-        file = obj.key
-        try:
-            date = re.search("([0-9]{4}\-[0-9]{2}\-[0-9]{2})", file).group()
-            if (date >= from_date and date <= to_date):
+    dates = []
+
+    # Generate the list of dates
+    while(from_date <= to_date):
+        dates.append(from_date)
+        from_date += datetime.timedelta(days=1)
+
+    # Download the files in each of the date folders on s3
+    for date in dates:
+        date = date.strftime('%Y-%m-%d')
+        objects = my_bucket.objects.filter(Prefix="raw/videos/" + date + "/")
+
+        selected_files = []
+
+        for obj in objects:
+            file = obj.key
+            time = re.search("([0-9]{2}\:[0-9]{2}\:[0-9]{2})", file).group()
+            time = datetime.datetime.strptime(time, '%H:%M:%S').time()
+            if(time >= from_time and time <= to_time):
                 selected_files.append(file)
-        except:
-            print('Could not find date for: ' + file)
 
-    # Download the selected files
-    for file in selected_files:
-        my_bucket.download_file(file, paths['local_video'] + file.split('/')[-1])
+        for file in selected_files:
+            try:
+                my_bucket.download_file(file, paths['local_video'] + file.split('/')[-1].replace(
+                    ':', '-').replace(" ", "_"))
+            except:
+                print("Could not download " + file)
 
     # Load files into a list of numpy arrays using opencv
-    data = []
+    videos = []
+    names = []
     for file in os.listdir(paths['local_video']):
-        data.append(mp4_to_npy(paths['local_video'] + file))
+        videos.append(mp4_to_npy(paths['local_video'] + file))
+        names.append(file.split('/')[-1])
 
     # Delete local data unless specified
     if(not bool_keep_data):
         shutil.rmtree(paths['local_video'])
 
-    return data
+    return videos, names
 
 
 def create_local_dir(local_dir):
@@ -178,7 +199,8 @@ def load_videos_from_local(paths):
             Args:
                 paths: dictionary containing local_video, s3_profile and bucket_name paths
             Returns:
-                list of numpy arrays containing all the jamcam videos from the local raw jamcam folder
+                videos: list of numpy arrays containing all the jamcam videos from the local raw jamcam folder
+                names: list of video file names
             Raises:
 
         """

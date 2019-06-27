@@ -15,15 +15,15 @@ def classify_objects(videos, names, params, paths, vid_time_length=10, make_vide
             make_videos (bool): output videos with object classification labels in processed directory
 
         Returns:
-            results_dict (dict): nested dictionary where each video is a key for a dict containing:
+            yolo_dict (dict): nested dictionary where each video is a key for a dict containing:
                 obj_bounds (list of np arrays): n-dim list of list of arrays marking the corners of the bounding boxes of objects, for n frames
                 obj_labels (list of str): n-dim list of list of labels assigned to classified objects, for n frames
                 obj_label_confidences (list of floats): n-dim list of list of floats denoting yolo confidences, for n frames
     """
-    results_dict = {}
+    yolo_dict = {}
 
     for video, name in zip(videos, names):
-        results_dict[name] = {}
+        yolo_dict[name] = {}
 
         # loop over frames of video and store in lists
         obj_bounds = []
@@ -52,8 +52,8 @@ def classify_objects(videos, names, params, paths, vid_time_length=10, make_vide
             local_mp4_path_out = paths['yolo_video'] + name
             imageio.mimwrite(local_mp4_path_out, cap_cvlib_npy, fps=int(video.shape[0] / vid_time_length))
 
-        results_dict[name]['bounds'] = obj_bounds
-        results_dict[name]['labels'] = obj_labels
-        results_dict[name]['confidences'] = obj_label_confidences
+        yolo_dict[name]['bounds'] = obj_bounds
+        yolo_dict[name]['labels'] = obj_labels
+        yolo_dict[name]['confidences'] = obj_label_confidences
 
-    return results_dict
+    return yolo_dict
