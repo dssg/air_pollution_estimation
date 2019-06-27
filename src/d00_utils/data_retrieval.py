@@ -37,7 +37,7 @@ def retrieve_single_video_s3_to_np(camera, date, time, paths, bool_keep_data=Fal
     buf = mp4_to_npy(file_dir)
 
     # Delete the folder temp_video
-    if !bool_keep_data:
+    if not bool_keep_data:
         assert save_folder=='temp_video'
         shutil.rmtree(paths[save_folder])
 
@@ -71,7 +71,7 @@ def retrieve_daterange_videos_s3_to_np(paths, from_date='2019-06-01', to_date=st
         file = obj.key
         try:
             date = re.search("([0-9]{4}\-[0-9]{2}\-[0-9]{2})", file).group()
-            if (date >= from_date and date <= to_date):
+            if date >= from_date and date <= to_date:
                 selected_files.append(file)
         except:
             print('Could not find date for: ' + file)
@@ -88,7 +88,7 @@ def retrieve_daterange_videos_s3_to_np(paths, from_date='2019-06-01', to_date=st
         data.append(mp4_to_npy(paths[save_folder] + file))
 
     # Delete the folder temp 
-    if !bool_keep_data:
+    if not bool_keep_data:
         assert save_folder=='temp_video'
         shutil.rmtree(paths[save_folder])
 
@@ -181,3 +181,4 @@ def describe_s3_bucket(paths):
     plt.close()
 
     return
+

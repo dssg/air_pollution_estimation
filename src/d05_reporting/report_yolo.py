@@ -1,12 +1,14 @@
-from ..d00_utils.data_retrieval import get_single_video_s3_to_np
-from ..d04_modelling.classify_objects import classify_objects
+from src.d00_utils.data_retrieval import retrieve_single_video_s3_to_np
+from src.d04_modelling.classify_objects import classify_objects
 from os import path
+import os
 import numpy as np
 import pandas as pd
 import pickle as pkl
 import datetime
+import yaml
 
-basepath=path.dirname(__file__) #path of current script
+basepath=os.path.dirname(__file__) #path of current script
 
 
 def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date,time):
@@ -103,8 +105,8 @@ def yolo_report_stats(yolo_df):
 
 if __name__ == '__main__':
     #example of how to interface functions above with yolo code 
-    pkl_path=path.abspath(path.join(basepath,"..", "..", "data/pickled/", "yolo_res"))
-    save_path = path.abspath(path.join(basepath,"..", "..", "data/sample_yolo_output", "sample_yolo_output.csv"))
+    pkl_path=os.path.abspath(os.path.join(basepath,"..", "..", "data/pickled/", "yolo_res"))
+    save_path = os.path.abspath(os.path.join(basepath,"..", "..", "data/sample_yolo_output", "sample_yolo_output.csv"))
 
     #sample input 
     camera="06508"
