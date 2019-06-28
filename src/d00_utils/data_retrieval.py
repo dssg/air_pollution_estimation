@@ -18,7 +18,7 @@ def retrieve_single_video_s3_to_np(camera, date, time, paths, bool_keep_data=Tru
                 camera: camera number as a string (XXXXX)
                 date: date as a string (YYYY-MM-DD)
                 time: time as a string (HH:MM:SS.MsMsMsMsMsMs)
-                paths: dictionary containing local_video, s3_video, s3_profile and bucket_name paths
+                paths: dictionary containing raw_video, s3_video, s3_profile and bucket_name paths
                 bool_keep_data: boolean for keeping the downloaded data in the local folder
             Returns:
                 numpy array containing the jamcam video
@@ -27,17 +27,17 @@ def retrieve_single_video_s3_to_np(camera, date, time, paths, bool_keep_data=Tru
         """
     # 2019-06-20 13:25:31.321785_00001.03675.mp4
 
-    create_local_dir(paths['local_video'])
+    create_local_dir(paths['raw_video'])
     timestamp = date + " " + time + "_00001." + camera
     s3_vid_key = paths['s3_video'] + timestamp + '.mp4'
     s3_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
 
-    file_dir = paths['local_video'] + date + "_" + time + "_" + camera + '.mp4'
+    file_dir = paths['raw_video'] + date + "_" + time + "_" + camera + '.mp4'
     s3_bucket.download_file(s3_vid_key, file_dir)
     buf = mp4_to_npy(file_dir)
 
     if (not bool_keep_data):
-        shutil.rmtree(paths['local_video'])
+        shutil.rmtree(paths['raw_video'])
 
     return buf
 
@@ -48,7 +48,7 @@ def retrieve_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime
     Downloads to a local directory and then loads them into numpy arrays.
 
         Args:
-            paths: dictionary containing local_video, s3_profile and bucket_name paths
+            paths: dictionary containing raw_video, s3_profile and bucket_name paths
             from_date: start date (inclusive) for retrieving videos, if None then will retrieve from 2019-06-01 onwards
             to_date: end date (inclusive) for retrieving vidoes, if None then will retrieve up to current day
             bool_keep_data: boolean for keeping the downloaded data in the local folder
@@ -58,7 +58,7 @@ def retrieve_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime
         Raises:
 
     """
-    create_local_dir(paths['local_video'])
+    create_local_dir(paths['raw_video'])
     my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
 
     from_date = datetime.datetime.strptime(from_date, '%Y-%m-%d').date()
@@ -89,7 +89,7 @@ def retrieve_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime
 
         for file in selected_files:
             try:
-                my_bucket.download_file(file, paths['local_video'] + file.split('/')[-1].replace(
+                my_bucket.download_file(file, paths['raw_video'] + file.split('/')[-1].replace(
                     ':', '-').replace(" ", "_"))
             except:
                 print("Could not download " + file)
@@ -97,13 +97,13 @@ def retrieve_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime
     # Load files into a list of numpy arrays using opencv
     videos = []
     names = []
-    for file in os.listdir(paths['local_video']):
-        videos.append(mp4_to_npy(paths['local_video'] + file))
+    for file in os.listdir(paths['raw_video']):
+        videos.append(mp4_to_npy(paths['raw_video'] + file))
         names.append(file.split('/')[-1])
 
     # Delete local data unless specified
     if(not bool_keep_data):
-        shutil.rmtree(paths['local_video'])
+        shutil.rmtree(paths['raw_video'])
 
     return videos, names
 
@@ -197,14 +197,14 @@ def load_videos_from_local(paths):
     """Load video data from the local raw jamcam folder and return it as a list of numpy arrays
 
             Args:
-                paths: dictionary containing local_video, s3_profile and bucket_name paths
+                paths: dictionary containing raw_video, s3_profile and bucket_name paths
             Returns:
                 videos: list of numpy arrays containing all the jamcam videos from the local raw jamcam folder
                 names: list of video file names
             Raises:
 
         """
-    files = glob.glob(paths['local_video'] + '*.mp4')
+    files = glob.glob(paths['raw_video'] + '*.mp4')
     names = [vals.split('/')[-1] for vals in files]
     videos = []
     for file in files:

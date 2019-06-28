@@ -49,7 +49,7 @@ def classify_objects(videos, names, params, paths, vid_time_length=10, make_vide
         # write video to local file
         if make_videos:
             cap_cvlib_npy = np.asarray(cap_cvlib)
-            local_mp4_path_out = paths['yolo_video'] + name
+            local_mp4_path_out = paths['processed_video'] + name
             imageio.mimwrite(local_mp4_path_out, cap_cvlib_npy, fps=int(video.shape[0] / vid_time_length))
 
         yolo_dict[name]['bounds'] = obj_bounds

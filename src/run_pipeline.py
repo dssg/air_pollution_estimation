@@ -18,4 +18,4 @@ yolo_dict = classify_objects(videos, names, params, paths,
                                 vid_time_length=10, make_videos=True)
 yolo_df = yolo_output_df(yolo_dict)
 stats_df = yolo_report_stats(yolo_df)
-stats_df.to_csv(paths['yolo_video'] + 'JamCamStats.csv')
+stats_df.to_csv(paths['processed_video'] + 'JamCamStats.csv')
