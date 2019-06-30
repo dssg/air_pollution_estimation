@@ -83,8 +83,12 @@ def detect_bounding_boxes(frame:np.ndarray, model:str,confidence:float,
 
 	del_inds = []
 	for i, label in enumerate(labels): 
-		if label not in 
+		#specify object types to ignore 
+		if label in ["people"]: del_inds.append(i)
 
+	#delete items from lists
+	for i in sorted(del_inds, reverse=True):
+		del bboxes[i]; del labels[i]; del confs[i]
 
 	return bboxes, labels, confs
 
@@ -103,7 +107,10 @@ def gen_colors(labels:list) -> list:
 
 	"""
 	#todo later: get obj types from yolo and assign unique colors
-	color_dict={}
+	color_dict={"car": (255,100,150), #pink
+				"truck": (150,230,150), #light green
+				 "bus": (150,200,230), #periwinkle
+				 "motorbike": (240,160,80)} #orange
 	colors = []
 	for label in labels:
 		if label not in color_dict.keys():
