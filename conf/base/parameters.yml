@@ -7,4 +7,7 @@ data_collection:
 
 modelling:
   yolo_model: "yolov3_tiny"
+  yolo_implementation: "cvlib"
   confidence_threshold: 0.2
+  opencv_tracker_type: "CSRT"
+

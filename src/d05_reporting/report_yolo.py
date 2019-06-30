@@ -3,7 +3,7 @@ from ..d04_modelling.classify_objects import classify_objects
 from os import path
 import numpy as np
 import pandas as pd
-import pickle as pkl
+import pickle as
 import datetime
 
 basepath=path.dirname(__file__) #path of current script

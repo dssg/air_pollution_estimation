@@ -3,24 +3,14 @@
 
 from __future__ import print_function
 import numpy as np
-import pandas as pd
-import sys
-import os
+import sys, os
 import cv2
 from random import randint
 import yaml
 import cvlib
 import imutils
-import argparse
+import imageio
 
-basepath=os.path.dirname(__file__) #path of current script
-
-os.chdir(".")
-with open('../../conf/base/parameters.yml') as f:
-   params = yaml.safe_load(f)['modelling']
-os.chdir(".")
-with open('../../conf/base/paths.yml') as f:
-   paths = yaml.safe_load(f)['paths']
 
 
 def create_tracker_by_name(tracker_type):
@@ -53,8 +43,11 @@ def create_tracker_by_name(tracker_type):
 	return tracker
 
 
-def draw_bounding_boxes(frame):
-	"""Select boxes"""
+def draw_bounding_boxes(frame:np.ndarray) -> (list,list):
+	"""Select boxes by hand 
+
+
+	"""
 	bboxes = []
 	colors = []
 
@@ -77,23 +70,39 @@ def draw_bounding_boxes(frame):
 	return bboxes,colors
 
 
-def detect_bounding_boxes(frame,params:dict):
-	bboxes, labels, confs = cvlib.detect_common_objects(frame, confidence=params['confidence_threshold'],
-												 model=params['yolo_model'])
-	# bboxes, labels, confs = cvlib.detect_common_objects(frame, confidence = 0.85,
-	#                                                     model=params['yolo_model'])
-	print(bboxes, labels, confs)
+def detect_bounding_boxes(frame:np.ndarray, model:str,confidence:float,
+						  implementation:str=None) -> (list,list,list):
+	'''Detect bounding boxes on a frame using specified model and optionally an implementation
+
+	bboxes returned in format (xmin, ymin, w, h)
+	'''
+	if implementation == 'cvlib':
+		bboxes_cvlib, labels, confs = cvlib.detect_common_objects(frame, confidence=confidence,
+											 model=model)
+		bboxes = [bboxcvlib_to_bboxcv2(tuple(bbox_cvlib)) for bbox_cvlib in bboxes_cvlib]
+
+	del_inds = []
+	for i, label in enumerate(labels): 
+		if label not in 
+
+
 	return bboxes, labels, confs
 
-def filter_bboxes(bboxes):
-	"""filter bboxes based on size"""
 
-	return None
+def bboxcvlib_to_bboxcv2(bbox_cvlib:tuple) -> tuple:
+	"""Convert bboxes from format returned by cvlib to format required by cv2
+
+	"""
+	x,y,x_plus_w, y_plus_h = bbox_cvlib[0], bbox_cvlib[1], bbox_cvlib[2], bbox_cvlib[3]
+	bbox_cv2=(x, y, x_plus_w - x, y_plus_h-y)
+	return bbox_cv2
+
 
 def gen_colors(labels:list) -> list:
-	"""auto generate colors based on object types"""
+	"""auto generate colors based on object types
 
-	# todo later: get obj types from yolo and assign unique colors
+	"""
+	#todo later: get obj types from yolo and assign unique colors
 	color_dict={}
 	colors = []
 	for label in labels:
@@ -103,52 +112,44 @@ def gen_colors(labels:list) -> list:
 	return colors
 
 
-if __name__ == '__main__':
-	#get a video from local
-	video_path = os.path.abspath(os.path.join(basepath,"..", "..","data/sample_video_data/testvid.mp4"))
-
+def track_objects(local_mp4_path:str,
+				  detection_model:str,detection_confidence:float,detection_implementation:str,
+				  detection_frequency:int,tracking_model:str,
+				  video_time_length=10, make_video=True):
+	"""
+	"""
 	# Create a video capture object to read videos
-	cap = cv2.VideoCapture(video_path)
+	cap = cv2.VideoCapture(local_mp4_path)
+	n_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+	cap_fps = int(n_frames / video_time_length)  # assumes vid_length in seconds
 
 	# Read first frame
 	success, frame = cap.read()
+
 	if not success:
 		print('Failed to read video')
 		sys.exit(0)
 
-	# bboxes_default, colors_default = draw_bounding_boxes(frame)
-	# print("drew bbox:", bboxes, type(bboxes), type(bboxes[0]))
-	# print("colors: ", colors, type(colors), type(colors[0]))
-	bboxes, labels, confs = detect_bounding_boxes(frame, params)
+	bboxes, labels, confs = detect_bounding_boxes(frame=frame, model=detection_model,
+							confidence=detection_confidence,
+							implementation=detection_implementation)
+
 	colors=gen_colors(labels)
-	assert len(bboxes) == len(colors)
-	img_cvlib = cvlib.object_detection.draw_bbox(frame, bboxes, labels, confs)
-	cv2.imshow('Frame0', img_cvlib)
-	if cv2.waitKey(10000) & 0xFF == 27:  # Esc pressed
-		sys.exit(0)
-
-	# print("detected bbox: ", bboxes2, type(bboxes2))
-
-	# Specify the tracker type
-	tracker_type = "CSRT"
 
 	# Create MultiTracker object
 	multiTracker = cv2.MultiTracker_create()
 
 	# Initialize MultiTracker
-	# print(bboxes_default)
 	for bbox in bboxes:
-		bbox = tuple(bbox)
-		print(bbox)
-		# if bbox == (323,168,331,194) or bbox == (334,169,346,197) or :
-		# 	continue
-		multiTracker.add(create_tracker_by_name(tracker_type), frame, bbox)
+		multiTracker.add(create_tracker_by_name(tracking_model), frame, bbox)
+
+	processed_video = []
 
 	# Process video and track objects
+	frame_counter = 0
 	while cap.isOpened():
 		success, frame = cap.read()
-		if not success:
-			break
+		if not success: break
 
 		# get updated location of objects in subsequent frames
 		success, boxes = multiTracker.update(frame)
@@ -159,9 +160,56 @@ if __name__ == '__main__':
 			p2 = (int(newbox[0] + newbox[2]), int(newbox[1] + newbox[3]))
 			cv2.rectangle(frame, p1, p2, colors[i], 2, 1)
 
-		# show frame
-		cv2.imshow('MultiTracker', frame)
+		#every x frames, re-detect boxes
+		if frame_counter%detection_frequency == 0: 
+			#redetect bounding boxes
+			bboxes, labels, confs = detect_bounding_boxes(frame=frame, model=detection_model,
+							confidence=detection_confidence,
+							implementation=detection_implementation)
+			#somehow only get bboxes with intersection over union under a certain amt? 
+			colors=gen_colors(labels)
+			# Create MultiTracker object
+			multiTracker = cv2.MultiTracker_create()
 
+			# re-initialize MultiTracker
+			for bbox in bboxes:
+				multiTracker.add(create_tracker_by_name(tracking_model), frame, bbox)
+
+		processed_video.append(frame)
+
+		# cv2.imshow('MultiTracker', frame)
 		# quit on ESC button
-		if cv2.waitKey(1) & 0xFF == 27:  # Esc pressed
-			break
+		# if cv2.waitKey(1) & 0xFF == 27:  # Esc pressed
+		# 	break
+		frame_counter += 1
+
+	if make_video:
+		local_mp4_path_out = local_mp4_path[:-4] + '_tracked' + local_mp4_path[-4:]
+		imageio.mimwrite(local_mp4_path_out, np.array(processed_video), fps=cap_fps)
+
+	return None #ideally would return number of tracked objects, confidence levels
+
+
+if __name__ == '__main__':
+	#config stuff
+	basepath=os.path.dirname(__file__) #path of current script
+
+	os.chdir(".")
+	with open('../../conf/base/parameters.yml') as f:
+	   params = yaml.safe_load(f)['modelling']
+	os.chdir(".")
+	with open('../../conf/base/paths.yml') as f:
+	   paths = yaml.safe_load(f)['paths']
+
+	#get a video from local
+	local_mp4_path = os.path.abspath(os.path.join(basepath,"..", "..","data/sample_video_data/testvidv2.mp4"))
+	tracking_model = params["opencv_tracker_type"]
+	detection_confidence = params["confidence_threshold"]
+	detection_model = params["yolo_model"]
+	detection_implementation = params["yolo_implementation"]
+	detection_frequency = 25
+
+	track_objects(local_mp4_path=local_mp4_path,
+				  detection_model=detection_model,detection_confidence=detection_confidence,
+				  detection_implementation=detection_implementation,
+				  detection_frequency=detection_frequency,tracking_model=tracking_model)
