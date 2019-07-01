@@ -12,6 +12,7 @@ from helper import get_cams, load_data, load_camera_statistics, load_objects, lo
 import os
 import sys
 import time
+from datetime import datetime as dt
 
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
@@ -182,6 +183,23 @@ app.layout = html.Div(
                                         )
                                     ]
                                 ),
+                                html.Div([
+                                    html.Div(
+                                        'Date Range:', style={
+                                            'width': '40%'}),
+                                    html.Div([
+                                        dcc.DatePickerRange(
+                                            id='daterange',
+                                            min_date_allowed=dt(
+                                                2017, 1, 1),
+                                            max_date_allowed=dt.now(),
+                                            end_date=dt.now(),
+                                            clearable=True,
+                                            start_date=dt(
+                                                2017, 1, 1),
+                                        ),
+                                    ], className=''),
+                                ], className='control-element'),
 
                                 # html.Div(
                                 #     className='control-element',
@@ -286,7 +304,7 @@ def update_trend_graph(objects, camera_id):
     dfs = {obj: load_object_statistics(df, obj) for obj in objects}
     print(dfs)
     data = []
-    for obj,df_stats in dfs.items():
+    for obj, df_stats in dfs.items():
         # data.append(
         #     go.Scatter(
         #         name='Upper Bound',
