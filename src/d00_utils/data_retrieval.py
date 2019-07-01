@@ -51,6 +51,9 @@ def retrieve_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime
             paths: dictionary containing raw_video, s3_profile and bucket_name paths
             from_date: start date (inclusive) for retrieving videos, if None then will retrieve from 2019-06-01 onwards
             to_date: end date (inclusive) for retrieving vidoes, if None then will retrieve up to current day
+            from_time: start time for retrieving videos, if None then will retrieve from the start of the day
+            to_time: end time for retrieving videos, if None then will retrieve up to the end of the day
+            camera_list: list of cameras to retrieve from, if None then retrieve from all cameras
             bool_keep_data: boolean for keeping the downloaded data in the local folder
         Returns:
             videos: list of numpy arrays containing all the jamcam videos between the selected dates
