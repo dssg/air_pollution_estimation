@@ -12,7 +12,7 @@ paths = load_paths()
 
 videos, names = retrieve_videos_s3_to_np(paths, from_date='2019-06-19', to_date='2019-06-19',
                                          from_time='20-20-00', to_time='20-20-02',
-                                         bool_keep_data=True)
+                                         bool_keep_data=False)
 #videos, names = load_videos_from_local(paths)
 yolo_dict = classify_objects(videos, names, params, paths,
                                 vid_time_length=10, make_videos=True)
