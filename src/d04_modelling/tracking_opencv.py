@@ -118,6 +118,9 @@ def gen_colors(labels:list) -> list:
 		colors.append(color_dict[label])
 	return colors
 
+def detect_new_bboxes(frame:np.ndarray,bboxes:list) -> list : 
+	"""Determine new bboxes from old 
+	"""
 
 def track_objects(local_mp4_path:str,
 				  detection_model:str,detection_confidence:float,detection_implementation:str,
@@ -159,13 +162,7 @@ def track_objects(local_mp4_path:str,
 		if not success: break
 
 		# get updated location of objects in subsequent frames
-		success, boxes = multiTracker.update(frame)
-
-		# draw tracked objects
-		for i, newbox in enumerate(boxes):
-			p1 = (int(newbox[0]), int(newbox[1]))
-			p2 = (int(newbox[0] + newbox[2]), int(newbox[1] + newbox[3]))
-			cv2.rectangle(frame, p1, p2, colors[i], 2, 1)
+		success, updated_boxes = multiTracker.update(frame)
 
 		#every x frames, re-detect boxes
 		if frame_counter%detection_frequency == 0: 
@@ -179,8 +176,15 @@ def track_objects(local_mp4_path:str,
 			multiTracker = cv2.MultiTracker_create()
 
 			# re-initialize MultiTracker
+			new_bboxes = detect_new_bboxes(frame,bboxes)
 			for bbox in bboxes:
 				multiTracker.add(create_tracker_by_name(tracking_model), frame, bbox)
+
+		# draw tracked objects
+		for i, updated_box in enumerate(updated_boxes):
+			p1 = (int(updated_box[0]), int(updated_box[1]))
+			p2 = (int(updated_box[0] + updated_box[2]), int(updated_box[1] + updated_box[3]))
+			cv2.rectangle(frame, p1, p2, colors[i], 2, 1)
 
 		processed_video.append(frame)
 
