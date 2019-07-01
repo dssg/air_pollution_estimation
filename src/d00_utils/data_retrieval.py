@@ -43,7 +43,7 @@ def retrieve_single_video_s3_to_np(camera, date, time, paths, bool_keep_data=Tru
 
 
 def retrieve_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime.datetime.now())[:10],
-                             from_time='00-00-00', to_time='23-59-59', bool_keep_data=True):
+                             from_time='00-00-00', to_time='23-59-59', camera_list=None, bool_keep_data=True):
     """Retrieve jamcam videos from the s3 bucket based on the dates specified.
     Downloads to a local directory and then loads them into numpy arrays.
 
@@ -84,8 +84,13 @@ def retrieve_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime
             file = obj.key
             time = re.search("([0-9]{2}\:[0-9]{2}\:[0-9]{2})", file).group()
             time = datetime.datetime.strptime(time, '%H:%M:%S').time()
-            if(time >= from_time and time <= to_time):
-                selected_files.append(file)
+            camera_id = file.split('_')[-1][:-4]
+            if(not camera_list):
+                if(time >= from_time and time <= to_time):
+                    selected_files.append(file)
+            else:
+                if (time >= from_time and time <= to_time and camera_id in camera_list):
+                    selected_files.append(file)
 
         for file in selected_files:
             try:
