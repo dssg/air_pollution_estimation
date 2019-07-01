@@ -8,42 +8,51 @@ import shutil
 import datetime
 
 
-def retrieve_single_video(camera, date, time, paths, bool_keep_data=True):
+def retrieve_single_video(camera:str, date:str, time:str, paths:dict, bool_keep_data=False) -> np.ndarray:
     """Retrieve one jamcam video from the s3 bucket based on the details specified.
-        Downloads to a local directory and then loads into a numpy array.
+        Downloads to a local temp directory, loads into a numpy array, then deletes 
+        temp dict (default behavior). If bool_keep_data is True, the video will be 
+        saved to local_video dir instead, and then loaded into np array. 
 
             Args:
                 camera: camera number as a string
                 date: date as a string (YYYYMMDD)
                 time: time as a string (HHMM)
-                paths: dictionary containing local_video, s3_video, s3_profile and bucket_name paths
+                paths: dictionary containing temp_video, local_video, s3_video, s3_profile and bucket_name paths
                 bool_keep_data: boolean for keeping the downloaded data in the local folder
             Returns:
                 numpy array containing the jamcam video
             Raises:
 
         """
-    create_local_dir(paths['local_video'])
+    delete_and_recreate_dir(paths['temp_video'])
     timestamp = date[:4] + "-" + date[4:6] + "-" + date[6:] + "_" + time[:2] + '.' + time[2:]
     s3_vid_key = paths['s3_video'] + "/" + camera + "/" + timestamp + '.mp4'
     s3_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
 
-    file_dir = paths['local_video'] + date + "_" + time + "_" + camera + '.mp4'
+    save_folder ='local_video' if bool_keep_data else 'temp_video'
+
+    file_dir = paths[save_folder] + date + "_" + time + "_" + camera + '.mp4'
     s3_bucket.download_file(s3_vid_key, file_dir)
     buf = mp4_to_npy(file_dir)
 
-    if (not bool_keep_data):
-        shutil.rmtree(paths['local_video'])
+    # Delete the folder temp_video
+    if not bool_keep_data:
+        assert save_folder=='temp_video'
+        shutil.rmtree(paths[save_folder])
 
     return buf
 
 
-def retrieve_videos_based_on_dates(paths, from_date='2019-06-01', to_date=str(datetime.datetime.now())[:10], bool_keep_data=True):
+def retrieve_videos_based_on_dates(paths:dict, from_date='2019-06-01', to_date=str(datetime.datetime.now())[:10], 
+                              bool_keep_data=True) -> list:
     """Retrieve jamcam videos from the s3 bucket based on the dates specified.
-    Downloads to a local directory and then loads them into numpy arrays.
+    Downloads to a local temp directory and then loads them into numpy arrays, before 
+    deleting the temp directory (default behavior). If bool_keep_data is True, the videos will be 
+    saved to local_video dir instead, and then loaded into np array. 
 
         Args:
-            paths: dictionary containing local_video, s3_profile and bucket_name paths
+            paths: dictionary containing temp_video folder, s3_profile and bucket_name paths
             from_date: start date (inclusive) for retrieving videos, if None then will retrieve from 2019-06-01 onwards
             to_date: end date (inclusive) for retrieving vidoes, if None then will retrieve up to current day
             bool_keep_data: boolean for keeping the downloaded data in the local folder
@@ -52,7 +61,7 @@ def retrieve_videos_based_on_dates(paths, from_date='2019-06-01', to_date=str(da
         Raises:
 
     """
-    create_local_dir(paths['local_video'])
+    delete_and_recreate_dir(paths['temp_video'])
     my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
 
     # Get list of files in s3 based on dates provided
@@ -63,30 +72,35 @@ def retrieve_videos_based_on_dates(paths, from_date='2019-06-01', to_date=str(da
         file = obj.key
         try:
             date = re.search("([0-9]{4}\-[0-9]{2}\-[0-9]{2})", file).group()
-            if (date >= from_date and date <= to_date):
+            if date >= from_date and date <= to_date:
                 selected_files.append(file)
         except:
             print('Could not find date for: ' + file)
 
+    save_folder ='local_video' if bool_keep_data else 'temp_video'
+
     # Download the selected files
     for file in selected_files:
-        my_bucket.download_file(file, paths['local_video'] + file.split('/')[-1])
+        my_bucket.download_file(file, paths[save_folder] + file.split('/')[-1])
 
     # Load files into a list of numpy arrays using opencv
     data = []
-    for file in os.listdir(paths['local_video']):
-        data.append(mp4_to_npy(paths['local_video'] + file))
+    for file in os.listdir(paths[save_folder]):
+        data.append(mp4_to_npy(paths[save_folder] + file))
 
-    # Delete local data unless specified
-    if(not bool_keep_data):
-        shutil.rmtree(paths['local_video'])
+    # Delete the folder temp 
+    if not bool_keep_data:
+        assert save_folder=='temp_video'
+        shutil.rmtree(paths[save_folder])
 
     return data
 
 
-def create_local_dir(local_dir):
-    """Creates the local directory for downloading from s3"""
-    # Set local directory for downloading data, will overwrite whatever is currently there
+def delete_and_recreate_dir(local_dir):
+    """
+    Creates an empty local directory for downloading from s3. 
+    Will wipe local_dir if already a directory
+    """
     if (os.path.isdir(local_dir)):
         shutil.rmtree(local_dir)
     os.mkdir(local_dir)
@@ -168,3 +182,4 @@ def describe_s3_bucket(paths):
     plt.close()
 
     return
+
