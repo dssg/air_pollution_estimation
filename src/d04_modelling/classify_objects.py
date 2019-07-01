@@ -7,22 +7,12 @@ import time
 import os
 
 
-def classify_objects(
-    video_url:str, 
-    params:dict, 
-    vid_time_length:int=10, 
-    make_video:bool=True, 
-    local_mp4_path:str=".", 
-    local_filename:str=None):
+def classify_objects(local_mp4_path, params, vid_time_length=10,make_video=True):
     """ this function classifies objects from local mp4 with cvlib python package.
         Args:
-            video_url: path to video file,
-            vid_time_length=10 (int): length of the video data in seconds
-            make_video (bool): output a video with object classification labels in same directory as original video,
-            local_mp4_path (str): path to save video with object classification label,
-            local_filename: filename of the generated video
-
-
+            local_mp4_path (str): path to mp4 file in directory
+            vid_time_length (int): length of the video data in seconds
+            make_video (bool): output a video with object classification labels in same directory as original video
         Returns:
             obj_bounds (list of np arrays): n-dim list of list of arrays marking the corners of the bounding boxes of objects, for n frames
             obj_labels (list of str): n-dim list of list of labels assigned to classified objects, for n frames
@@ -32,7 +22,7 @@ def classify_objects(
     start_time = time.time()
 
     # import video from local path
-    cap = cv2.VideoCapture(video_url)
+    cap = cv2.VideoCapture(local_mp4_path)
     n_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     cap_fps = int(n_frames / vid_time_length)  # assumes vid_length in seconds
 
@@ -61,14 +51,12 @@ def classify_objects(
             cap_cvlib.append(img_cvlib)
         else:
             pass
-    filename, extension = os.path.splitext(os.path.basename(video_url))
-    filename = local_filename or filename +"_cvlib"+extension
-    print(filename)
-    
+
     # write video to local file
     if make_video:
         cap_cvlib_npy = np.asarray(cap_cvlib)
-        imageio.mimwrite(filename, cap_cvlib_npy, fps=cap_fps)
+        local_mp4_path_out = local_mp4_path[:-4] + '_cvlib' + local_mp4_path[-4:]
+        imageio.mimwrite(local_mp4_path_out, cap_cvlib_npy, fps=cap_fps)
     else:
         pass
 
