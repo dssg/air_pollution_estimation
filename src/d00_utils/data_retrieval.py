@@ -8,7 +8,7 @@ import shutil
 import datetime
 
 
-def retrieve_single_video_s3_to_np(camera, date, time, paths, bool_keep_data=False):
+def retrieve_single_video(camera:str, date:str, time:str, paths:dict, bool_keep_data=False) -> np.ndarray:
     """Retrieve one jamcam video from the s3 bucket based on the details specified.
         Downloads to a local temp directory, loads into a numpy array, then deletes 
         temp dict (default behavior). If bool_keep_data is True, the video will be 
@@ -25,7 +25,7 @@ def retrieve_single_video_s3_to_np(camera, date, time, paths, bool_keep_data=Fal
             Raises:
 
         """
-    create_local_dir(paths['temp_video'])
+    delete_and_recreate_dir(paths['temp_video'])
     timestamp = date[:4] + "-" + date[4:6] + "-" + date[6:] + "_" + time[:2] + '.' + time[2:]
     s3_vid_key = paths['s3_video'] + "/" + camera + "/" + timestamp + '.mp4'
     s3_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
@@ -44,7 +44,8 @@ def retrieve_single_video_s3_to_np(camera, date, time, paths, bool_keep_data=Fal
     return buf
 
 
-def retrieve_daterange_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime.datetime.now())[:10], bool_keep_data=True):
+def retrieve_videos_based_on_dates(paths:dict, from_date='2019-06-01', to_date=str(datetime.datetime.now())[:10], 
+                              bool_keep_data=True) -> list:
     """Retrieve jamcam videos from the s3 bucket based on the dates specified.
     Downloads to a local temp directory and then loads them into numpy arrays, before 
     deleting the temp directory (default behavior). If bool_keep_data is True, the videos will be 
@@ -60,7 +61,7 @@ def retrieve_daterange_videos_s3_to_np(paths, from_date='2019-06-01', to_date=st
         Raises:
 
     """
-    create_local_dir(paths['temp_video'])
+    delete_and_recreate_dir(paths['temp_video'])
     my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
 
     # Get list of files in s3 based on dates provided
@@ -95,7 +96,7 @@ def retrieve_daterange_videos_s3_to_np(paths, from_date='2019-06-01', to_date=st
     return data
 
 
-def create_local_dir(local_dir):
+def delete_and_recreate_dir(local_dir):
     """
     Creates an empty local directory for downloading from s3. 
     Will wipe local_dir if already a directory

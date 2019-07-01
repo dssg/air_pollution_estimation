@@ -1,6 +1,3 @@
-from src.d00_utils.data_retrieval import retrieve_single_video_s3_to_np
-from src.d04_modelling.classify_objects import classify_objects
-from os import path
 import os
 import numpy as np
 import pandas as pd
@@ -8,10 +5,8 @@ import pickle as pkl
 import datetime
 import yaml
 
-basepath=os.path.dirname(__file__) #path of current script
 
-
-def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date,time):
+def frame_info_to_df(obj_info_aggregated:np.ndarray, frame_ind:np.ndarray, camera_id:int, date,time) -> pd.DataFrame:
     """Parse the info corresponding to one frame into one pandas df
 
     Keyword arguments: 
@@ -32,7 +27,7 @@ def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date,time):
     return frame_df
 
 
-def yolo_output_df(obj_bounds, obj_labels, obj_label_confidences, camera_id, date, time):
+def yolo_output_df(obj_bounds, obj_labels, obj_label_confidences, camera_id, date, time) -> pd.DataFrame:
     """Formats the output of yolo on one video. Returns as pandas df. 
 
     Keyword arguments: 
@@ -101,45 +96,3 @@ def yolo_report_stats(yolo_df):
     video_summary.loc['sum'] = sums
 
     return obj_counts_frame, video_summary
-
-
-if __name__ == '__main__':
-    #example of how to interface functions above with yolo code 
-    pkl_path=os.path.abspath(os.path.join(basepath,"..", "..", "data/pickled/", "yolo_res"))
-    save_path = os.path.abspath(os.path.join(basepath,"..", "..", "data/sample_yolo_output", "sample_yolo_output.csv"))
-
-    #sample input 
-    camera="06508"
-    date="20190603" #yyyymmdd
-    time="1145"
-
-    #load params and paths
-    os.chdir(".")
-    with open('../../conf/base/parameters.yml') as f:
-       params = yaml.safe_load(f)['modelling']
-    os.chdir(".")
-    with open('../../conf/base/paths.yml') as f:
-       paths = yaml.safe_load(f)['paths']
-    
-    #1. load video from s3, run csvlib YOLO, dump output as PKL to decrease development time
-    retrieve_single_video_s3_to_np(camera=camera, date=date, time=time, paths=paths)
-    obj_bounds, obj_labels, obj_label_confidences=classify_objects(local_mp4_path=local_mp4_path, params = params)
-
-    with open(pkl_path, 'wb') as fh:
-        pkl.dump([obj_bounds, obj_labels, obj_label_confidences], fh)
-
-    # 2. load output from pkl file, process and write as csv
-    with open(pkl_path, 'rb') as fh:
-            yolo_res = pkl.load(fh)
-
-    obj_bounds, obj_labels, obj_label_confidences = yolo_res
-
-    yolo_df=yolo_output_df(obj_bounds, obj_labels, obj_label_confidences, camera, date, time)
-
-    print(yolo_df.columns.tolist())
-    yolo_df.to_csv(save_path)
-
-    # 3. Reload csv, generate stats: group on frame,  vehicle type, number
-    yolo_df = pd.read_csv(save_path)
-    obj_counts_frame, video_summary = yolo_report_stats(yolo_df)
-    print(obj_counts_frame.head(), video_summary.head())
