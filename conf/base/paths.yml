@@ -9,3 +9,4 @@ local_paths:
     raw_video: "data/01_raw/jamcams/"
     processed_video: "data/02_processed/jamcams/"
     plots: "plots/"
+    annotations: "annotations/"

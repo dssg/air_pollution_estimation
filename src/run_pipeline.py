@@ -10,12 +10,21 @@ from src.d05_reporting.report_yolo import yolo_output_df, yolo_report_stats
 params = load_parameters()
 paths = load_paths()
 
+"""
 videos, names = retrieve_videos_s3_to_np(paths, from_date='2019-06-19', to_date='2019-06-19',
                                          from_time='20-20-00', to_time='20-20-02',
-                                         bool_keep_data=False)
+                                         bool_keep_data=True)
 #videos, names = load_videos_from_local(paths)
 yolo_dict = classify_objects(videos, names, params, paths,
                                 vid_time_length=10, make_videos=True)
 yolo_df = yolo_output_df(yolo_dict)
 stats_df = yolo_report_stats(yolo_df)
 stats_df.to_csv(paths['processed_video'] + 'JamCamStats.csv')
+"""
+
+from src.d04_modelling.evaluation import parse_annotations, get_stop_counts, get_type_counts
+
+annotations_df = parse_annotations(['video001'], paths, bool_print_summary=False)
+stops_df = get_stop_counts(annotations_df)
+types_df = get_type_counts(annotations_df)
+print('Done')

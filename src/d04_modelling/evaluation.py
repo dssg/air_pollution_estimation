@@ -45,7 +45,7 @@ def parse_annotations(xml_files, paths, bool_print_summary=False):
 
 
 def get_stop_counts(annotations_df):
-    """ Get the number of stops for each vehicle
+    """ Get the number of stops for each vehicle from the annotations dataframe
                     Args:
                         annotations_df: pandas dataframe containing the annotations
                     Returns:
@@ -67,7 +67,21 @@ def get_stop_counts(annotations_df):
             num_stops += 1
         ids.append(group[1]['id'].tolist()[0])
         counts.append(num_stops)
-    stops_df = pd.DataFrame(data=np.array(list(zip(ids, counts))), columns=['id', 'num_stops'])
+    stops_df = pd.DataFrame(data=np.array(list(zip(ids, counts))), columns=['object_id', 'num_stops'])
     return stops_df
 
+def get_type_counts(annotations_df):
+    """ Get the type counts from the annotations dataframe
+                        Args:
+                            annotations_df: pandas dataframe containing the annotations
+                        Returns:
+                            pandas dataframe containing the type counts
+                        Raises:
+        """
+    types = annotations_df.groupby('id')['type'].unique()
+    types = [t[0] for t in types]
+    vals, counts = np.unique(types, return_counts=True)
+    df = pd.DataFrame(list(zip(vals, counts)), columns=['object_type', 'count'])
+
+    return df
 
