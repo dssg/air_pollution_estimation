@@ -1,6 +1,5 @@
 # # Explore Tracking Methods in OpenCV
 # Source: https://www.learnopencv.com/multitracker-multiple-object-tracking-using-opencv-c-python/
-
 from __future__ import print_function
 import numpy as np
 import sys, os
@@ -10,10 +9,10 @@ import yaml
 import cvlib
 import imutils
 import imageio
+import time
 
 
-
-def create_tracker_by_name(tracker_type):
+def create_tracker_by_name(tracker_type:str):
 	"""Create tracker based on tracker name"""
 	tracker_types = ['BOOSTING', 'MIL', 'KCF','TLD', 'MEDIANFLOW', 'GOTURN', 'MOSSE', 'CSRT']
 
@@ -70,12 +69,14 @@ def draw_bounding_boxes(frame:np.ndarray) -> (list,list):
 	return bboxes,colors
 
 
-def detect_bounding_boxes(frame:np.ndarray, model:str,confidence:float,
+def detect_bboxes(frame:np.ndarray, model:str,confidence:float,
 						  implementation:str=None) -> (list,list,list):
 	'''Detect bounding boxes on a frame using specified model and optionally an implementation
 
 	bboxes returned in format (xmin, ymin, w, h)
 	'''
+
+	#todo: append confs to labels
 	if implementation == 'cvlib':
 		bboxes_cvlib, labels, confs = cvlib.detect_common_objects(frame, confidence=confidence,
 											 model=model)
@@ -84,7 +85,8 @@ def detect_bounding_boxes(frame:np.ndarray, model:str,confidence:float,
 	del_inds = []
 	for i, label in enumerate(labels): 
 		#specify object types to ignore 
-		if label in ["people"]: del_inds.append(i)
+		if label not in ["car", "truck", "bus", "motorbike"]: del_inds.append(i)
+		else: labels[i] += ' ' + str(format(confs[i] * 100, '.2f')) + '%' #append confidences to labels we care about
 
 	#delete items from lists
 	for i in sorted(del_inds, reverse=True):
@@ -102,11 +104,10 @@ def bboxcvlib_to_bboxcv2(bbox_cvlib:tuple) -> tuple:
 	return bbox_cv2
 
 
-def gen_colors(labels:list) -> list:
+def color_bboxes(labels:list) -> list:
 	"""auto generate colors based on object types
 
 	"""
-	#todo later: get obj types from yolo and assign unique colors
 	color_dict={"car": (255,100,150), #pink
 				"truck": (150,230,150), #light green
 				 "bus": (150,200,230), #periwinkle
@@ -118,9 +119,15 @@ def gen_colors(labels:list) -> list:
 		colors.append(color_dict[label])
 	return colors
 
+
 def detect_new_bboxes(frame:np.ndarray,bboxes:list) -> list : 
 	"""Determine new bboxes from old 
+
 	"""
+
+	pass
+	return None
+
 
 def track_objects(local_mp4_path:str,
 				  detection_model:str,detection_confidence:float,detection_implementation:str,
@@ -128,6 +135,9 @@ def track_objects(local_mp4_path:str,
 				  video_time_length=10, make_video=True):
 	"""
 	"""
+
+	start_time = time.time()
+	
 	# Create a video capture object to read videos
 	cap = cv2.VideoCapture(local_mp4_path)
 	n_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -140,11 +150,11 @@ def track_objects(local_mp4_path:str,
 		print('Failed to read video')
 		sys.exit(0)
 
-	bboxes, labels, confs = detect_bounding_boxes(frame=frame, model=detection_model,
+	bboxes, labels, confs = detect_bboxes(frame=frame, model=detection_model,
 							confidence=detection_confidence,
 							implementation=detection_implementation)
 
-	colors=gen_colors(labels)
+	colors=color_bboxes(labels)
 
 	# Create MultiTracker object
 	multiTracker = cv2.MultiTracker_create()
@@ -164,14 +174,22 @@ def track_objects(local_mp4_path:str,
 		# get updated location of objects in subsequent frames
 		success, updated_boxes = multiTracker.update(frame)
 
+		# draw tracked objects
+		for i, updated_box in enumerate(updated_boxes):
+			p1 = (int(updated_box[0]), int(updated_box[1]))
+			p2 = (int(updated_box[0] + updated_box[2]), int(updated_box[1] + updated_box[3]))
+			cv2.rectangle(frame, p1, p2, colors[i], 2, 1)
+			#write labels, confs
+			cv2.putText(frame, labels[i],(p1[0],p1[1]-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, colors[i], 2)
+
 		#every x frames, re-detect boxes
 		if frame_counter%detection_frequency == 0: 
 			#redetect bounding boxes
-			bboxes, labels, confs = detect_bounding_boxes(frame=frame, model=detection_model,
+			bboxes, labels, confs = detect_bboxes(frame=frame, model=detection_model,
 							confidence=detection_confidence,
 							implementation=detection_implementation)
 			#somehow only get bboxes with intersection over union under a certain amt? 
-			colors=gen_colors(labels)
+			colors=color_bboxes(labels)
 			# Create MultiTracker object
 			multiTracker = cv2.MultiTracker_create()
 
@@ -180,11 +198,6 @@ def track_objects(local_mp4_path:str,
 			for bbox in bboxes:
 				multiTracker.add(create_tracker_by_name(tracking_model), frame, bbox)
 
-		# draw tracked objects
-		for i, updated_box in enumerate(updated_boxes):
-			p1 = (int(updated_box[0]), int(updated_box[1]))
-			p2 = (int(updated_box[0] + updated_box[2]), int(updated_box[1] + updated_box[3]))
-			cv2.rectangle(frame, p1, p2, colors[i], 2, 1)
 
 		processed_video.append(frame)
 
@@ -195,9 +208,10 @@ def track_objects(local_mp4_path:str,
 		frame_counter += 1
 
 	if make_video:
-		local_mp4_path_out = local_mp4_path[:-4] + '_tracked' + local_mp4_path[-4:]
+		local_mp4_path_out = local_mp4_path[:-4] + '_trackedv2' + local_mp4_path[-4:]
 		imageio.mimwrite(local_mp4_path_out, np.array(processed_video), fps=cap_fps)
 
+	print('Run time is %s seconds' % (time.time() - start_time))
 	return None #ideally would return number of tracked objects, confidence levels
 
 
@@ -213,12 +227,12 @@ if __name__ == '__main__':
 	   paths = yaml.safe_load(f)['paths']
 
 	#get a video from local
-	local_mp4_path = os.path.abspath(os.path.join(basepath,"..", "..","data/sample_video_data/testvidv2.mp4"))
+	local_mp4_path = os.path.abspath(os.path.join(basepath,"..", "..","data/sample_video_data/testvid.mp4"))
 	tracking_model = params["opencv_tracker_type"]
 	detection_confidence = params["confidence_threshold"]
 	detection_model = params["yolo_model"]
 	detection_implementation = params["yolo_implementation"]
-	detection_frequency = 25
+	detection_frequency = 50
 
 	track_objects(local_mp4_path=local_mp4_path,
 				  detection_model=detection_model,detection_confidence=detection_confidence,
