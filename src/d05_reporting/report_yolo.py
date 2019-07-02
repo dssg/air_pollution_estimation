@@ -50,7 +50,7 @@ def yolo_output_df(yolo_dict):
         assert obj_label_confidences.shape[0] == num_frames
 
         date = datetime.datetime.strptime(name.split("_")[0], '%Y-%m-%d').date()
-        time = datetime.datetime.strptime(name.split("_")[1], '%H-%M-%S').time()
+        time = datetime.datetime.strptime(name.split("_")[1], '%H-%M-%S.%f').time()
         camera_id = name.split('_')[-1][:-4]
 
         frame_df_list = []
