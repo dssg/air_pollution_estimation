@@ -5,7 +5,7 @@ import requests
 import shutil
 import datetime
 import time
-from email_service import send_email_warning
+from data_collection.d01_data.email_service import send_email_warning
 import threading
 
 
@@ -67,10 +67,9 @@ def get_tims_data_and_upload_to_s3():
 
     return
 
+
 def download_from_site(url, file):
     urllib.request.urlretrieve(url, file)
-
-
 
 
 def upload_to_s3(file):

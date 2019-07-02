@@ -163,14 +163,10 @@ def connect_to_bucket(profile_dir, bucket_name):
 
 def retrieve_tims_from_s3():
 
-
-
     return
 
 
 def retrieve_cam_details_from_database():
-
-
 
     return
 
@@ -208,6 +204,7 @@ def describe_s3_bucket(paths):
     plt.close()
 
     return
+
 
 def load_videos_from_local(paths):
     """Load video data from the local raw jamcam folder and return it as a list of numpy arrays

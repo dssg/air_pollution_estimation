@@ -1,11 +1,9 @@
 import urllib.request
-import datetime
 import os
 import subprocess
 import time
 import json
-from collections import defaultdict
-from email_service import send_email_warning
+from data_collection.d01_data.email_service import send_email_warning
 import datetime
 
 

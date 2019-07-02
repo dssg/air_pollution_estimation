@@ -1,4 +1,4 @@
-from collect_video_data import upload_videos
+from data_collection.d01_data.collect_video_data import upload_videos
 import os
 import configparser
 

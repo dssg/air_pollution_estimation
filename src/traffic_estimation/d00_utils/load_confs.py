@@ -1,6 +1,7 @@
 import os
 import yaml
 
+
 def load_parameters():
 
     project_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..')
