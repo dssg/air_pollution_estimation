@@ -75,8 +75,8 @@ def collect_camera_videos(local_video_dir: str,
 
         end = time.time()
         time_diff = end - start
-        send_email_warning("Downloaded %s videos from tfl in %s secs." %
-                           (count, time_diff), "Download Successful")
+        # send_email_warning("Downloaded %s videos from tfl in %s secs." %
+                        #    (count, time_diff), "Download Successful")
         iteration += 1
         if iteration == iterations:
             break
