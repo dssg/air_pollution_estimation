@@ -7,6 +7,7 @@ import re
 import shutil
 import datetime
 import glob
+import time
 
 
 def retrieve_single_video_s3_to_np(camera:str, date:str, time:str, paths:dict, bool_keep_data=False) -> np.ndarray:
@@ -89,9 +90,12 @@ def retrieve_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime
         dates.append(from_date)
         from_date += datetime.timedelta(days=1)
 
+    download_start = time.time()
+
     # Download the files in each of the date folders on s3
     for date in dates:
         date = date.strftime('%Y-%m-%d')
+        print('Downloading for ' + date)
         objects = my_bucket.objects.filter(Prefix="raw/videos/" + date + "/")
 
         selected_files = []
@@ -108,22 +112,29 @@ def retrieve_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime
                 if (time >= from_time and time <= to_time and camera_id in camera_list):
                     selected_files.append(file)
 
-        for file in selected_files:
+        for num, file in enumerate(selected_files):
+            print('Downloading file ' + str(num) + '/' + str(len(selected_files)))
             try:
                 my_bucket.download_file(file, paths[save_folder] + file.split('/')[-1].replace(
                     ':', '-').replace(" ", "_"))
             except:
                 print("Could not download " + file)
 
+    print('Downloading took ' + str(time.time() - download_start) + ' seconds')
+
     # Load files into a list of numpy arrays using opencv
     videos = []
     names = []
+    convert_start = time.time()
+    print('Converting files to numpy arrays')
     for file in glob.glob(paths[save_folder] + '*.mp4'):
         try:
             videos.append(mp4_to_npy(file))
             names.append(file.split('/')[-1])
         except:
             print("Could not convert " + file + " to numpy array")
+
+    print('Converting took ' + str(time.time() - convert_start) + ' seconds') 
 
     # Delete the folder temp
     if not bool_keep_data:
