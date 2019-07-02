@@ -1,0 +1,8 @@
+
+
+# This is a data set used by the example pipeline provided with the projected
+# template. Please feel free to remove it once you remove the example pipeline.
+example_iris_data:
+  type: CSVLocalDataSet
+  filepath: data/01_raw/iris.csv
+
