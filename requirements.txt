@@ -11,3 +11,4 @@ cvlib
 datetime
 imageio-ffmpeg
 imageio
+kedro==0.14.3
