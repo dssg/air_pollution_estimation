@@ -9,7 +9,7 @@ from email_service import send_email_warning
 import datetime
 
 
-def download_camera_data(tfl_cam_api: str = "https://api.tfl.gov.uk/Place/Type/JamCam",
+def download_camera_data(tfl_cam_api: str = "https://api.tfl.gov.uk/Place/Type/jamcams",
                          cam_file: str = "data/00_ref/cam_file.json"):
     '''
     Gets a list of camera ids and info from tfl api
@@ -75,8 +75,8 @@ def collect_camera_videos(local_video_dir: str,
 
         end = time.time()
         time_diff = end - start
-        send_email_warning("Downloaded %s videos from tfl in %s secs." %
-                           (count, time_diff), "Download Successful")
+        # send_email_warning("Downloaded %s videos from tfl in %s secs." %
+                        #    (count, time_diff), "Download Successful")
         iteration += 1
         if iteration == iterations:
             break
