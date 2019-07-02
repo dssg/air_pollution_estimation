@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 import pickle as
 import datetime
-
 basepath=path.dirname(__file__) #path of current script
 
 

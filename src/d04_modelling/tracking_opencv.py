@@ -1,15 +1,14 @@
 # # Explore Tracking Methods in OpenCV
 # Source: https://www.learnopencv.com/multitracker-multiple-object-tracking-using-opencv-c-python/
-from __future__ import print_function
+from src.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame,bbox_intersection_over_union
+from src.d00_utils.video_helpers import write_mp4
+from src.d04_modelling.object_detection import detect_bboxes
 import numpy as np
 import sys, os
 import cv2
-from random import randint
 import yaml
-import cvlib
-import imutils
-import imageio
 import time
+import collections
 
 
 def create_tracker_by_name(tracker_type:str):
@@ -38,168 +37,81 @@ def create_tracker_by_name(tracker_type:str):
 		print('Available trackers are:')
 		for t in tracker_types:
 			print(t)
-
 	return tracker
-
-
-def draw_bounding_boxes(frame:np.ndarray) -> (list,list):
-	"""Select boxes by hand 
-
-
-	"""
-	bboxes = []
-	colors = []
-
-	# OpenCV's selectROI function doesn't work for selecting multiple objects in Python
-	# So we will call this function in a loop till we are done selecting all objects
-	while True:
-		# draw bounding boxes over objects
-		# selectROI's default behaviour is to draw box starting from the center
-		# when fromCenter is set to false, you can draw box starting from top left corner
-		bbox = cv2.selectROI('MultiTracker', frame)
-		bboxes.append(bbox)
-		colors.append((randint(0, 255), randint(0, 255), randint(0, 255)))
-		print("Press q to quit selecting boxes and start tracking. Press any other key to select next object.")
-		k = cv2.waitKey(0) & 0xFF
-		if (k == 113):  # q is pressed
-			break
-
-		print('Selected bounding boxes {}'.format(bboxes))
-
-	return bboxes,colors
-
-
-def detect_bboxes(frame:np.ndarray, model:str,confidence:float,
-						  implementation:str=None) -> (list,list,list):
-	'''Detect bounding boxes on a frame using specified model and optionally an implementation
-
-	bboxes returned in format (xmin, ymin, w, h)
-	'''
-
-	#todo: append confs to labels
-	if implementation == 'cvlib':
-		bboxes_cvlib, labels, confs = cvlib.detect_common_objects(frame, confidence=confidence,
-											 model=model)
-		bboxes = [bboxcvlib_to_bboxcv2(bbox_cvlib) for bbox_cvlib in bboxes_cvlib]
-
-	del_inds = []
-	label_confs = [] 
-	for i, label in enumerate(labels): 
-		#specify object types to ignore 
-		if label not in ["car", "truck", "bus", "motorbike"]: del_inds.append(i)
-		else: label_confs.append(label +' ' + str(format(confs[i] * 100, '.2f')) + '%') #append confidences to labels we care about
-
-	#delete items from lists
-	for i in sorted(del_inds, reverse=True):
-		del bboxes[i]; del labels[i]; del confs[i]
-
-	colors=color_bboxes(labels)
-	return bboxes, label_confs, colors
-
-
-def bboxcvlib_to_bboxcv2(bbox_cvlib):
-	"""Convert bboxes from format returned by cvlib to format required by cv2
-
-	"""
-	xmin,ymin,xmin_plus_w, ymin_plus_h = bbox_cvlib[0], bbox_cvlib[1], bbox_cvlib[2], bbox_cvlib[3]
-	bbox_cv2 = (xmin, ymin, xmin_plus_w - xmin, ymin_plus_h - ymin)
-	return bbox_cv2
-
-
-def bboxcv2_to_bboxcvlib(bbox_cv2):
-	"""Convert bboxes from format (xmin,ymin,w,h) to format (xmin,ymin, xmin+w, ymin+H)
-	"""
-	xmin,ymin,w, h = bbox_cv2[0], bbox_cv2[1], bbox_cv2[2], bbox_cv2[3]
-	bbox_cvlib =(xmin, ymin, xmin+w, ymin+h)
-	return bbox_cvlib
-
-
-def color_bboxes(labels:list) -> list:
-	"""auto generate colors based on object types
-
-	"""
-	color_dict={"car": (255,100,150), #pink
-				"truck": (150,230,150), #light green
-				 "bus": (150,200,230), #periwinkle
-				 "motorbike": (240,160,80)} #orange
-	colors = []
-	for label in labels:
-		if label not in color_dict.keys():
-			color_dict[label]= (randint(0,255), randint(0,255), randint(0,255))
-		colors.append(color_dict[label])
-	return colors
-
-def bb_intersection_over_union(boxA, boxB) -> float:
-	"""compute intersection over union for two bounding boxes
-	boxes in format: (xmin, ymin, xmin+w, ymin+h)
-	"""
-
-	# determine the (x, y)-coordinates of the intersection rectangle
-	xA = max(boxA[0], boxB[0]) #xcoords
-	yA = max(boxA[1], boxB[1]) #ycoords
-	xB = min(boxA[2], boxB[2]) #xcoords plus w
-	yB = min(boxA[3], boxB[3]) #ycoords plus h
-
-	# compute the area of intersection rectangle
-	interArea = abs(max((xB - xA, 0)) * max((yB - yA), 0))
-	if interArea == 0:
-		return 0
-	# compute the area of both the prediction and ground-truth
-	# rectangles
-	boxAArea = abs((boxA[2] - boxA[0]) * (boxA[3] - boxA[1]))
-	boxBArea = abs((boxB[2] - boxB[0]) * (boxB[3] - boxB[1]))
-
-	# compute the intersection over union by taking the intersection
-	# area and dividing it by the sum of prediction + ground-truth
-	# areas - the interesection area
-	iou = interArea / float(boxAArea + boxBArea - interArea)
-
-	# return the intersection over union value
-	return iou
 
 
 def determine_new_bboxes(bboxes_tracked:list, bboxes_detected:list, iou_threshold:float) -> list: 
 	"""Return the indices of "new" bboxes in bboxes_detected so that a new tracker can be added for that 
-	boxes should be passed in in format (xmin,ymin,w,h)
+	
+	Keyword arguments: 
+
+	bboxes_tracked: bboxes which are currently tracked. bboxes should be passed in in format (xmin,ymin,w,h)
+	bboxes_detected: bboxes which are newly detected. bboxes should be passed in in format (xmin,ymin,w,h)
+	iou_threshold: a detected bbox with iou below the iou_threshold (as compared to all existing, tracked bboxes) 
+				   will be considered new. 
 	"""
+
 	new_bboxes_inds = set(range(len(bboxes_detected))) #init with all inds
 	old_bboxes_inds = set()
 	for i,boxA in enumerate(bboxes_detected): 
 		#if find a box which has high IOU with an already-tracked box, consider it an old box
 		for boxB in bboxes_tracked:
 			#format conversion needed
-			iou = bb_intersection_over_union(bboxcv2_to_bboxcvlib(boxA), bboxcv2_to_bboxcvlib(boxB))
+			iou = bbox_intersection_over_union(bboxcv2_to_bboxcvlib(boxA), bboxcv2_to_bboxcvlib(boxB))
 			if iou > iou_threshold: #assume bbox has already been tracked and is not new 
 				old_bboxes_inds.add(i) #add to set
+
 	new_bboxes_inds=list(new_bboxes_inds.difference(old_bboxes_inds))
+	# print("inds of new bboxes: ",new_bboxes_inds)
 	return new_bboxes_inds
 
 
-def track_objects(local_mp4_path:str,
+def track_objects(local_mp4_dir:str, local_mp4_name:str,
 				  detection_model:str,detection_confidence:float,detection_implementation:str,
-				  detection_frequency:int,tracking_model:str,iou_threshold:float,
-				  video_time_length=10, make_video=True):
+				  detection_frequency:int,tracking_model:str,iou_threshold:float, selected_labels:list,
+				  video_time_length=10, make_video=True) ->(list,list,dict):
 	"""
+	Given a path to an input video, this function will initialize a specified tracking algorithm 
+	(currently only supports OpenCV's built in multitracker method) with the specified object 
+	detection algorithm. Each detection_frequency frames, the object detection will be run again 
+	to detect any new objects which have entered the frame. Returns labels of detected objects, the
+	detection confidence, and the counts. 
+
+	Keyword arguments
+
+	local_mp4_dir -- path to directory to store video in 
+	local_mp4_name -- name of video to run on (include .mp4 extension) 
+	detection_model -- specify the name of model you want to use for detection 
+	detection_confidence -- objects detected with lower than this level of confidence will NOT be tracked
+	detection_implementation -- 
+	detection_frequency -- each detection_frequency num of frames, run obj detection alg again to detect new objs
+	tracking_model -- specify name of model you want to use for tracking (currently only supports OpenCV trackers)
+	iou_threshold -- specify threshold to use 
+	selected_labels -- if a list of labels is supplied, only bboxes with these labels will be tracked
+	video_time_length -- specify length of video 
+	make_video -- if true, will write video to local_mp4_dir with name local_mp4_name_tracked.mp4
 	"""
 
 	start_time = time.time()
 	
 	# Create a video capture object to read videos
-	cap = cv2.VideoCapture(local_mp4_path)
+	cap = cv2.VideoCapture(local_mp4_dir+ "/" + local_mp4_name)
 	n_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 	cap_fps = int(n_frames / video_time_length)  # assumes vid_length in seconds
 
 	# Read first frame
 	success, frame = cap.read()
-
 	if not success:
 		print('Failed to read video')
 		sys.exit(0)
 
-	bboxes, label_confs, colors = detect_bboxes(frame=frame, model=detection_model,
-										confidence=detection_confidence,
-										implementation=detection_implementation)
+	bboxes, labels, confs, colors = detect_bboxes(frame=frame, 
+												model=detection_model,
+												confidence=detection_confidence,
+												implementation=detection_implementation,
+												selected_labels = selected_labels)
 
+	label_confs = [label +' ' + str(format(confs[i] * 100, '.2f')) + '%' for i,label in enumerate(labels)]
 
 	# Create MultiTracker object
 	multiTracker = cv2.MultiTracker_create()
@@ -208,10 +120,8 @@ def track_objects(local_mp4_path:str,
 	for bbox in bboxes:
 		multiTracker.add(create_tracker_by_name(tracking_model), frame, bbox)
 
-	processed_video = []
-
+	processed_video = []; frame_counter = 0
 	# Process video and track objects
-	frame_counter = 0
 	while cap.isOpened():
 		success, frame = cap.read()
 		if not success: break
@@ -220,46 +130,54 @@ def track_objects(local_mp4_path:str,
 		success, bboxes_tracked = multiTracker.update(frame)
 
 		# draw tracked objects
-		for i, tracked_box in enumerate(bboxes_tracked):
-			p1 = (int(tracked_box[0]), int(tracked_box[1]))
-			p2 = (int(tracked_box[0] + tracked_box[2]), int(tracked_box[1] + tracked_box[3]))
-			cv2.rectangle(frame, p1, p2, colors[i], 2, 1)
-			#write labels, confs
-			cv2.putText(frame, label_confs[i],(p1[0],p1[1]-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, colors[i], 2)
+		display_bboxes_on_frame(frame, bboxes_tracked, colors, label_confs)
 
 		#every x frames, re-detect boxes
 		if frame_counter%detection_frequency == 0: 
 			#redetect bounding boxes
-			bboxes_detected, label_confs_detected, colors_detected = detect_bboxes(frame=frame, model=detection_model,
-							confidence=detection_confidence,
-							implementation=detection_implementation)
+			bboxes_detected, labels_detected, \
+			confs_detected, colors_detected = detect_bboxes(frame=frame, 
+															model=detection_model,
+															confidence=detection_confidence,
+															implementation=detection_implementation,
+															selected_labels = selected_labels)
 
 			# re-initialize MultiTracker
 			new_bbox_inds = determine_new_bboxes(bboxes_tracked, bboxes_detected, iou_threshold)
 			# print(label_confs_detected)
-			new_bboxes, new_label_confs,new_colors = [bboxes_detected[i] for i in new_bbox_inds],\
-													 [label_confs_detected[i] for i in new_bbox_inds],\
-													 [colors_detected[i] for i in new_bbox_inds]
+			new_bboxes, new_labels, new_confs, new_colors, new_label_confs = \
+						[bboxes_detected[i] for i in new_bbox_inds],\
+					    [labels_detected[i] for i in new_bbox_inds],\
+					    [confs_detected[i] for i in new_bbox_inds],\
+					    [colors_detected[i] for i in new_bbox_inds],\
+						[labels_detected[i] +' ' + str(format(confs_detected[i] * 100, '.2f')) + '%' \
+											for i in new_bbox_inds]
+
 			#iterate through new bboxes										 
 			for i,new_bbox in enumerate(new_bboxes):
 				multiTracker.add(create_tracker_by_name(tracking_model), frame, new_bbox)
-			#add new colors and label confidences too 
-			bboxes += new_bboxes; label_confs += new_label_confs; colors += new_colors
+
+			#append new bboxes, colors, labels, confidences to list
+			bboxes+=new_bboxes; labels+=new_labels; confs+=new_confs; 
+			colors+=new_colors; label_confs+=new_label_confs
 
 		processed_video.append(frame)
+		frame_counter += 1
 
+		#code to display video frame by frame while it is bein processed
 		# cv2.imshow('MultiTracker', frame)
 		# # quit on ESC button
 		# if cv2.waitKey(1) & 0xFF == 27:  # Esc pressed
 		# 	break
-		# frame_counter += 1
 
-	if make_video:
-		local_mp4_path_out = local_mp4_path[:-4] + '_trackedv4' + local_mp4_path[-4:]
-		imageio.mimwrite(local_mp4_path_out, np.array(processed_video), fps=cap_fps)
+	if make_video: write_mp4(local_mp4_dir=local_mp4_dir, 
+							mp4_name=local_mp4_name[:-4] + "_tracked.mp4", 
+							video=np.array(processed_video),
+							fps=cap_fps)		
 
 	print('Run time is %s seconds' % (time.time() - start_time))
-	return bboxes, label_confs #ideally would return number of tracked objects, confidence levels
+	counts = collections.Counter(labels)
+	return labels,confs, counts
 
 
 if __name__ == '__main__':
@@ -267,25 +185,28 @@ if __name__ == '__main__':
 	basepath=os.path.dirname(__file__) #path of current script
 
 	os.chdir(".")
-	with open('../../conf/base/parameters.yml') as f:
+	with open('conf/base/parameters.yml') as f:
 	   params = yaml.safe_load(f)['modelling']
 	os.chdir(".")
-	with open('../../conf/base/paths.yml') as f:
+	with open('conf/base/paths.yml') as f:
 	   paths = yaml.safe_load(f)['paths']
 
 	#get a video from local
-	local_mp4_path = os.path.abspath(os.path.join(basepath,"..", "..","data/sample_video_data/testvid.mp4"))
+	local_mp4_dir = os.path.abspath(os.path.join(basepath,"..", "..","data/sample_video_data"))
+	local_mp4_name = "testvid.mp4"
 	tracking_model = params["opencv_tracker_type"]
 	detection_confidence = params["detection_confidence_threshold"]
 	detection_model = params["yolo_model"]
 	detection_implementation = params["yolo_implementation"]
-	detection_frequency = 75
+	detection_frequency = params["detection_frequency"]
 	iou_threshold = params["iou_threshold"]
+	selected_labels = params["selected_labels"]
 
-	bboxes, label_confs = track_objects(local_mp4_path=local_mp4_path,
+	labels,confs,counts = track_objects(local_mp4_dir=local_mp4_dir, local_mp4_name=local_mp4_name,
 				  detection_model=detection_model,detection_confidence=detection_confidence,
 				  detection_implementation=detection_implementation,
 				  detection_frequency=detection_frequency,tracking_model=tracking_model,
+				  selected_labels=selected_labels,
 				  iou_threshold=iou_threshold, make_video=True)
 
-	print(label_confs)
+	print(counts)
