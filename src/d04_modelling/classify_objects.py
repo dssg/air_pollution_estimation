@@ -2,6 +2,7 @@ import numpy as np
 from cvlib.object_detection import draw_bbox
 import cvlib as cv
 import imageio
+import time as Time
 
 
 def classify_objects(videos, names, params, paths, vid_time_length=10, make_videos=True):
@@ -20,9 +21,12 @@ def classify_objects(videos, names, params, paths, vid_time_length=10, make_vide
                 obj_labels (list of str): n-dim list of list of labels assigned to classified objects, for n frames
                 obj_label_confidences (list of floats): n-dim list of list of floats denoting yolo confidences, for n frames
     """
+    print('Classifying objects...')
     yolo_dict = {}
+    classify_start = Time.time()
 
-    for video, name in zip(videos, names):
+    for num, video, name in enumerate(zip(videos, names)):
+        print('Classifying video ' + str(num) + '/' + str(len(names)))
         yolo_dict[name] = {}
 
         # loop over frames of video and store in lists
@@ -55,5 +59,7 @@ def classify_objects(videos, names, params, paths, vid_time_length=10, make_vide
         yolo_dict[name]['bounds'] = obj_bounds
         yolo_dict[name]['labels'] = obj_labels
         yolo_dict[name]['confidences'] = obj_label_confidences
+
+    print('Classifying took ' + str(Time.time() - classify_start) + ' seconds')
 
     return yolo_dict

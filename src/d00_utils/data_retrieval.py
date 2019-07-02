@@ -7,7 +7,7 @@ import re
 import shutil
 import datetime
 import glob
-import time
+import time as Time
 
 
 def retrieve_single_video_s3_to_np(camera:str, date:str, time:str, paths:dict, bool_keep_data=False) -> np.ndarray:
@@ -70,6 +70,7 @@ def retrieve_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime
         Raises:
 
     """
+    print('Downloading videos...')
     save_folder = 'raw_video' if bool_keep_data else 'temp_video'
 
     if (not bool_keep_data):
@@ -90,7 +91,7 @@ def retrieve_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime
         dates.append(from_date)
         from_date += datetime.timedelta(days=1)
 
-    download_start = time.time()
+    download_start = Time.time()
 
     # Download the files in each of the date folders on s3
     for date in dates:
@@ -120,12 +121,12 @@ def retrieve_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime
             except:
                 print("Could not download " + file)
 
-    print('Downloading took ' + str(time.time() - download_start) + ' seconds')
+    print('Downloading took ' + str(Time.time() - download_start) + ' seconds')
 
     # Load files into a list of numpy arrays using opencv
     videos = []
     names = []
-    convert_start = time.time()
+    convert_start = Time.time()
     print('Converting files to numpy arrays')
     for file in glob.glob(paths[save_folder] + '*.mp4'):
         try:
@@ -134,7 +135,7 @@ def retrieve_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime
         except:
             print("Could not convert " + file + " to numpy array")
 
-    print('Converting took ' + str(time.time() - convert_start) + ' seconds') 
+    print('Converting took ' + str(Time.time() - convert_start) + ' seconds')
 
     # Delete the folder temp
     if not bool_keep_data:
