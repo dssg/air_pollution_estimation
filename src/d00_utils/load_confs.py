@@ -6,9 +6,9 @@ def load_parameters():
     project_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..')
 
     with open(project_dir + '/conf/base/parameters.yml') as f:
-        params = yaml.safe_load(f)['modelling']
+        params = yaml.safe_load(f)
 
-    return params
+    return {**params['data_collection'], **params['modelling']}
 
 
 def load_paths():
