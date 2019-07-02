@@ -2,20 +2,26 @@
 _csv: &csv
   type: CSVS3DataSet
   filepath:
-  bucket_name: s3:///air-pollution-uk
+  bucket_name: s3://air-pollution-uk
   credentials: dssg
 
 
 _mp4dict: &mp4dict
   type: data_collection.d00_utils.mp4s_dict_to_s3.MP4toS3DictDataSet
   filepath:
-  bucket_name: s3:///air-pollution-uk
+  bucket_name: air-pollution-uk
   credentials: dssg
 
-_csvdump: &csvdump
+_csvdict: &csvdict
   type: data_collection.d00_utils.csv_dict_to_s3.CSVtoS3DictDataSet
   filepath:
-  bucket_name: s3:///air-pollution-uk
+  bucket_name: s3://air-pollution-uk
+  credentials: dssg
+
+_pq: &pq
+  type: data_collection.d00_utils.s3_parquet.ParquetS3DataSet
+  filepath:
+  bucket_name: s3://air-pollution-uk
   credentials: dssg
 
 
@@ -29,18 +35,53 @@ raw_videos:
 
 raw_tims:
   filepath: raw/tims_data/
-  <<: *csvdump
+  <<: *csvdict
+
 
 ####################################
-## RAW - Modellling & evaluatopm ###
+## RAW - Modellling & evaluation ###
+####################################
+
+raw_videos_modelling:
+  filepath: raw/videos_modelling
+  load_args:
+    temp_video_dir: "data/01_raw/jamcams/temp_video/"
+    raw_video_dir: "data/01_raw/jamcams/"
+    from_date: '2019-06-20'
+    to_date: '2019-07-01'
+    camera_list:
+    time_from: '00-00-00'
+    time_to: '23-59-59'
+    bool_keep_data: False
+  <<: mp4dict
+
+####################################
+## INT - Modellling & evaluation ###
 ####################################
 
 int_videos:
   filepath: int/videos
-  load_args:
-    camera_list:
-    time_from:
-    time_to:
-  <<: mp4dict
+  <<: csvdict
+
+
+####################################
+## OUT - Modellling & evaluation ###
+####################################
+
+out_frames_with_boxes:
+  filepath: out/frames_with_boxes
+  <<: pq
+
+
+out_car_counts:
+  filepath: out/car_counts
+  <<: pq
+
+
+
+
+
+
+
 
 

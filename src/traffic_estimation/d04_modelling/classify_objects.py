@@ -4,11 +4,14 @@ import cvlib as cv
 import imageio
 
 
-def classify_objects(videos, names, params, paths, vid_time_length=10, make_videos=True):
+def classify_objects(video_dict,
+                     params,
+                     paths,
+                     vid_time_length=10,
+                     make_videos=False):
     """ this function classifies objects from local mp4 with cvlib python package.
         Args:
-            videos (list(nparray)): list of numpy arrays containing the videos
-            names (list(str)): list of video names corresponding to the videos
+            video_dict dict: Dictionary of videos where the key is the video name and the value is a numpy arrays containing the video
             params (dict): dictionary of parameters from yml file
             paths (dict): dictionary of paths from yml file
             vid_time_length (int): length of the video data in seconds
@@ -22,7 +25,7 @@ def classify_objects(videos, names, params, paths, vid_time_length=10, make_vide
     """
     yolo_dict = {}
 
-    for video, name in zip(videos, names):
+    for name, video in video_dict.items():
         yolo_dict[name] = {}
 
         # loop over frames of video and store in lists

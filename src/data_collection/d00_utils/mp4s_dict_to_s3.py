@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional
 from s3fs.core import S3FileSystem
 from kedro.io.core import AbstractDataSet, DataSetError, S3PathVersionMixIn, Version
 import subprocess
-
+from traffic_estimation.d00_utils.data_retrieval import retrieve_videos_s3_to_np
 
 class MP4toS3DictDataSet(AbstractDataSet, S3PathVersionMixIn):
     """``MP4toS3DictDataSet`` saves data to a file in S3. It uses s3fs
@@ -65,7 +65,10 @@ class MP4toS3DictDataSet(AbstractDataSet, S3PathVersionMixIn):
         return self._s3.s3
 
     def _load(self) -> str:
-        raise DataSetError("Loading not supported for MP4toS3DictDataSet")
+
+        video_dict = retrieve_videos_s3_to_np()
+
+        return video_dict
 
     def _save(self, data: dict) -> None:
 
@@ -73,7 +76,7 @@ class MP4toS3DictDataSet(AbstractDataSet, S3PathVersionMixIn):
 
             res = subprocess.call(["aws", "s3", 'mv',
                                    video_dir,
-                                   self._bucket_name + self._filepath,
+                                   's3://' + self._bucket_name + "/" + self._filepath,
                                    '--recursive',
                                    '--profile',
                                    self._credentials])
