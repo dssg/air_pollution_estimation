@@ -1,8 +1,46 @@
 
+_csv: &csv
+  type: CSVS3DataSet
+  filepath:
+  bucket_name: s3:///air-pollution-uk
+  credentials: dssg
 
-# This is a data set used by the example pipeline provided with the projected
-# template. Please feel free to remove it once you remove the example pipeline.
-example_iris_data:
-  type: CSVLocalDataSet
-  filepath: data/01_raw/iris.csv
+
+_mp4dict: &mp4dict
+  type: data_collection.d00_utils.mp4s_dict_to_s3.MP4toS3DictDataSet
+  filepath:
+  bucket_name: s3:///air-pollution-uk
+  credentials: dssg
+
+_csvdump: &csvdump
+  type: data_collection.d00_utils.csv_dict_to_s3.CSVtoS3DictDataSet
+  filepath:
+  bucket_name: s3:///air-pollution-uk
+  credentials: dssg
+
+
+####################################
+#### RAW - Ongoing collection ######
+####################################
+
+raw_videos:
+  filepath: raw/video_data_new/
+  <<: *mp4dict
+
+raw_tims:
+  filepath: raw/tims_data/
+  <<: *csvdump
+
+####################################
+## RAW - Modellling & evaluatopm ###
+####################################
+
+int_videos:
+  filepath: int/videos
+  load_args:
+    camera_list:
+    time_from:
+    time_to:
+  <<: mp4dict
+
 
