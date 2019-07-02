@@ -281,15 +281,22 @@ def select_footage(footage):
 )
 def update_objects(camera_id):
     global df
-    camera_id = camera_id.replace("JamCams_", "")
+    camera_id = transform_camera_id(camera_id)
     df = load_camera_statistics(camera_id)
-    print(camera_id, df.head())
+    if df.empty:
+        print("Empty")
+        return []
     if camera_id:
         objects = load_objects(df)
         options = [
             {"label": obj, "value": obj}
             for obj in objects]
         return options
+
+
+def transform_camera_id(camera_id):
+    camera_id = camera_id.replace("JamCams_", "")
+    return camera_id
 
 
 @app.callback(
@@ -300,7 +307,11 @@ def update_objects(camera_id):
     ]
 )
 def update_trend_graph(objects, camera_id):
-
+    global df
+    camera_id = transform_camera_id(camera_id)
+    df = load_camera_statistics(camera_id)
+    if df.empty or not objects:
+        return {}
     dfs = {obj: load_object_statistics(df, obj) for obj in objects}
     print(dfs)
     data = []
@@ -356,7 +367,7 @@ def update_trend_graph(objects, camera_id):
             # title=title,
             xaxis={'title': "Datetime"},
             yaxis=go.layout.YAxis(
-                title='Number of occurrence [#]', automargin=True
+                title='Count of objects [#]', automargin=True
             ),
             hovermode='closest',
             # updatemenus=updatemenus,
