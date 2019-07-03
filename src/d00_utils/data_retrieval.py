@@ -7,9 +7,10 @@ import re
 import shutil
 import datetime
 import glob
+import json
 
 
-def retrieve_single_video_s3_to_np(camera:str, date:str, time:str, paths:dict, bool_keep_data=False) -> np.ndarray:
+def retrieve_single_video_s3_to_np(camera: str, date: str, time: str, paths: dict, bool_keep_data=False) -> np.ndarray:
     """Retrieve one jamcam video from the s3 bucket based on the details specified.
         Downloads to a local temp directory, loads into a numpy array, then deletes
         temp dict (default behavior). If bool_keep_data is True, the video will be
@@ -42,14 +43,15 @@ def retrieve_single_video_s3_to_np(camera:str, date:str, time:str, paths:dict, b
 
     # Delete the folder temp_video
     if not bool_keep_data:
-        assert save_folder=='temp_video'
+        assert save_folder == 'temp_video'
         shutil.rmtree(paths[save_folder])
 
     return buf
 
 
-def retrieve_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime.datetime.now())[:10],
-                             from_time='00-00-00', to_time='23-59-59', camera_list=None, bool_keep_data=True):
+def retrieve_videos_s3_to_np(
+        paths, from_date='2019-06-01', to_date=str(datetime.datetime.now().date()),
+        from_time='00-00-00', to_time='23-59-59', camera_list=None, bool_keep_data=True):
     """Retrieve jamcam videos from the s3 bucket based on the dates specified.
     Downloads to a local temp directory and then loads them into numpy arrays, before
     deleting the temp directory (default behavior). If bool_keep_data is True, the videos will be
@@ -124,9 +126,128 @@ def retrieve_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime
 
     # Delete the folder temp
     if not bool_keep_data:
-        assert save_folder=='temp_video'
+        assert save_folder == 'temp_video'
         shutil.rmtree(paths[save_folder])
 
+    return videos, names
+
+
+def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(datetime.datetime.now())[:10],
+                                 from_time='00-00-00', to_time='23-59-59', camera_list=None, save_to_file: bool = True):
+    """Retrieve jamcam videos from the s3 bucket based on the dates specified.
+    Downloads to a local temp directory and then loads them into numpy arrays, before
+    deleting the temp directory (default behavior). If bool_keep_data is True, the videos will be
+    saved to raw_video dir instead, and then loaded into np array.
+
+        Args:
+            paths: dictionary containing temp_video, raw_video, s3_profile and bucket_name paths
+            from_date: start date (inclusive) for retrieving videos, if None then will retrieve from 2019-06-01 onwards
+            to_date: end date (inclusive) for retrieving vidoes, if None then will retrieve up to current day
+            from_time: start time for retrieving videos, if None then will retrieve from the start of the day
+            to_time: end time for retrieving videos, if None then will retrieve up to the end of the day
+            camera_list: list of cameras to retrieve from, if None then retrieve from all cameras
+            bool_keep_data: boolean for keeping the downloaded data in the local folder
+        Returns:
+            videos: list of numpy arrays containing all the jamcam videos between the selected dates
+            names: list of video file names
+        Raises:
+
+    """
+    save_folder = 'temp_video'
+    delete_and_recreate_dir(paths[save_folder])
+    my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
+    from_date = datetime.datetime.strptime(from_date, '%Y-%m-%d').date()
+    to_date = datetime.datetime.strptime(to_date, '%Y-%m-%d').date()
+    from_time = datetime.datetime.strptime(from_time, '%H-%M-%S').time()
+    to_time = datetime.datetime.strptime(to_time, '%H-%M-%S').time()
+
+    dates = []
+
+    # Generate the list of dates
+    while(from_date <= to_date):
+        dates.append(from_date)
+        from_date += datetime.timedelta(days=1)
+
+    # Download the files in each of the date folders on s3
+    selected_files = []
+    for date in dates:
+        date = date.strftime('%Y-%m-%d')
+        prefix = "raw/videos/" + date + "/"
+        print("     ",prefix)
+        objects = my_bucket.objects.filter(Prefix=prefix)
+        for obj in objects:
+            print(obj)
+            file = obj.key
+            time = re.search("([0-9]{2}\:[0-9]{2}\:[0-9]{2})", file).group()
+            time = datetime.datetime.strptime(time, '%H:%M:%S').time()
+            camera_id = file.split('_')[-1][:-4]
+
+            if time >= from_time and time <= to_time and (not camera_list or camera_id in camera_list):
+                selected_files.append(file)
+
+        if save_to_file:
+            filepath = os.path.join(paths[save_folder], "searched_videos")
+            with open(filepath, "a") as f:
+                json.dump(selected_files, f)
+    return selected_files
+
+
+def download_video_and_convert_to_numpy(paths, filenames: list):
+    """Retrieve jamcam videos from the s3 bucket based on the dates specified.
+    Downloads to a local temp directory and then loads them into numpy arrays, before
+    deleting the temp directory (default behavior). If bool_keep_data is True, the videos will be
+    saved to raw_video dir instead, and then loaded into np array.
+
+        Args:
+            paths: dictionary containing temp_video, raw_video, s3_profile and bucket_name paths
+            from_date: start date (inclusive) for retrieving videos, if None then will retrieve from 2019-06-01 onwards
+            to_date: end date (inclusive) for retrieving vidoes, if None then will retrieve up to current day
+            from_time: start time for retrieving videos, if None then will retrieve from the start of the day
+            to_time: end time for retrieving videos, if None then will retrieve up to the end of the day
+            camera_list: list of cameras to retrieve from, if None then retrieve from all cameras
+            bool_keep_data: boolean for keeping the downloaded data in the local folder
+        Returns:
+            videos: list of numpy arrays containing all the jamcam videos between the selected dates
+            names: list of video file names
+        Raises:
+
+    """
+    save_folder = 'temp_video'
+    my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
+
+    # Download the files
+    for filename in filenames:
+        try:
+            my_bucket.download_file(filename, paths[save_folder] + filename.split('/')[-1].replace(
+                ':', '-').replace(" ", "_"))
+        except:
+            print("Could not download " + filename)
+
+    # Load files into a list of numpy arrays using opencv
+    videos = []
+    names = []
+    for file in glob.glob(paths[save_folder] + '*.mp4'):
+        try:
+            videos.append(mp4_to_npy(file))
+            names.append(file.split('/')[-1])
+        except:
+            print("Could not convert " + file + " to numpy array")
+
+    return videos, names
+
+
+def process_videos(local_path):
+    # Load files into a list of numpy arrays using opencv
+    videos = []
+    names = []
+    for file in glob.glob(local_path + '*.mp4'):
+        try:
+            videos.append(mp4_to_npy(file))
+            names.append(file.split('/')[-1])
+        except:
+            print("Could not convert " + file + " to numpy array")
+        # delete file
+        os.remove(local_path)
     return videos, names
 
 
@@ -148,7 +269,8 @@ def mp4_to_npy(local_mp4_path):
     frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-    buf = np.empty((frame_count, frame_height, frame_width, 3), np.dtype('uint8'))
+    buf = np.empty((frame_count, frame_height, frame_width, 3),
+                   np.dtype('uint8'))
     fc = 0
     ret = True
     while (fc < frame_count and ret):
@@ -174,14 +296,10 @@ def connect_to_bucket(profile_dir, bucket_name):
 
 def retrieve_tims_from_s3():
 
-
-
     return
 
 
 def retrieve_cam_details_from_database():
-
-
 
     return
 
@@ -211,7 +329,8 @@ def describe_s3_bucket(paths):
     unique_dates, counts = np.unique(dates, return_counts=True)
     plt.figure()
     plt.bar(np.arange(unique_dates.shape[0]), counts)
-    plt.xticks(np.arange(unique_dates.shape[0]), unique_dates, rotation='vertical')
+    plt.xticks(np.arange(unique_dates.shape[0]),
+               unique_dates, rotation='vertical')
     plt.xlabel('Date')
     plt.ylabel('Number of Videos')
     plt.tight_layout()
@@ -219,6 +338,7 @@ def describe_s3_bucket(paths):
     plt.close()
 
     return
+
 
 def load_videos_from_local(paths):
     """Load video data from the local raw jamcam folder and return it as a list of numpy arrays
@@ -241,5 +361,15 @@ def load_videos_from_local(paths):
         except:
             print("Could not convert " + file + " to numpy array")
 
-
     return videos, names
+
+
+def append_to_csv(paths, df):
+    filepath = os.path.join(paths['processed_video'], 'JamCamStats.csv')
+    header=False
+
+    # check if filepath exists
+    if not os.path.exists(filepath):
+        header = True
+    with open(filepath, 'a') as f:
+        df.to_csv(f, header=header)
