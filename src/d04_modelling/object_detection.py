@@ -35,6 +35,6 @@ def detect_bboxes(frame:np.ndarray, model:str,confidence:float,
 		for i in sorted(del_inds, reverse=True):
 			del bboxes[i]; del labels[i]; del confs[i]
 	#gen colors for remaining bboxes
-	colors=color_bboxes(labels)
+	# colors=color_bboxes(labels)
 
-	return bboxes, labels, confs, colors
+	return bboxes, labels, confs

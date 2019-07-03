@@ -1,15 +1,13 @@
-# # Explore Tracking Methods in OpenCV
-# Source: https://www.learnopencv.com/multitracker-multiple-object-tracking-using-opencv-c-python/
 from src.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame,bbox_intersection_over_union
 from src.d00_utils.video_helpers import write_mp4
 from src.d04_modelling.object_detection import detect_bboxes
+from src.d04_modelling.vehicle import VehicleFleet
 import numpy as np
 import sys, os
 import cv2
 import yaml
 import time
 import collections
-
 
 def create_tracker_by_name(tracker_type:str):
 	"""Create tracker based on tracker name"""
@@ -110,9 +108,9 @@ def track_objects(local_mp4_dir:str, local_mp4_name:str,
 												confidence=detection_confidence,
 												implementation=detection_implementation,
 												selected_labels = selected_labels)
-
-	label_confs = [label +' ' + str(format(confs[i] * 100, '.2f')) + '%' for i,label in enumerate(labels)]
-
+	# print(type(bboxes))
+	# print(np.array(bb/oxes).shape)
+	fleet = VehicleFleet(np.array(bboxes), np.array(labels), np.array(confs))
 	# Create MultiTracker object
 	multiTracker = cv2.MultiTracker_create()
 
@@ -128,9 +126,10 @@ def track_objects(local_mp4_dir:str, local_mp4_name:str,
 
 		# get updated location of objects in subsequent frames
 		success, bboxes_tracked = multiTracker.update(frame)
+		fleet.update_vehicles(bboxes_tracked)
 
 		# draw tracked objects
-		display_bboxes_on_frame(frame, bboxes_tracked, colors, label_confs)
+		display_bboxes_on_frame(frame, bboxes_tracked, fleet.compute_colors(), fleet.compute_label_confs())
 
 		#every x frames, re-detect boxes
 		if frame_counter%detection_frequency == 0: 
@@ -144,7 +143,6 @@ def track_objects(local_mp4_dir:str, local_mp4_name:str,
 
 			# re-initialize MultiTracker
 			new_bbox_inds = determine_new_bboxes(bboxes_tracked, bboxes_detected, iou_threshold)
-			# print(label_confs_detected)
 			new_bboxes, new_labels, new_confs, new_colors, new_label_confs = \
 						[bboxes_detected[i] for i in new_bbox_inds],\
 					    [labels_detected[i] for i in new_bbox_inds],\
@@ -157,9 +155,14 @@ def track_objects(local_mp4_dir:str, local_mp4_name:str,
 			for i,new_bbox in enumerate(new_bboxes):
 				multiTracker.add(create_tracker_by_name(tracking_model), frame, new_bbox)
 
+			#update flet object 
+			if new_bboxes!=[]:
+				fleet.add_vehicles(np.array(new_bboxes),np.array(new_labels),np.array(new_confs))
+
 			#append new bboxes, colors, labels, confidences to list
 			bboxes+=new_bboxes; labels+=new_labels; confs+=new_confs; 
-			colors+=new_colors; label_confs+=new_label_confs
+			# colors+=new_colors
+			# label_confs+=new_label_confs
 
 		processed_video.append(frame)
 		frame_counter += 1
@@ -187,9 +190,6 @@ if __name__ == '__main__':
 	os.chdir(".")
 	with open('conf/base/parameters.yml') as f:
 	   params = yaml.safe_load(f)['modelling']
-	os.chdir(".")
-	with open('conf/base/paths.yml') as f:
-	   paths = yaml.safe_load(f)['paths']
 
 	#get a video from local
 	local_mp4_dir = os.path.abspath(os.path.join(basepath,"..", "..","data/sample_video_data"))
