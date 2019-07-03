@@ -38,7 +38,7 @@ def classify_objects(videos, names, params, paths, vid_time_length=10, make_vide
             bbox, label, conf = cv.detect_common_objects(frame, confidence=params['confidence_threshold'],
                                                          model=params['yolo_model'])
             obj_bounds.append(bbox)
-            obj_labels.append(label)
+            obj_labels.append([l.replace('motorcycle', 'motorbike') for l in label])
             obj_label_confidences.append(conf)
 
             # draw bounding box over detected objects

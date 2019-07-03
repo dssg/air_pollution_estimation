@@ -50,7 +50,7 @@ def yolo_output_df(yolo_dict):
         assert obj_label_confidences.shape[0] == num_frames
 
         date = datetime.datetime.strptime(name.split("_")[0], '%Y-%m-%d').date()
-        time = datetime.datetime.strptime(name.split("_")[1], '%H-%M-%S').time()
+        time = datetime.datetime.strptime(name.split("_")[1], '%H-%M-%S.%f').time()
         camera_id = name.split('_')[-1][:-4]
 
         frame_df_list = []
@@ -79,7 +79,7 @@ def yolo_output_df(yolo_dict):
     return df
 
 
-def yolo_report_stats(yolo_df):
+def yolo_report_count_stats(yolo_df):
     '''Report summary statistics for the output of YOLO on one video. 
 
     Keyword arguments: 
@@ -112,6 +112,8 @@ def yolo_report_stats(yolo_df):
         df['time'] = group['time'].iloc[0]
         assert group['camera_id'].nunique() == 1, "Non-unique camera_id"
         df['camera_id'] = group['camera_id'].iloc[0]
+        assert group['video_id'].nunique() == 1, "Non-unique video_id"
+        df['video_id'] = group['video_id'].iloc[0]
         dfs.append(df)
 
     df = pd.concat(dfs).fillna(0)
