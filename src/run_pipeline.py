@@ -4,7 +4,7 @@ from src.d00_utils.data_retrieval import retrieve_videos_s3_to_np, \
     load_videos_from_local
 from src.d00_utils.load_confs import load_parameters, load_paths
 from src.d04_modelling.classify_objects import classify_objects
-from src.d04_modelling.evaluation import parse_annotations, get_count_accuracies
+from src.d04_modelling.evaluation import parse_annotations, report_count_differences
 from src.d05_reporting.report_yolo import yolo_output_df, yolo_report_count_stats
 
 
@@ -22,10 +22,8 @@ yolo_dict = classify_objects(videos, names, params, paths,
 yolo_df = yolo_output_df(yolo_dict)
 annotations_df = parse_annotations(paths, bool_print_summary=False)
 
-count_accuracy_df = get_count_accuracies(paths, annotations_df, yolo_df)
-
-
 stats_df = yolo_report_count_stats(yolo_df)
 stats_df.to_csv(paths['processed_video'] + 'JamCamStats.csv')
 
-print('Done')
+count_differences_df = report_count_differences(annotations_df, yolo_df)
+count_differences_df.to_csv(paths['processed_video'] + 'JamCamCountDifferences.csv')

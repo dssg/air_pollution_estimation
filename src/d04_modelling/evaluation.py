@@ -13,7 +13,7 @@ def parse_annotations(paths, bool_print_summary=False):
                     paths: dictionary of paths (needs 'annotations' path)
                     bool_print_summary: boolean for printing summaries of each parsed XML file
                 Returns:
-                    pandas dataframe containing the annotations
+                    df: pandas dataframe containing the annotations
                 Raises:
     """
     xml_files = glob.glob(paths['annotations'] + '*.xml')
@@ -71,7 +71,7 @@ def get_stop_counts(annotations_df):
                     Raises:
     """
     ids, counts = [], []
-    df_grouped = annotations_df.sort_values(['frame'], ascending=True).groupby('id')
+    df_grouped = annotations_df.sort_values(['frame'], ascending=True).groupby('video_id')
     for group in df_grouped:
         bool_stopped = False
         num_stops = 0
@@ -90,17 +90,15 @@ def get_stop_counts(annotations_df):
 
 
 def report_true_count_stats(annotations_df):
-    '''Report summary statistics for the output of YOLO on one video.
+    '''Report the true counts for multiple annotated videos.
 
         Keyword arguments:
-        yolo_df -- pandas df containing formatted output of YOLO for one video (takes the output of yolo_output_df())
+        annotations_df -- pandas df containing the formatted output of the XML files
+                          (takes the output of parse_annotations())
 
         Returns:
-        obj_counts_frame: counts of various types of objects per frame
-        video_summary: summary statistics over whole video
-
-
-        '''
+        df: dataframe containing the true counts for each video
+    '''
     dfs = []
     grouped = annotations_df.groupby('video_id')
 
@@ -112,27 +110,43 @@ def report_true_count_stats(annotations_df):
         df['camera_id'] = group['camera_id'].values[0]
         df['date'] = group['date'].values[0]
         df['time'] = group['time'].values[0]
-        df['video_id'] = group['video_id'].values[0]
         dfs.append(df)
 
     df = pd.concat(dfs)
     return df.fillna(0)
 
 
-def get_count_accuracies(paths, annotations_df, yolo_df):
-    print('Calculating Accuracies...')
+def report_count_differences(annotations_df, yolo_df):
+    '''Report the difference in counts between yolo and the annotations for multiple videos.
 
+            Keyword arguments:
+            annotations_df -- pandas df containing the formatted output of the XML files
+                              (takes the output of parse_annotations())
+            yolo_df -- pandas df containing formatted output of YOLO for multiple videos
+                       (takes the output of yolo_output_df())
+
+            Returns:
+            df: dataframe containing the difference in counts for each video
+    '''
     yolo_counts_df = yolo_report_count_stats(yolo_df)
-    yolo_counts_df.sort_values("video_id", inplace=True)
+    yolo_counts_df.sort_values(["camera_id", "date", "time"], inplace=True)
     yolo_counts_df = yolo_counts_df[yolo_counts_df['metric'] == 'mean']
     true_counts_df = report_true_count_stats(annotations_df)
-    true_counts_df.sort_values("video_id", inplace=True)
+    true_counts_df.sort_values(["camera_id", "date", "time"], inplace=True)
 
-    df = pd.DataFrame()
-    # Bus accuracy
-    df['bus_diff'] = yolo_counts_df['bus'] - true_counts_df['bus']
-    df['car_diff'] = yolo_counts_df['car'] - true_counts_df['car']
-    df['truck_diff'] = yolo_counts_df['truck'] - true_counts_df['truck']
-    df['motorbike_diff'] = yolo_counts_df['motorbike'] - true_counts_df['motorbike']
+    categories_to_compare = ['bus', 'car', 'truck', 'motorbike']
+    diff_df = pd.DataFrame()
 
-    return
+    for category in categories_to_compare:
+        if(category not in yolo_counts_df.columns):
+            yolo_counts_df[category] = 0
+        if (category not in true_counts_df.columns):
+            true_counts_df[category] = 0
+
+        diff_df['p-y_' + category] = yolo_counts_df[category] - true_counts_df[category]
+
+    diff_df['camera_id'] = yolo_counts_df['camera_id']
+    diff_df['date'] = yolo_counts_df['date']
+    diff_df['time'] = yolo_counts_df['time']
+
+    return diff_df

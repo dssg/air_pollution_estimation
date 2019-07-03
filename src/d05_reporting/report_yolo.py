@@ -25,7 +25,7 @@ def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date,time):
 
 
 def yolo_output_df(yolo_dict):
-    """Formats the output of yolo on one video. Returns as pandas df. 
+    """Formats the output of yolo for multiple videos. Returns as pandas df.
 
     Keyword arguments: 
         yolo_dict (dict): nested dictionary where each video is a key for a dict containing:
@@ -80,16 +80,13 @@ def yolo_output_df(yolo_dict):
 
 
 def yolo_report_count_stats(yolo_df):
-    '''Report summary statistics for the output of YOLO on one video. 
+    '''Report summary statistics for the output of YOLO for multiple videos.
 
     Keyword arguments: 
-    yolo_df -- pandas df containing formatted output of YOLO for one video (takes the output of yolo_output_df())
+    yolo_df -- pandas df containing formatted output of YOLO for multiple videos (takes the output of yolo_output_df())
 
     Returns: 
-    obj_counts_frame: counts of various types of objects per frame
-    video_summary: summary statistics over whole video 
-
-
+    df: dataframe containing the mean and std of vehicle counts for each video
     '''
     dfs = []
     grouped = yolo_df.groupby('video_id')
@@ -112,8 +109,6 @@ def yolo_report_count_stats(yolo_df):
         df['time'] = group['time'].iloc[0]
         assert group['camera_id'].nunique() == 1, "Non-unique camera_id"
         df['camera_id'] = group['camera_id'].iloc[0]
-        assert group['video_id'].nunique() == 1, "Non-unique video_id"
-        df['video_id'] = group['video_id'].iloc[0]
         dfs.append(df)
 
     df = pd.concat(dfs).fillna(0)
