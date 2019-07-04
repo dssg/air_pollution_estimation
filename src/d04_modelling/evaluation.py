@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import glob
+import datetime
 import xml.etree.ElementTree as ElementTree
 
 from src.d05_reporting.report_yolo import yolo_report_count_stats
@@ -26,9 +27,15 @@ def parse_annotations(paths, bool_print_summary=False):
         root = ElementTree.parse(xml_file).getroot()
 
         name = xml_file.split('/')[-1]
-        date = name.split('_')[1]
-        time = name.split('_')[2].replace('-', ':')
-        camera_id = name.split('_')[3][:-4]
+        try:
+            date = name.split("_")[1]
+            time = name.split("_")[2].split('.')[0]
+            camera_id = name.split('_')[3][:-4]
+        except:
+            date = name.split("_")[0]
+            time = name.split("_")[1].split('.')[0]
+            camera_id = name.split('_')[2][:-4]
+
 
         for track in root.iter('track'):
             if(track.attrib['label'] == 'vehicle'):
@@ -49,6 +56,8 @@ def parse_annotations(paths, bool_print_summary=False):
                     annotated_results['video_id'].append(file_num)
 
     df = pd.DataFrame.from_dict(annotated_results)
+    df['date'] = pd.to_datetime(df['date'], format='%Y-%m-%d').dt.date
+    df['time'] = pd.to_datetime(df['time'], format='%H-%M-%S').dt.time
 
     if(bool_print_summary):
         print('Number of vehicles:')
@@ -116,7 +125,7 @@ def report_true_count_stats(annotations_df):
     return df.fillna(0)
 
 
-def report_count_differences(annotations_df, yolo_df):
+def report_count_differences(annotations_df, yolo_df, bool_plots=True):
     '''Report the difference in counts between yolo and the annotations for multiple videos.
 
             Keyword arguments:
@@ -145,8 +154,14 @@ def report_count_differences(annotations_df, yolo_df):
 
         diff_df['p-y_' + category] = yolo_counts_df[category] - true_counts_df[category]
 
+    assert (yolo_counts_df['camera_id'].values == true_counts_df['camera_id'].values).all(), "camera IDs do not match in report_count_differences()"
     diff_df['camera_id'] = yolo_counts_df['camera_id']
+    assert (yolo_counts_df['date'].values == true_counts_df['date'].values).all(), "dates do not match in report_count_differences()"
     diff_df['date'] = yolo_counts_df['date']
+    assert (yolo_counts_df['time'].values == true_counts_df['time'].values).all(), "times do not match in report_count_differences()"
     diff_df['time'] = yolo_counts_df['time']
+
+    if(bool_plots):
+        pass
 
     return diff_df

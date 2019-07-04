@@ -49,8 +49,8 @@ def yolo_output_df(yolo_dict):
         assert obj_labels.shape[0] == num_frames
         assert obj_label_confidences.shape[0] == num_frames
 
-        date = datetime.datetime.strptime(name.split("_")[0], '%Y-%m-%d').date()
-        time = datetime.datetime.strptime(name.split("_")[1], '%H-%M-%S.%f').time()
+        date = name.split("_")[0]
+        time = name.split("_")[1].split('.')[0]
         camera_id = name.split('_')[-1][:-4]
 
         frame_df_list = []
@@ -75,6 +75,8 @@ def yolo_output_df(yolo_dict):
 
     # Concatenate dataframes
     df = pd.concat(df_list)
+    df['date'] = pd.to_datetime(df['date'], format='%Y-%m-%d').dt.date
+    df['time'] = pd.to_datetime(df['time'], format='%H-%M-%S').dt.time
 
     return df
 

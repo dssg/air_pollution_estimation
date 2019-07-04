@@ -3,26 +3,24 @@ from cvlib.object_detection import draw_bbox
 import cvlib as cv
 import imageio
 
+from src.d05_reporting.report_yolo import yolo_output_df
 
-def classify_objects(videos, names, params, paths, vid_time_length=10, make_videos=True):
+
+def classify_objects(video_dict, params, paths, vid_time_length=10, make_videos=True):
     """ this function classifies objects from local mp4 with cvlib python package.
         Args:
-            videos (list(nparray)): list of numpy arrays containing the videos
-            names (list(str)): list of video names corresponding to the videos
+            video_dict (dict): dict of numpy arrays containing all the jamcam videos
             params (dict): dictionary of parameters from yml file
             paths (dict): dictionary of paths from yml file
             vid_time_length (int): length of the video data in seconds
             make_videos (bool): output videos with object classification labels in processed directory
 
         Returns:
-            yolo_dict (dict): nested dictionary where each video is a key for a dict containing:
-                obj_bounds (list of np arrays): n-dim list of list of arrays marking the corners of the bounding boxes of objects, for n frames
-                obj_labels (list of str): n-dim list of list of labels assigned to classified objects, for n frames
-                obj_label_confidences (list of floats): n-dim list of list of floats denoting yolo confidences, for n frames
+            yolo_df (df): pandas dataframe containing the results of Yolo object detection
     """
     yolo_dict = {}
 
-    for video, name in zip(videos, names):
+    for name, video in video_dict.items():
         yolo_dict[name] = {}
 
         # loop over frames of video and store in lists
@@ -56,4 +54,6 @@ def classify_objects(videos, names, params, paths, vid_time_length=10, make_vide
         yolo_dict[name]['labels'] = obj_labels
         yolo_dict[name]['confidences'] = obj_label_confidences
 
-    return yolo_dict
+    yolo_df = yolo_output_df(yolo_dict)
+
+    return yolo_df

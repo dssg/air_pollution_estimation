@@ -7,23 +7,27 @@ from src.d04_modelling.classify_objects import classify_objects
 from src.d04_modelling.evaluation import parse_annotations, report_count_differences
 from src.d05_reporting.report_yolo import yolo_output_df, yolo_report_count_stats
 
-
+# Load Configs
 params = load_parameters()
 paths = load_paths()
 
+# Load Video Data
 """
-videos, names = retrieve_videos_s3_to_np(paths, from_date='2019-06-19', to_date='2019-06-19',
+video_dict = retrieve_videos_s3_to_np(paths, from_date='2019-06-19', to_date='2019-06-19',
                                          from_time='20-20-00', to_time='20-20-02',
                                          bool_keep_data=True)
 """
-videos, names = load_videos_from_local(paths)
-yolo_dict = classify_objects(videos, names, params, paths,
+video_dict = load_videos_from_local(paths)
+
+# Run Yolo Object Detection
+yolo_df = classify_objects(video_dict, params, paths,
                                 vid_time_length=10, make_videos=True)
-yolo_df = yolo_output_df(yolo_dict)
+
+# Load Annotations and Evaluate
 annotations_df = parse_annotations(paths, bool_print_summary=False)
-
-stats_df = yolo_report_count_stats(yolo_df)
-stats_df.to_csv(paths['processed_video'] + 'JamCamStats.csv')
-
 count_differences_df = report_count_differences(annotations_df, yolo_df)
 count_differences_df.to_csv(paths['processed_video'] + 'JamCamCountDifferences.csv')
+
+# Save Statistics of Yolo Output
+stats_df = yolo_report_count_stats(yolo_df)
+stats_df.to_csv(paths['processed_video'] + 'JamCamStats.csv')

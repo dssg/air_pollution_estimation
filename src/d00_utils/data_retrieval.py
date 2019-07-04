@@ -61,8 +61,7 @@ def retrieve_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime
             to_date: end date (inclusive) for retrieving vidoes, if None then will retrieve up to current day
             bool_keep_data: boolean for keeping the downloaded data in the local folder
         Returns:
-            videos: list of numpy arrays containing all the jamcam videos between the selected dates
-            names: list of video file names
+            video_dict: dict of numpy arrays containing all the jamcam videos between the selected dates
         Raises:
 
     """
@@ -107,19 +106,17 @@ def retrieve_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime
             except:
                 print("Could not download " + file)
 
-    # Load files into a list of numpy arrays using opencv
-    videos = []
-    names = []
+    # Load files into a dict of numpy arrays using opencv
+    video_dict = {}
     for file in glob.glob(paths[save_folder] + '*.mp4'):
-        videos.append(mp4_to_npy(file))
-        names.append(file.split('/')[-1])
+        video_dict[file.split('/')[-1]] = mp4_to_npy(file)
 
     # Delete the folder temp
     if not bool_keep_data:
         assert save_folder=='temp_video'
         shutil.rmtree(paths[save_folder])
 
-    return videos, names
+    return video_dict
 
 
 def delete_and_recreate_dir(temp_dir):
@@ -215,15 +212,13 @@ def load_videos_from_local(paths):
             Args:
                 paths: dictionary containing raw_video, s3_profile and bucket_name paths
             Returns:
-                videos: list of numpy arrays containing all the jamcam videos from the local raw jamcam folder
-                names: list of video file names
+                video_dict: dict of numpy arrays containing all the jamcam videos from the local raw jamcam folder
             Raises:
 
         """
+    video_dict = {}
     files = glob.glob(paths['raw_video'] + '*.mp4')
-    names = [vals.split('/')[-1] for vals in files]
-    videos = []
     for file in files:
-        videos.append(mp4_to_npy(file))
+        video_dict[file.split('/')[-1]] = mp4_to_npy(file)
 
-    return videos, names
+    return video_dict
