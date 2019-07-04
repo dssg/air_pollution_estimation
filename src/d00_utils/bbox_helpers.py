@@ -28,21 +28,38 @@ def manually_draw_bboxes(frame:np.ndarray) -> (list,list):
 	return bboxes,colors
 
 
-def bboxcvlib_to_bboxcv2(bbox_cvlib):
+def bboxcvlib_to_bboxcv2(bbox_cvlib, vectorized = False):
 	"""Convert bboxes from format returned by cvlib (xmin,ymin, xmin+w, ymin+H)
 	to format required by cv2 (xmin,ymin,w,h)
+
+	If vectorized is set to True, will handle np arrays of bboxes. Format would be (num_bboxes, 4)
 	"""
-	xmin,ymin,xmin_plus_w, ymin_plus_h = bbox_cvlib[0], bbox_cvlib[1], bbox_cvlib[2], bbox_cvlib[3]
-	bbox_cv2 = (xmin, ymin, xmin_plus_w - xmin, ymin_plus_h - ymin)
+	if vectorized == False: #handles subscriptable objects
+		xmin,ymin,xmin_plus_w, ymin_plus_h = bbox_cvlib[0], bbox_cvlib[1], bbox_cvlib[2], bbox_cvlib[3]
+		bbox_cv2 = [xmin, ymin, xmin_plus_w - xmin, ymin_plus_h - ymin]
+
+	else: #handles np arrays 
+		xmin,ymin,xmin_plus_w, ymin_plus_h = bbox_cvlib[:,0], bbox_cvlib[:,1], bbox_cvlib[:,2], bbox_cvlib[:,3]
+		bbox_cv2 = np.array([xmin, ymin, xmin_plus_w - xmin, ymin_plus_h - ymin]).transpose()
+
 	return bbox_cv2
 
 
-def bboxcv2_to_bboxcvlib(bbox_cv2):
+def bboxcv2_to_bboxcvlib(bbox_cv2,  vectorized = False):
 	"""Convert bboxes from format returned by cv2 (xmin,ymin,w,h) 
 	to format accepted by cvlib (xmin,ymin, xmin+w, ymin+H)
+
+	If vectorized is set to True, will handle np arrays of bboxes. Format would be (num_bboxes, 4)
+
 	"""
-	xmin,ymin,w, h = bbox_cv2[0], bbox_cv2[1], bbox_cv2[2], bbox_cv2[3]
-	bbox_cvlib =(xmin, ymin, xmin+w, ymin+h)
+	if vectorized == False: #handles subscriptable items 
+		xmin,ymin,w, h = bbox_cv2[0], bbox_cv2[1], bbox_cv2[2], bbox_cv2[3]
+		bbox_cvlib =[xmin, ymin, xmin+w, ymin+h]
+
+	else: #handles np arrays with multiple bboxes 
+		xmin,ymin,w, h = bbox_cv2[:,0], bbox_cv2[:,1], bbox_cv2[:,2], bbox_cv2[:,3]
+		bbox_cvlib = np.array([xmin, ymin, xmin+w, ymin+h]).transpose()
+
 	return bbox_cvlib
 
 
@@ -70,10 +87,13 @@ def bbox_intersection_over_union(boxA, boxB) -> float:
 	"""Compute intersection over union for two bounding boxes
 
     Keyword arguments: 
-
-	boxA -- format is (xmin, ymin, xmin+w, ymin+h) 
-	boxB -- format is (xmin, ymin, xmin+w, ymin+h)
+	
+	boxA -- format is cvlib: (xmin, ymin, xmin+w, ymin+h) 
+	boxB -- format is cvlib: (xmin, ymin, xmin+w, ymin+h)
 	"""
+	assert (boxA[0] <= boxA[2] and boxA[1] <= boxA[3]), "arg boxA must be in format (xmin,ymin,xmin+w,ymin+h)"
+	assert (boxB[0] <= boxB[2] and boxB[1] <= boxB[3]), "arg boxB must be in format (xmin,ymin,xmin+w,ymin+h) "
+
 	# determine the (x, y)-coordinates of the intersection rectangle
 	xA = max(boxA[0], boxB[0]) #xcoords
 	yA = max(boxA[1], boxB[1]) #ycoords
@@ -103,7 +123,11 @@ def vectorized_intersection_over_union(bboxes_t0:np.ndarray, bboxes_t1:np.ndarra
 	2d arrays 
 	boxA -- format is (xmin, ymin, xmin+w, ymin+h)
 	"""
-	assert bboxes_t0.shape[1] == 4 and bboxes_t1.shape[1] == 4 
+	assert bboxes_t0.shape[1] == 4 and bboxes_t1.shape[1] == 4, "Axis 2 should be bounding boxes"
+	assert (np.all(bboxes_t0[:,0] <= bboxes_t0[:,2]) and np.all(bboxes_t0[:,1] <= bboxes_t0[:,3])), \
+			"For at least one bbox in bboxes_t0, xmin < xmin+w or ymin < ymin+h"
+	assert (np.all(bboxes_t1[:,0] <= bboxes_t1[:,2]) and np.all(bboxes_t1[:,1] <= bboxes_t1[:,3])), \
+			"For at least one bbox in bboxes_t1, xmin < xmin+w or ymin < ymin+h"
 
 	xA = np.maximum(bboxes_t0[:,0], bboxes_t1[:,0])
 	yA = np.maximum(bboxes_t0[:,1], bboxes_t1[:,1])
@@ -116,7 +140,7 @@ def vectorized_intersection_over_union(bboxes_t0:np.ndarray, bboxes_t1:np.ndarra
 	boxBArea = np.abs(np.multiply((bboxes_t1[:,2] - bboxes_t1[:,0]), (bboxes_t1[:,3] - bboxes_t1[:,1])))
 
 	unionArea = boxAArea + boxBArea - interArea
-	
+
 	with np.errstate(divide='ignore'):
 		iou = interArea / unionArea
 

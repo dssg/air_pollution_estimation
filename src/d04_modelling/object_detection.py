@@ -24,7 +24,7 @@ def detect_bboxes(frame:np.ndarray, model:str,
 		if model == 'yolov3_tiny':
 			bboxes_cvlib, labels, confs = cvlib.detect_common_objects(frame, confidence=params['detection_confidence_threshold'],
 												 nms_thresh=params['nms_threshold'],model='yolov3_tiny')
-			bboxes = [bboxcvlib_to_bboxcv2(bbox_cvlib) for bbox_cvlib in bboxes_cvlib]
+			bboxes_cv2 = [bboxcvlib_to_bboxcv2(bbox_cvlib) for bbox_cvlib in bboxes_cvlib]
 
 	#sample for how other models/implementations could be added 
 	elif implementation == 'some_other_impl':
@@ -38,8 +38,6 @@ def detect_bboxes(frame:np.ndarray, model:str,
 
 		#delete items from lists
 		for i in sorted(del_inds, reverse=True):
-			del bboxes[i]; del labels[i]; del confs[i]
-	#gen colors for remaining bboxes
-	# colors=color_bboxes(labels)
+			del bboxes_cv2[i]; del labels[i]; del confs[i]
 
-	return bboxes, labels, confs
+	return bboxes_cv2, labels, confs

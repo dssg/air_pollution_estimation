@@ -1,7 +1,7 @@
 from src.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame,bbox_intersection_over_union
 from src.d00_utils.video_helpers import write_mp4
 from src.d04_modelling.object_detection import detect_bboxes
-from src.d04_modelling.vehicle import VehicleFleet
+from src.d04_modelling.vehiclefleet import VehicleFleet
 import numpy as np
 import sys, os
 import cv2
@@ -186,7 +186,6 @@ if __name__ == '__main__':
 	detection_implementation = params["yolo_implementation"]
 	detection_frequency = params["detection_frequency"]
 	iou_threshold = params["iou_threshold"]
-	# selected_labels = params["selected_labels"]
 
 	# fleet = track_objects(local_mp4_dir=local_mp4_dir, local_mp4_name=local_mp4_name,
 	# 			  detection_model=detection_model,detection_confidence=detection_confidence,
@@ -202,5 +201,6 @@ if __name__ == '__main__':
 
 	pkl_in = open("fleet_obj.pkl", "rb")
 	fleet = pkl.load(pkl_in)
-	print(fleet.labels,fleet.confs,fleet.compute_counts())
-	# print(fleet.bboxes.sh)
+	# print(fleet.labels,fleet.confs,fleet.compute_counts())
+	fleet.compute_iou_all()
+	fleet.plot_iou_all()
