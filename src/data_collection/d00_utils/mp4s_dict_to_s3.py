@@ -4,6 +4,7 @@ from kedro.io.core import AbstractDataSet, DataSetError, S3PathVersionMixIn, Ver
 import subprocess
 from traffic_estimation.d00_utils.data_retrieval import retrieve_videos_s3_to_np
 
+
 class MP4toS3DictDataSet(AbstractDataSet, S3PathVersionMixIn):
     """``MP4toS3DictDataSet`` saves data to a file in S3. It uses s3fs
     to write to S3
