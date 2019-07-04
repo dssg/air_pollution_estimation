@@ -7,7 +7,7 @@ import sys, os
 import cv2
 import yaml
 import time
-import collections
+import pickle as pkl
 
 def create_tracker_by_name(tracker_type:str):
 	"""Create tracker based on tracker name"""
@@ -66,7 +66,7 @@ def determine_new_bboxes(bboxes_tracked:list, bboxes_detected:list, iou_threshol
 
 def track_objects(local_mp4_dir:str, local_mp4_name:str,
 				  detection_model:str,detection_confidence:float,detection_implementation:str,
-				  detection_frequency:int,tracking_model:str,iou_threshold:float, selected_labels:list,
+				  detection_frequency:int,tracking_model:str,iou_threshold:float, selected_labels=True,
 				  video_time_length=10, make_video=True) ->(list,list,dict):
 	"""
 	Given a path to an input video, this function will initialize a specified tracking algorithm 
@@ -89,7 +89,6 @@ def track_objects(local_mp4_dir:str, local_mp4_name:str,
 	video_time_length -- specify length of video 
 	make_video -- if true, will write video to local_mp4_dir with name local_mp4_name_tracked.mp4
 	"""
-
 	start_time = time.time()
 	
 	# Create a video capture object to read videos
@@ -103,13 +102,11 @@ def track_objects(local_mp4_dir:str, local_mp4_name:str,
 		print('Failed to read video')
 		sys.exit(0)
 
-	bboxes, labels, confs, colors = detect_bboxes(frame=frame, 
-												model=detection_model,
-												confidence=detection_confidence,
-												implementation=detection_implementation,
-												selected_labels = selected_labels)
-	# print(type(bboxes))
-	# print(np.array(bb/oxes).shape)
+	bboxes, labels, confs = detect_bboxes(frame=frame, 
+										model=detection_model,
+										# confidence=detection_confidence,
+										implementation=detection_implementation,
+										selected_labels = selected_labels)
 	fleet = VehicleFleet(np.array(bboxes), np.array(labels), np.array(confs))
 	# Create MultiTracker object
 	multiTracker = cv2.MultiTracker_create()
@@ -135,34 +132,24 @@ def track_objects(local_mp4_dir:str, local_mp4_name:str,
 		if frame_counter%detection_frequency == 0: 
 			#redetect bounding boxes
 			bboxes_detected, labels_detected, \
-			confs_detected, colors_detected = detect_bboxes(frame=frame, 
-															model=detection_model,
-															confidence=detection_confidence,
-															implementation=detection_implementation,
-															selected_labels = selected_labels)
-
+			confs_detected = detect_bboxes(frame=frame, 
+											model=detection_model,
+											# confidence=detection_confidence,
+											implementation=detection_implementation,
+											selected_labels = selected_labels)
 			# re-initialize MultiTracker
 			new_bbox_inds = determine_new_bboxes(bboxes_tracked, bboxes_detected, iou_threshold)
-			new_bboxes, new_labels, new_confs, new_colors, new_label_confs = \
-						[bboxes_detected[i] for i in new_bbox_inds],\
-					    [labels_detected[i] for i in new_bbox_inds],\
-					    [confs_detected[i] for i in new_bbox_inds],\
-					    [colors_detected[i] for i in new_bbox_inds],\
-						[labels_detected[i] +' ' + str(format(confs_detected[i] * 100, '.2f')) + '%' \
-											for i in new_bbox_inds]
+			new_bboxes, new_labels, new_confs= [bboxes_detected[i] for i in new_bbox_inds],\
+											    [labels_detected[i] for i in new_bbox_inds],\
+											    [confs_detected[i] for i in new_bbox_inds]
 
 			#iterate through new bboxes										 
 			for i,new_bbox in enumerate(new_bboxes):
 				multiTracker.add(create_tracker_by_name(tracking_model), frame, new_bbox)
 
-			#update flet object 
+			#update fleet object 
 			if new_bboxes!=[]:
 				fleet.add_vehicles(np.array(new_bboxes),np.array(new_labels),np.array(new_confs))
-
-			#append new bboxes, colors, labels, confidences to list
-			bboxes+=new_bboxes; labels+=new_labels; confs+=new_confs; 
-			# colors+=new_colors
-			# label_confs+=new_label_confs
 
 		processed_video.append(frame)
 		frame_counter += 1
@@ -179,9 +166,8 @@ def track_objects(local_mp4_dir:str, local_mp4_name:str,
 							fps=cap_fps)		
 
 	print('Run time is %s seconds' % (time.time() - start_time))
-	counts = collections.Counter(labels)
-	return labels,confs, counts
-
+	# return fleet.labels, fleet.confs, fleet.compute_counts()
+	return fleet
 
 if __name__ == '__main__':
 	#config stuff
@@ -200,13 +186,21 @@ if __name__ == '__main__':
 	detection_implementation = params["yolo_implementation"]
 	detection_frequency = params["detection_frequency"]
 	iou_threshold = params["iou_threshold"]
-	selected_labels = params["selected_labels"]
+	# selected_labels = params["selected_labels"]
 
-	labels,confs,counts = track_objects(local_mp4_dir=local_mp4_dir, local_mp4_name=local_mp4_name,
-				  detection_model=detection_model,detection_confidence=detection_confidence,
-				  detection_implementation=detection_implementation,
-				  detection_frequency=detection_frequency,tracking_model=tracking_model,
-				  selected_labels=selected_labels,
-				  iou_threshold=iou_threshold, make_video=True)
+	# fleet = track_objects(local_mp4_dir=local_mp4_dir, local_mp4_name=local_mp4_name,
+	# 			  detection_model=detection_model,detection_confidence=detection_confidence,
+	# 			  detection_implementation=detection_implementation,
+	# 			  detection_frequency=detection_frequency,tracking_model=tracking_model,
+	# 			  # selected_labels=selected_labels,
+	# 			  iou_threshold=iou_threshold, make_video=True)
 
-	print(counts)
+	# pkl_out = open("fleet_obj.pkl", "wb")
+	# pkl.dump(fleet, pkl_out)
+	# pkl_out.close()
+
+
+	pkl_in = open("fleet_obj.pkl", "rb")
+	fleet = pkl.load(pkl_in)
+	print(fleet.labels,fleet.confs,fleet.compute_counts())
+	# print(fleet.bboxes.sh)

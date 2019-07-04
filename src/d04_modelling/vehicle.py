@@ -1,4 +1,7 @@
 import numpy as np
+import collections
+
+from src.d00_utils.bbox_helpers import color_bboxes, vectorized_intersection_over_union
 
 class VehicleFleet():
 	def __init__(self,bboxes:np.ndarray,labels:np.ndarray,confs:np.ndarray):
@@ -41,16 +44,25 @@ class VehicleFleet():
 	def compute_colors(self):
 		return color_bboxes(self.labels)
 
-	def compute_stop_start(self):
-		return
+	# def compute_stop_start(self):
+		# return
 
+	def compute_counts(self):
+		return collections.Counter(self.labels)
 
-class Vehicle():
-	def __init__(self,vehicle_id,bbox,label,conf):
-		self.type = label
-		self.detection_confidence = conf 
-		self.unique_id = vehicle_id
-		self.frame_appeared = 0 
-		self.fraem_disappeared = 100
+	def compute_stop_starts(self):
+		#iterate along time axis; consider 2 timepoints t0,t1 at a time 
+		#compare bboxes at t0,t1; output the iou
+		num_frames = self.bboxes.shape[2]
+		num_vehicles = self.bboxes.shape[0]
+		iou_all = np.zeros((num_vehicles,1,num_frames - 1))
+
+		#compare iou for in between frames 
+		for i in range(num_frames - 1):
+			bboxes_time_t0 = self.bboxes[:,:,i]
+			bboxes_time_t1 = self.bboxes[:,:,i+1]
+			iou_all[:,:,i] = vectorized_intersection_over_union(bboxes_time_t0,bboxes_time_t1)
+		return iou_all
+
 
 

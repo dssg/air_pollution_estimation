@@ -81,7 +81,7 @@ def bbox_intersection_over_union(boxA, boxB) -> float:
 	yB = min(boxA[3], boxB[3]) #ycoords plus h
 
 	# compute the area of intersection rectangle
-	interArea = abs(max((xB - xA, 0)) * max((yB - yA), 0))
+	interArea = abs(max((xB - xA), 0) * max((yB - yA), 0))
 	if interArea == 0:
 		return 0
 	# compute the area of both the prediction and ground-truth
@@ -95,6 +95,31 @@ def bbox_intersection_over_union(boxA, boxB) -> float:
 	iou = interArea / float(boxAArea + boxBArea - interArea)
 
 	# return the intersection over union value
+	return iou
+
+
+def vectorized_intersection_over_union(bboxes_t0:np.ndarray, bboxes_t1:np.ndarray) ->np.ndarray:
+	""" This function uses np vectorized operations to compute the iou for sets of vehicles 
+	2d arrays 
+	boxA -- format is (xmin, ymin, xmin+w, ymin+h)
+	"""
+	assert bboxes_t0.shape[1] == 4 and bboxes_t1.shape[1] == 4 
+
+	xA = np.maximum(bboxes_t0[:,0], bboxes_t1[:,0])
+	yA = np.maximum(bboxes_t0[:,1], bboxes_t1[:,1])
+	xB = np.maximum(bboxes_t0[:,2], bboxes_t1[:,2])
+	yB = np.maximum(bboxes_t0[:,3], bboxes_t1[:,3])
+
+	interArea = np.abs(np.multiply(np.maximum(xB - xA,0), np.maximum(yB - yA, 0)))
+
+	boxAArea = np.abs(np.multiply((bboxes_t0[:,2] - bboxes_t0[:,0]) , (bboxes_t0[:,3] - bboxes_t0[:,1])))
+	boxBArea = np.abs(np.multiply((bboxes_t1[:,2] - bboxes_t1[:,0]), (bboxes_t1[:,3] - bboxes_t1[:,1])))
+
+	unionArea = boxAArea + boxBArea - interArea
+	
+	with np.errstate(divide='ignore'):
+		iou = interArea / unionArea
+
 	return iou
 
 
