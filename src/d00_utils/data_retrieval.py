@@ -401,6 +401,8 @@ def load_videos_from_local(paths):
 
 
 def append_to_csv(filepath: str, df: pd.DataFrame, columns: list, dtype: dict):
+    if df.empty:
+        return
     # check if filepath exists
     if not os.path.exists(filepath):
         df_main = pd.DataFrame(columns=columns)
