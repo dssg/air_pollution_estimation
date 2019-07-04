@@ -5,7 +5,7 @@ import imageio
 import pandas as pd
 
 
-def classify_objects(videos, names, params, paths, vid_time_length=10, make_videos=True, labels=None):
+def classify_objects(videos, names, params, paths, vid_time_length=10, make_videos=True):
     """ this function classifies objects from local mp4 with cvlib python package.
         Args:
             videos (list(nparray)): list of numpy arrays containing the videos
@@ -26,16 +26,13 @@ def classify_objects(videos, names, params, paths, vid_time_length=10, make_vide
     for video, name in zip(videos, names):
         yolo_dict[name] = {}
         obj_bounds, obj_labels, obj_label_confidences = classify_objects_in_video(
-            video, name, params, paths, vid_time_length)
+            video, name, params, paths, vid_time_length, make_videos)
         yolo_dict[name]['bounds'] = obj_bounds
         yolo_dict[name]['labels'] = obj_labels
         yolo_dict[name]['confidences'] = obj_label_confidences
-
-        if labels:
-            df = pd.DataFrame(yolo_dict)
-            print(df.head())
     return yolo_dict
-    
+
+
 def classify_objects_in_video(video, name, params, paths, vid_time_length=10, make_videos=True):
     """ this function classifies objects from local mp4 with cvlib python package.
         Args:
