@@ -2,6 +2,7 @@ import boto3
 import cv2
 import os
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import re
 import shutil
@@ -67,7 +68,7 @@ def retrieve_videos_s3_to_np(
             bool_keep_data: boolean for keeping the downloaded data in the local folder
         Returns:
             videos: list of numpy arrays containing all the jamcam videos between the selected dates
-            names: list of video file names
+            names: list of video filenames
         Raises:
 
     """
@@ -99,36 +100,30 @@ def retrieve_videos_s3_to_np(
         selected_files = []
 
         for obj in objects:
-            file = obj.key
-            time = re.search("([0-9]{2}\:[0-9]{2}\:[0-9]{2})", file).group()
+            filepath = obj.key
+            time = re.search("([0-9]{2}\:[0-9]{2}\:[0-9]{2})", filepath).group()
             time = datetime.datetime.strptime(time, '%H:%M:%S').time()
-            camera_id = file.split('_')[-1][:-4]
+            camera_id = filepath.split('_')[-1][:-4]
 
             if time >= from_time and time <= to_time and (not camera_list or camera_id in camera_list):
-                selected_files.append(file)
+                selected_files.append(filepath)
 
-        for file in selected_files:
+        for filepath in selected_files:
             try:
-                my_bucket.download_file(file, paths[save_folder] + file.split('/')[-1].replace(
+                my_bucket.download_file(filepath, paths[save_folder] + filepath.split('/')[-1].replace(
                     ':', '-').replace(" ", "_"))
             except:
-                print("Could not download " + file)
+                print("Could not download " + filepath)
 
     # Load files into a list of numpy arrays using opencv
     videos = []
     names = []
-    for file in glob.glob(paths[save_folder] + '*.mp4'):
+    for filename in glob.glob(paths[save_folder] + '*.mp4'):
         try:
-            videos.append(mp4_to_npy(file))
-            names.append(file.split('/')[-1])
+            videos.append(mp4_to_npy(filename))
+            names.append(filename.split('/')[-1])
         except:
-            print("Could not convert " + file + " to numpy array")
-
-    # Delete the folder temp
-    if not bool_keep_data:
-        assert save_folder == 'temp_video'
-        shutil.rmtree(paths[save_folder])
-
+            print("Could not convert " + filename + " to numpy array")
     return videos, names
 
 
@@ -149,7 +144,7 @@ def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(date
             bool_keep_data: boolean for keeping the downloaded data in the local folder
         Returns:
             videos: list of numpy arrays containing all the jamcam videos between the selected dates
-            names: list of video file names
+            names: list of video filenames
         Raises:
 
     """
@@ -172,18 +167,20 @@ def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(date
     selected_files = []
     for date in dates:
         date = date.strftime('%Y-%m-%d')
-        prefix = "raw/videos/" + date + "/"
+        prefix = "raw/videos/%s/%s"%(date,date)  
         print("     ",prefix)
         objects = my_bucket.objects.filter(Prefix=prefix)
-        for obj in objects:
-            print(obj)
-            file = obj.key
-            time = re.search("([0-9]{2}\:[0-9]{2}\:[0-9]{2})", file).group()
+        keys = [obj.key for obj in objects]
+        
+        for filename in keys:
+            print(filename)
+            # filename = obj.key
+            time = re.search("([0-9]{2}\:[0-9]{2}\:[0-9]{2})", filename).group()
             time = datetime.datetime.strptime(time, '%H:%M:%S').time()
-            camera_id = file.split('_')[-1][:-4]
+            camera_id = filename.split('_')[-1][:-4]
 
-            if time >= from_time and time <= to_time and (not camera_list or camera_id in camera_list):
-                selected_files.append(file)
+            if from_time <= time <= to_time and (not camera_list or camera_id in camera_list):
+                selected_files.append(filename)
 
         if save_to_file:
             filepath = os.path.join(paths[save_folder], "searched_videos")
@@ -191,6 +188,24 @@ def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(date
                 json.dump(selected_files, f)
     return selected_files
 
+def load_existing_video_names(paths):
+    save_folder = 'temp_video'
+    filepath = os.path.join(paths[save_folder], "searched_videos")
+    with open(filepath, "r") as f:
+        videos = list(json.load(f))
+        return videos
+
+def load_videos_into_np(folder):
+     # Load files into a list of numpy arrays using opencv
+    videos = []
+    names = []
+    for filename in glob.glob(os.path.join(folder, '*.mp4')):
+        try:
+            videos.append(mp4_to_npy(filename))
+            names.append(filename.split('/')[-1])
+        except:
+            print("Could not convert " + filename + " to numpy array")
+    return videos, names
 
 def download_video_and_convert_to_numpy(paths, filenames: list):
     """Retrieve jamcam videos from the s3 bucket based on the dates specified.
@@ -208,7 +223,7 @@ def download_video_and_convert_to_numpy(paths, filenames: list):
             bool_keep_data: boolean for keeping the downloaded data in the local folder
         Returns:
             videos: list of numpy arrays containing all the jamcam videos between the selected dates
-            names: list of video file names
+            names: list of video filenames
         Raises:
 
     """
@@ -222,31 +237,20 @@ def download_video_and_convert_to_numpy(paths, filenames: list):
                 ':', '-').replace(" ", "_"))
         except:
             print("Could not download " + filename)
-
-    # Load files into a list of numpy arrays using opencv
-    videos = []
-    names = []
-    for file in glob.glob(paths[save_folder] + '*.mp4'):
-        try:
-            videos.append(mp4_to_npy(file))
-            names.append(file.split('/')[-1])
-        except:
-            print("Could not convert " + file + " to numpy array")
-
-    return videos, names
+    return load_videos_into_np(paths[save_folder])
 
 
 def process_videos(local_path):
     # Load files into a list of numpy arrays using opencv
     videos = []
     names = []
-    for file in glob.glob(local_path + '*.mp4'):
+    for filename in glob.glob(local_path + '*.mp4'):
         try:
-            videos.append(mp4_to_npy(file))
-            names.append(file.split('/')[-1])
+            videos.append(mp4_to_npy(filename))
+            names.append(filename.split('/')[-1])
         except:
-            print("Could not convert " + file + " to numpy array")
-        # delete file
+            print("Could not convert " + filename + " to numpy array")
+        # delete filename
         os.remove(local_path)
     return videos, names
 
@@ -263,7 +267,7 @@ def delete_and_recreate_dir(temp_dir):
 
 
 def mp4_to_npy(local_mp4_path):
-    """Load mp4 file from the local directory and turn it into a numpy array"""
+    """Load mp4 filename from the local directory and turn it into a numpy array"""
     cap = cv2.VideoCapture(local_mp4_path)
     frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -321,8 +325,8 @@ def describe_s3_bucket(paths):
     objects = my_bucket.objects.filter(Prefix="raw/video_data_new/")
     files = [obj.key for obj in objects]
     dates = []
-    for file in files:
-        res = re.search("([0-9]{4}\-[0-9]{2}\-[0-9]{2})", file)
+    for filename in files:
+        res = re.search("([0-9]{4}\-[0-9]{2}\-[0-9]{2})", filename)
         dates.append(res.group())
 
     # Plot a bar chart of the dates in the s3 bucket
@@ -347,29 +351,28 @@ def load_videos_from_local(paths):
                 paths: dictionary containing raw_video, s3_profile and bucket_name paths
             Returns:
                 videos: list of numpy arrays containing all the jamcam videos from the local raw jamcam folder
-                names: list of video file names
+                names: list of video filenames
             Raises:
 
         """
     files = glob.glob(paths['raw_video'] + '*.mp4')
     names = []
     videos = []
-    for file in files:
+    for filename in files:
         try:
-            videos.append(mp4_to_npy(file))
-            names.append(file.split('/')[-1])
+            videos.append(mp4_to_npy(filename))
+            names.append(filename.split('/')[-1])
         except:
-            print("Could not convert " + file + " to numpy array")
+            print("Could not convert " + filename + " to numpy array")
 
     return videos, names
 
 
-def append_to_csv(paths, df):
-    filepath = os.path.join(paths['processed_video'], 'JamCamStats.csv')
+def append_to_csv(filepath:str, df:pd.DataFrame, columns:list):
     header=False
 
     # check if filepath exists
     if not os.path.exists(filepath):
         header = True
     with open(filepath, 'a') as f:
-        df.to_csv(f, header=header)
+        df[columns].to_csv(f, header=header)
