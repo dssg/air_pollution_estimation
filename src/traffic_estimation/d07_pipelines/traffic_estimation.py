@@ -13,7 +13,7 @@ traffic_estimation_pipeline = Pipeline([
     # TODO: int videos are pandas data frames at the moment, not numpy arrays. add .values in the right place
     node(
         func=create_out_video_with_boxes,
-        inputs='int_videos',
+        inputs=['int_videos', 'paths'],
         outputs='out_frames_with_boxes',
         name='create_frames_with_boxes'),
     node(
