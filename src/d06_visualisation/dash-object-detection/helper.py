@@ -57,7 +57,7 @@ def load_data(path):
 def load_camera_statistics(camera_id):
     print(camera_id)
     filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                            '..', '..', '..', 'data/sample_video_data/JamCamStats.csv')
+                            '..', '..', '..', 'data/02_processed/jamcams/JamCamStats.csv')
     df = pd.read_csv(filepath, dtype={'camera_id':'category'})
     df['datetime'] = pd.to_datetime(df.date)+ pd.to_timedelta(df.time, unit='h')
     output = df[df.camera_id == camera_id]
@@ -65,9 +65,10 @@ def load_camera_statistics(camera_id):
     return output
 
 def load_objects(df):
-    remove_columns = ["date", "metric", "time", "camera_id", "datetime"]
-    columns = set(df.columns).difference(remove_columns)
-    return columns
+    # remove_columns = ["date", "metric", "time", "camera_id", "datetime"]
+    load_columns = ["bus", "car", "motorcycle", "truck"]
+    # columns = set(df.columns).inter(load_columns)
+    return load_columns
 
 
 def load_object_statistics(df, object_type):
