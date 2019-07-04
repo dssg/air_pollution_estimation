@@ -13,7 +13,7 @@ print(params['dtype'])
 print("Saving video filenames")
 retrieve_video_names_from_s3(
     paths, from_date='2019-06-30', to_date='2019-06-30',
-    from_time='13-00-00', to_time='13-05-00',
+    from_time='13-00-00', to_time='15-00-00',
     camera_list=params['tims_camera_list'],
     save_to_file=True)
 
