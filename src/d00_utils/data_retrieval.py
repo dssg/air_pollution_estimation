@@ -6,9 +6,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import re
 import shutil
+import time
 import datetime
 import glob
 import json
+import subprocess
+from subprocess import Popen, PIPE
 
 
 def retrieve_single_video_s3_to_np(camera: str, date: str, time: str, paths: dict, bool_keep_data=False) -> np.ndarray:
@@ -101,7 +104,8 @@ def retrieve_videos_s3_to_np(
 
         for obj in objects:
             filepath = obj.key
-            time = re.search("([0-9]{2}\:[0-9]{2}\:[0-9]{2})", filepath).group()
+            time = re.search(
+                "([0-9]{2}\:[0-9]{2}\:[0-9]{2})", filepath).group()
             time = datetime.datetime.strptime(time, '%H:%M:%S').time()
             camera_id = filepath.split('_')[-1][:-4]
 
@@ -149,8 +153,11 @@ def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(date
 
     """
     save_folder = 'temp_video'
+    bucket_name = paths['bucket_name']
+    s3_profile = paths['s3_profile']
+    s3_video = paths['s3_video']
     delete_and_recreate_dir(paths[save_folder])
-    my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
+    # my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
     from_date = datetime.datetime.strptime(from_date, '%Y-%m-%d').date()
     to_date = datetime.datetime.strptime(to_date, '%Y-%m-%d').date()
     from_time = datetime.datetime.strptime(from_time, '%H-%M-%S').time()
@@ -167,33 +174,57 @@ def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(date
     selected_files = []
     for date in dates:
         date = date.strftime('%Y-%m-%d')
-        prefix = "raw/videos/%s/%s"%(date,date)  
-        print("     ",prefix)
-        objects = my_bucket.objects.filter(Prefix=prefix)
-        keys = [obj.key for obj in objects]
-        
-        for filename in keys:
-            print(filename)
-            # filename = obj.key
-            time = re.search("([0-9]{2}\:[0-9]{2}\:[0-9]{2})", filename).group()
-            time = datetime.datetime.strptime(time, '%H:%M:%S').time()
-            camera_id = filename.split('_')[-1][:-4]
+        prefix = "%s%s/" % (s3_video, date)
+        print("     ", prefix)
+        # objects = my_bucket.objects.filter(Prefix=prefix)
+        # start = time.time()
 
-            if from_time <= time <= to_time and (not camera_list or camera_id in camera_list):
-                selected_files.append(filename)
+        # keys = [obj.key for obj in objects]
+        # print(time.time() - start, len(keys))
 
+        start = time.time()
+
+        # fetch video filenames
+        ls = Popen(["aws", "s3", 'ls', 's3://%s/%s' % (bucket_name, prefix),
+                    '--profile',
+                    s3_profile], stdout=PIPE)
+        # print('s3://%s/%s' % (bucket_name, prefix))
+        p1 = Popen(['awk', '{$1=$2=$3=""; print $0}'],
+                   stdin=ls.stdout, stdout=PIPE)
+        p2 = Popen(['sed', 's/^[ \t]*//'], stdin=p1.stdout, stdout=PIPE)
+        ls.stdout.close()
+        p1.stdout.close()
+        output = p2.communicate()[0]
+        p2.stdout.close()
+        files = output.decode("utf-8").split("\n")
+        end = time.time()
+        print(end - start, len(files))
+        if not files:
+            break
+        for filename in files:
+            if filename:
+                res = filename.split('_')
+                camera_id = res[-1][:-4]
+                time_of_day = res[0].split(".")[0]
+                time_of_day = datetime.datetime.strptime(
+                    time_of_day, '%Y-%m-%d %H:%M:%S').time()
+                if from_time <= time_of_day <= to_time and (not camera_list or camera_id in camera_list):
+                    selected_files.append("%s%s"%(prefix,filename))
         if save_to_file:
-            filepath = os.path.join(paths[save_folder], "searched_videos")
-            with open(filepath, "a") as f:
+            filepath = os.path.join(paths["raw_video"], "searched_videos")
+            with open(filepath, "w") as f:
                 json.dump(selected_files, f)
+    print(selected_files)
     return selected_files
 
-def load_existing_video_names(paths):
-    save_folder = 'temp_video'
+
+def load_video_names(paths):
+    save_folder = 'raw_video'
     filepath = os.path.join(paths[save_folder], "searched_videos")
     with open(filepath, "r") as f:
         videos = list(json.load(f))
         return videos
+
 
 def load_videos_into_np(folder):
      # Load files into a list of numpy arrays using opencv
@@ -206,6 +237,7 @@ def load_videos_into_np(folder):
         except:
             print("Could not convert " + filename + " to numpy array")
     return videos, names
+
 
 def download_video_and_convert_to_numpy(paths, filenames: list):
     """Retrieve jamcam videos from the s3 bucket based on the dates specified.
@@ -368,11 +400,12 @@ def load_videos_from_local(paths):
     return videos, names
 
 
-def append_to_csv(filepath:str, df:pd.DataFrame, columns:list):
-    header=False
-
+def append_to_csv(filepath: str, df: pd.DataFrame, columns: list):
+    header = False
     # check if filepath exists
     if not os.path.exists(filepath):
         header = True
     with open(filepath, 'a') as f:
-        df[columns].to_csv(f, header=header)
+        cols = set(df.columns).union(columns)
+        print(cols)
+        df[cols].to_csv(f, header=header)
