@@ -209,7 +209,7 @@ def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(date
                 time_of_day = datetime.datetime.strptime(
                     time_of_day, '%Y-%m-%d %H:%M:%S').time()
                 if from_time <= time_of_day <= to_time and (not camera_list or camera_id in camera_list):
-                    selected_files.append("%s%s"%(prefix,filename))
+                    selected_files.append("%s%s" % (prefix, filename))
         if save_to_file:
             filepath = os.path.join(paths["raw_video"], "searched_videos")
             with open(filepath, "w") as f:
