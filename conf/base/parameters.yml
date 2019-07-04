@@ -14,3 +14,5 @@ modelling:
 
 reporting:
   columns: ["camera_id", "date", "time", "metric", "motorcycle", "truck", "bus", "car"]
+  dtype: 
+    camera_id: 'category'

@@ -9,7 +9,7 @@ import os
 
 params = load_parameters()
 paths = load_paths()
-
+print(params['dtype'])
 print("Saving video filenames")
 retrieve_video_names_from_s3(
     paths, from_date='2019-06-30', to_date='2019-06-30',
@@ -40,7 +40,7 @@ while selected_videos:
 
     # append to csv
     filepath = os.path.join(paths['processed_video'], 'JamCamStats.csv')
-    append_to_csv(filepath, stats_df, params['columns'])
+    append_to_csv(filepath, stats_df, params['columns'], params['dtype'])
     print("Appended stats to big csv")
     selected_videos = selected_videos[5:]
     delete_and_recreate_dir(paths["temp_video"])

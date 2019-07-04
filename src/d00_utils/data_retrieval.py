@@ -400,12 +400,11 @@ def load_videos_from_local(paths):
     return videos, names
 
 
-def append_to_csv(filepath: str, df: pd.DataFrame, columns: list):
-    header = False
+def append_to_csv(filepath: str, df: pd.DataFrame, columns: list, dtype: dict):
     # check if filepath exists
     if not os.path.exists(filepath):
-        header = True
-    with open(filepath, 'a') as f:
-        cols = set(df.columns).union(columns)
-        print(cols)
-        df[cols].to_csv(f, header=header)
+        df_main = pd.DataFrame(columns=columns)
+        df_main.to_csv(filepath)
+    df_main = pd.read_csv(filepath, dtype=dtype)
+    df_main = df_main.append(df)
+    df_main.to_csv(filepath, columns=columns, index=False)
