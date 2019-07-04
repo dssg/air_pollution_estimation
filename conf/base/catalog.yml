@@ -43,12 +43,12 @@ raw_tims:
 ####################################
 
 raw_videos_modelling:
-  filepath: raw/videos_modelling
+  filepath: raw/video_data_new/
   load_args:
     temp_video_dir: "data/01_raw/jamcams/temp_video/"
     raw_video_dir: "data/01_raw/jamcams/"
-    from_date: '2019-06-20'
-    to_date: '2019-07-01'
+    from_date: '2019-06-30'
+    to_date: '2019-06-30'
     camera_list:
     time_from: '00-00-00'
     time_to: '23-59-59'
