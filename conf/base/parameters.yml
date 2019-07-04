@@ -11,3 +11,6 @@ data_collection:
 modelling:
   yolo_model: "yolov3-tiny"
   confidence_threshold: 0.2
+
+reporting:
+  columns: ["camera_id", "date", "time", "metric", "motorcycle", "truck", "bus", "car"]
