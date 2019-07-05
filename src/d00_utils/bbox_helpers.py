@@ -91,8 +91,8 @@ def bbox_intersection_over_union(bbox_a, bbox_b) -> float:
 	bbox_a -- format is (xmin, ymin, xmin+width, ymin+height)
 	bbox_b -- format is (xmin, ymin, xmin+width, ymin+height)
 	"""
-	assert (boxA[0] <= boxA[2] and boxA[1] <= boxA[3]), "arg boxA must be in format (xmin,ymin,xmin+w,ymin+h)"
-	assert (boxB[0] <= boxB[2] and boxB[1] <= boxB[3]), "arg boxB must be in format (xmin,ymin,xmin+w,ymin+h) "
+	assert (bbox_a[0] <= bbox_a[2] and bbox_a[1] <= bbox_a[3]), "arg boxA must be in format (xmin,ymin,xmin+w,ymin+h)"
+	assert (bbox_b[0] <= bbox_b[2] and bbox_b[1] <= bbox_b[3]), "arg boxB must be in format (xmin,ymin,xmin+w,ymin+h) "
 
 	# determine the (x, y)-coordinates of the intersection rectangle
 	x_upper_left = max(bbox_a[0], bbox_b[0]) #xcoords
@@ -129,20 +129,20 @@ def vectorized_intersection_over_union(bboxes_t0:np.ndarray, bboxes_t1:np.ndarra
 	assert (np.all(bboxes_t1[:,0] <= bboxes_t1[:,2]) and np.all(bboxes_t1[:,1] <= bboxes_t1[:,3])), \
 			"For at least one bbox in bboxes_t1, xmin < xmin+w or ymin < ymin+h"
 
-	xA = np.maximum(bboxes_t0[:,0], bboxes_t1[:,0])
-	yA = np.maximum(bboxes_t0[:,1], bboxes_t1[:,1])
-	xB = np.maximum(bboxes_t0[:,2], bboxes_t1[:,2])
-	yB = np.maximum(bboxes_t0[:,3], bboxes_t1[:,3])
+	x_upper_left= np.maximum(bboxes_t0[:,0], bboxes_t1[:,0])
+	y_upper_left = np.maximum(bboxes_t0[:,1], bboxes_t1[:,1])
+	x_lower_right = np.maximum(bboxes_t0[:,2], bboxes_t1[:,2])
+	y_lower_right = np.maximum(bboxes_t0[:,3], bboxes_t1[:,3])
 
-	interArea = np.abs(np.multiply(np.maximum(xB - xA,0), np.maximum(yB - yA, 0)))
+	inter_area = np.abs(np.multiply(np.maximum(x_lower_right - x_upper_left,0), np.maximum(y_lower_right - y_upper_left, 0)))
 
-	boxAArea = np.abs(np.multiply((bboxes_t0[:,2] - bboxes_t0[:,0]) , (bboxes_t0[:,3] - bboxes_t0[:,1])))
-	boxBArea = np.abs(np.multiply((bboxes_t1[:,2] - bboxes_t1[:,0]), (bboxes_t1[:,3] - bboxes_t1[:,1])))
+	box_a_area = np.abs(np.multiply((bboxes_t0[:,2] - bboxes_t0[:,0]) , (bboxes_t0[:,3] - bboxes_t0[:,1])))
+	box_b_area = np.abs(np.multiply((bboxes_t1[:,2] - bboxes_t1[:,0]), (bboxes_t1[:,3] - bboxes_t1[:,1])))
 
-	unionArea = boxAArea + boxBArea - interArea
+	union_area = box_a_area + box_b_area - inter_area
 
 	with np.errstate(divide='ignore'):
-		iou = interArea / unionArea
+		iou = inter_area / union_area
 
 	return iou
 

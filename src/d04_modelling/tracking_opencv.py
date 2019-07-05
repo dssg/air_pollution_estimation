@@ -1,5 +1,3 @@
-# # Explore Tracking Methods in OpenCV
-# Source: https://www.learnopencv.com/multitracker-multiple-object-tracking-using-opencv-c-python/
 from src.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame,bbox_intersection_over_union
 from src.d00_utils.video_helpers import write_mp4
 from src.d04_modelling.object_detection import detect_bboxes
@@ -132,7 +130,7 @@ def track_objects(local_mp4_dir:str,
 		if not success: break
 
 		# get updated location of objects in subsequent frames
-		success, bboxes_tracked = multiTracker.update(frame)
+		success, bboxes_tracked = multitracker.update(frame)
 		fleet.update_vehicles(bboxes_tracked)
 
 		# draw tracked objects
