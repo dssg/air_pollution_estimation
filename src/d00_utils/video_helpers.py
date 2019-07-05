@@ -1,6 +1,7 @@
 import imageio
 import numpy as np
 
+
 def write_mp4(local_mp4_dir:str, mp4_name:str,video:np.ndarray,fps:int):
 	"""Write provided video to provided path
 
