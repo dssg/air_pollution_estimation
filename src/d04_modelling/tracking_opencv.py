@@ -64,10 +64,17 @@ def determine_new_bboxes(bboxes_tracked:list, bboxes_detected:list, iou_threshol
 	return new_bboxes_inds
 
 
-def track_objects(local_mp4_dir:str, local_mp4_name:str,
-				  detection_model:str,detection_confidence:float,detection_implementation:str,
-				  detection_frequency:int,tracking_model:str,iou_threshold:float, selected_labels=True,
-				  video_time_length=10, make_video=True) ->(list,list,dict):
+def track_objects(local_mp4_dir:str, 
+				  local_mp4_name:str,
+				  detection_model:str,
+				  detection_confidence:float,
+				  detection_implementation:str,
+				  detection_frequency:int,
+				  tracking_model:str,
+				  iou_threshold:float, 
+				  selected_labels=True,
+				  video_time_length=10, 
+				  make_video=True) ->(list,list,dict):
 	"""
 	Given a path to an input video, this function will initialize a specified tracking algorithm 
 	(currently only supports OpenCV's built in multitracker method) with the specified object 
