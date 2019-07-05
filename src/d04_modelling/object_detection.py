@@ -1,4 +1,4 @@
-from src.d00_utils.bbox_helpers import bboxcvlib_to_bboxcv2
+from src.d00_utils.bbox_helpers import color_bboxes,bboxcvlib_to_bboxcv2
 import numpy as np 
 import cvlib
 import os, yaml
@@ -7,7 +7,7 @@ with open('conf/base/parameters.yml') as f:
    params = yaml.safe_load(f)['modelling']
 
 
-def detect_bboxes(frame:np.ndarray, model:str, 
+def detect_bboxes(frame:np.ndarray, model:str,
 				  implementation:str=None,selected_labels=False) -> (list,list,list, list):
 	'''Detect bounding boxes on a frame using specified model and optionally an implementation.
 	bboxes returned in format (xmin, ymin, w, h). Colors are assigned to bboxes by the type. 
@@ -26,17 +26,19 @@ def detect_bboxes(frame:np.ndarray, model:str,
 												 nms_thresh=params['nms_threshold'],model='yolov3_tiny')
 			bboxes_cv2 = [bboxcvlib_to_bboxcv2(bbox_cvlib) for bbox_cvlib in bboxes_cvlib]
 
-	#sample for how other models/implementations could be added 
+	# sample architecture for how other models/implementations could be added
 	elif implementation == 'some_other_impl':
 		pass
 
+	# if a list of selected_labels has been specified, remove bboxes, labels, confs which
+	# do not correspond to labels in selected_labels
 	del_inds = []
-	if selected_labels != None:
+	if selected_labels is not None:
 		for i, label in enumerate(labels): 
 			#specify object types to ignore 
 			if label not in params["selected_labels"]: del_inds.append(i)
 
-		#delete items from lists
+		# delete items from lists in reverse to avoid index shifting issue
 		for i in sorted(del_inds, reverse=True):
 			del bboxes_cv2[i]; del labels[i]; del confs[i]
 
