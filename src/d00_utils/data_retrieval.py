@@ -119,12 +119,7 @@ def retrieve_videos_s3_to_np(
     # Load files into a list of numpy arrays using opencv
     videos = []
     names = []
-    for filename in glob.glob(paths[save_folder] + '*.mp4'):
-        try:
-            videos.append(mp4_to_npy(filename))
-            names.append(filename.split('/')[-1])
-        except:
-            print("Could not convert " + filename + " to numpy array")
+    videos, names = load_videos_into_np(paths[save_folder])
     return videos, names
 
 
@@ -204,12 +199,14 @@ def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(date
     print(selected_files)
     return selected_files
 
+
 def generate_dates(from_date, to_date):
     dates = []
     while(from_date <= to_date):
         dates.append(from_date)
         from_date += datetime.timedelta(days=1)
     return dates
+
 
 def load_video_names(paths):
     save_folder = 'raw_video'
@@ -263,21 +260,6 @@ def download_video_and_convert_to_numpy(paths, filenames: list):
         except:
             print("Could not download " + filename)
     return load_videos_into_np(paths[save_folder])
-
-
-def process_videos(local_path):
-    # Load files into a list of numpy arrays using opencv
-    videos = []
-    names = []
-    for filename in glob.glob(local_path + '*.mp4'):
-        try:
-            videos.append(mp4_to_npy(filename))
-            names.append(filename.split('/')[-1])
-        except:
-            print("Could not convert " + filename + " to numpy array")
-        # delete filename
-        os.remove(local_path)
-    return videos, names
 
 
 def delete_and_recreate_dir(temp_dir):
@@ -367,30 +349,6 @@ def describe_s3_bucket(paths):
     plt.close()
 
     return
-
-
-def load_videos_from_local(paths):
-    """Load video data from the local raw jamcam folder and return it as a list of numpy arrays
-
-            Args:
-                paths: dictionary containing raw_video, s3_profile and bucket_name paths
-            Returns:
-                videos: list of numpy arrays containing all the jamcam videos from the local raw jamcam folder
-                names: list of video filenames
-            Raises:
-
-        """
-    files = glob.glob(paths['raw_video'] + '*.mp4')
-    names = []
-    videos = []
-    for filename in files:
-        try:
-            videos.append(mp4_to_npy(filename))
-            names.append(filename.split('/')[-1])
-        except:
-            print("Could not convert " + filename + " to numpy array")
-
-    return videos, names
 
 
 def append_to_csv(filepath: str, df: pd.DataFrame, columns: list, dtype: dict):
