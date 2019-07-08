@@ -90,9 +90,7 @@ def retrieve_videos_s3_to_np(
     dates = []
 
     # Generate the list of dates
-    while(from_date <= to_date):
-        dates.append(from_date)
-        from_date += datetime.timedelta(days=1)
+    dates = generate_dates(from_date, to_date)
 
     # Download the files in each of the date folders on s3
     for date in dates:
@@ -165,9 +163,7 @@ def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(date
     dates = []
 
     # Generate the list of dates
-    while(from_date <= to_date):
-        dates.append(from_date)
-        from_date += datetime.timedelta(days=1)
+    dates = generate_dates(from_date, to_date)
 
     # Download the files in each of the date folders on s3
     selected_files = []
@@ -216,6 +212,12 @@ def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(date
     print(selected_files)
     return selected_files
 
+def generate_dates(from_date, to_date):
+    dates = []
+    while(from_date <= to_date):
+        dates.append(from_date)
+        from_date += datetime.timedelta(days=1)
+    return dates
 
 def load_video_names(paths):
     save_folder = 'raw_video'
