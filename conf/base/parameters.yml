@@ -13,6 +13,7 @@ modelling:
   confidence_threshold: 0.2
 
 reporting:
+  chunk_size: 5
   columns: ["camera_id", "date", "time", "metric", "motorcycle", "truck", "bus", "car"]
   dtype: 
     camera_id: 'category'
