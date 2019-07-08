@@ -151,7 +151,7 @@ def track_objects(local_mp4_dir: str,
 
             # re-initialize MultiTracker
             new_bbox_inds = determine_new_bboxes(bboxes_tracked, bboxes_detected, iou_threshold)
-            # todo: change this to multiple lines
+            # TODO: change this to multiple lines
             new_bboxes, new_labels, new_confs, new_colors, new_label_confs = \
                         [bboxes_detected[i] for i in new_bbox_inds],\
                         [labels_detected[i] for i in new_bbox_inds],\
@@ -165,8 +165,11 @@ def track_objects(local_mp4_dir: str,
                 multitracker.add(create_tracker_by_name(tracking_model), frame, new_bbox)
 
             # append new bboxes, colors, labels, confidences to list
-            bboxes+=new_bboxes; labels+=new_labels; confs+=new_confs; 
-            colors+=new_colors; label_confs+=new_label_confs
+            bboxes+=new_bboxes
+            labels+=new_labels
+            confs+=new_confs
+            colors+=new_colors
+            label_confs+=new_label_confs
 
         processed_video.append(frame)
         frame_counter += 1
