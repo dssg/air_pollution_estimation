@@ -170,20 +170,12 @@ def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(date
     for date in dates:
         date = date.strftime('%Y-%m-%d')
         prefix = "%s%s/" % (s3_video, date)
-        print("     ", prefix)
-        # objects = my_bucket.objects.filter(Prefix=prefix)
-        # start = time.time()
-
-        # keys = [obj.key for obj in objects]
-        # print(time.time() - start, len(keys))
-
         start = time.time()
 
         # fetch video filenames
         ls = Popen(["aws", "s3", 'ls', 's3://%s/%s' % (bucket_name, prefix),
                     '--profile',
                     s3_profile], stdout=PIPE)
-        # print('s3://%s/%s' % (bucket_name, prefix))
         p1 = Popen(['awk', '{$1=$2=$3=""; print $0}'],
                    stdin=ls.stdout, stdout=PIPE)
         p2 = Popen(['sed', 's/^[ \t]*//'], stdin=p1.stdout, stdout=PIPE)
