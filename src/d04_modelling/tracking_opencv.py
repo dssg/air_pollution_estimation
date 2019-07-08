@@ -9,6 +9,7 @@ import yaml
 import time
 import pickle as pkl
 
+
 def create_tracker_by_name(tracker_type:str):
 	"""Create tracker based on tracker name"""
 	tracker_types = ['BOOSTING', 'MIL', 'KCF','TLD', 'MEDIANFLOW', 'GOTURN', 'MOSSE', 'CSRT']
@@ -73,10 +74,10 @@ def track_objects(local_mp4_dir:str,
 				  iou_threshold:float,
 				  selected_labels=True,
 				  video_time_length=10,
-				  make_video=True) ->(list,list,dict):
+				  make_video=True) -> (list,list,dict):
 	"""
 	Given a path to an input video, this function will initialize a specified tracking algorithm 
-	(currently only supports OpenCV's built in multitracker method) with the specified object 
+	(currently only supports OpenCV's built in multitracker methods) with the specified object 
 	detection algorithm. Each detection_frequency frames, the object detection will be run again 
 	to detect any new objects which have entered the frame. Returns labels of detected objects, the
 	detection confidence, and the counts. 
@@ -148,8 +149,8 @@ def track_objects(local_mp4_dir:str,
 			# re-initialize MultiTracker
 			new_bbox_inds = determine_new_bboxes(bboxes_tracked, bboxes_detected, iou_threshold)
 			new_bboxes, new_labels, new_confs= [bboxes_detected[i] for i in new_bbox_inds],\
-											    [labels_detected[i] for i in new_bbox_inds],\
-											    [confs_detected[i] for i in new_bbox_inds]
+											   [labels_detected[i] for i in new_bbox_inds],\
+											   [confs_detected[i] for i in new_bbox_inds]
 
 			# iterate through new bboxes
 			for i,new_bbox in enumerate(new_bboxes):
@@ -177,6 +178,7 @@ def track_objects(local_mp4_dir:str,
 	print('Run time is %s seconds' % (time.time() - start_time))
 	# return fleet.labels, fleet.confs, fleet.compute_counts()
 	return fleet
+
 
 if __name__ == '__main__':
 	#config stuff
