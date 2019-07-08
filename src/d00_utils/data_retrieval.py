@@ -10,7 +10,6 @@ import time
 import datetime
 import glob
 import json
-import subprocess
 from subprocess import Popen, PIPE
 
 
