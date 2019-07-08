@@ -12,12 +12,12 @@ params = load_parameters()
 paths = load_paths()
 
 # Load Video Data
-"""
+
 video_dict = retrieve_videos_s3_to_np(paths, from_date='2019-06-19', to_date='2019-06-19',
                                          from_time='20-20-00', to_time='20-20-02',
                                          bool_keep_data=True)
-"""
-video_dict = load_videos_from_local(paths)
+
+#video_dict = load_videos_from_local(paths)
 
 # Run Yolo Object Detection
 yolo_df = classify_objects(video_dict, params, paths,
