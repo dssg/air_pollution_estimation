@@ -9,5 +9,10 @@ data_collection:
   tims_download_website: "http://roads.data.tfl.gov.uk/TIMS/"
 
 modelling:
-  yolo_model: "yolov3-tiny"
-  confidence_threshold: 0.2
+  yolo_model: "yolov3_tiny"
+  yolo_implementation: "cvlib"
+  detection_confidence_threshold: 0.4
+  opencv_tracker_type: "CSRT"
+  iou_threshold: 0.05 #controls how much two objects' bboxes must overlap to be considered the "same"
+  detection_frequency: 50
+  selected_labels: ["car", "truck", "bus", "motorbike"]
