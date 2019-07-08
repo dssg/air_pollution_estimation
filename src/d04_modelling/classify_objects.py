@@ -44,10 +44,9 @@ def classify_objects_in_video(video, name, params, paths, vid_time_length=10, ma
             make_videos (bool): output videos with object classification labels in processed directory
 
         Returns:
-            yolo_dict (dict): nested dictionary where each video is a key for a dict containing:
-                obj_bounds (list of np arrays): n-dim list of list of arrays marking the corners of the bounding boxes of objects, for n frames
-                obj_labels (list of str): n-dim list of list of labels assigned to classified objects, for n frames
-                obj_label_confidences (list of floats): n-dim list of list of floats denoting yolo confidences, for n frames
+            obj_bounds (list of np arrays): n-dim list of list of arrays marking the corners of the bounding boxes of objects, for n frames
+            obj_labels (list of str): n-dim list of list of labels assigned to classified objects, for n frames
+            obj_label_confidences (list of floats): n-dim list of list of floats denoting yolo confidences, for n frames
     """
     # loop over frames of video and store in lists
     obj_bounds = []
