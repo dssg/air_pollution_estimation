@@ -13,7 +13,11 @@ import json
 from subprocess import Popen, PIPE
 
 
-def retrieve_single_video_s3_to_np(camera: str, date: str, time: str, paths: dict, bool_keep_data=False) -> np.ndarray:
+def retrieve_single_video_s3_to_np(camera: str,
+                                   date: str,
+                                   time: str,
+                                   paths: dict,
+                                   bool_keep_data=False) -> np.ndarray:
     """Retrieve one jamcam video from the s3 bucket based on the details specified.
         Downloads to a local temp directory, loads into a numpy array, then deletes
         temp dict (default behavior). If bool_keep_data is True, the video will be
@@ -52,9 +56,13 @@ def retrieve_single_video_s3_to_np(camera: str, date: str, time: str, paths: dic
     return buf
 
 
-def retrieve_videos_s3_to_np(
-        paths, from_date='2019-06-01', to_date=str(datetime.datetime.now().date()),
-        from_time='00-00-00', to_time='23-59-59', camera_list=None, bool_keep_data=True):
+def retrieve_videos_s3_to_np(paths,
+                             from_date='2019-06-01',
+                             to_date=str(datetime.datetime.now().date()),
+                             from_time='00-00-00',
+                             to_time='23-59-59',
+                             camera_list=None,
+                             bool_keep_data=True):
     """Retrieve jamcam videos from the s3 bucket based on the dates specified.
     Downloads to a local temp directory and then loads them into numpy arrays, before
     deleting the temp directory (default behavior). If bool_keep_data is True, the videos will be
@@ -87,8 +95,6 @@ def retrieve_videos_s3_to_np(
     from_time = datetime.datetime.strptime(from_time, '%H-%M-%S').time()
     to_time = datetime.datetime.strptime(to_time, '%H-%M-%S').time()
 
-    dates = []
-
     # Generate the list of dates
     dates = generate_dates(from_date, to_date)
 
@@ -117,14 +123,17 @@ def retrieve_videos_s3_to_np(
                 print("Could not download " + filepath)
 
     # Load files into a list of numpy arrays using opencv
-    videos = []
-    names = []
     videos, names = load_videos_into_np(paths[save_folder])
     return videos, names
 
 
-def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(datetime.datetime.now())[:10],
-                                 from_time='00-00-00', to_time='23-59-59', camera_list=None, save_to_file: bool = True):
+def retrieve_video_names_from_s3(paths,
+                                 from_date='2019-06-01',
+                                 to_date=str(datetime.datetime.now())[:10],
+                                 from_time='00-00-00',
+                                 to_time='23-59-59',
+                                 camera_list=None,
+                                 save_to_file: bool = True):
     """Retrieve jamcam videos from the s3 bucket based on the dates specified.
     Downloads to a local temp directory and then loads them into numpy arrays, before
     deleting the temp directory (default behavior). If bool_keep_data is True, the videos will be
