@@ -1,5 +1,4 @@
-import pandas as pd
-from src.d00_utils.data_retrieval import retrieve_videos_s3_to_np, load_videos_from_local, retrieve_video_names_from_s3, append_to_csv, load_video_names, download_video_and_convert_to_numpy, delete_and_recreate_dir
+from src.d00_utils.data_retrieval import retrieve_video_names_from_s3, append_to_csv, load_video_names, download_video_and_convert_to_numpy, delete_and_recreate_dir
 from src.d00_utils.load_confs import load_parameters, load_paths
 from src.d04_modelling.classify_objects import classify_objects
 from src.d05_reporting.report_yolo import yolo_output_df, yolo_report_stats
