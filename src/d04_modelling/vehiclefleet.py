@@ -2,7 +2,7 @@ import numpy as np
 import collections
 import matplotlib.pyplot as plt
 from src.d00_utils.bbox_helpers import color_bboxes, bbox_intersection_over_union,vectorized_intersection_over_union, bboxcv2_to_bboxcvlib
-
+from src.d00_utils.stats_helpers import time_series_smoother
 
 class VehicleFleet():
     def __init__(self,bboxes:np.ndarray,labels:np.ndarray,confs:np.ndarray):
@@ -59,10 +59,10 @@ class VehicleFleet():
         num_frames = self.bboxes.shape[2]
         num_vehicles = self.bboxes.shape[0]
         iou_video = np.zeros((num_vehicles,num_frames - interval))
-        # print(self.bboxes[:,:,0].shape)
         #compare iou for in between frames 
-        for i in range(0,num_frames - interval, interval):
-            # print(i)
+        # for i in range(0,num_frames-interval, interval):
+        for i in range(0,num_frames-interval):
+
             bboxes_time_t0 = self.bboxes[:,:,i]
             bboxes_time_t1 = self.bboxes[:,:,i+interval]
 
@@ -75,31 +75,42 @@ class VehicleFleet():
                                                               # bboxcv2_to_bboxcvlib(bboxes_time_t1, vectorized = True))
             # assert iou_video_ind == iou_video[0,i], str(iou_video_ind) + str(iou_video[0,i])
         self.iou_video = iou_video
-        print(self.bboxes[4,:,:])
-        print(iou_video[4,:])
+        # print(self.bboxes[4,:,:])
+        # print(iou_video[4,:])
         return 
 
 
-    def plot_iou_video(self, vehicle_ids = None):
+    def smooth_iou_video(self, smoother_method:str, **smoother_settings): 
+        # num_vehicles = self.iou_video.shape[0]
+
+        self.smoothed_iou_video = time_series_smoother(self.iou_video, 
+                                                    method = smoother_method, 
+                                                    **smoother_settings)
+        return 
+
+
+    def plot_iou_video(self, fig_path, smoothed = False, vehicle_ids = None):
         """Visualize the iou_video
         """
+        iou = self.smoothed_iou_video if smoothed else self.iou_video
 
-        num_vehicles,num_ious = self.iou_video.shape[0],self.iou_video.shape[1]
-        iou_inds = np.arange(num_ious)
-        vehicle_colors = np.array(self.compute_colors()) / 255
-        # print(vehicle_colors[0], type(vehicle_colors[0]), type(vehicle_colors[0][0]))
+        num_vehicles,num_ious = iou.shape[0], iou.shape[1]
+
         if vehicle_ids is None:
             vehicles_ids = range(num_vehicles) 
 
+        #plot each vehicle
+        vehicle_colors = np.array(self.compute_colors()) / 255
+        iou_inds = np.arange(num_ious)
         for i in range(num_vehicles):
-            iou_vehicle = self.iou_video[i,:]
+            iou_vehicle = iou[i,:]
             mask1,mask2 = np.isnan(iou_vehicle),np.isfinite(iou_vehicle)
             plt.plot(iou_inds[~mask1 & mask2], iou_vehicle[~mask1 & mask2], 
                     # color = vehicle_colors[i], 
                     label = "vehicle " + str(i) + "; type " + self.labels[i])
         plt.legend(loc = 'lower right')
         plt.xlabel("IOU over all frames in video, interval = " + str(self.iou_interval))
-        plt.savefig("data/iou_vehicles.pdf")
+        plt.savefig(fig_path)
         plt.close()
 
 

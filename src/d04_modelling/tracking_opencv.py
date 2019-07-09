@@ -213,5 +213,11 @@ if __name__ == '__main__':
     pkl_in = open("fleet_obj.pkl", "rb")
     fleet = pkl.load(pkl_in)
     # print(fleet.labels,fleet.confs,fleet.compute_counts())
-    fleet.compute_iou_video(interval = 5)
-    fleet.plot_iou_video()
+    frame_convolution = 10 
+    smoother_method = "moving_avg"
+    smoothing_window = 10
+    fleet.compute_iou_video(interval = frame_convolution)
+    fleet.smooth_iou_video(smoother_method = smoother_method, window_size = smoothing_window)
+    fleet.plot_iou_video(fig_path = "data/iou_plot_convolved" + str(frame_convolution) + "_" /
+                                    + smoother_method + str(smoothing_window) + ".pdf", 
+                                    smoothed = True)
