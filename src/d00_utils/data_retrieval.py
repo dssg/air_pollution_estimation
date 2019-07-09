@@ -191,7 +191,6 @@ def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(date
             filepath = os.path.join(paths["raw_video"], "searched_videos")
             with open(filepath, "w") as f:
                 json.dump(selected_files, f)
-    print(selected_files)
     return selected_files
 
 
@@ -224,37 +223,31 @@ def load_videos_into_np(folder):
     return videos, names
 
 
-def download_video_and_convert_to_numpy(paths, filenames: list):
-    """Retrieve jamcam videos from the s3 bucket based on the dates specified.
-    Downloads to a local temp directory and then loads them into numpy arrays, before
-    deleting the temp directory (default behavior). If bool_keep_data is True, the videos will be
-    saved to raw_video dir instead, and then loaded into np array.
+def download_video_and_convert_to_numpy(local_folder, s3_profile, bucket, filenames: list):
+    """Downloads videos from s3 to a local temp directory and then loads them into numpy arrays, before
+    deleting the temp directory (default behavior).
 
         Args:
-            paths: dictionary containing temp_video, raw_video, s3_profile and bucket_name paths
-            from_date: start date (inclusive) for retrieving videos, if None then will retrieve from 2019-06-01 onwards
-            to_date: end date (inclusive) for retrieving vidoes, if None then will retrieve up to current day
-            from_time: start time for retrieving videos, if None then will retrieve from the start of the day
-            to_time: end time for retrieving videos, if None then will retrieve up to the end of the day
-            camera_list: list of cameras to retrieve from, if None then retrieve from all cameras
-            bool_keep_data: boolean for keeping the downloaded data in the local folder
+            local_folder: local folder to temporarily download the videos to.
+            s3_profile: s3 profile on amazon aws
+            bucket: bucket name where the videos are stored
+            filenames: list of filenames to download from s3
         Returns:
             videos: list of numpy arrays containing all the jamcam videos between the selected dates
             names: list of video filenames
         Raises:
 
     """
-    save_folder = 'temp_video'
-    my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
+    my_bucket = connect_to_bucket(s3_profile, bucket)
 
     # Download the files
     for filename in filenames:
         try:
-            my_bucket.download_file(filename, paths[save_folder] + filename.split('/')[-1].replace(
+            my_bucket.download_file(filename, local_folder + filename.split('/')[-1].replace(
                 ':', '-').replace(" ", "_"))
         except:
             print("Could not download " + filename)
-    return load_videos_into_np(paths[save_folder])
+    return load_videos_into_np(local_folder)
 
 
 def delete_and_recreate_dir(temp_dir):
