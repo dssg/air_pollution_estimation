@@ -2,7 +2,6 @@ import numpy as np
 from cvlib.object_detection import draw_bbox
 import cvlib as cv
 import imageio
-import pandas as pd
 
 
 def classify_objects(videos, names, params, paths, vid_time_length=10, make_videos=True):
