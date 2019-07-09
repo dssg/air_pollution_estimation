@@ -22,9 +22,9 @@ chunk_size = params['chunk_size']
 while selected_videos:
     print("Downloading video files")
 
-    # download chucks of videos
+    # download chunks of videos
     videos, names = download_video_and_convert_to_numpy(
-        paths, selected_videos[:chunk_size])
+        paths['temp_video'], paths['s3_profile'], paths['bucket_name'], selected_videos[:chunk_size])
     print("Finished downloading video files")
 
     print("Classifying objects in video files")
