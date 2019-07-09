@@ -30,6 +30,7 @@ def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(date
         Raises:
 
     """
+    print(to_date)
     save_folder = 'temp_video'
     bucket_name = paths['bucket_name']
     s3_profile = paths['s3_profile']
