@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import glob
+import matplotlib.pyplot as plt
 import xml.etree.ElementTree as ElementTree
 
 from src.d05_reporting.report_yolo import yolo_report_count_stats
@@ -165,6 +166,23 @@ def report_count_differences(annotations_df, yolo_df, bool_plots=True):
     diff_df['time'] = yolo_counts_df['time']
 
     if(bool_plots):
-        pass
+        plot_count_differences(diff_df)
 
     return diff_df
+
+def plot_count_differences(diff_df):
+
+    # Plot by Camera
+    grouped = diff_df.groupby('camera_id')
+
+    for name, group in grouped:
+        print(name)
+
+    # Plot by Time
+
+    # Plot by Date
+
+    # Plot by Type
+
+
+    return
