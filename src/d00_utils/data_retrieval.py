@@ -7,6 +7,7 @@ import re
 import shutil
 import datetime
 import glob
+import time as Time
 
 
 def retrieve_single_video_s3_to_np(camera:str, date:str, time:str, paths:dict, bool_keep_data=False) -> np.ndarray:
@@ -92,10 +93,13 @@ def retrieve_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime
     # Download the files in each of the date folders on s3
     for date in dates:
         date = date.strftime('%Y-%m-%d')
+        print('Processing ' + str(date) + '...')
         objects = my_bucket.objects.filter(Prefix="raw/videos/" + date + "/")
 
         selected_files = []
 
+        print('Selecting files...')
+        t = Time.time()
         for obj in objects:
             file = obj.key
             time = re.search("([0-9]{2}\:[0-9]{2}\:[0-9]{2})", file).group()
@@ -104,13 +108,16 @@ def retrieve_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime
 
             if time >= from_time and time <= to_time and (not camera_list or camera_id in camera_list):
                 selected_files.append(file)
+        print(str(Time.time() - t) + 'seconds')
 
+        print('Downloading files...')
         for file in selected_files:
             try:
                 my_bucket.download_file(file, paths[save_folder] + file.split('/')[-1].replace(
                     ':', '-').replace(" ", "_"))
             except:
                 print("Could not download " + file)
+        print(str(Time.time() - t) + 'seconds')
 
     # Load files into a list of numpy arrays using opencv
     videos = []
