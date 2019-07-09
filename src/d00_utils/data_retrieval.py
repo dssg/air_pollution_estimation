@@ -106,12 +106,9 @@ def retrieve_videos_s3_to_np(paths, from_date='2019-06-01', to_date=str(datetime
             time = re.search("([0-9]{2}\:[0-9]{2}\:[0-9]{2})", file).group()
             time = datetime.datetime.strptime(time, '%H:%M:%S').time()
             camera_id = file.split('_')[-1][:-4]
-            if(not camera_list):
-                if(time >= from_time and time <= to_time):
-                    selected_files.append(file)
-            else:
-                if (time >= from_time and time <= to_time and camera_id in camera_list):
-                    selected_files.append(file)
+
+            if time >= from_time and time <= to_time and (not camera_list or camera_id in camera_list):
+                selected_files.append(file)
 
         for num, file in enumerate(selected_files):
             print('Downloading file ' + str(num) + '/' + str(len(selected_files)))
