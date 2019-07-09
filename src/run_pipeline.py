@@ -17,17 +17,23 @@ paths = load_paths()
 #                                         from_time='20-20-00', to_time='20-20-02',
 #                                         bool_keep_data=False)
 
+"""
 video_dict = load_videos_from_local(paths)
 
 # Run Yolo Object Detection
 yolo_df = classify_objects(video_dict, params, paths,
                                 vid_time_length=10, make_videos=False)
+yolo_df.to_csv(paths['processed_video'] + 'Yolo_df.csv')
 
 # Load Annotations and Evaluate
 annotations_df = parse_annotations(paths, bool_print_summary=False)
-annotations_df.to_csv(paths['processed_video'] + 'Annotations.csv')
+annotations_df.to_csv(paths['processed_video'] + 'Annotations_df.csv')
+"""
 
-count_differences_df = report_count_differences(annotations_df, yolo_df)
+yolo_df = pd.read_csv(paths['processed_video'] + 'Yolo_df.csv')
+annotations_df = pd.read_csv(paths['processed_video'] + 'Annotations_df.csv')
+
+count_differences_df = report_count_differences(annotations_df, yolo_df, params, paths, bool_plots=True)
 count_differences_df.to_csv(paths['processed_video'] + 'JamCamCountDifferences.csv')
 
 # Save Statistics of Yolo Output

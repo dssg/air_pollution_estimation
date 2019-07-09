@@ -126,7 +126,7 @@ def report_true_count_stats(annotations_df):
     return df.fillna(0)
 
 
-def report_count_differences(annotations_df, yolo_df, bool_plots=True):
+def report_count_differences(annotations_df, yolo_df, params, paths, bool_plots=True):
     '''Report the difference in counts between yolo and the annotations for multiple videos.
 
             Keyword arguments:
@@ -144,10 +144,9 @@ def report_count_differences(annotations_df, yolo_df, bool_plots=True):
     true_counts_df = report_true_count_stats(annotations_df)
     true_counts_df.sort_values(["camera_id", "date", "time"], inplace=True)
 
-    categories_to_compare = ['bus', 'car', 'truck', 'motorbike']
     diff_df = pd.DataFrame()
 
-    for category in categories_to_compare:
+    for category in params['categories']:
         if(category not in yolo_counts_df.columns):
             yolo_counts_df[category] = 0
         if (category not in true_counts_df.columns):
@@ -166,23 +165,46 @@ def report_count_differences(annotations_df, yolo_df, bool_plots=True):
     diff_df['time'] = yolo_counts_df['time']
 
     if(bool_plots):
-        plot_count_differences(diff_df)
+        plot_count_differences(diff_df, params, paths)
+
+    cols = ['p-y_' + c for c in params['categories']]
+    print('MSE across all videos an categories: ' + str(diff_df[cols].pow(2).mean(axis=0).mean(axis=0)))
 
     return diff_df
 
-def plot_count_differences(diff_df):
 
-    # Plot by Camera
-    grouped = diff_df.groupby('camera_id')
+def plot_count_differences(diff_df, params, paths):
+    '''Report the difference in counts between yolo and the annotations for multiple videos.
 
-    for name, group in grouped:
-        print(name)
+                Keyword arguments:
+                annotations_df -- pandas df containing the formatted output of the XML files
+                                  (takes the output of parse_annotations())
+                yolo_df -- pandas df containing formatted output of YOLO for multiple videos
+                           (takes the output of yolo_output_df())
 
-    # Plot by Time
+                Returns:
+                df: dataframe containing the difference in counts for each video
+    '''
+    cols = ['p-y_' + c for c in params['categories']]
 
-    # Plot by Date
+    for g in ['camera_id', 'time', 'date']:
+        grouped = diff_df.groupby(g)
 
-    # Plot by Type
+        for name, group in grouped:
+            vals = group[cols].abs().mean(axis=0)
+            plt.figure()
+            plt.suptitle('Mean Absolute Error')
+            plt.bar(np.arange(len(params['categories'])), vals.values)
+            plt.xticks(np.arange(len(params['categories'])), [i.split('_')[1] for i in vals.index.values])
+            plt.savefig(paths['plots'] + g + '_' + str(name) + '.pdf')
+            plt.close()
 
+    vals = diff_df[cols].abs().mean(axis=0)
+    plt.figure()
+    plt.suptitle('Mean Absolute Error')
+    plt.bar(np.arange(len(params['categories'])), vals.values)
+    plt.xticks(np.arange(len(params['categories'])), [i.split('_')[1] for i in vals.index.values])
+    plt.savefig(paths['plots'] + 'Overall.pdf')
+    plt.close()
 
     return
