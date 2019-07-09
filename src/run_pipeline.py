@@ -15,13 +15,13 @@ paths = load_paths()
 
 video_dict = retrieve_videos_s3_to_np(paths, from_date='2019-06-19', to_date='2019-06-19',
                                          from_time='20-20-00', to_time='20-20-02',
-                                         bool_keep_data=True)
+                                         bool_keep_data=False)
 
 #video_dict = load_videos_from_local(paths)
 
 # Run Yolo Object Detection
 yolo_df = classify_objects(video_dict, params, paths,
-                                vid_time_length=10, make_videos=True)
+                                vid_time_length=10, make_videos=False)
 
 # Load Annotations and Evaluate
 annotations_df = parse_annotations(paths, bool_print_summary=False)

@@ -1,10 +1,18 @@
 data_collection:
   jam_cam_website: "http://jamcams.tfl.gov.uk/00001."
-  camera_list: ["06641", "06640", "06595", "06508", "06597", "06607", "06608", "06598",
-                '07452', '08860', '08859', '08858', '08863', "08753", "07301"]
+  tims_camera_list: ['00001.03601', '00001.07591', '00001.01252', '00001.06597',
+                '00001.08853', '00001.06510', '00001.04280', '00001.04534',
+                '00001.06590', '00001.07382', '00001.04328', '00001.06514',
+                '00001.03604', '00001.06501', '00001.05900', '00001.03490',
+                '00001.08926', '00001.07355', '00001.04336', '00001.09560']
   tims_file_website: 'https://s3-eu-west-1.amazonaws.com/roads.data.tfl.gov.uk'
   tims_download_website: "http://roads.data.tfl.gov.uk/TIMS/"
 
 modelling:
-  yolo_model: "yolov3-tiny"
-  confidence_threshold: 0.2
+  yolo_model: "yolov3_tiny"
+  yolo_implementation: "cvlib"
+  detection_confidence_threshold: 0.4
+  opencv_tracker_type: "CSRT"
+  iou_threshold: 0.05 #controls how much two objects' bboxes must overlap to be considered the "same"
+  detection_frequency: 50
+  selected_labels: ["car", "truck", "bus", "motorbike"]
