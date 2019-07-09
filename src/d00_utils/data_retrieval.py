@@ -137,10 +137,9 @@ def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(date
             from_time: start time for retrieving videos, if None then will retrieve from the start of the day
             to_time: end time for retrieving videos, if None then will retrieve up to the end of the day
             camera_list: list of cameras to retrieve from, if None then retrieve from all cameras
-            bool_keep_data: boolean for keeping the downloaded data in the local folder
+            save_to_file: boolean for keeping the downloaded file names to the local folder for raw videos
         Returns:
-            videos: list of numpy arrays containing all the jamcam videos between the selected dates
-            names: list of video filenames
+            selected_files: A list of filenames of videos in s3 that satisfies the date and time conditions
         Raises:
 
     """
@@ -149,19 +148,15 @@ def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(date
     s3_profile = paths['s3_profile']
     s3_video = paths['s3_video']
     delete_and_recreate_dir(paths[save_folder])
-    # my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
     from_date = datetime.datetime.strptime(from_date, '%Y-%m-%d').date()
     to_date = datetime.datetime.strptime(to_date, '%Y-%m-%d').date()
     from_time = datetime.datetime.strptime(from_time, '%H-%M-%S').time()
     to_time = datetime.datetime.strptime(to_time, '%H-%M-%S').time()
-
     dates = []
+    selected_files = []
 
     # Generate the list of dates
     dates = generate_dates(from_date, to_date)
-
-    # Download the files in each of the date folders on s3
-    selected_files = []
     for date in dates:
         date = date.strftime('%Y-%m-%d')
         prefix = "%s%s/" % (s3_video, date)
