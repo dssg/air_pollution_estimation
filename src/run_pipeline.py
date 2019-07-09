@@ -3,7 +3,6 @@ import pandas as pd
 from src.d00_utils.data_retrieval import retrieve_videos_s3_to_np, \
     load_videos_from_local
 from src.d00_utils.load_confs import load_parameters, load_paths
-
 from src.d04_modelling.classify_objects import classify_objects
 from src.d05_reporting.report_yolo import yolo_output_df, yolo_report_stats
 
