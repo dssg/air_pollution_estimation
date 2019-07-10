@@ -5,7 +5,10 @@ import numpy as np
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                '..', '..', 'd04_modelling'))
+                                '..', '..', 'd00_utils'))
+from load_confs import load_parameters
+
+params = load_parameters()
 
 
 def get_cams():
@@ -53,14 +56,17 @@ def load_data(path):
     }
     return data_dict
 
+
 def load_camera_statistics(camera_id):
     # TODO: Change path to s3
     filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                             '..', '..', '..', 'data/02_processed/jamcams/JamCamStats.csv')
-    df = pd.read_csv(filepath, dtype={'camera_id':'category'})
-    df['datetime'] = pd.to_datetime(df.date)+ pd.to_timedelta(df.time, unit='h')
+    df = pd.read_csv(filepath, dtype={'camera_id': 'category'})
+    df['datetime'] = pd.to_datetime(
+        df.date) + pd.to_timedelta(df.time, unit='h')
     output = df[df.camera_id == camera_id]
     return output
+
 
 def load_objects(df):
     # remove_columns = ["date", "metric", "time", "camera_id", "datetime"]
@@ -70,5 +76,5 @@ def load_objects(df):
 
 
 def load_object_statistics(df, object_type):
-    df_object = df.pivot_table(object_type,["datetime"],"metric")
+    df_object = df.pivot_table(object_type, ["datetime"], "metric")
     return df_object

@@ -5,20 +5,16 @@ import dash_html_components as html
 import dash_player as player
 import plotly.graph_objs as go
 from dash.dependencies import Input, Output, State
-from helper import get_cams, load_camera_statistics, load_objects, load_object_statistics
+from helper import get_cams, load_camera_statistics, load_objects, load_object_statistics, params
 import os
 import sys
 import time
 from datetime import datetime as dt
 
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                '..', '..', 'd04_modelling'))
-
-
-DEBUG = True
-FRAMERATE = 24.0
-TFL_BASE_URL = "https://s3-eu-west-1.amazonaws.com/jamcams.tfl.gov.uk/"
+print(params)
+DEBUG = params['debug']
+TFL_BASE_URL = params["tfl_jamcams_website"]
 
 app = dash.Dash(
     __name__, hot_reload=True)
@@ -27,9 +23,6 @@ server = app.server
 app.scripts.config.serve_locally = True
 app.config['suppress_callback_exceptions'] = True
 cams = get_cams()
-yolo_models = ["yolov3_tiny"]
-
-
 def markdown_popup():
     return html.Div(
         id='markdown',
