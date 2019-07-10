@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ElementTree
 from src.d05_reporting.report_yolo import yolo_report_count_stats
 
 
-def parse_annotations(paths, bool_print_summary=False):
+def parse_annotations(folder, bool_print_summary=False):
     """ Parse the XML files containing the manual annotations
                 Args:
                     xml_files: list of the XML files to parse
@@ -16,7 +16,7 @@ def parse_annotations(paths, bool_print_summary=False):
                     df: pandas dataframe containing the annotations
                 Raises:
     """
-    xml_files = glob.glob(paths['annotations'] + '*.xml')
+    xml_files = glob.glob(folder + '*.xml')
 
     annotated_results = {'obj_id': [], 'frame_id': [], 'obj_bounds': [],
                          'obj_classification': [], 'parked': [], 'stopped': [],

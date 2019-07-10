@@ -20,7 +20,9 @@ def classify_objects(video_dict, params, paths, vid_time_length=10, make_videos=
     """
     yolo_dict = {}
 
-    for name, video in video_dict.items():
+    for video_num, (name, video) in enumerate(video_dict.items()):
+
+        print('Starting video ' + str(video_num))
         yolo_dict[name] = {}
 
         # loop over frames of video and store in lists
@@ -33,7 +35,7 @@ def classify_objects(video_dict, params, paths, vid_time_length=10, make_videos=
             frame = video[i, :, :, :]
 
             # apply object detection
-            bbox, label, conf = cv.detect_common_objects(frame, confidence=params['confidence_threshold'],
+            bbox, label, conf = cv.detect_common_objects(frame, confidence=params['detection_confidence_threshold'],
                                                          model=params['yolo_model'])
             obj_bounds.append(bbox)
             obj_labels.append([l.replace('motorcycle', 'motorbike') for l in label])

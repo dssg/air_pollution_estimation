@@ -1,6 +1,8 @@
 s3_paths:
     bucket_name: 'air-pollution-uk' #s3 bucket name
-    s3_video: "raw/video_data_new/" #path to video data in s3 bucket
+    s3_video: "raw/videos/" #path to video data in s3 bucket
+    s3_annotated_videos: "annotated/raw/"
+    s3_annotations: "annotated/xml/"
     s3_profile: "dssg"
 
 local_paths:
