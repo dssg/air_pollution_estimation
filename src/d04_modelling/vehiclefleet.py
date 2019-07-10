@@ -1,4 +1,4 @@
-from src.d00_utils.bbox_helpers import color_bboxes, bbox_intersection_over_union,vectorized_intersection_over_union, bboxcv2_to_bboxcvlib
+from src.d00_utils.bbox_helpers import color_bboxes, bbox_intersection_over_union, vectorized_intersection_over_union, bboxcv2_to_bboxcvlib
 from src.d00_utils.stats_helpers import time_series_smoother
 import numpy as np
 import collections
@@ -15,7 +15,7 @@ class VehicleFleet():
     recorded by axis 1 (if relevant). 
     """
 
-    def __init__(self,bboxes:np.ndarray,labels:np.ndarray,confs:np.ndarray):
+    def __init__(self, bboxes: np.ndarray, labels: np.ndarray, confs: np.ndarray):
         """Initialize the vehicleFleet with the bounding boxes for one set of vehicles, as 
         detected from one frame. 
 
@@ -26,12 +26,12 @@ class VehicleFleet():
         """
         assert bboxes.shape[1] == 4
 
-        self.bboxes = np.expand_dims(bboxes,axis=2) # add a dimension for time 
+        # add a dimension for time
+        self.bboxes = np.expand_dims(bboxes, axis=2)
         self.labels = labels
         self.confs = confs
 
-
-    def add_vehicles(self,new_bboxes:np.ndarray,new_labels:np.ndarray,new_confs:np.ndarray):
+    def add_vehicles(self, new_bboxes: np.ndarray, new_labels: np.ndarray, new_confs: np.ndarray):
         """Adds new vehicles to the vehicleFleet, creating appropriate bbox location "history" for the 
         self.bboxes numpy array 
 
@@ -41,17 +41,17 @@ class VehicleFleet():
         """
         current_time_t = self.bboxes.shape[2]
         num_new_vehicles = new_bboxes.shape[0]
-        #create bboxes of all zeros to denote that the vehicle didn't exist at previous times
-        new_vehicle_history = np.zeros((num_new_vehicles,4,current_time_t-1)) 
-        new_bboxes = np.concatenate((np.expand_dims(new_bboxes,axis=2),new_vehicle_history),axis=2)
+        # create bboxes of all zeros to denote that the vehicle didn't exist at previous times
+        new_vehicle_history = np.zeros((num_new_vehicles, 4, current_time_t-1))
+        new_bboxes = np.concatenate((np.expand_dims(new_bboxes, axis=2), 
+                                    new_vehicle_history), axis=2)
 
-        self.bboxes = np.concatenate((self.bboxes,new_bboxes), axis=0)
-        self.labels = np.concatenate((self.labels,new_labels), axis=0)
-        self.confs = np.concatenate((self.confs,new_confs), axis=0)
+        self.bboxes = np.concatenate((self.bboxes, new_bboxes), axis=0)
+        self.labels = np.concatenate((self.labels, new_labels), axis=0)
+        self.confs = np.concatenate((self.confs, new_confs), axis=0)
         return
 
-
-    def update_vehicles(self,bboxes_time_t:np.ndarray):
+    def update_vehicles(self, bboxes_time_t: np.ndarray):
         """Updates the bbox location for current vehicles by appending to self.bboxes in the 
         time axis for all existing vehicles. 
 
@@ -61,28 +61,26 @@ class VehicleFleet():
                        format (xmin, ymin, width, height). Each vehicle should be axis 0, 
                        bounding boxes should be axis 1.
         """
-        self.bboxes = np.concatenate((self.bboxes,np.expand_dims(bboxes_time_t,axis=2)), axis=2)
+        self.bboxes = np.concatenate(
+            (self.bboxes, np.expand_dims(bboxes_time_t, axis=2)), axis=2)
         return
 
-
-    def compute_label_confs(self): 
+    def compute_label_confs(self):
         """Append label, id, and confidence for each vehicle for plotting purposes
         """
-        label_confs = [label +', id=' + str(i) + ', '+ str(format(self.confs[i] * 100, '.2f')) + '%' for i,label in enumerate(self.labels)]
+        label_confs = [label + ', id=' + str(i) + ', ' + str(format(
+            self.confs[i] * 100, '.2f')) + '%' for i, label in enumerate(self.labels)]
         return label_confs
-
 
     def compute_colors(self) -> list:
         """Assigns a color to each label currently present by vehicleFleet
         """
         return color_bboxes(self.labels)
 
-
-    def compute_counts(self):
+    def compute_counts(self) -> dict:
         """Get counts of each vehicle type 
         """
         return collections.Counter(self.labels)
-
 
     def compute_iou_time_series(self, interval: int = 15):
         """Compute a convolved IOU time series for each vehicle
@@ -96,27 +94,26 @@ class VehicleFleet():
 
         num_frames = self.bboxes.shape[2]
         num_vehicles = self.bboxes.shape[0]
-        iou_time_series = np.zeros((num_vehicles,num_frames - interval))
+        iou_time_series = np.zeros((num_vehicles, num_frames - interval))
 
-        #compare bboxes at timepoints t0,t1 for each vehicle; compute iou 
-        #t0, t1 are separated by the interval parameter
-        for i in range(0,num_frames-interval):
-            bboxes_time_t0 = self.bboxes[:,:,i]
-            bboxes_time_t1 = self.bboxes[:,:,i+interval]
+        # compare bboxes at timepoints t0,t1 for each vehicle; compute iou
+        # t0, t1 are separated by the interval parameter
+        for i in range(0, num_frames-interval):
+            bboxes_time_t0 = self.bboxes[:, :, i]
+            bboxes_time_t1 = self.bboxes[:, :, i+interval]
 
-            for j in range(num_vehicles): 
+            for j in range(num_vehicles):
 
-                iou_time_series[j,i] = bbox_intersection_over_union(bboxcv2_to_bboxcvlib(bboxes_time_t0[j]),
-                                                       bboxcv2_to_bboxcvlib(bboxes_time_t1[j]))
+                iou_time_series[j, i] = bbox_intersection_over_union(bboxcv2_to_bboxcvlib(bboxes_time_t0[j]),
+                                                                     bboxcv2_to_bboxcvlib(bboxes_time_t1[j]))
 
             # iou_time_series[:,i] = vectorized_intersection_over_union(bboxcv2_to_bboxcvlib(bboxes_time_t0, vectorized = True),
-                                                              # bboxcv2_to_bboxcvlib(bboxes_time_t1, vectorized = True))
+                # bboxcv2_to_bboxcvlib(bboxes_time_t1, vectorized = True))
             # assert iou_time_series_ind == iou_time_series[0,i], str(iou_time_series_ind) + str(iou_time_series[0,i])
         self.iou_time_series = iou_time_series
-        return 
+        return
 
-
-    def smooth_iou_time_series(self, smoother_method:str, **smoother_settings): 
+    def smooth_iou_time_series(self, smoother_method: str, **smoother_settings):
         """Wrapper function for smoothing the iou time series
 
         Keyword arguments 
@@ -126,13 +123,12 @@ class VehicleFleet():
                              smoothing methods are available. Pass in whatever keyword 
                              parameters are desired.
         """
-        self.smoothed_iou_time_series = time_series_smoother(self.iou_time_series, 
-                                                    method = smoother_method, 
-                                                    **smoother_settings)
-        return 
+        self.smoothed_iou_time_series = time_series_smoother(self.iou_time_series,
+                                                             method=smoother_method,
+                                                             **smoother_settings)
+        return
 
-
-    def plot_iou_time_series(self, fig_dir:str, fig_name:str, smoothed = False, vehicle_ids = None):
+    def plot_iou_time_series(self, fig_dir: str, fig_name: str, smoothed=False, vehicle_ids=None):
         """Visualize the iou_time_series as a multi-line graph
 
         fig_dir -- path to dir save plot to 
@@ -142,28 +138,28 @@ class VehicleFleet():
         """
         iou = self.smoothed_iou_time_series if smoothed else self.iou_time_series
 
-        num_vehicles,num_ious = iou.shape[0], iou.shape[1]
+        num_vehicles, num_ious = iou.shape[0], iou.shape[1]
 
         if vehicle_ids is None:
-            vehicles_ids = range(num_vehicles) 
+            vehicles_ids = range(num_vehicles)
 
         # plot each vehicle
         vehicle_colors = np.array(self.compute_colors()) / 255
         iou_inds = np.arange(num_ious)
         for i in range(num_vehicles):
-            iou_vehicle = iou[i,:]
+            iou_vehicle = iou[i, :]
             # catch na's or infs
-            mask1,mask2 = np.isnan(iou_vehicle),np.isfinite(iou_vehicle)
-            plt.plot(iou_inds[~mask1 & mask2], iou_vehicle[~mask1 & mask2], 
-                    # color = vehicle_colors[i], #color line chart by vehicle type
-                    label = "vehicle " + str(i) + "; type " + self.labels[i])
-        plt.legend(loc = 'lower right')
-        plt.xlabel("IOU over all frames in video, interval = " + str(self.iou_interval))
+            mask1, mask2 = np.isnan(iou_vehicle), np.isfinite(iou_vehicle)
+            plt.plot(iou_inds[~mask1 & mask2], iou_vehicle[~mask1 & mask2],
+                     # color = vehicle_colors[i], #color line chart by vehicle type
+                     label="vehicle " + str(i) + "; type " + self.labels[i])
+        plt.legend(loc='lower right')
+        plt.xlabel("IOU over all frames in video, interval = " +
+                   str(self.iou_interval))
         plt.savefig(os.path.join(fig_dir, fig_name + ".pdf"))
         plt.close()
 
-
-    def compute_stop_starts(self, stop_start_iou_threshold:float = 0.85, from_smoothed = True): 
+    def compute_stop_starts(self, stop_start_iou_threshold: float = 0.85, from_smoothed=True):
         """ Compute the stop starts by thresholding the IOU time series data. Performance is best 
         when using the smoothed IOU time series. 
 
@@ -173,22 +169,23 @@ class VehicleFleet():
                                     to 0. 1 indicates that the vehicle is in motion, 0 indicates it is stopped. 
         from_smoothed -- Whether or not to use the smoothed IOU time series data in computing stop starts.
         """
-        motion_array = np.copy(self.smoothed_iou_time_series) if from_smoothed else np.copy(self.iou_time_series)
-        # round iou values to binary values 
+        motion_array = np.copy(
+            self.smoothed_iou_time_series) if from_smoothed else np.copy(self.iou_time_series)
+        # round iou values to binary values
         motion_array[motion_array > stop_start_iou_threshold] = 1
         motion_array[motion_array <= stop_start_iou_threshold] = 0
 
-        #iterate over vehicles, frames axes of the motion_array
+        # iterate over vehicles, frames axes of the motion_array
         num_vehicles, num_frames = motion_array.shape
-        start_stop_counter = 0 
-        for i in range(num_vehicles): 
+        start_stop_counter = 0
+        for i in range(num_vehicles):
             # initialize the "motion status" by looking at first iou value
-            motion_status_prev = motion_array[i,0] 
+            motion_status_prev = motion_array[i, 0]
 
-            for j in range(num_frames): 
-                motion_status_current = motion_array[i,j]
-                if motion_status_current != motion_status_prev: 
-                    start_stop_counter+=1
+            for j in range(num_frames):
+                motion_status_current = motion_array[i, j]
+                if motion_status_current != motion_status_prev:
+                    start_stop_counter += 1
                     motion_status_prev = motion_status_current
 
         return start_stop_counter

@@ -1,18 +1,20 @@
-from src.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame,bbox_intersection_over_union
+from src.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame, bbox_intersection_over_union
 from src.d00_utils.video_helpers import write_mp4
 from src.d04_modelling.object_detection import detect_bboxes
 from src.d04_modelling.vehiclefleet import VehicleFleet
 import numpy as np
-import sys, os
+import sys
+import os
 import cv2
 import yaml
 import time
 import pickle as pkl
 
 
-def create_tracker_by_name(tracker_type:str):
+def create_tracker_by_name(tracker_type: str):
     """Create tracker based on tracker name"""
-    tracker_types = ['BOOSTING', 'MIL', 'KCF','TLD', 'MEDIANFLOW', 'GOTURN', 'MOSSE', 'CSRT']
+    tracker_types = ['BOOSTING', 'MIL', 'KCF', 'TLD',
+                     'MEDIANFLOW', 'GOTURN', 'MOSSE', 'CSRT']
 
     if tracker_type == tracker_types[0]:
         tracker = cv2.TrackerBoosting_create()
@@ -39,9 +41,9 @@ def create_tracker_by_name(tracker_type:str):
     return tracker
 
 
-def determine_new_bboxes(bboxes_tracked:list, bboxes_detected:list, iou_threshold:float = 0.1) -> list:
+def determine_new_bboxes(bboxes_tracked: list, bboxes_detected: list, iou_threshold: float = 0.1) -> list:
     """Return the indices of "new" bboxes in bboxes_detected so that a new tracker can be added for that 
-    
+
     Keyword arguments: 
 
     bboxes_tracked: bboxes which are currently tracked. bboxes should be passed in in format (xmin,ymin,w,h)
@@ -50,34 +52,34 @@ def determine_new_bboxes(bboxes_tracked:list, bboxes_detected:list, iou_threshol
                    will be considered new. 
     """
 
-    new_bboxes_inds = set(range(len(bboxes_detected))) #init with all inds
+    new_bboxes_inds = set(range(len(bboxes_detected)))  # init with all inds
     old_bboxes_inds = set()
-    for i,box_a in enumerate(bboxes_detected):
+    for i, box_a in enumerate(bboxes_detected):
         # if find a box which has high IOU with an already-tracked box, consider it an old box
         for box_b in bboxes_tracked:
             # format conversion needed
-            iou = bbox_intersection_over_union(bboxcv2_to_bboxcvlib(box_a), bboxcv2_to_bboxcvlib(box_b))
-            if iou > iou_threshold: #assume bbox has already been tracked and is not new 
-                old_bboxes_inds.add(i) #add to set
+            iou = bbox_intersection_over_union(
+                bboxcv2_to_bboxcvlib(box_a), bboxcv2_to_bboxcvlib(box_b))
+            if iou > iou_threshold:  # assume bbox has already been tracked and is not new
+                old_bboxes_inds.add(i)  # add to set
 
-    new_bboxes_inds=list(new_bboxes_inds.difference(old_bboxes_inds))
+    new_bboxes_inds = list(new_bboxes_inds.difference(old_bboxes_inds))
     return new_bboxes_inds
 
 
 def track_objects(local_mp4_dir: str,
                   local_mp4_name: str,
                   detection_model: str,
-                  # detection_confidence: float,
                   detection_implementation: str,
                   detection_frequency: int,
                   tracking_model: str,
                   iou_threshold: float,
-                  iou_convolution_window: int, 
+                  iou_convolution_window: int,
                   smoother_method: str,
-                  stop_start_iou_threshold: float, 
+                  stop_start_iou_threshold: float,
                   selected_labels: list = None,
-                  video_time_length = 10,
-                  make_video =True) -> (list,list,dict):
+                  video_time_length=10,
+                  make_video=True) -> (list, list, dict):
     """
     Given a path to an input video, this function will initialize a specified tracking algorithm 
     (currently only supports OpenCV's built in multitracker methods) with the specified object 
@@ -98,7 +100,7 @@ def track_objects(local_mp4_dir: str,
     detection_frequency -- each detection_frequency num of frames, run obj detection alg again to detect new objs
     tracking_model -- specify name of model you want to use for tracking (currently only supports OpenCV trackers)
     iou_threshold -- specify threshold to use to decide whether two detected objs should be considered the same
- 
+
     Stop start arguments:
     iou_convolution_window -- frame window size to perform iou computation on (to get an IOU time 
                               series for each vehicle) 
@@ -111,11 +113,12 @@ def track_objects(local_mp4_dir: str,
     """
 
     start_time = time.time()
-    
+
     # Create a video vid_objture object to read videos
-    vid_obj = cv2.VideoCapture(local_mp4_dir+ "/" + local_mp4_name)
+    vid_obj = cv2.VideoCapture(local_mp4_dir + "/" + local_mp4_name)
     n_frames = int(vid_obj.get(cv2.CAP_PROP_FRAME_COUNT))
-    vid_obj_frames_per_sec = int(n_frames / video_time_length)  # assumes vid_length in seconds
+    # assumes vid_length in seconds
+    vid_obj_frames_per_sec = int(n_frames / video_time_length)
 
     # Read first frame
     success, frame = vid_obj.read()
@@ -125,52 +128,60 @@ def track_objects(local_mp4_dir: str,
 
     # initialize bboxes on first frame using a detection alg
     bboxes, labels, confs = detect_bboxes(frame=frame,
-                                        model=detection_model,
-                                        implementation=detection_implementation,
-                                        selected_labels = selected_labels)
-    #store info returned above in vehicleFleet object
+                                          model=detection_model,
+                                          implementation=detection_implementation,
+                                          selected_labels=selected_labels)
+    # store info returned above in vehicleFleet object
     fleet = VehicleFleet(np.array(bboxes), np.array(labels), np.array(confs))
 
     # Create MultiTracker object using bboxes, initialize multitracker
     multitracker = cv2.MultiTracker_create()
     for bbox in bboxes:
-        multitracker.add(create_tracker_by_name(tracking_model), frame, tuple(bbox))
+        multitracker.add(create_tracker_by_name(
+            tracking_model), frame, tuple(bbox))
 
     processed_video = []
     frame_counter = 0
     # Process video and track objects
     while vid_obj.isOpened():
         success, frame = vid_obj.read()
-        if not success: break
+        if not success:
+            break
 
         # get updated location of objects in subsequent frames, update fleet obj
         success, bboxes_tracked = multitracker.update(frame)
         fleet.update_vehicles(bboxes_tracked)
 
         # draw tracked objects
-        display_bboxes_on_frame(frame, bboxes_tracked, fleet.compute_colors(), fleet.compute_label_confs())
+        display_bboxes_on_frame(
+            frame, bboxes_tracked, fleet.compute_colors(), fleet.compute_label_confs())
 
         # every x frames, re-detect boxes
-        if frame_counter%detection_frequency == 0: 
+        if frame_counter % detection_frequency == 0:
             # redetect bounding boxes
-            bboxes_detected, labels_detected, \
-            confs_detected = detect_bboxes(frame=frame,
-                                            model=detection_model,
-                                            implementation=detection_implementation,
-                                            selected_labels=selected_labels)
+            bboxes_detected, labels_detected, confs_detected = detect_bboxes(frame=frame,
+                                                               model=detection_model,
+                                                               implementation=detection_implementation,
+                                                               selected_labels=selected_labels)
             # re-initialize MultiTracker
-            new_bbox_inds = determine_new_bboxes(bboxes_tracked, bboxes_detected, iou_threshold)
-            new_bboxes, new_labels, new_confs= [bboxes_detected[i] for i in new_bbox_inds],\
-                                               [labels_detected[i] for i in new_bbox_inds],\
-                                               [confs_detected[i] for i in new_bbox_inds]
+            new_bbox_inds = determine_new_bboxes(bboxes_tracked, 
+                                                 bboxes_detected, 
+                                                 iou_threshold)
+            new_bboxes = [bboxes_detected[i] for i in new_bbox_inds]
+            new_labels = [labels_detected[i] for i in new_bbox_inds]
+            new_confs = [confs_detected[i] for i in new_bbox_inds]
 
             # iterate through new bboxes
-            for i,new_bbox in enumerate(new_bboxes):
-                multitracker.add(create_tracker_by_name(tracking_model), frame, tuple(new_bbox))
+            for i, new_bbox in enumerate(new_bboxes):
+                multitracker.add(create_tracker_by_name(tracking_model), 
+                                 frame, 
+                                 tuple(new_bbox))
 
-            #update fleet object
-            if new_bboxes!=[]:
-                fleet.add_vehicles(np.array(new_bboxes),np.array(new_labels),np.array(new_confs))
+            # update fleet object
+            if new_bboxes != []:
+                fleet.add_vehicles(np.array(new_bboxes), 
+                                   np.array(new_labels), 
+                                   np.array(new_confs))
 
         processed_video.append(frame)
         frame_counter += 1
@@ -183,29 +194,29 @@ def track_objects(local_mp4_dir: str,
 
     if make_video:
         write_mp4(local_mp4_dir=local_mp4_dir,
-                            mp4_name=local_mp4_name[:-4] + "_tracked.mp4", 
-                            video=np.array(processed_video),
-                            fps=vid_obj_frames_per_sec)
+                  mp4_name=local_mp4_name[:-4] + "_tracked.mp4",
+                  video=np.array(processed_video),
+                  fps=vid_obj_frames_per_sec)
 
-    #compute the convolved IOU time series for each vehicle using a specified frame window size
-    fleet.compute_iou_time_series(interval = iou_convolution_window)
-    #use specified smoothing method to smooth the convolved IOU time series 
-    fleet.smooth_iou_time_series(smoother_method = smoother_method)
+    # compute the convolved IOU time series for each vehicle and smooth
+    fleet.compute_iou_time_series(interval=iou_convolution_window)
+    fleet.smooth_iou_time_series(smoother_method=smoother_method)
 
     print('Run time is %s seconds' % (time.time() - start_time))
     return fleet.compute_counts(), fleet.compute_stop_starts(stop_start_iou_threshold)
 
 
 if __name__ == '__main__':
-    #config stuff
-    basepath=os.path.dirname(__file__) #path of current script
+    # config stuff
+    basepath = os.path.dirname(__file__)  # path of current script
 
     os.chdir(".")
     with open('conf/base/parameters.yml') as f:
-       params = yaml.safe_load(f)['modelling']
+        params = yaml.safe_load(f)['modelling']
 
-    #get a video from local
-    local_mp4_dir = os.path.abspath(os.path.join(basepath,"..", "..","data/sample_video_data"))
+    # get a video from local
+    local_mp4_dir = os.path.abspath(os.path.join(
+        basepath, "..", "..", "data/sample_video_data"))
     local_mp4_name = "testvid.mp4"
     tracking_model = params["opencv_tracker_type"]
     detection_model = params["yolo_model"]
@@ -218,18 +229,16 @@ if __name__ == '__main__':
     smoothing_window = params["moving_avg_window"]
 
     stop_starts, counts = track_objects(local_mp4_dir=local_mp4_dir, local_mp4_name=local_mp4_name,
-                detection_model=detection_model,detection_confidence=detection_confidence,
-                detection_implementation=detection_implementation,
-                detection_frequency=detection_frequency,tracking_model=tracking_model,
-                frame_convolution = frame_convolution, smoother_method = smoother_method, 
-                selected_labels=selected_labels,
-                iou_threshold=iou_threshold, make_video=True)
+                                        detection_model=detection_model, detection_confidence=detection_confidence,
+                                        detection_implementation=detection_implementation,
+                                        detection_frequency=detection_frequency, tracking_model=tracking_model,
+                                        frame_convolution=frame_convolution, smoother_method=smoother_method,
+                                        selected_labels=selected_labels,
+                                        iou_threshold=iou_threshold, make_video=True)
     print(stop_starts, counts)
     # pkl_out = open("fleet_obj.pkl", "wb")
     # pkl.dump(fleet, pkl_out)
     # pkl_out.close()
 
-
     # pkl_in = open("fleet_obj.pkl", "rb")
     # fleet = pkl.load(pkl_in)
-
