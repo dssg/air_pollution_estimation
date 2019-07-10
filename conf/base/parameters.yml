@@ -7,6 +7,7 @@ data_collection:
                 '00001.08926', '00001.07355', '00001.04336', '00001.09560']
   tims_file_website: 'https://s3-eu-west-1.amazonaws.com/roads.data.tfl.gov.uk'
   tims_download_website: "http://roads.data.tfl.gov.uk/TIMS/"
+  tfl_jamcams_website: 'https://s3-eu-west-1.amazonaws.com/jamcams.tfl.gov.uk/'
 
 modelling:
   yolo_model: "yolov3-tiny"
@@ -24,3 +25,6 @@ reporting:
   iou_threshold: 0.05 #controls how much two objects' bboxes must overlap to be considered the "same"
   detection_frequency: 50
   selected_labels: ["car", "truck", "bus", "motorbike"]
+
+visualization:
+  debug: False
