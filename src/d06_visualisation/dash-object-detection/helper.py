@@ -54,6 +54,7 @@ def load_data(path):
     return data_dict
 
 def load_camera_statistics(camera_id):
+    # TODO: Change path to s3
     filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                             '..', '..', '..', 'data/02_processed/jamcams/JamCamStats.csv')
     df = pd.read_csv(filepath, dtype={'camera_id':'category'})
