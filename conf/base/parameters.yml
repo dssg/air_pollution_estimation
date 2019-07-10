@@ -11,3 +11,16 @@ data_collection:
 modelling:
   yolo_model: "yolov3-tiny"
   confidence_threshold: 0.2
+
+reporting:
+  chunk_size: 5
+  columns: ["camera_id", "date", "time", "metric", "motorcycle", "truck", "bus", "car"]
+  dtype: 
+    camera_id: 'category'
+  yolo_model: "yolov3_tiny"
+  yolo_implementation: "cvlib"
+  detection_confidence_threshold: 0.4
+  opencv_tracker_type: "CSRT"
+  iou_threshold: 0.05 #controls how much two objects' bboxes must overlap to be considered the "same"
+  detection_frequency: 50
+  selected_labels: ["car", "truck", "bus", "motorbike"]
