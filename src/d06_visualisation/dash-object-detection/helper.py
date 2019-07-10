@@ -23,7 +23,6 @@ def load_data(path):
     the dataframe containing all the detection and bounds localization, the number of classes inside that footage,
     the matrix of all the classes in string, the given class with padding, and the root of the number of classes,
     rounded."""
-    print(path)
     # Load the dataframe containing all the processed object detections inside the video
     video_info_df = pd.read_csv(path)
 
@@ -55,13 +54,11 @@ def load_data(path):
     return data_dict
 
 def load_camera_statistics(camera_id):
-    print(camera_id)
     filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                             '..', '..', '..', 'data/02_processed/jamcams/JamCamStats.csv')
     df = pd.read_csv(filepath, dtype={'camera_id':'category'})
     df['datetime'] = pd.to_datetime(df.date)+ pd.to_timedelta(df.time, unit='h')
     output = df[df.camera_id == camera_id]
-    print(df.head())
     return output
 
 def load_objects(df):
