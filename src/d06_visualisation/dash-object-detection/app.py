@@ -48,29 +48,6 @@ def markdown_popup():
                             className="closeButton",
                             style={'border': 'none', 'height': '100%'}
                         )
-                    ),
-                    html.Div(
-                        className='markdown-text',
-                        children=[dcc.Markdown(
-                            children=dedent(
-                                '''
-                                # What am I looking at?
-
-                                This app enhances visualization of objects detected using state-of-the-art Mobile Vision Neural Networks.
-                                Most user generated videos are dynamic and fast-paced, which might be hard to interpret. A confidence
-                                heatmap stays consistent through the video and intuitively displays the model predictions. The pie chart
-                                lets you interpret how the object classes are divided, which is useful when analyzing videos with numerous
-                                and differing objects.
-
-                                # More about this dash app
-
-                                The purpose of this demo is to explore alternative visualization methods for Object Detection. Therefore,
-                                the visualizations, predictions and videos are not generated in real time, but done beforehand. To read
-                                more about it, please visit the [project repo](https://github.com/plotly/dash-object-detection).
-
-                                '''
-                            ))
-                        ]
                     )
                 ]
             )
@@ -197,26 +174,6 @@ app.layout = html.Div(
                                         ),
                                     ], className=''),
                                 ], className='control-element'),
-
-                                # html.Div(
-                                #     className='control-element',
-                                #     children=[
-                                #         html.Div(children=["Yolo Model:"], style={
-                                #             'width': '40%'}),
-                                #         dcc.Dropdown(
-                                #             id="dropdown-yolo-model",
-                                #             options=[
-                                #                 {"label": model, "value": model}
-                                #                 for model in yolo_models],
-                                #             value=yolo_models[0],
-                                #             clearable=False,
-                                #             style={'width': '60%'}
-                                #         )
-                                #     ]
-                                # ),
-                                # html.Button(
-                                #     "Detect Objects", id="detect-objects-button", n_clicks=0)
-
                             ]
                         )
                     ]
