@@ -1,14 +1,11 @@
 from textwrap import dedent
-
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_player as player
-import numpy as np
-import pandas as pd
 import plotly.graph_objs as go
 from dash.dependencies import Input, Output, State
-from helper import get_cams, load_data, load_camera_statistics, load_objects, load_object_statistics
+from helper import get_cams, load_camera_statistics, load_objects, load_object_statistics
 import os
 import sys
 import time
