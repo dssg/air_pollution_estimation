@@ -1,23 +1,43 @@
+from src.d00_utils.bbox_helpers import color_bboxes, bbox_intersection_over_union,vectorized_intersection_over_union, bboxcv2_to_bboxcvlib
+from src.d00_utils.stats_helpers import time_series_smoother
 import numpy as np
 import collections
 import matplotlib.pyplot as plt
-from src.d00_utils.bbox_helpers import color_bboxes, bbox_intersection_over_union,vectorized_intersection_over_union, bboxcv2_to_bboxcvlib
-from src.d00_utils.stats_helpers import time_series_smoother
+
 
 class VehicleFleet():
+    """
+    The purpose of the vehicleFleet object is to store information about each vehicle detected/tracked in 
+    a video. This information includes the bounding box location with each frame, the vehicle labels, 
+    and the initial detection confidences. Throughout this class, we use numpy arrays, following the 
+    convention that axis 0 corresponds to vehicle index, axis 1 corresponds to the information for each 
+    vehicle we are interested in, and axis 2 corresponds to the frame/time dimension for the info 
+    recorded by axis 1 (if relevant). 
+    """
+
     def __init__(self,bboxes:np.ndarray,labels:np.ndarray,confs:np.ndarray):
+        """Initialize the vehicleFleet with the bounding boxes for one set of vehicles, as 
+        detected from one frame. 
+
+        Keyword arguments: 
+
+        bboxes -- pass in using cv2 format (xmin, ymin, width, height). Each vehicle should be axis 0, 
+                  bounding boxes should be axis 1. 
         """
-        dims: (7,4)
-        bboxes in cv2 format
-        """
-        self.bboxes = np.expand_dims(bboxes,axis=2) #ADD A TIME DIMENSION
+        assert bboxes.shape[1] == 4
+
+        self.bboxes = np.expand_dims(bboxes,axis=2) # add a dimension for time 
         self.labels = labels
         self.confs = confs
 
 
     def add_vehicles(self,new_bboxes:np.ndarray,new_labels:np.ndarray,new_confs:np.ndarray):
-        """
+        """Adds new vehicles to the vehicleFleet, creating appropriate bbox location "history" for the 
+        self.bboxes numpy array 
+
         job: append more vehicles, come up with na arrays for prev history
+
+        Keyword arguments should be in same format as for the init
         """
         current_time_t = self.bboxes.shape[2]
         num_new_vehicles = new_bboxes.shape[0]
@@ -31,89 +51,144 @@ class VehicleFleet():
         return
 
 
-    def update_vehicles(self,bboxes_time_t):
-        """
-        job: append in the time axis for all existing vehicles 
+    def update_vehicles(self,bboxes_time_t:np.ndarray):
+        """Updates the bbox location for current vehicles by appending to self.bboxes in the 
+        time axis for all existing vehicles. 
+
+        Keyword arguments: 
+
+        bboxes_time_t -- updated location for bboxes for all existing vehicles. pass in using cv2 
+                       format (xmin, ymin, width, height). Each vehicle should be axis 0, 
+                       bounding boxes should be axis 1.
         """
         self.bboxes = np.concatenate((self.bboxes,np.expand_dims(bboxes_time_t,axis=2)), axis=2)
         return
 
 
     def compute_label_confs(self): 
+        """Append label, id, and confidence for each vehicle for plotting purposes
+        """
         label_confs = [label +', id=' + str(i) + ', '+ str(format(self.confs[i] * 100, '.2f')) + '%' for i,label in enumerate(self.labels)]
         return label_confs
 
 
     def compute_colors(self) -> list:
+        """Assigns a color to each label currently present by vehicleFleet
+        """
         return color_bboxes(self.labels)
 
 
     def compute_counts(self):
+        """Get counts of each vehicle type 
+        """
         return collections.Counter(self.labels)
 
 
-    def compute_iou_video(self, interval: int = 1):
-        #iterate along time axis; consider 2 timepoints t0,t1 at a time 
-        #compare bboxes at t0,t1; output the iou
+    def compute_iou_time_series(self, interval: int = 15):
+        """Compute a convolved IOU time series for each vehicle
+
+        Keyword arguments: 
+
+        interval -- convolution window size. Compute IOU between frames that 
+                    are separated by this window size. 
+        """
         self.iou_interval = interval
+
         num_frames = self.bboxes.shape[2]
         num_vehicles = self.bboxes.shape[0]
-        iou_video = np.zeros((num_vehicles,num_frames - interval))
-        #compare iou for in between frames 
-        # for i in range(0,num_frames-interval, interval):
-        for i in range(0,num_frames-interval):
+        iou_time_series = np.zeros((num_vehicles,num_frames - interval))
 
+        #compare bboxes at timepoints t0,t1 for each vehicle; compute iou 
+        #t0, t1 are separated by the interval parameter
+        for i in range(0,num_frames-interval):
             bboxes_time_t0 = self.bboxes[:,:,i]
             bboxes_time_t1 = self.bboxes[:,:,i+interval]
 
             for j in range(num_vehicles): 
 
-                iou_video[j,i] = bbox_intersection_over_union(bboxcv2_to_bboxcvlib(bboxes_time_t0[j]),
+                iou_time_series[j,i] = bbox_intersection_over_union(bboxcv2_to_bboxcvlib(bboxes_time_t0[j]),
                                                        bboxcv2_to_bboxcvlib(bboxes_time_t1[j]))
 
-            # iou_video[:,i] = vectorized_intersection_over_union(bboxcv2_to_bboxcvlib(bboxes_time_t0, vectorized = True),
+            # iou_time_series[:,i] = vectorized_intersection_over_union(bboxcv2_to_bboxcvlib(bboxes_time_t0, vectorized = True),
                                                               # bboxcv2_to_bboxcvlib(bboxes_time_t1, vectorized = True))
-            # assert iou_video_ind == iou_video[0,i], str(iou_video_ind) + str(iou_video[0,i])
-        self.iou_video = iou_video
-        # print(self.bboxes[4,:,:])
-        # print(iou_video[4,:])
+            # assert iou_time_series_ind == iou_time_series[0,i], str(iou_time_series_ind) + str(iou_time_series[0,i])
+        self.iou_time_series = iou_time_series
         return 
 
 
-    def smooth_iou_video(self, smoother_method:str, **smoother_settings): 
-        # num_vehicles = self.iou_video.shape[0]
+    def smooth_iou_time_series(self, smoother_method:str, **smoother_settings): 
+        """Wrapper function for smoothing the iou time series
 
-        self.smoothed_iou_video = time_series_smoother(self.iou_video, 
+        Keyword arguments 
+
+        smoother_method -- e.g. "moving_avg" (also this method is the best performing)
+        smoother_settings -- see the time_series_smoother function; various settings for the 
+                             smoothing methods are available. Pass in whatever keyword 
+                             parameters are desired.
+        """
+        self.smoothed_iou_time_series = time_series_smoother(self.iou_time_series, 
                                                     method = smoother_method, 
                                                     **smoother_settings)
         return 
 
 
-    def plot_iou_video(self, fig_path, smoothed = False, vehicle_ids = None):
-        """Visualize the iou_video
+    def plot_iou_time_series(self, fig_dir:str, fig_name:str, smoothed = False, vehicle_ids = None):
+        """Visualize the iou_time_series as a multi-line graph
+
+        fig_dir -- path to dir save plot to 
+        fig_name -- desired name of the figure; do NOT include file extension
+        smoothed -- if true, plot the smoothed iou time series
+        vehicle_ids -- if specified, only visualize the iou time series for these vehicles
         """
-        iou = self.smoothed_iou_video if smoothed else self.iou_video
+        iou = self.smoothed_iou_time_series if smoothed else self.iou_time_series
 
         num_vehicles,num_ious = iou.shape[0], iou.shape[1]
 
         if vehicle_ids is None:
             vehicles_ids = range(num_vehicles) 
 
-        #plot each vehicle
+        # plot each vehicle
         vehicle_colors = np.array(self.compute_colors()) / 255
         iou_inds = np.arange(num_ious)
         for i in range(num_vehicles):
             iou_vehicle = iou[i,:]
+            # catch na's or infs
             mask1,mask2 = np.isnan(iou_vehicle),np.isfinite(iou_vehicle)
             plt.plot(iou_inds[~mask1 & mask2], iou_vehicle[~mask1 & mask2], 
-                    # color = vehicle_colors[i], 
+                    # color = vehicle_colors[i], #color line chart by vehicle type
                     label = "vehicle " + str(i) + "; type " + self.labels[i])
         plt.legend(loc = 'lower right')
         plt.xlabel("IOU over all frames in video, interval = " + str(self.iou_interval))
-        plt.savefig(fig_path)
+        plt.savefig(os.path.join(fig_dir, fig_name + ".pdf"))
         plt.close()
 
 
+    def compute_stop_starts(self, stop_start_iou_threshold:float = 0.85, from_smoothed = True): 
+        """ Compute the stop starts by thresholding the IOU time series data. Performance is best 
+        when using the smoothed IOU time series. 
 
+        Keyword arguments:
 
+        stop_start_iou_threshold -- above this threshold, IOU is rounded to 1. Under this threshold, IOU is rounded 
+                                    to 0. 1 indicates that the vehicle is in motion, 0 indicates it is stopped. 
+        from_smoothed -- Whether or not to use the smoothed IOU time series data in computing stop starts.
+        """
+        motion_array = np.copy(self.smoothed_iou_time_series) if from_smoothed else np.copy(self.iou_time_series)
+        # round iou values to binary values 
+        motion_array[motion_array > stop_start_iou_threshold] = 1
+        motion_array[motion_array <= stop_start_iou_threshold] = 0
 
+        #iterate over vehicles, frames axes of the motion_array
+        num_vehicles, num_frames = motion_array.shape
+        start_stop_counter = 0 
+        for i in range(num_vehicles): 
+            # initialize the "motion status" by looking at first iou value
+            motion_status_prev = motion_array[i,0] 
+
+            for j in range(num_frames): 
+                motion_status_current = motion_array[i,j]
+                if motion_status_current != motion_status_prev: 
+                    start_stop_counter+=1
+                    motion_status_prev = motion_status_current
+
+        return start_stop_counter

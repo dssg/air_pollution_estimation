@@ -8,7 +8,7 @@ with open('conf/base/parameters.yml') as f:
 
 
 def detect_bboxes(frame:np.ndarray, model:str,
-				  implementation:str=None,selected_labels=False) -> (list,list,list, list):
+				  implementation:str=None,selected_labels=None) -> (list,list,list, list):
 	'''Detect bounding boxes on a frame using specified model and optionally an implementation.
 	bboxes returned in format (xmin, ymin, w, h). Colors are assigned to bboxes by the type. 
 
@@ -16,7 +16,6 @@ def detect_bboxes(frame:np.ndarray, model:str,
 
 	frame -- one frame of a video 
 	model -- specify the name of an object model to use 
-	confidence -- only bboxes detected with above this confidence level will be returned 
 	implementation -- specify the implementation of the model to use 
 	selected_labels -- if a list of labels is supplied, only bboxes with these labels will be returned
 	'''
