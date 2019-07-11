@@ -97,9 +97,9 @@ def bbox_intersection_over_union(bbox_a, bbox_b) -> float:
     bbox_b -- format is (xmin, ymin, xmin+width, ymin+height)
     """
     assert (bbox_a[0] <= bbox_a[2] and bbox_a[1] <= bbox_a[3]
-            ), "arg boxA must be in format (xmin,ymin,xmin+w,ymin+h)"
+            ), "Please make sure arg boxA is in format (xmin,ymin,xmin+w,ymin+h)."
     assert (bbox_b[0] <= bbox_b[2] and bbox_b[1] <= bbox_b[3]
-            ), "arg boxB must be in format (xmin,ymin,xmin+w,ymin+h) "
+            ), "Please make sure arg boxB is in in format (xmin,ymin,xmin+w,ymin+h)."
 
     # determine the (x, y)-coordinates of the intersection rectangle
     x_upper_left = max(bbox_a[0], bbox_b[0])  # xcoords
@@ -129,8 +129,11 @@ def bbox_intersection_over_union(bbox_a, bbox_b) -> float:
 def vectorized_intersection_over_union(bboxes_t0: np.ndarray, bboxes_t1: np.ndarray) ->np.ndarray:
     """ This function uses np vectorized operations to compute the iou for sets of vehicles
     2d arrays
-    boxA -- format is (xmin, ymin, xmin+w, ymin+h)
+
+    THIS IS STILL UNDER DEVELOPMENT AND DOES NOT WORK PROPERLY. 
+    Use the bbox_intersection_over_union function in a for loop instead. 
     """
+    # TODO: fix this later to optimize tracking code 
     assert bboxes_t0.shape[1] == 4 and bboxes_t1.shape[1] == 4, "Axis 2 should be bounding boxes"
     assert (np.all(bboxes_t0[:, 0] <= bboxes_t0[:, 2]) and np.all(bboxes_t0[:, 1] <= bboxes_t0[:, 3])), \
         "For at least one bbox in bboxes_t0, xmin < xmin+w or ymin < ymin+h"

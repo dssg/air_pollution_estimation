@@ -1,6 +1,8 @@
 from src.d00_utils.bbox_helpers import color_bboxes, bbox_intersection_over_union, vectorized_intersection_over_union, bboxcv2_to_bboxcvlib
 from src.d00_utils.stats_helpers import time_series_smoother
+import os
 import numpy as np
+import pandas as pd 
 import collections
 import matplotlib.pyplot as plt
 
@@ -15,7 +17,7 @@ class VehicleFleet():
     recorded by axis 1 (if relevant). 
     """
 
-    def __init__(self, bboxes: np.ndarray, labels: np.ndarray, confs: np.ndarray):
+    def __init__(self, bboxes: np.ndarray, labels: np.ndarray, confs: np.ndarray, video_name:str):
         """Initialize the vehicleFleet with the bounding boxes for one set of vehicles, as 
         detected from one frame. 
 
@@ -23,6 +25,9 @@ class VehicleFleet():
 
         bboxes -- pass in using cv2 format (xmin, ymin, width, height). Each vehicle should be axis 0, 
                   bounding boxes should be axis 1. 
+        labels -- label assigned to detected objects 
+        confs -- confidence returned by detection alg 
+        video_name 
         """
         assert bboxes.shape[1] == 4
 
@@ -30,6 +35,8 @@ class VehicleFleet():
         self.bboxes = np.expand_dims(bboxes, axis=2)
         self.labels = labels
         self.confs = confs
+        # TODO: implement a name parser to get the camera id and time from the video name
+        self.video_name = video_name
 
     def add_vehicles(self, new_bboxes: np.ndarray, new_labels: np.ndarray, new_confs: np.ndarray):
         """Adds new vehicles to the vehicleFleet, creating appropriate bbox location "history" for the 
@@ -61,6 +68,7 @@ class VehicleFleet():
                        format (xmin, ymin, width, height). Each vehicle should be axis 0, 
                        bounding boxes should be axis 1.
         """
+        assert bboxes_time_t.shape[1] == 4
         self.bboxes = np.concatenate(
             (self.bboxes, np.expand_dims(bboxes_time_t, axis=2)), axis=2)
         return
@@ -113,19 +121,23 @@ class VehicleFleet():
         self.iou_time_series = iou_time_series
         return
 
-    def smooth_iou_time_series(self, smoother_method: str, **smoother_settings):
+    def smooth_iou_time_series(self, smoothing_method: str, **smoothing_settings):
         """Wrapper function for smoothing the iou time series
 
         Keyword arguments 
 
-        smoother_method -- e.g. "moving_avg" (also this method is the best performing)
-        smoother_settings -- see the time_series_smoother function; various settings for the 
+        smoothing_method -- e.g. "moving_avg" (also this method is the best performing)
+        smoothing_settings -- see the time_series_smoother function; various settings for the 
                              smoothing methods are available. Pass in whatever keyword 
                              parameters are desired.
         """
+        # some good settings for various smoothing methods
+        default_settings = {"window_size":25} 
+        for setting_name, setting_value in smoothing_settings.items(): 
+            default_settings[setting_name] = setting_value
         self.smoothed_iou_time_series = time_series_smoother(self.iou_time_series,
-                                                             method=smoother_method,
-                                                             **smoother_settings)
+                                                             method=smoothing_method,
+                                                             **default_settings)
         return
 
     def plot_iou_time_series(self, fig_dir: str, fig_name: str, smoothed=False, vehicle_ids=None):
@@ -159,7 +171,7 @@ class VehicleFleet():
         plt.savefig(os.path.join(fig_dir, fig_name + ".pdf"))
         plt.close()
 
-    def compute_stop_starts(self, stop_start_iou_threshold: float = 0.85, from_smoothed=True):
+    def compute_stop_starts(self, stop_start_iou_threshold: float = 0.85, from_smoothed=True) -> dict:
         """ Compute the stop starts by thresholding the IOU time series data. Performance is best 
         when using the smoothed IOU time series. 
 
@@ -177,15 +189,45 @@ class VehicleFleet():
 
         # iterate over vehicles, frames axes of the motion_array
         num_vehicles, num_frames = motion_array.shape
-        start_stop_counter = 0
-        for i in range(num_vehicles):
+        stop_counter, start_counter = [], []
+        for vehicle_idx in range(num_vehicles):
             # initialize the "motion status" by looking at first iou value
-            motion_status_prev = motion_array[i, 0]
+            motion_status_prev = motion_array[vehicle_idx, 0]
 
-            for j in range(num_frames):
-                motion_status_current = motion_array[i, j]
+            for frame_idx in range(num_frames):
+                motion_status_current = motion_array[vehicle_idx, frame_idx]
+                # TODO: get stops, starts, by vehicle types, get 
+                # change in motion status
                 if motion_status_current != motion_status_prev:
-                    start_stop_counter += 1
+                    if motion_status_prev == 0: 
+                        # get the type of the object that just stopped
+                        stop_counter.append(self.labels[vehicle_idx])
+                    elif motion_status_prev == 1: 
+                        start_counter.append(self.labels[vehicle_idx])
+
                     motion_status_prev = motion_status_current
 
-        return start_stop_counter
+        return collections.Counter(stop_counter), collections.Counter(start_counter)
+
+    def report_video_stats(self, vehicle_counts: dict, 
+                           vehicle_stop_counts: dict, 
+                           vehicle_start_counts: dict) -> pd.DataFrame: 
+    #cam_id, time, vehicle_type, count, stops, starts 
+        # print(vehicle_counts, vehicle_stop_counts, vehicle_start_counts)
+        count_df = pd.DataFrame.from_dict(vehicle_counts, 
+                                          orient='index', columns = ['counts'],)
+        stops_df = pd.DataFrame.from_dict(vehicle_stop_counts, 
+                                          orient='index', columns = ['stops'])
+        starts_df = pd.DataFrame.from_dict(vehicle_start_counts, 
+                                          orient='index', columns= ['starts'])
+
+        # combine into one dataframe
+        stats_df = count_df.join([stops_df,starts_df], how = 'outer', sort=True).fillna(0)
+        stats_df["video_name"] = self.video_name
+        # rownames to a column
+        stats_df.index.name = 'vehicle_type'
+        stats_df.reset_index(inplace = True)
+        # reorder columns
+        stats_df = stats_df[['video_name', 'vehicle_type', 'counts', 'stops', 'starts']]
+
+        return stats_df

@@ -2,7 +2,7 @@ import numpy as np
 
 
 def time_series_smoother(array: np.ndarray, method: str,
-                         window_size=10, poly_degree=10):
+                         window_size=25, poly_degree=10):
     """Smoothing function for time series data 
 
     Keyword arguments
