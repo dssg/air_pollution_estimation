@@ -13,8 +13,8 @@ def populate_model(params):
     """
 
     model = params['modelling']['yolo_model']
-    config_file_path = '../conf/' + model + '/' + model + '.cfg'  # change if we use model that isn't yolo
-    weights_file_path = '../conf/' + model + '/' + model + '.weights'  # change if we use model that isn't yolo
+    config_file_path = '../conf/' + model + '/' + model + '.cfg'  # change if model isn't yolo
+    weights_file_path = '../conf/' + model + '/' + model + '.weights'  # change if model isn't yolo
 
     return config_file_path, weights_file_path
 
