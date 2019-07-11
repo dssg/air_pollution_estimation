@@ -5,7 +5,7 @@ import dash_html_components as html
 import dash_player as player
 import plotly.graph_objs as go
 from dash.dependencies import Input, Output, State
-from helper import get_cams, load_camera_statistics, load_objects, load_object_statistics, params
+from .helper import get_cams, load_camera_statistics, load_objects, load_object_statistics, params
 import os
 import sys
 import time
@@ -244,50 +244,14 @@ def update_trend_graph(objects, camera_id):
     print(dfs)
     data = []
     for obj, df_stats in dfs.items():
-        # data.append(
-        #     go.Scatter(
-        #         name='Upper Bound',
-        #         x=df_stats.index,
-        #         y=df_stats["mean"]+df_stats["std"],
-        #         mode='lines',
-        #         marker=dict(color="#444"),
-        #         line=dict(width=0),
-        #         showlegend=False,
-        #         fillcolor='rgba(68, 68, 68, 0.3)',
-        #         fill='tonexty'
-        #     ))
         data.append(
             go.Scatter(
                 x=df_stats.index,
                 y=df_stats["mean"],
                 name=obj,
                 mode='lines',
-                # line=dict(color='rgb(31, 119, 180)'),
-                # fillcolor='rgba(68, 68, 68, 0.3)',
-                # fill='tonexty'
             ))
-        # data.append(
-        #     go.Scatter(
-        #         name='Lower Bound',
-        #         x=df_stats.index,
-        #         y=df_stats["mean"]-df_stats["std"],
-        #         showlegend=False,
-        #         marker=dict(color="#444"),
-        #         line=dict(width=0),
-        #         fillcolor='rgba(68, 68, 68, 0.3)',
-        #         mode='lines'
-        #     ))
-
-    # data = [
-    #     go.Scatter(
-    #         x=df_stats.index,
-    #         y=df_stats["mean"],
-    #         name=obj,
-    #         mode='lines'
-    #     )
-    #     for obj, df_stats in dfs.items()
-    # ]
-    print(data)
+        
     figure = {
         'data': data,
         'layout': go.Layout(
@@ -298,8 +262,6 @@ def update_trend_graph(objects, camera_id):
                 title='Count of objects [#]', automargin=True
             ),
             hovermode='closest',
-            # updatemenus=updatemenus,
-            # annotations=annotations,
             autosize=False,
         )
     }

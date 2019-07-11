@@ -9,3 +9,6 @@ local_paths:
     raw_video: "data/01_raw/jamcams/"
     processed_video: "data/02_processed/jamcams/"
     plots: "plots/"
+    cameras: "data/00_ref/cam_file.json"
+    jamcam_stats: 'data/02_processed/jamcams/JamCamStats.csv'
+

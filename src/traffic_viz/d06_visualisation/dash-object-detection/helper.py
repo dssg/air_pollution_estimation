@@ -1,19 +1,19 @@
-import json
+import sys
 import os
+import json
 import pandas as pd
 import numpy as np
-import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                '..', '..', 'd00_utils'))
-from load_confs import load_app_parameters
+print(sys.path)
+
+from src.traffic_analysis.d00_utils.load_confs import load_app_parameters, load_paths
 
 params = load_app_parameters()
+paths = load_paths()
 
 
 def get_cams():
-    filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                            '..', '..', '..', 'data/00_ref/cam_file.json')
+    filepath = paths['cameras']
 
     data = json.loads(open(filepath, 'r').read())
     cam_list = [{'label': item['commonName'],  'value': item['id']}
@@ -59,8 +59,7 @@ def load_data(path):
 
 def load_camera_statistics(camera_id):
     # TODO: Change path to s3
-    filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                            '..', '..', '..', 'data/02_processed/jamcams/JamCamStats.csv')
+    filepath = paths['jamcam_stats']
     df = pd.read_csv(filepath, dtype={'camera_id': 'category'})
     df['datetime'] = pd.to_datetime(
         df.date) + pd.to_timedelta(df.time, unit='h')
