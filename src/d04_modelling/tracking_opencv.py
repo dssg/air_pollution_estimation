@@ -198,20 +198,12 @@ def track_objects(local_mp4_dir: str,
                   video=np.array(processed_video),
                   fps=vid_obj_frames_per_sec)
 
-    # compute the convolved IOU time series for each vehicle and smooth
-    fleet.compute_iou_time_series(interval=iou_convolution_window)
-    fleet.smooth_iou_time_series(smoothing_method=smoothing_method)
-    # fleet.plot_iou_time_series(fig_dir="data", fig_name="param_tuning", smoothed=True)
-    stats_df = fleet.report_video_stats(fleet.compute_counts(
-    ), *fleet.compute_stop_starts(stop_start_iou_threshold))
-    print('Run time is %s seconds' % (time.time() - start_time))
-    return stats_df
+    return fleet 
 
 
 if __name__ == '__main__':
     # config stuff
     basepath = os.path.dirname(__file__)  # path of current script
-
     params = load_parameters()
     # get a video from local
     local_mp4_dir = os.path.abspath(os.path.join(basepath,
@@ -228,7 +220,7 @@ if __name__ == '__main__':
     smoothing_method = params["smoothing_method"]
     stop_start_iou_threshold = params["stop_start_iou_threshold"]
 
-    stats_df = track_objects(local_mp4_dir=local_mp4_dir, local_mp4_name=local_mp4_name,
+    fleet = track_objects(local_mp4_dir=local_mp4_dir, local_mp4_name=local_mp4_name,
                              # detection params
                              detection_model=detection_model,
                              detection_implementation=detection_implementation,
@@ -240,4 +232,5 @@ if __name__ == '__main__':
                              stop_start_iou_threshold=stop_start_iou_threshold,
                              make_video=True)
 
-    print(stats_df)
+    with open('data/pickled/fleet_obj.pkl', 'wb') as handle: 
+        pkl.dump(fleet,handle)

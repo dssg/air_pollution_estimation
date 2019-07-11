@@ -10,7 +10,7 @@ data_collection:
 
 modelling:
   # obj detection
-  yolo_model: "yolov3_tiny"
+  yolo_model: "yolov3-tiny"
   yolo_implementation: "cvlib"
   detection_confidence_threshold: 0.1
   detection_nms_threshold: 0.2
