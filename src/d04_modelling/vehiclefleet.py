@@ -2,7 +2,7 @@ from src.d00_utils.bbox_helpers import color_bboxes, bbox_intersection_over_unio
 from src.d00_utils.stats_helpers import time_series_smoother
 import os
 import numpy as np
-import pandas as pd 
+import pandas as pd
 import collections
 import matplotlib.pyplot as plt
 
@@ -17,7 +17,7 @@ class VehicleFleet():
     recorded by axis 1 (if relevant). 
     """
 
-    def __init__(self, bboxes: np.ndarray, labels: np.ndarray, confs: np.ndarray, video_name:str):
+    def __init__(self, bboxes: np.ndarray, labels: np.ndarray, confs: np.ndarray, video_name: str):
         """Initialize the vehicleFleet with the bounding boxes for one set of vehicles, as 
         detected from one frame. 
 
@@ -50,8 +50,8 @@ class VehicleFleet():
         num_new_vehicles = new_bboxes.shape[0]
         # create bboxes of all zeros to denote that the vehicle didn't exist at previous times
         new_vehicle_history = np.zeros((num_new_vehicles, 4, current_time_t-1))
-        new_bboxes = np.concatenate((np.expand_dims(new_bboxes, axis=2), 
-                                    new_vehicle_history), axis=2)
+        new_bboxes = np.concatenate((np.expand_dims(new_bboxes, axis=2),
+                                     new_vehicle_history), axis=2)
 
         self.bboxes = np.concatenate((self.bboxes, new_bboxes), axis=0)
         self.labels = np.concatenate((self.labels, new_labels), axis=0)
@@ -132,8 +132,8 @@ class VehicleFleet():
                              parameters are desired.
         """
         # some good settings for various smoothing methods
-        default_settings = {"window_size":25} 
-        for setting_name, setting_value in smoothing_settings.items(): 
+        default_settings = {"window_size": 25}
+        for setting_name, setting_value in smoothing_settings.items():
             default_settings[setting_name] = setting_value
         self.smoothed_iou_time_series = time_series_smoother(self.iou_time_series,
                                                              method=smoothing_method,
@@ -196,38 +196,46 @@ class VehicleFleet():
 
             for frame_idx in range(num_frames):
                 motion_status_current = motion_array[vehicle_idx, frame_idx]
-                # TODO: get stops, starts, by vehicle types, get 
+                # TODO: get stops, starts, by vehicle types, get
                 # change in motion status
                 if motion_status_current != motion_status_prev:
-                    if motion_status_prev == 0: 
+                    if motion_status_prev == 0:
                         # get the type of the object that just stopped
                         stop_counter.append(self.labels[vehicle_idx])
-                    elif motion_status_prev == 1: 
+                    elif motion_status_prev == 1:
                         start_counter.append(self.labels[vehicle_idx])
 
                     motion_status_prev = motion_status_current
 
         return collections.Counter(stop_counter), collections.Counter(start_counter)
 
-    def report_video_stats(self, vehicle_counts: dict, 
-                           vehicle_stop_counts: dict, 
-                           vehicle_start_counts: dict) -> pd.DataFrame: 
-    #cam_id, time, vehicle_type, count, stops, starts 
-        # print(vehicle_counts, vehicle_stop_counts, vehicle_start_counts)
-        count_df = pd.DataFrame.from_dict(vehicle_counts, 
-                                          orient='index', columns = ['counts'],)
-        stops_df = pd.DataFrame.from_dict(vehicle_stop_counts, 
-                                          orient='index', columns = ['stops'])
-        starts_df = pd.DataFrame.from_dict(vehicle_start_counts, 
-                                          orient='index', columns= ['starts'])
+    def report_video_stats(self, vehicle_counts: dict,
+                           vehicle_stop_counts: dict,
+                           vehicle_start_counts: dict) -> pd.DataFrame:
+        """ Combine the counting dictionaries of vehicle stops, starts, and counts into
+        one nice pandas dataframe. 
+
+        Keyword arguments
+
+        vehicle_counts -- dict with keys as vehicle types, values as vehicle counts
+        vehicle_stop_counts -- dict with keys as vehicle types, values as vehicle stops
+        vehicle_start_counts -- dict with keys as vehicle types, values as vehicle starts
+        """
+        count_df = pd.DataFrame.from_dict(vehicle_counts,
+                                          orient='index', columns=['counts'],)
+        stops_df = pd.DataFrame.from_dict(vehicle_stop_counts,
+                                          orient='index', columns=['stops'])
+        starts_df = pd.DataFrame.from_dict(vehicle_start_counts,
+                                           orient='index', columns=['starts'])
 
         # combine into one dataframe
-        stats_df = count_df.join([stops_df,starts_df], how = 'outer', sort=True).fillna(0)
+        stats_df = count_df.join(
+            [stops_df, starts_df], how='outer', sort=True).fillna(0)
         stats_df["video_name"] = self.video_name
         # rownames to a column
         stats_df.index.name = 'vehicle_type'
-        stats_df.reset_index(inplace = True)
+        stats_df.reset_index(inplace=True)
         # reorder columns
-        stats_df = stats_df[['video_name', 'vehicle_type', 'counts', 'stops', 'starts']]
-
+        stats_df = stats_df[['video_name',
+                             'vehicle_type', 'counts', 'stops', 'starts']]
         return stats_df

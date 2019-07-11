@@ -40,11 +40,11 @@ def bboxcvlib_to_bboxcv2(bbox_cvlib, vectorized=False):
         bbox_cv2 = [xmin, ymin, xmin_plus_w - xmin, ymin_plus_h - ymin]
 
     else:  # handles np arrays
-        xmin, ymin, xmin_plus_w, ymin_plus_h = bbox_cvlib[:,0], bbox_cvlib[:, 1], \
-                                               bbox_cvlib[:, 2], bbox_cvlib[:, 3]
-        bbox_cv2 = np.array([xmin, ymin, 
-                            xmin_plus_w - xmin,
-                            ymin_plus_h - ymin]).transpose()
+        xmin, ymin, xmin_plus_w, ymin_plus_h = bbox_cvlib[:, 0], bbox_cvlib[:, 1], \
+            bbox_cvlib[:, 2], bbox_cvlib[:, 3]
+        bbox_cv2 = np.array([xmin, ymin,
+                             xmin_plus_w - xmin,
+                             ymin_plus_h - ymin]).transpose()
 
     return bbox_cv2
 
@@ -61,7 +61,8 @@ def bboxcv2_to_bboxcvlib(bbox_cv2,  vectorized=False):
         bbox_cvlib = [xmin, ymin, xmin+w, ymin+h]
 
     else:  # handles np arrays with multiple bboxes
-        xmin, ymin, w, h = bbox_cv2[:, 0], bbox_cv2[:,1], bbox_cv2[:, 2], bbox_cv2[:, 3]
+        xmin, ymin, w, h = bbox_cv2[:, 0], bbox_cv2[:,
+                                                    1], bbox_cv2[:, 2], bbox_cv2[:, 3]
         bbox_cvlib = np.array([xmin, ymin, xmin+w, ymin+h]).transpose()
 
     return bbox_cvlib
@@ -133,7 +134,7 @@ def vectorized_intersection_over_union(bboxes_t0: np.ndarray, bboxes_t1: np.ndar
     THIS IS STILL UNDER DEVELOPMENT AND DOES NOT WORK PROPERLY. 
     Use the bbox_intersection_over_union function in a for loop instead. 
     """
-    # TODO: fix this later to optimize tracking code 
+    # TODO: fix this later to optimize tracking code
     assert bboxes_t0.shape[1] == 4 and bboxes_t1.shape[1] == 4, "Axis 2 should be bounding boxes"
     assert (np.all(bboxes_t0[:, 0] <= bboxes_t0[:, 2]) and np.all(bboxes_t0[:, 1] <= bboxes_t0[:, 3])), \
         "For at least one bbox in bboxes_t0, xmin < xmin+w or ymin < ymin+h"
@@ -173,18 +174,18 @@ def display_bboxes_on_frame(frame: np.ndarray, bboxes: list, colors: list, box_l
     for i, box in enumerate(bboxes):
         pt_upper_left = (int(box[0]), int(box[1]))
         pt_lower_right = (int(box[0] + box[2]), int(box[1] + box[3]))
-        cv2.rectangle(img=frame, 
-                      pt1=pt_upper_left, 
+        cv2.rectangle(img=frame,
+                      pt1=pt_upper_left,
                       pt2=pt_lower_right,
-                      color=colors[i], 
-                      thickness=2, 
+                      color=colors[i],
+                      thickness=2,
                       lineType=1)
         # write labels, confs
-        cv2.putText(img=frame, 
-                    text=box_labels[i], 
+        cv2.putText(img=frame,
+                    text=box_labels[i],
                     org=(pt_upper_left[0], pt_upper_left[1]-10),
-                    fontFace=cv2.FONT_HERSHEY_SIMPLEX, 
-                    fontScale=0.5, 
-                    color=colors[i], 
+                    fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                    fontScale=0.5,
+                    color=colors[i],
                     thickness=2)
     return
