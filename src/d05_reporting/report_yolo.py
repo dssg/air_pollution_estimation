@@ -72,9 +72,10 @@ def yolo_output_df(yolo_dict):
         yolo_df = yolo_df[["camera_id", "frame_id", "date", "time", "obj_bounds", "obj_classification", "confidence"]]
         yolo_df['video_id'] = video_num
         df_list.append(yolo_df)
-
+    df = pd.DataFrame()
     # Concatenate dataframes
-    df = pd.concat(df_list)
+    if df_list:
+        df = pd.concat(df_list)
 
     return df
 

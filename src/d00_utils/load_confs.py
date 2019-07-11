@@ -8,7 +8,7 @@ def load_parameters():
     with open(project_dir + '/conf/base/parameters.yml') as f:
         params = yaml.safe_load(f)
 
-    return {**params['data_collection'], **params['modelling']}
+    return {**params['data_collection'], **params['modelling'], **params['reporting']}
 
 
 def load_paths():
