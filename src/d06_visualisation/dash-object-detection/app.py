@@ -157,13 +157,11 @@ app.layout = html.Div(
                                     html.Div([
                                         dcc.DatePickerRange(
                                             id='daterange',
-                                            min_date_allowed=dt(
-                                                2017, 1, 1),
+                                            min_date_allowed=params["min_date_allowed"],
                                             max_date_allowed=dt.now(),
                                             end_date=dt.now(),
                                             clearable=True,
-                                            start_date=dt(
-                                                2017, 1, 1),
+                                            start_date=params["start_date"],
                                         ),
                                     ], className=''),
                                 ], className='control-element'),

@@ -6,9 +6,9 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..', 'd00_utils'))
-from load_confs import load_parameters
+from load_confs import load_app_parameters
 
-params = load_parameters()
+params = load_app_parameters()
 
 
 def get_cams():
