@@ -1,18 +1,14 @@
 import os
 import yaml
 
+project_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..','..')
 def load_parameters():
-
-    project_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..')
-
     with open(project_dir + '/conf/base/parameters.yml') as f:
         params = yaml.safe_load(f)
 
     return {**params['data_collection'], **params['modelling'], **params['reporting']}
 
 def load_app_parameters():
-    project_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..')
-
     with open(project_dir + '/conf/base/app_parameters.yml') as f:
         params = yaml.safe_load(f)
 
@@ -20,8 +16,6 @@ def load_app_parameters():
 
 
 def load_paths():
-    project_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..')
-
     with open(project_dir + '/conf/base/paths.yml') as f:
         paths = yaml.safe_load(f)
         s3_paths = paths['s3_paths']

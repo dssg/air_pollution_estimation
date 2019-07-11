@@ -107,23 +107,6 @@ app.layout = html.Div(
                         html.Div(
                             className='control-section',
                             children=[
-                                # html.Div(
-                                #     className='control-element',
-                                #     children=[
-                                #         html.Div(children=["Minimum Confidence Threshold:"], style={
-                                #             'width': '40%'}),
-                                #         html.Div(dcc.Slider(
-                                #             id='slider-minimum-confidence-threshold',
-                                #             min=20,
-                                #             max=80,
-                                #             marks={
-                                #                 i: f'{i}%' for i in range(20, 81, 10)},
-                                #             value=30,
-                                #             updatemode='drag'
-                                #         ), style={'width': '60%'})
-                                #     ]
-                                # ),
-
                                 html.Div(
                                     className='control-element',
                                     children=[
