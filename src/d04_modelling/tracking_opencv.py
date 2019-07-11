@@ -9,7 +9,6 @@ import os
 import cv2
 import yaml
 import time
-import pickle as pkl
 
 
 def create_tracker_by_name(tracker_type: str):
@@ -201,7 +200,6 @@ def track_objects(local_mp4_dir: str,
     # compute the convolved IOU time series for each vehicle and smooth
     fleet.compute_iou_time_series(interval=iou_convolution_window)
     fleet.smooth_iou_time_series(smoothing_method=smoothing_method)
-    # fleet.plot_iou_time_series(fig_dir="data", fig_name="param_tuning", smoothed=True)
     stats_df = fleet.report_video_stats(fleet.compute_counts(
     ), *fleet.compute_stop_starts(stop_start_iou_threshold))
     print('Run time is %s seconds' % (time.time() - start_time))
