@@ -1,10 +1,10 @@
-import numpy as np
+import numpy as np 
 import cv2
 from random import randint
 
 
 def manually_draw_bboxes(frame: np.ndarray) -> (list, list):
-    """Select boxes by hand. If this is called in a while loop, do NOT press c to cancel 
+    """Select boxes by hand. If this is called in a while loop, do NOT press c to cancel
     selection (this somehow messes up the selection process). Assigns random colors to bboxes
     """
     bboxes, colors = [], []
@@ -69,10 +69,10 @@ def bboxcv2_to_bboxcvlib(bbox_cv2,  vectorized=False):
 
 
 def color_bboxes(labels: list) -> list:
-    """Based on object types in the list, will return a color for that object. 
-    If color is not in the dict, random color will be generated. 
+    """Based on object types in the list, will return a color for that object.
+    If color is not in the dict, random color will be generated.
 
-    Keyword arguments 
+    Keyword arguments
 
     labels: list of strings (types of objects)
     """
@@ -131,8 +131,8 @@ def vectorized_intersection_over_union(bboxes_t0: np.ndarray, bboxes_t1: np.ndar
     """ This function uses np vectorized operations to compute the iou for sets of vehicles
     2d arrays
 
-    THIS IS STILL UNDER DEVELOPMENT AND DOES NOT WORK PROPERLY. 
-    Use the bbox_intersection_over_union function in a for loop instead. 
+    THIS IS STILL UNDER DEVELOPMENT AND DOES NOT WORK PROPERLY.
+    Use the bbox_intersection_over_union function in a for loop instead.
     """
     # TODO: fix this later to optimize tracking code
     assert bboxes_t0.shape[1] == 4 and bboxes_t1.shape[1] == 4, "Axis 2 should be bounding boxes"
@@ -163,12 +163,12 @@ def vectorized_intersection_over_union(bboxes_t0: np.ndarray, bboxes_t1: np.ndar
 
 
 def display_bboxes_on_frame(frame: np.ndarray, bboxes: list, colors: list, box_labels: list):
-    """Draw bounding boxes on a frame using provided colors, and displays labels/confidences 
+    """Draw bounding boxes on a frame using provided colors, and displays labels/confidences
 
-    Keyword arguments 
+    Keyword arguments
 
     bboxes: provide in cv2 format (xmin,ymin, width, height)
-    colors: list of RGB tuples 
+    colors: list of RGB tuples
     box_labels: list of strings with which to label each box
     """
     for i, box in enumerate(bboxes):
