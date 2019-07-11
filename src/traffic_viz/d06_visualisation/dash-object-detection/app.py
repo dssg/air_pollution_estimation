@@ -76,11 +76,7 @@ app.layout = html.Div(
                             children=[
                                 html.H4(
                                     'Traffic Dynamics Explorer'
-                                ),
-                                html.P(
-                                    'To get started, select a footage you want to view, and choose the minimum confidence threshold. Then, you can start playing the video, and the visualization will '
-                                    'be displayed depending on the current time.'
-                                ),
+                                )
                             ]
                         ),
                         html.Div(
