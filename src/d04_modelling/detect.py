@@ -1,5 +1,8 @@
+import os
 import numpy as np
 import cv2
+import yaml
+from src.d00_utils.load_confs import load_parameters
 
 
 def populate_model(params):
@@ -9,13 +12,14 @@ def populate_model(params):
 
         Returns:
             config_file_path (str): file path to the configuration file
-            weights_file_path (str): file path to the weights file
+            weights_file_path (str): file path to the weights 
+    file
     """
 
-    model = params['modelling']['yolo_model']
-    config_file_path = '../conf/' + model + '/' + model + '.cfg'  # change if model isn't yolo
-    weights_file_path = '../conf/' + model + '/' + model + '.weights'  # change if model isn't yolo
-
+    model = params['yolo_model']
+    project_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..')
+    config_file_path = os.path.join(project_dir, 'data', '00_detection', model, model + '.cfg')  # change if model isn't yolo
+    weights_file_path = os.path.join(project_dir, 'data', '00_detection', model, model + '.weights')  # change if model isn't yolo
     return config_file_path, weights_file_path
 
 
@@ -28,8 +32,9 @@ def populate_labels(params):
             labels (list(str)): list of object labels strings
     """
 
-    model = params['modelling']['yolo_model']
-    labels_file_path = '../conf/' + model + '/coco.names'  # change if we use another that isn't coco
+    model = params['yolo_model']
+    project_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..')
+    labels_file_path = os.path.join(project_dir, 'data', '00_detection', model, 'coco.names') # change if we use another that isn't coco
     f = open(labels_file_path, 'r')
     labels = [line.strip() for line in f.readlines()]
 
@@ -221,8 +226,8 @@ def detect_objects_in_image(imcap, params):
     """
 
     # define thresholds based on params file
-    conf_thresh = params['modelling']['detection_confidence_threshold']
-    nms_thresh = params['modelling']['detection_nms_threshold']
+    conf_thresh = params['confidence_threshold']
+    nms_thresh = params['iou_threshold']
 
     # predict detected objects in the image
     predictions = predict_objects_in_image(imcap, params)
