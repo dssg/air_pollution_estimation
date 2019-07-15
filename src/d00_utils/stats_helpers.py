@@ -39,8 +39,8 @@ def time_series_smoother(array: np.ndarray, method: str,
                                              deg=poly_degree))
             # copy each entry in x_inds_filt poly_degree number of times, so that we can predict on it
             # using the newly fit polynomial
-            x_inds_filt_rpted = np.tile(
-                x_inds_filt, (poly_degree+1, 1)).transpose()
+            x_inds_filt_rpted = np.tile(x_inds_filt, 
+                                       (poly_degree+1, 1)).transpose()
             pow_x = np.power(x_inds_filt_rpted, powers).transpose()
 
             preds = poly_coeffs @ pow_x

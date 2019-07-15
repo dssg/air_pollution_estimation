@@ -75,9 +75,9 @@ def track_objects(local_mp4_dir: str,
                   detection_frequency: int,
                   tracking_model: str,
                   iou_threshold: float,
-                  iou_convolution_window: int,
-                  smoothing_method: str,
-                  stop_start_iou_threshold: float,
+                  # iou_convolution_window: int,
+                  # smoothing_method: str,
+                  # stop_start_iou_threshold: float,
                   video_time_length=10,
                   make_video=True) -> (list, list, dict):
     """
@@ -210,15 +210,15 @@ if __name__ == '__main__':
                                                  "..", "..",
                                                  "data/sample_video_data"))
     # sample args
-    local_mp4_name = "testvid.mp4"
+    local_mp4_name = "2019-06-20_09-01-41_00001.07591.mp4"
     tracking_model = params["opencv_tracker_type"]
     detection_model = params["yolo_model"]
     detection_implementation = params["yolo_implementation"]
     detection_frequency = params["detection_frequency"]
     iou_threshold = params["iou_threshold"]
-    iou_convolution_window = params["iou_convolution_window"]
-    smoothing_method = params["smoothing_method"]
-    stop_start_iou_threshold = params["stop_start_iou_threshold"]
+    # iou_convolution_window = params["iou_convolution_window"]
+    # smoothing_method = params["smoothing_method"]
+    # stop_start_iou_threshold = params["stop_start_iou_threshold"]
 
     fleet = track_objects(local_mp4_dir=local_mp4_dir, local_mp4_name=local_mp4_name,
                              # detection params
@@ -226,11 +226,10 @@ if __name__ == '__main__':
                              detection_implementation=detection_implementation,
                              detection_frequency=detection_frequency, tracking_model=tracking_model,
                              iou_threshold=iou_threshold,
-                             # stop start params
-                             smoothing_method=smoothing_method,
-                             iou_convolution_window=iou_convolution_window,
-                             stop_start_iou_threshold=stop_start_iou_threshold,
+                             # # stop start params
+                             # smoothing_method=smoothing_method,
+                             # iou_convolution_window=iou_convolution_window,
+                             # stop_start_iou_threshold=stop_start_iou_threshold,
                              make_video=True)
-
     with open('data/pickled/fleet_obj.pkl', 'wb') as handle: 
         pkl.dump(fleet,handle)
