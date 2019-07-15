@@ -4,7 +4,7 @@ import dash_html_components as html
 import dash_player as player
 import plotly.graph_objs as go
 from dash.dependencies import Input, Output
-from .helper import get_cams, load_camera_statistics, load_objects, load_object_statistics, params
+from helper import get_cams, load_camera_statistics, load_objects, load_object_statistics, params
 from datetime import datetime as dt
 
 
@@ -267,6 +267,7 @@ def update_trend_graph(objects, camera_id):
         Input("dropdown-footage-selection", "value")
     ])
 def update_output(camera_id):
+    print(camera_id)
     if camera_id:
         return [
             dcc.Interval(
