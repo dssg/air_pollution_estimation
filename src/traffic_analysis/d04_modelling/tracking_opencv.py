@@ -1,12 +1,11 @@
 # # Explore Tracking Methods in OpenCV
 # Source: https://www.learnopencv.com/multitracker-multiple-object-tracking-using-opencv-c-python/
-from src.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame,bbox_intersection_over_union
-from src.d00_utils.video_helpers import write_mp4
-from src.d04_modelling.object_detection import detect_bboxes
+from src.traffic_analysis.d00_utils import bboxcv2_to_bboxcvlib, display_bboxes_on_frame,bbox_intersection_over_union
+from src.traffic_analysis.d00_utils import write_mp4
+from src.traffic_analysis.d04_modelling import detect_bboxes
 import numpy as np
-import sys, os
+import sys
 import cv2
-import yaml
 import time
 import collections
 

@@ -13,7 +13,6 @@ def classify_objects(videos, names, params, paths, vid_time_length=10, make_vide
             paths (dict): dictionary of paths from yml file
             vid_time_length (int): length of the video data in seconds
             make_videos (bool): output videos with object classification labels in processed directory
-
         Returns:
             yolo_dict (dict): nested dictionary where each video is a key for a dict containing:
                 obj_bounds (list of np arrays): n-dim list of list of arrays marking the corners of the bounding boxes of objects, for n frames
