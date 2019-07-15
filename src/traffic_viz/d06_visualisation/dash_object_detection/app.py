@@ -186,11 +186,12 @@ def load_all_footage():
 )
 def select_footage(footage):
     # Find desired footage and update player video
-    footage = footage.replace("JamCams_", "")
-    filename = footage + ".mp4"
-    url = TFL_BASE_URL + filename
-    print(url)
-    return url
+    if footage:
+        footage = footage.replace("JamCams_", "")
+        filename = footage + ".mp4"
+        url = TFL_BASE_URL + filename
+        print(url)
+        return url
 
 
 @app.callback(
@@ -215,7 +216,8 @@ def update_objects(camera_id):
 
 
 def transform_camera_id(camera_id):
-    camera_id = camera_id.replace("JamCams_", "")
+    if camera_id:
+        camera_id = camera_id.replace("JamCams_", "")
     return camera_id
 
 
