@@ -9,8 +9,8 @@ paths = load_paths()
 print(params['dtype'])
 print("Saving video filenames")
 retrieve_video_names_from_s3(
-    paths, from_date='2019-06-30', to_date='2019-06-30',
-    from_time='13-00-00', to_time='15-00-00',
+    paths, from_date='2019-06-30', to_date='2019-07-10',
+    from_time='00-00-00', to_time='23-59-59',
     camera_list=params['tims_camera_list'],
     save_to_file=True)
 
