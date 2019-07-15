@@ -14,7 +14,7 @@ modelling:
   yolo_implementation: "cvlib"
   detection_confidence_threshold: 0.1
   detection_nms_threshold: 0.2
-  
+
   # tracking
   selected_labels: ["car", "truck", "bus", "motorbike"]
   opencv_tracker_type: "CSRT"

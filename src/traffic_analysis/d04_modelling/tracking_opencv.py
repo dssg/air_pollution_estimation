@@ -1,8 +1,8 @@
-from src.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame, bbox_intersection_over_union
-from src.d00_utils.video_helpers import write_mp4
-from src.d00_utils.load_confs import load_parameters
-from src.d04_modelling.object_detection import detect_bboxes
-from src.d04_modelling.vehiclefleet import VehicleFleet
+from src.traffic_analysis.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame, bbox_intersection_over_union
+from src.traffic_analysis.d00_utils.video_helpers import write_mp4
+from src.traffic_analysis.d00_utils.load_confs import load_parameters
+from src.traffic_analysis.d04_modelling.object_detection import detect_bboxes
+from src.traffic_analysis.d04_modelling.vehiclefleet import VehicleFleet
 import numpy as np
 import sys
 import os
@@ -197,13 +197,15 @@ def track_objects(local_mp4_dir: str,
                   mp4_name=local_mp4_name[:-4] + "_tracked.mp4",
                   video=np.array(processed_video),
                   fps=vid_obj_frames_per_sec)
+    print('Run time is %s seconds' % (time.time() - start_time))
 
-    return fleet 
+    return fleet
 
 
 if __name__ == '__main__':
     # config stuff
     basepath = os.path.dirname(__file__)  # path of current script
+
     params = load_parameters()
     # get a video from local
     local_mp4_dir = os.path.abspath(os.path.join(basepath,
@@ -231,5 +233,5 @@ if __name__ == '__main__':
                              # iou_convolution_window=iou_convolution_window,
                              # stop_start_iou_threshold=stop_start_iou_threshold,
                              make_video=True)
-    with open('data/pickled/fleet_obj.pkl', 'wb') as handle: 
+    with open('data/pickled/fleet_obj.pkl', 'wb') as handle:
         pkl.dump(fleet,handle)

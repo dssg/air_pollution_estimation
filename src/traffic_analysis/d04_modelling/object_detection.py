@@ -1,10 +1,9 @@
-from src.d00_utils.bbox_helpers import color_bboxes, bboxcvlib_to_bboxcv2
-from src.d00_utils.load_confs import load_parameters
+from src.traffic_analysis.d00_utils.bbox_helpers import color_bboxes, bboxcvlib_to_bboxcv2
+from src.traffic_analysis.d00_utils.load_confs import load_parameters
 import numpy as np
 import cvlib
 import os
 import yaml
-
 params = load_parameters()
 
 
@@ -16,7 +15,7 @@ def detect_bboxes(frame: np.ndarray, model: str,
     Keyword arguments 
 
     frame -- one frame of a video 
-    model -- specify the name of an object model to use 
+    model -- specify the name of an object model to use
     implementation -- specify the implementation of the model to use 
     selected_labels -- if a list of labels is supplied, only bboxes with these labels will be returned
     '''
@@ -24,8 +23,7 @@ def detect_bboxes(frame: np.ndarray, model: str,
         if model == 'yolov3-tiny':
             bboxes_cvlib, labels, confs = cvlib.detect_common_objects(frame, confidence=params['detection_confidence_threshold'],
                                                                       nms_thresh=params['detection_nms_threshold'], model='yolov3-tiny')
-            bboxes_cv2 = [bboxcvlib_to_bboxcv2(
-                bbox_cvlib) for bbox_cvlib in bboxes_cvlib]
+            bboxes_cv2 = [bboxcvlib_to_bboxcv2(bbox_cvlib) for bbox_cvlib in bboxes_cvlib]
     # sample architecture for how other models/implementations could be added
     elif implementation == 'jacks_yolo_implementation':
         pass

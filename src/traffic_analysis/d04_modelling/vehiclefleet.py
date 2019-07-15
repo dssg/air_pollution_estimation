@@ -1,6 +1,5 @@
-from src.d00_utils.bbox_helpers import color_bboxes, bbox_intersection_over_union, vectorized_intersection_over_union, bboxcv2_to_bboxcvlib
-from src.d00_utils.stats_helpers import time_series_smoother
-from src.d00_utils.video_helpers import parse_video_name
+from src.traffic_analysis.d00_utils.bbox_helpers import color_bboxes, bbox_intersection_over_union, vectorized_intersection_over_union, bboxcv2_to_bboxcvlib
+from src.traffic_analysis.d00_utils.stats_helpers import time_series_smoother
 import os
 import numpy as np
 import pandas as pd
@@ -19,32 +18,32 @@ class VehicleFleet():
     recorded by axis 1 (if relevant). 
     """
 
-    def __init__(self, bboxes: np.ndarray = None, 
-                       labels: np.ndarray = None, 
-                       confs: np.ndarray = None, 
-                       video_name: str = None, 
+    def __init__(self, bboxes: np.ndarray = None,
+                       labels: np.ndarray = None,
+                       confs: np.ndarray = None,
+                       video_name: str = None,
                        frame_level_df: pd.DataFrame = None,
                        load_from_pd = False):
-        """Initialize the vehicleFleet object, either from a saved dataframe, or from the info returned by 
-        running object detection algs on the first frame of a video. 
+        """Initialize the vehicleFleet object, either from a saved dataframe, or from the info returned by
+        running object detection algs on the first frame of a video.
 
         Keyword arguments: 
 
-        load_from_pd -- if this is True, will reconstruct VehicleFleet object from a frame-level stats 
-                        table. Else constructs it from scratch using bbox, label, confs, and video name  
-        frame_level_df -- a pandas df corresponding to one video, which follows the schema for a 
-                          frame-level stats df  
-        bboxes -- pass in using cv2 format (xmin, ymin, width, height). Each vehicle should be axis 0, 
+        load_from_pd -- if this is True, will reconstruct VehicleFleet object from a frame-level stats
+                        table. Else constructs it from scratch using bbox, label, confs, and video name
+        frame_level_df -- a pandas df corresponding to one video, which follows the schema for a
+                          frame-level stats df
+        bboxes -- pass in using cv2 format (xmin, ymin, width, height). Each vehicle should be axis 0,
                   bounding boxes should be axis 1. 
         labels -- label assigned to detected objects 
         confs -- confidence returned by detection alg 
         video_name -- name of the video file from s3 bucket
         """
-        if load_from_pd: 
+        if load_from_pd:
             # sort to ensure that the ordering of self.labels and self.confs corresps to vehicle id
             frame_level_df = frame_level_df.sort_values(by=['cam_id', 'frame_id'], axis='index')
             self.labels = np.array(frame_level_df[frame_level_df["frame_id"] == 0]["vehicle_type"])
-            self.confs = np.array(frame_level_df[frame_level_df["frame_id"] == 0]["confidence"]) 
+            self.confs = np.array(frame_level_df[frame_level_df["frame_id"] == 0]["confidence"])
             # get static info
             self.camera_id = frame_level_df["cam_id"][0]
             self.video_upload_datetime = frame_level_df["video_upload_datetime"][0]
@@ -59,7 +58,7 @@ class VehicleFleet():
             for i in range(num_frames):
                 self.bboxes[:,:,i] = bboxes_np[i]
 
-        else: 
+        else:
             assert bboxes.shape[1] == 4
 
             # add a dimension for time
@@ -211,7 +210,7 @@ class VehicleFleet():
     def plot_iou_time_series(self, fig_dir: str, fig_name: str, smoothed=False, vehicle_ids=None):
         """Visualize the iou_time_series as a multi-line graph
 
-        fig_dir -- path to dir save plot to 
+        fig_dir -- path to dir save plot to
         fig_name -- desired name of the figure; do NOT include file extension
         smoothed -- if true, plot the smoothed iou time series
         vehicle_ids -- if specified, only visualize the iou time series for these vehicles
@@ -240,28 +239,28 @@ class VehicleFleet():
         plt.close()
 
     def report_frame_level_info(self) -> pd.DataFrame:
-        """Converts the information stored in the VehicleFleet class to a frame level pd dataframe 
+        """Converts the information stored in the VehicleFleet class to a frame level pd dataframe
         """
         num_vehicles, _, num_frames = self.bboxes.shape
 
         # add vehicle index for each frame to all frames at once
-        vehicle_ids = np.arange(0, num_vehicles) 
+        vehicle_ids = np.arange(0, num_vehicles)
         add_vehicle_ids = lambda all_frames, vehicle_ids: np.concatenate(
-                            [all_frames,np.tile(vehicle_ids, (num_frames, 1, 1)).transpose()], 
+                            [all_frames,np.tile(vehicle_ids, (num_frames, 1, 1)).transpose()],
                             axis = 1)
 
-        # add the frame id to each frame 
+        # add the frame id to each frame
         frame_info_all = add_vehicle_ids(self.bboxes,vehicle_ids)
         add_frame_id = lambda single_frame, frame_id: np.concatenate([single_frame, (np.ones(num_vehicles)*frame_id)[:,np.newaxis]], axis = 1)
         # convert 3d array into 2d pd dataframe
         frame_info_list = [add_frame_id(frame_info_all[:,:,frame_id],frame_id) for frame_id in range(num_frames)]
-        stacked = np.vstack(frame_info_list) 
+        stacked = np.vstack(frame_info_list)
         frame_level_info_df = pd.DataFrame(stacked)
 
         frame_level_info_df["bboxes"] = frame_level_info_df.iloc[:,:4].values.tolist()
-        # drop the numeric columns used above, rename the rest 
-        frame_level_info_df = frame_level_info_df.drop(columns = [0,1,2,3]).rename({4:"vehicle_id", 
-                                                                                    5:"frame_id"}, 
+        # drop the numeric columns used above, rename the rest
+        frame_level_info_df = frame_level_info_df.drop(columns = [0,1,2,3]).rename({4:"vehicle_id",
+                                                                                    5:"frame_id"},
                                                                                     axis = "columns")
         # column type conversions
         frame_level_info_df["vehicle_id"] = frame_level_info_df["vehicle_id"].astype('int')
@@ -276,7 +275,7 @@ class VehicleFleet():
         # frame_level_info_df["cam_id"] = frame_level_info_df["cam_id"].astype('int')
 
         # reorder columns
-        frame_level_info_df = frame_level_info_df[['cam_id', 'video_upload_datetime', 
+        frame_level_info_df = frame_level_info_df[['cam_id', 'video_upload_datetime',
                             'frame_id', 'vehicle_id', 'vehicle_type', 'confidence', 'bboxes']]
 
         return frame_level_info_df
@@ -301,7 +300,7 @@ class VehicleFleet():
                                            orient='index', columns=['starts'])
 
         # combine into one dataframe
-        video_level_stats_df = counts_df.join([stops_df, starts_df], how='outer', 
+        video_level_stats_df = counts_df.join([stops_df, starts_df], how='outer',
                                  sort=True).fillna(0)
         video_level_stats_df["cam_id"] = self.camera_id
         video_level_stats_df["video_upload_datetime"] = self.video_upload_datetime
@@ -309,6 +308,6 @@ class VehicleFleet():
         video_level_stats_df.index.name = 'vehicle_type'
         video_level_stats_df.reset_index(inplace=True)
         # reorder columns
-        video_level_stats_df = video_level_stats_df[['cam_id', 'video_upload_datetime', 
+        video_level_stats_df = video_level_stats_df[['cam_id', 'video_upload_datetime',
                             'vehicle_type', 'counts', 'stops', 'starts']]
         return video_level_stats_df

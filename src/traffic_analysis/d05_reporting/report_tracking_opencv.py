@@ -1,4 +1,4 @@
-from src.d04_modelling.vehiclefleet import VehicleFleet
+from src.traffic_analysis.d04_modelling.vehiclefleet import VehicleFleet
 import numpy as np 
 import pandas as pd 
 import os 

@@ -76,8 +76,7 @@ def collect_camera_videos(local_video_dir: str,
             break
         if delay:
             time.sleep(delay * 60)
-
-
+ 
 def upload_videos(local_video_dir: str, iterations=None, delay: int = None):
     '''
     This function uploads the video in the local_video_dir to S3. Each video is deleted after an upload.
