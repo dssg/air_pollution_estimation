@@ -1,23 +1,21 @@
 import os
 import numpy as np
 import cv2
-import yaml
-from src.d00_utils.load_confs import load_parameters
+from src.traffic_analysis.d00_utils.load_confs import load_parameters, load_paths
+from src.traffic_analysis.d00_utils.data_retrieval import retrieve_detect_model_configs_from_s3
 
 
 def populate_model(params):
     """ locate files that correspond to the detection model of choice
         Args:
             params (dict): dictionary of parameters from yml file
-
         Returns:
             config_file_path (str): file path to the configuration file
-            weights_file_path (str): file path to the weights 
-    file
+            weights_file_path (str): file path to the weights file
     """
 
     model = params['yolo_model']
-    project_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..')
+    project_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..')
     config_file_path = os.path.join(project_dir, 'data', '00_detection', model, model + '.cfg')  # change if model isn't yolo
     weights_file_path = os.path.join(project_dir, 'data', '00_detection', model, model + '.weights')  # change if model isn't yolo
     return config_file_path, weights_file_path
@@ -33,8 +31,8 @@ def populate_labels(params):
     """
 
     model = params['yolo_model']
-    project_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..')
-    labels_file_path = os.path.join(project_dir, 'data', '00_detection', model, 'coco.names') # change if we use another that isn't coco
+    project_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..')
+    labels_file_path = os.path.join(project_dir, 'data', '00_detection', model, 'coco.names')  # change if not coco
     f = open(labels_file_path, 'r')
     labels = [line.strip() for line in f.readlines()]
 
@@ -214,7 +212,7 @@ def label_detections(params, label_idxs):
     return labels
 
 
-def detect_objects_in_image(imcap, params):
+def detect_objects_in_image(imcap, params, paths):
     """ unifying function that defines the detected objects in an image
         Args:
             imcap (nparray): numpy array containing the captured image (width, height, rbg)
@@ -228,6 +226,9 @@ def detect_objects_in_image(imcap, params):
     # define thresholds based on params file
     conf_thresh = params['confidence_threshold']
     nms_thresh = params['iou_threshold']
+
+    # download model configuration files if not already on local from s3
+    retrieve_detect_model_configs_from_s3(params, paths)
 
     # predict detected objects in the image
     predictions = predict_objects_in_image(imcap, params)
@@ -244,3 +245,11 @@ def detect_objects_in_image(imcap, params):
     labels = label_detections(params, label_idxs)
 
     return boxes, labels, confs
+
+
+if __name__ == '__main__':
+    params = load_parameters()
+    paths = load_paths()
+    imcap = cv2.imread('C:/Users/joh3146/Documents/dssg/air_pollution_estimation/data/01_raw/jamcams/frame001.jpg')
+    b, l, c = detect_objects_in_image(imcap, params, paths)
+    print('yay')
