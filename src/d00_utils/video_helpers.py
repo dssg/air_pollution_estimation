@@ -16,6 +16,7 @@ def write_mp4(local_mp4_dir:str, mp4_name:str,video:np.ndarray,fps:int):
     local_mp4_path_out = os.path.join(local_mp4_dir, mp4_name)
     imageio.mimwrite(local_mp4_path_out, video, fps=fps)
 
+
 def parse_video_name(video_name:str) -> (str, datetime.datetime):
     """Helper function to parse the jamcam video names into camera_id and 
        upload datetime, in the types we need them in 
@@ -30,3 +31,4 @@ def parse_video_name(video_name:str) -> (str, datetime.datetime):
     video_upload_datetime = datetime.datetime(year = int(YYYY), month = int(mm), day = int(dd),
                                               hour = int(hh), minute = int(mm), second = int(ss))
     return camera_id, video_upload_datetime
+    

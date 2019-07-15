@@ -25,8 +25,8 @@ class VehicleFleet():
                        video_name: str = None, 
                        frame_level_df: pd.DataFrame = None,
                        load_from_pd = False):
-        """Initialize the vehicleFleet with the bounding boxes for one set of vehicles, as 
-        detected from one frame. 
+        """Initialize the vehicleFleet object, either from a saved dataframe, or from the info returned by 
+        running object detection algs on the first frame of a video. 
 
         Keyword arguments: 
 
@@ -38,7 +38,7 @@ class VehicleFleet():
                   bounding boxes should be axis 1. 
         labels -- label assigned to detected objects 
         confs -- confidence returned by detection alg 
-        video_name 
+        video_name -- name of the video file from s3 bucket
         """
         if load_from_pd: 
             # sort to ensure that the ordering of self.labels and self.confs corresps to vehicle id
@@ -257,7 +257,6 @@ class VehicleFleet():
         frame_info_list = [add_frame_id(frame_info_all[:,:,frame_id],frame_id) for frame_id in range(num_frames)]
         stacked = np.vstack(frame_info_list) 
         frame_level_info_df = pd.DataFrame(stacked)
-
 
         frame_level_info_df["bboxes"] = frame_level_info_df.iloc[:,:4].values.tolist()
         # drop the numeric columns used above, rename the rest 

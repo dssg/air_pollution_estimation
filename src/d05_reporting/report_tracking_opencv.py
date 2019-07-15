@@ -1,9 +1,7 @@
 from src.d04_modelling.vehiclefleet import VehicleFleet
-from src.d00_utils.load_confs import load_parameters
 import numpy as np 
 import pandas as pd 
 import os 
-# import pickle as pkl
 
 
 def construct_frame_level_table_tracking(fleet:VehicleFleet) -> pd.DataFrame: 
@@ -42,31 +40,3 @@ def construct_video_level_table_tracking(fleet:VehicleFleet,
     video_level_df = fleet.report_video_level_stats(fleet.compute_counts(), 
                                        *fleet.compute_stop_starts(stop_start_iou_threshold))
     return video_level_df
-
-
-# if __name__ == '__main__':
-#     params = load_parameters()
-#     iou_convolution_window = params["iou_convolution_window"]
-#     smoothing_method = params["smoothing_method"]
-#     stop_start_iou_threshold = params["stop_start_iou_threshold"]
-
-#     with open('data/pickled/fleet_obj.pkl', 'rb') as handle: 
-#         fleet = pkl.load(handle)
-
-#     video_level_df = construct_video_level_table_tracking(fleet,
-#                      smoothing_method = smoothing_method,
-#                      iou_convolution_window = iou_convolution_window,
-#                      stop_start_iou_threshold = stop_start_iou_threshold)
-
-#     print(video_level_df)
-
-
-#     tbl = construct_frame_level_table_tracking(fleet)
-#     fleet2 = reconstruct_fleet_from_frame_level_table(tbl)
-#     video_level_df = construct_video_level_table_tracking(fleet2,
-#                      smoothing_method = smoothing_method,
-#                      iou_convolution_window = iou_convolution_window,
-#                      stop_start_iou_threshold = stop_start_iou_threshold)
-
-#     print(video_level_df)
- 
