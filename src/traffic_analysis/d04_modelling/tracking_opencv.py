@@ -1,13 +1,12 @@
-from src.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame, bbox_intersection_over_union
-from src.d00_utils.video_helpers import write_mp4
-from src.d00_utils.load_confs import load_parameters
-from src.d04_modelling.object_detection import detect_bboxes
-from src.d04_modelling.vehiclefleet import VehicleFleet
+from src.traffic_analysis.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame, bbox_intersection_over_union
+from src.traffic_analysis.d00_utils.video_helpers import write_mp4
+from src.traffic_analysis.d00_utils.load_confs import load_parameters
+from src.traffic_analysis.d04_modelling.object_detection import detect_bboxes
+from src.traffic_analysis.d04_modelling.vehiclefleet import VehicleFleet
 import numpy as np
 import sys
 import os
 import cv2
-import yaml
 import time
 
 
@@ -81,28 +80,28 @@ def track_objects(local_mp4_dir: str,
                   make_video=True) -> (list, list, dict):
     """
     Given a path to an input video, this function will initialize a specified tracking algorithm 
-    (currently only supports OpenCV's built in multitracker methods) with the specified object 
+    (currently only supports OpenCV's built in multitracker methods) with the specified object
     detection algorithm. Each detection_frequency frames, the object detection will be run again 
-    to detect any new objects which have entered the frame. A VehicleFleet object is used to track the 
-    initial detection confidence and label for each vehicle as it is detected, and the updated locations 
+    to detect any new objects which have entered the frame. A VehicleFleet object is used to track the
+    initial detection confidence and label for each vehicle as it is detected, and the updated locations
     of the bounding boxes for each vehicle each frame. The VehicleFleet object also performs IOU computations
-    on the stored bounding box information to get counts and stop starts. 
+    on the stored bounding box information to get counts and stop starts.
 
     Keyword arguments:
 
     local_mp4_dir -- path to directory to store video in 
     local_mp4_name -- name of video to run on (include .mp4 extension) 
 
-    Detection and tracking arguments: 
-    detection_model -- specify the name of model you want to use for detection 
+    Detection and tracking arguments:
+    detection_model -- specify the name of model you want to use for detection
     detection_implementation -- specify model to use for detection
     detection_frequency -- each detection_frequency num of frames, run obj detection alg again to detect new objs
     tracking_model -- specify name of model you want to use for tracking (currently only supports OpenCV trackers)
     iou_threshold -- specify threshold to use to decide whether two detected objs should be considered the same
 
     Stop start arguments:
-    iou_convolution_window -- frame window size to perform iou computation on (to get an IOU time 
-                              series for each vehicle) 
+    iou_convolution_window -- frame window size to perform iou computation on (to get an IOU time
+                              series for each vehicle)
     smoothing_method -- method to smooth the IOU time series for each vehicle
     stop_start_iou_threshold -- threshold to binarize the IOU time series into 0 or 1,denoting "moving" or "stopped"
 
@@ -197,11 +196,6 @@ def track_objects(local_mp4_dir: str,
                   video=np.array(processed_video),
                   fps=vid_obj_frames_per_sec)
 
-    # compute the convolved IOU time series for each vehicle and smooth
-    fleet.compute_iou_time_series(interval=iou_convolution_window)
-    fleet.smooth_iou_time_series(smoothing_method=smoothing_method)
-    stats_df = fleet.report_video_stats(fleet.compute_counts(
-    ), *fleet.compute_stop_starts(stop_start_iou_threshold))
     print('Run time is %s seconds' % (time.time() - start_time))
     return stats_df
 
