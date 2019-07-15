@@ -4,8 +4,7 @@ import subprocess
 from subprocess import PIPE, Popen
 import time
 import json
-from collections import defaultdict
-from email_service import send_email_warning
+from src.traffic_analysis.d00_utils.email_service import send_email_warning
 import datetime
 import sys
 import dateutil.parser
