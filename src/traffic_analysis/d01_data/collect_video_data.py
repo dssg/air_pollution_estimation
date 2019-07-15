@@ -1,12 +1,14 @@
 import urllib.request
-import datetime
 import os
 import subprocess
+from subprocess import PIPE, Popen
 import time
 import json
 from collections import defaultdict
 from email_service import send_email_warning
 import datetime
+import sys
+import dateutil.parser
 
 
 def download_camera_data(tfl_cam_api: str = "https://api.tfl.gov.uk/Place/Type/jamcams",
@@ -76,7 +78,8 @@ def collect_camera_videos(local_video_dir: str,
             break
         if delay:
             time.sleep(delay * 60)
- 
+
+
 def upload_videos(local_video_dir: str, iterations=None, delay: int = None):
     '''
     This function uploads the video in the local_video_dir to S3. Each video is deleted after an upload.
@@ -105,3 +108,46 @@ def upload_videos(local_video_dir: str, iterations=None, delay: int = None):
             break
         if delay:
             time.sleep(delay * 60)
+
+
+def rename_videos():
+    n = "100"
+    if len(sys.argv) > 1:
+        n = sys.argv[1]
+    while True:
+        start = time.time()
+        ls = Popen(["aws", "s3", 'ls',
+                    's3://air-pollution-uk/raw/video_data_new/',
+                    '--profile',
+                    'dssg'], stdout=PIPE)
+        p1 = Popen(["awk", '{$1=$2=$3=""; print $0}'],
+                   stdin=ls.stdout, stdout=PIPE)
+        p2 = Popen(["head", "-n "+n], stdin=p1.stdout, stdout=PIPE)
+        ls.stdout.close()
+        p1.stdout.close()
+        output = p2.communicate()[0]
+        p2.stdout.close()
+        files = output.decode("utf-8").split("\n")
+        if not files:
+            break
+        for filename in files:
+            try:
+                if filename:
+                    filename = filename.strip()
+                    print(filename)
+                    res = filename.split("_")
+                    datetime_obj = dateutil.parser.parse(res[0])
+                    timestamp = datetime_obj.strftime('%Y-%m-%d %H:%M:%S')
+                    new_filename = "_".join([timestamp, res[1]])
+                res = subprocess.call(["aws", "s3", 'mv',
+                                       's3://air-pollution-uk/raw/video_data_new/'+filename, os.path.join(
+                                           's3://air-pollution-uk/raw/videos/', str(datetime_obj.date()), new_filename),
+                                       '--profile',
+                                       'dssg'])
+            except Exception as e:
+                print(e)
+        end = time.time()
+        print(end-start)
+
+if __name__ == "__main__":
+    rename_videos()
