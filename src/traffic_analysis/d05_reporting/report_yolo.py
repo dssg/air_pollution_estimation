@@ -93,6 +93,8 @@ def yolo_report_stats(yolo_df):
 
     '''
     dfs = []
+    if yolo_df.empty:
+        return pd.DataFrame()
     grouped = yolo_df.groupby('video_id')
 
     for name, group in grouped:
