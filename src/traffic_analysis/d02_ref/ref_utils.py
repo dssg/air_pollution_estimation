@@ -2,6 +2,8 @@ import datetime
 import subprocess
 import os
 import json
+import time as Time
+from subprocess import Popen, PIPE
 
 
 def upload_json_to_s3(paths, save_name, selected_files):
@@ -46,3 +48,26 @@ def generate_dates(from_date, to_date):
         dates.append(from_date)
         from_date += datetime.timedelta(days=1)
     return dates
+
+
+def get_names_of_folder_content_from_s3(bucket_name, prefix, s3_profile):
+
+    start = Time.time()
+    ls = Popen(["aws", "s3", 'ls', 's3://%s/%s' % (bucket_name, prefix),
+                '--profile',
+                s3_profile], stdout=PIPE)
+    p1 = Popen(['awk', '{$1=$2=$3=""; print $0}'],
+               stdin=ls.stdout, stdout=PIPE)
+    p2 = Popen(['sed', 's/^[ \t]*//'], stdin=p1.stdout, stdout=PIPE)
+    ls.stdout.close()
+    p1.stdout.close()
+    output = p2.communicate()[0]
+    p2.stdout.close()
+    files = output.decode("utf-8").split("\n")
+    end = Time.time()
+    elapsed_time = end-start
+
+    assert ((len(files) == 0) or (files[0] != '')), 'set your aws credentials'
+
+    return elapsed_time, files
+
