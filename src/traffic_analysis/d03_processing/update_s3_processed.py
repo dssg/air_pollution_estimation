@@ -9,10 +9,10 @@ from traffic_analysis.d04_modelling.classify_objects import classify_objects
 from traffic_analysis.d05_reporting.report_yolo import yolo_report_count_stats
 
 
-def update_frame_level_table(files, paths, params):
+def update_frame_level_table(file_names, paths, params):
     """ Update the frame level table on s3 (pq) based on the videos in the files list
                 Args:
-                    files (list): list of s3 filepaths for the videos to be processed
+                    file_names (list): list of s3 filepaths for the videos to be processed
                     paths (dict): dictionary of paths from yml file
                     params (dict): dictionary of parameters from yml file
 
@@ -21,9 +21,8 @@ def update_frame_level_table(files, paths, params):
     """
     my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
 
-    # Download the video files using the file list
-    # Download the files
-    for file in files:
+    # Download the video file_names using the file list
+    for file in file_names:
         try:
             my_bucket.download_file(file, paths["temp_video"] + file.split('/')[-1].replace(
                 ':', '-').replace(" ", "_"))
@@ -33,13 +32,15 @@ def update_frame_level_table(files, paths, params):
     video_dict = load_videos_into_np(paths["temp_video"])
     delete_and_recreate_dir(paths["temp_video"])
 
-    yolo_df = classify_objects(video_dict=video_dict,
-                               params=params,
-                               paths=paths,
-                               vid_time_length=10,
-                               make_videos=False)
+    frame_level_df = classify_objects(video_dict=video_dict,
+                                      params=params,
+                                      paths=paths,
+                                      vid_time_length=10,
+                                      make_videos=False)
 
-    update_s3_parquet("frame_table", yolo_df, paths)
+    update_s3_parquet(file="frame_table",
+                      df=frame_level_df,
+                      paths=paths)
 
     return
 
@@ -69,13 +70,14 @@ def update_s3_parquet(file, df, paths):
 
     # Download the pq file
     my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
-    local_path = os.path.join(paths['temp_parquet'], file + '.parquet')
+    local_path = os.path.join(paths['temp_frame_level'], file + '.parquet')
 
+    file_to_download = paths['s3_frame_level'] + file + '.parquet'
     try:
-        my_bucket.download_file(paths['s3_processed_jamcam'] + file + '.parquet', local_path)
+        my_bucket.download_file(file_to_download, local_path)
 
     except:
-        print("Could not download " + paths['s3_processed_jamcam'] + file + '.parquet')
+        print("Could not download " + file_to_download)
         print("Creating new file instead...")
 
     table = construct_parquet_table(df)
@@ -90,7 +92,7 @@ def update_s3_parquet(file, df, paths):
     try:
         res = subprocess.call(["aws", "s3", 'cp',
                                local_path,
-                               's3://air-pollution-uk/' + paths['s3_processed_jamcam'],
+                               's3://air-pollution-uk/' + paths['s3_frame_level'],
                                '--profile',
                                'dssg'])
     except:
@@ -113,7 +115,7 @@ def construct_parquet_table(df):
 
     # Process the dataframe
     table = df.copy()
-    table['datetime'] = table['datetime'].astype('str')
+    # table['datetime'] = table['datetime'].astype('str')
     table['confidence'] = table['confidence'].astype('float64')
     x, y, w, h = [], [], [], []
     for vals in table['obj_bounds'].values:
