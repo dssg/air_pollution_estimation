@@ -29,7 +29,9 @@ selected_videos = load_video_names_from_s3(ref_file='test_search',
 chunk_size = params['chunk_size']
 while selected_videos:
 
-    update_frame_level_table(selected_videos[:chunk_size], paths, params)
+    update_frame_level_table(file_names=selected_videos[:chunk_size],
+                             paths=paths,
+                             params=params)
 
     # evaluate_frame_level_table
 
