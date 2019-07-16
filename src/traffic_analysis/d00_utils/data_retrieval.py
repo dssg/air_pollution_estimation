@@ -15,7 +15,7 @@ import dateutil.parser
 
 
 def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(datetime.datetime.now().date()),
-                                 from_time='00-00-00', to_time='23-59-59', camera_list=None, save_to_file: bool = True):
+                                 from_time='00:00-00', to_time='23-59-59', camera_list=None, save_to_file: bool = True):
     """Retrieve names of jamcam videos from the s3 bucket based on the dates specified.
 
         Args:
@@ -39,8 +39,8 @@ def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(date
     delete_and_recreate_dir(paths[save_folder])
     from_date = dateutil.parser.parse(from_date).date()
     to_date = dateutil.parser.parse(to_date).date()
-    from_time = dateutil.parser.parse(from_time).time()
-    to_time = dateutil.parser.parse(to_time).time()
+    from_time = dateutil.parser.parse(format_time(from_time)).time()
+    to_time = dateutil.parser.parse(format_time(to_time)).time()
     selected_files = []
 
     # Generate the list of dates
@@ -80,6 +80,8 @@ def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(date
                 json.dump(selected_files, f)
     return selected_files
 
+def format_time(timestr):
+    return timestr.replace("-",":")
 
 def generate_dates(from_date, to_date):
     dates = []
