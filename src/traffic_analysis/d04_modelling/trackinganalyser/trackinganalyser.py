@@ -168,6 +168,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                       mp4_name=video_name + "_tracked.mp4",
                       video=np.array(processed_video),
                       fps=video_frames_per_sec)
+            
         print('Run time of tracking analyser for one video is %s seconds' % (time.time() - start_time))
         return fleet
 
