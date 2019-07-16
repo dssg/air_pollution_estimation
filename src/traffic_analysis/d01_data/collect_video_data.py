@@ -10,11 +10,14 @@ import sys
 import dateutil.parser
 
 
-def download_camera_data(tfl_cam_api: str = "https://api.tfl.gov.uk/Place/Type/jamcams",
-                         cam_file: str = "data/00_ref/cam_file.json"):
-    '''
+def download_camera_data(tfl_cam_api: str,
+                         cam_file: str):
+    """
     Gets a list of camera ids and info from tfl api
-    '''
+    """
+    if os.path.exists(cam_file):
+        return
+
     # get the traffic cameras data
     res = urllib.request.urlopen(tfl_cam_api)
     data = json.loads(res.read())
@@ -26,31 +29,23 @@ def download_camera_data(tfl_cam_api: str = "https://api.tfl.gov.uk/Place/Type/j
 
 
 def collect_camera_videos(local_video_dir: str,
-                          download_url: str = "https://s3-eu-west-1.amazonaws.com/jamcams.tfl.gov.uk/",
+                          download_url: dict,
                           cam_file: str = "data/00_ref/cam_file.json",
                           iterations: int = None,
                           delay: int = 3):
-    '''
+    """
     This function was created to download videos from cameras using the tfl api.
         local_video_dir: local directly to download the videos in
-
         download_url: the tfl api to download traffic camera videos
-
         cam_file: stores the last time the camera was modified. The file is checked in ordere to download new videos
-
         iterations: number of times the download should run. The video are downloaded continuously if no value is supplied
-
         delay: amount of time (minutes) to wait for before downloading new data
-
-    '''
+    """
     # check if the local directory exists.
     if not os.path.exists(local_video_dir):
         os.makedirs(local_video_dir)
 
     # get all the data in the cam_file
-    video_urls_dict = {}
-    if not os.path.exists(cam_file):
-        download_camera_data()
     with open(cam_file, 'r') as f:
         video_urls_dict = dict(json.loads(f.read()))
     iteration = 0
@@ -79,74 +74,95 @@ def collect_camera_videos(local_video_dir: str,
             time.sleep(delay * 60)
 
 
-def upload_videos(local_video_dir: str, iterations=None, delay: int = None):
-    '''
+def upload_videos(local_video_dir: str, credentials: dict, iterations=None, delay: int = None):
+    """
     This function uploads the video in the local_video_dir to S3. Each video is deleted after an upload.
+    Args:
         local_video_dir: local directly where the videos are stored
-
+        credentials: Contains the s3 folder to save the videos, bucket name, and s3 profile
         iterations: number of times the upload should run. The local video directory is checked continuously for new videos if no value is supplied
-
         delay: amount of time (minutes) to wait for before downloading new data
-    '''
+    """
     if not os.path.exists(local_video_dir):
         os.makedirs(local_video_dir)
+    s3_folder = credentials['s3_video']
+    bucket_name = credentials['bucket_name']
+    s3_profile = credentials['s3_profile']
+    file_path = "s3://%s/%s" % (bucket_name, s3_folder)
 
     iteration = 0
     while True:
         try:
             res = subprocess.call(["aws", "s3", 'mv',
                                    local_video_dir,
-                                   's3://air-pollution-uk/raw/video_data_new/',
+                                   file_path,
                                    '--recursive',
                                    '--profile',
-                                   'dssg'])
+                                   s3_profile])
         except Exception as e:
             send_email_warning(str(e), "Video upload failed.")
         iteration += 1
         if iteration == iterations:
             break
+        print(delay)
         if delay:
             time.sleep(delay * 60)
 
 
-def rename_videos():
-    n = "100"
+def rename_videos(paths, params, chunk_size=100):
+    bucket_name = paths['bucket_name']
+    s3_profile = paths['s3_profile']
+    s3_folder = "s3://%s/%s" % (bucket_name, params['old_path'])
+    date_format = params['date_format']
+
     if len(sys.argv) > 1:
-        n = sys.argv[1]
+        chunk_size = sys.argv[1]
     while True:
         start = time.time()
         ls = Popen(["aws", "s3", 'ls',
-                    's3://air-pollution-uk/raw/video_data_new/',
+                    s3_folder,
+                    '--summarize',
+                    '--recursive',
                     '--profile',
-                    'dssg'], stdout=PIPE)
+                    s3_profile], stdout=PIPE)
         p1 = Popen(["awk", '{$1=$2=$3=""; print $0}'],
                    stdin=ls.stdout, stdout=PIPE)
-        p2 = Popen(["head", "-n "+n], stdin=p1.stdout, stdout=PIPE)
+        p2 = Popen(["head", "-n " + str(chunk_size)], stdin=p1.stdout, stdout=PIPE)
         ls.stdout.close()
         p1.stdout.close()
         output = p2.communicate()[0]
         p2.stdout.close()
         files = output.decode("utf-8").split("\n")
+        files = list(filter(lambda x: x.strip(), files))
         if not files:
             break
-        for filename in files:
+        for full_path in files:
+            full_path = full_path.strip()
             try:
-                if filename:
+                if full_path:
+                    old_filename = "s3://%s/%s" % (bucket_name, full_path)
+                    filename = full_path.split('/')[-1]
                     filename = filename.strip()
-                    print(filename)
                     res = filename.split("_")
                     datetime_obj = dateutil.parser.parse(res[0])
-                    timestamp = datetime_obj.strftime('%Y-%m-%d %H:%M:%S')
+                    timestamp = datetime_obj.strftime(date_format)
                     new_filename = "_".join([timestamp, res[1]])
-                res = subprocess.call(["aws", "s3", 'mv',
-                                       's3://air-pollution-uk/raw/video_data_new/'+filename, os.path.join(
-                                           's3://air-pollution-uk/raw/videos/', str(datetime_obj.date()), new_filename),
-                                       '--profile',
-                                       'dssg'])
+                    new_filename = "s3://%s/%s/%s/%s" % (
+                        bucket_name, params['new_path'], str(datetime_obj.date()), new_filename)
+                    res = subprocess.call(["aws", "s3", 'mv',
+                                           old_filename,
+                                           new_filename,
+                                           '--profile',
+                                           s3_profile])
             except Exception as e:
                 print(e)
         end = time.time()
-        print(end-start)
+        print(end - start)
+
 
 if __name__ == "__main__":
-    rename_videos()
+    from src.traffic_analysis.d00_utils.load_confs import load_parameters, load_paths
+
+    paths = load_paths()
+    params = load_parameters()
+    rename_videos(paths, params)

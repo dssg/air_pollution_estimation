@@ -11,6 +11,7 @@ import datetime
 import glob
 import json
 from subprocess import Popen, PIPE
+import dateutil.parser
 
 
 def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(datetime.datetime.now().date()),
@@ -36,11 +37,10 @@ def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(date
     s3_profile = paths['s3_profile']
     s3_video = paths['s3_video']
     delete_and_recreate_dir(paths[save_folder])
-    from_date = datetime.datetime.strptime(from_date, '%Y-%m-%d').date()
-    to_date = datetime.datetime.strptime(to_date, '%Y-%m-%d').date()
-    from_time = datetime.datetime.strptime(from_time, '%H-%M-%S').time()
-    to_time = datetime.datetime.strptime(to_time, '%H-%M-%S').time()
-    dates = []
+    from_date = dateutil.parser.parse(from_date).date()
+    to_date = dateutil.parser.parse(to_date).date()
+    from_time = dateutil.parser.parse(from_time).time()
+    to_time = dateutil.parser.parse(to_time).time()
     selected_files = []
 
     # Generate the list of dates
@@ -50,7 +50,7 @@ def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(date
         prefix = "%s%s/" % (s3_video, date)
         start = time.time()
 
-        # fetch video filenames
+        # fetch video filename
         ls = Popen(["aws", "s3", 'ls', 's3://%s/%s' % (bucket_name, prefix),
                     '--profile',
                     s3_profile], stdout=PIPE)
@@ -63,7 +63,7 @@ def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(date
         p2.stdout.close()
         files = output.decode("utf-8").split("\n")
         end = time.time()
-        print(end - start, len(files))
+        print(date, end - start, len(files))
         if not files:
             break
         for filename in files:
@@ -71,20 +71,19 @@ def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(date
                 res = filename.split('_')
                 camera_id = res[-1][:-4]
                 time_of_day = res[0].split(".")[0]
-                time_of_day = datetime.datetime.strptime(
-                    time_of_day, '%Y-%m-%d %H:%M:%S').time()
+                time_of_day = dateutil.parser.parse(time_of_day).time()
                 if from_time <= time_of_day <= to_time and (not camera_list or camera_id in camera_list):
                     selected_files.append("%s%s" % (prefix, filename))
         if save_to_file:
-            filepath = os.path.join(paths["raw_video"], "searched_videos")
-            with open(filepath, "w") as f:
+            filename = os.path.join(paths["raw_video"], "searched_videos")
+            with open(filename, "w") as f:
                 json.dump(selected_files, f)
     return selected_files
 
 
 def generate_dates(from_date, to_date):
     dates = []
-    while(from_date <= to_date):
+    while from_date <= to_date:
         dates.append(from_date)
         from_date += datetime.timedelta(days=1)
     return dates
@@ -99,15 +98,15 @@ def load_video_names(paths):
 
 
 def load_videos_into_np(folder):
-     # Load files into a list of numpy arrays using opencv
+    # Load files into a list of numpy arrays using opencv
     videos = []
     names = []
     for filename in glob.glob(os.path.join(folder, '*.mp4')):
         try:
             videos.append(mp4_to_npy(filename))
             names.append(filename.split('/')[-1])
-        except:
-            print("Could not convert " + filename + " to numpy array")
+        except Exception as e:
+            print("Could not convert " + filename + " to numpy array\n"+e)
     return videos, names
 
 
@@ -127,6 +126,7 @@ def download_video_and_convert_to_numpy(local_folder, s3_profile, bucket, filena
 
     """
     my_bucket = connect_to_bucket(s3_profile, bucket)
+    delete_and_recreate_dir(local_folder)
 
     # Download the files
     for filename in filenames:
@@ -143,7 +143,7 @@ def delete_and_recreate_dir(temp_dir):
     Creates an empty local directory for downloading from s3.
     Will wipe local_dir if already a directory
     """
-    if (os.path.isdir(temp_dir)):
+    if os.path.isdir(temp_dir):
         shutil.rmtree(temp_dir)
     os.mkdir(temp_dir)
     return
@@ -160,12 +160,12 @@ def mp4_to_npy(local_mp4_path):
                    np.dtype('uint8'))
     fc = 0
     ret = True
-    while (fc < frame_count and ret):
+    while fc < frame_count and ret:
         ret, buf[fc] = cap.read()
         fc += 1
     cap.release()
 
-    if(buf.size == 0):
+    if (buf.size == 0):
         raise Exception('Numpy array is empty')
 
     return buf
@@ -182,12 +182,10 @@ def connect_to_bucket(profile_dir, bucket_name):
 
 
 def retrieve_tims_from_s3():
-
     return
 
 
 def retrieve_cam_details_from_database():
-
     return
 
 
@@ -209,7 +207,7 @@ def describe_s3_bucket(paths):
     files = [obj.key for obj in objects]
     dates = []
     for filename in files:
-        res = re.search("([0-9]{4}\-[0-9]{2}\-[0-9]{2})", filename)
+        res = re.search(r"([0-9]{4}\-[0-9]{2}\-[0-9]{2})", filename)
         dates.append(res.group())
 
     # Plot a bar chart of the dates in the s3 bucket
@@ -227,13 +225,14 @@ def describe_s3_bucket(paths):
     return
 
 
-def append_to_csv(filepath: str, df: pd.DataFrame, columns: list, dtype: dict):
+def append_to_csv(filename: str, df: pd.DataFrame, columns: list, dtype: dict):
     if df.empty:
         return
-    # check if filepath exists
-    if not os.path.exists(filepath):
+    # check if filename exists
+    if not os.path.exists(filename):
         df_main = pd.DataFrame(columns=columns)
-        df_main.to_csv(filepath)
-    df_main = pd.read_csv(filepath, dtype=dtype)
+        df_main.to_csv(filename)
+    df_main = pd.read_csv(filename, dtype=dtype)
     df_main = df_main.append(df)
-    df_main.to_csv(filepath, columns=columns, index=False)
+    df_main.drop_duplicates(inplace=True)
+    df_main.to_csv(filename, columns=columns, index=False)
