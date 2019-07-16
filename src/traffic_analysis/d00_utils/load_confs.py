@@ -4,6 +4,7 @@ import yaml
 project_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..')
 
 
+# TODO: do not collapse the hierarchy
 def load_parameters():
     with open(project_dir + '/conf/base/parameters.yml') as f:
         params = yaml.safe_load(f)
