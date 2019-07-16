@@ -15,7 +15,7 @@ def upload_json_to_s3(paths, save_name, selected_files):
 
     """
     # Upload selected file names to s3
-    filepath = os.path.join(paths["raw_video"], save_name + '.json')
+    filepath = os.path.join(paths["video_names"], save_name + '.json')
     with open(filepath, "w") as f:
         json.dump(selected_files, f)
     try:
