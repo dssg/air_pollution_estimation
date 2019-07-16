@@ -62,9 +62,9 @@ def delete_and_recreate_dir(temp_dir):
     Creates an empty local directory for downloading from s3.
     Will wipe local_dir if already a directory
     """
-    if (os.path.isdir(temp_dir)):
+    if os.path.isdir(temp_dir):
         shutil.rmtree(temp_dir)
-    os.mkdir(temp_dir)
+    os.makedirs(temp_dir)
     return
 
 
