@@ -3,7 +3,7 @@ from cvlib.object_detection import draw_bbox
 import cvlib as cv
 import imageio
 
-from src.traffic_analysis.d05_reporting.report_yolo import yolo_output_df
+from traffic_analysis.d05_reporting.report_yolo import yolo_output_df
 
 
 def classify_objects(video_dict, params, paths, vid_time_length=10, make_videos=True):
@@ -15,7 +15,7 @@ def classify_objects(video_dict, params, paths, vid_time_length=10, make_videos=
             vid_time_length (int): length of the video data in seconds
             make_videos (bool): output videos with object classification labels in processed directory
         Returns:
-            yolo_df (df): pandas dataframe containing the results of Yolo object detection
+            frame_level_df (df): pandas dataframe containing the results of Yolo object detection
     """
     yolo_dict = {}
 
@@ -55,6 +55,6 @@ def classify_objects(video_dict, params, paths, vid_time_length=10, make_videos=
         yolo_dict[name]['labels'] = obj_labels
         yolo_dict[name]['confidences'] = obj_label_confidences
 
-    yolo_df = yolo_output_df(yolo_dict)
+    frame_level_df = yolo_output_df(yolo_dict)
 
-    return yolo_df
+    return frame_level_df
