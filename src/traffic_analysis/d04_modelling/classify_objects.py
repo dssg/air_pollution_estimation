@@ -21,7 +21,7 @@ def classify_objects(video_dict, params, paths, vid_time_length=10, make_videos=
 
     for video_num, (name, video) in enumerate(video_dict.items()):
 
-        print('Starting video ' + str(video_num))
+        print('Classifying video {}/{}.'.format(video_num, len(video_dict)))
         yolo_dict[name] = {}
 
         # loop over frames of video and store in lists
