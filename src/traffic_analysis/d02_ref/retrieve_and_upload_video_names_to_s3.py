@@ -56,7 +56,9 @@ def retrieve_and_upload_video_names_to_s3(ouput_file_name,
         p2.stdout.close()
         files = output.decode("utf-8").split("\n")
         end = Time.time()
-        print(end - start, len(files))
+        print('Moving {} files for date {} took {} seconds'.format(len(files),
+                                                                   date,
+                                                                   end - start))
         if not files:
             break
         for filename in files:
