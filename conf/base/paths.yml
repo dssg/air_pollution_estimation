@@ -1,3 +1,7 @@
+# TODO: Move annotated to /ref/annotations
+# TODO: Move annotations to /data/ref/annotations
+# TODO: consider removing local_paths
+
 s3_paths:
     bucket_name: 'air-pollution-uk' #s3 bucket name
     s3_video: "raw/videos/" #path to video data in s3 bucket
