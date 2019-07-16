@@ -17,13 +17,13 @@ def upload_json_to_s3(paths, save_name, selected_files):
 
     """
     # Upload selected file names to s3
-    filepath = os.path.join(paths["s3_video_names"], save_name + '.json')
+    filepath = os.path.join(paths["video_names"], save_name + '.json')
     with open(filepath, "w") as f:
         json.dump(selected_files, f)
     try:
         res = subprocess.call(["aws", "s3", 'cp',
                                filepath,
-                               's3://air-pollution-uk/ref/',
+                               's3://air-pollution-uk/' + paths['s3_video_names'],
                                '--profile',
                                'dssg'])
     except:
