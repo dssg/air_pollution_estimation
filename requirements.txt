@@ -14,3 +14,4 @@ imageio
 pyarrow
 matplotlib
 tensorflow>=1.14.0, <2.0
+awscli>=1.16.198, <2.0
