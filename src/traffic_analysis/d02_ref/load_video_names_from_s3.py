@@ -28,6 +28,10 @@ def load_video_names_from_s3(ref_file, paths):
     with open(local_path, 'r') as f:
         files += json.load(f)
 
+    # avoid duplication
+    files = list(set(files))
+
+    # clean up
     os.remove(local_path)
 
     return files
