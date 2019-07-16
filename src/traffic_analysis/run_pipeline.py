@@ -1,9 +1,8 @@
-
-from src.traffic_analysis.d00_utils.data_retrieval import delete_and_recreate_dir
-from src.traffic_analysis.d00_utils.load_confs import load_parameters, load_paths
-from src.traffic_analysis.d02_intermediate.update_s3_ref import load_video_names_from_s3, upload_video_names_to_s3, \
+from traffic_analysis.d00_utils.data_retrieval import delete_and_recreate_dir
+from traffic_analysis.d00_utils.load_confs import load_parameters, load_paths
+from traffic_analysis.d02_intermediate.update_s3_ref import load_video_names_from_s3, upload_video_names_to_s3, \
     upload_annotation_names_to_s3
-from src.traffic_analysis.d03_processing.update_s3_processed import update_frame_level_table
+from traffic_analysis.d03_processing.update_s3_processed import update_frame_level_table
 
 params = load_parameters()
 paths = load_paths()
@@ -35,8 +34,8 @@ while selected_videos:
 
 
 """
-from src.d05_reporting.report_yolo import yolo_output_df, yolo_report_count_stats
-from src.d04_modelling.evaluation import parse_annotations, report_count_differences
+from d05_reporting.report_yolo import yolo_output_df, yolo_report_count_stats
+from d04_modelling.evaluation import parse_annotations, report_count_differences
 # Load Annotations and Evaluate
 yolo_df = pd.read_csv(os.path.join(paths['processed_video'], 'JamCamYolo.csv'))
 annotations_df = parse_annotations(paths['annotations'], bool_print_summary=False)
