@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import datetime
+import dateutil.parser
 
 
 def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date,time):
@@ -49,9 +50,15 @@ def yolo_output_df(yolo_dict):
         assert obj_labels.shape[0] == num_frames
         assert obj_label_confidences.shape[0] == num_frames
 
-        date = datetime.datetime.strptime(name.split("_")[0], '%Y-%m-%d').date()
-        time = datetime.datetime.strptime(name.split("_")[1], '%H-%M-%S.%f').time()
-        camera_id = name.split('_')[-1][:-4]
+        filename = name.split("_")
+        time_obj = filename[1].replace("-",":") if len(filename) > 2 else " "
+        datetimestring = "%s %s"%(filename[0], time_obj)
+        datetimestring = datetimestring.strip()
+        print(datetimestring)
+        date_obj = dateutil.parser.parse(datetimestring)
+        date_part = date_obj.date()
+        time_part = date_obj.time()
+        camera_id = filename[-1][:-4]
 
         frame_df_list = []
 
@@ -62,7 +69,7 @@ def yolo_output_df(yolo_dict):
             obj_info_aggregated = np.array([obj_bounds_np, obj_labels[frame_ind],
                                             obj_label_confidences[frame_ind]]).transpose()
 
-            frame_df = frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date,time)
+            frame_df = frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date_part,time_part)
             frame_df_list.append(frame_df)
 
         yolo_df = pd.concat(frame_df_list)
