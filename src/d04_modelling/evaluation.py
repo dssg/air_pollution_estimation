@@ -122,7 +122,7 @@ def report_true_count_stats(annotations_df):
         df['time'] = group['time'].values[0]
         dfs.append(df)
 
-    df = pd.concat(dfs)
+    df = pd.concat(dfs, sort=True)
     return df.fillna(0)
 
 
@@ -168,7 +168,7 @@ def report_count_differences(annotations_df, yolo_df, params, paths, bool_plots=
         plot_count_differences(diff_df, params, paths)
 
     cols = ['p-y_' + c for c in params['categories']]
-    print('MSE across all videos an categories: ' + str(diff_df[cols].pow(2).mean(axis=0).mean(axis=0)))
+    print('MAE across all videos and categories: ' + str(diff_df[cols].abs().mean(axis=0).mean(axis=0)))
 
     return diff_df
 
@@ -205,6 +205,27 @@ def plot_count_differences(diff_df, params, paths):
     plt.bar(np.arange(len(params['categories'])), vals.values)
     plt.xticks(np.arange(len(params['categories'])), [i.split('_')[1] for i in vals.index.values])
     plt.savefig(paths['plots'] + 'Overall.pdf')
+    plt.close()
+
+    vals = [diff_df[c].values for c in cols]
+    vals = np.concatenate(vals)
+    plt.figure()
+    plt.suptitle('Histogram of Errors')
+    plt.hist(vals)
+    plt.xlabel('Error')
+    plt.ylabel('Frequency')
+    plt.savefig(paths['plots'] + 'ErrorHistogram.pdf')
+    plt.close()
+
+    fig, ax = plt.subplots(4, 1, figsize=(8, 12))
+    for i, c in enumerate(cols):
+        ax[i].hist(diff_df[c].values)
+        ax[i].set_title(c.split('_')[-1])
+        ax[i].set_xlabel('Error')
+        ax[i].set_ylabel('Frequency')
+
+    plt.tight_layout()
+    plt.savefig(paths['plots'] + 'ErrorHistogramPerType.pdf')
     plt.close()
 
     return

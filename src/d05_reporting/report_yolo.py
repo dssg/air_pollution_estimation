@@ -113,5 +113,5 @@ def yolo_report_count_stats(yolo_df):
         df['camera_id'] = group['camera_id'].iloc[0]
         dfs.append(df)
 
-    df = pd.concat(dfs).fillna(0)
+    df = pd.concat(dfs, sort=True).fillna(0)
     return df
