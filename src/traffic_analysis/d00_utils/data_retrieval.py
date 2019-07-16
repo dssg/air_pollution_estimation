@@ -157,23 +157,3 @@ def append_to_csv(filepath: str, df: pd.DataFrame, columns: list, dtype: dict):
     df_main = df_main.append(df)
     df_main.to_csv(filepath, columns=columns, index=False)
 
-
-def load_videos_from_local(paths):
-    """Load video data from the local raw jamcam folder and return it as a list of numpy arrays
-
-            Args:
-                paths: dictionary containing raw_video, s3_profile and bucket_name paths
-            Returns:
-                video_dict: dict of numpy arrays containing all the jamcam videos from the local raw jamcam folder
-            Raises:
-
-        """
-    video_dict = {}
-    files = glob.glob(paths['raw_video'] + '*.mp4')
-    for file in files:
-        try:
-            video_dict[file.split('/')[-1]] = mp4_to_npy(file)
-        except:
-            print("Could not convert " + file + " to numpy array")
-
-    return video_dict
