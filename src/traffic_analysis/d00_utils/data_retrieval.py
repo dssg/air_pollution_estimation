@@ -150,7 +150,7 @@ def delete_and_recreate_dir(temp_dir):
     if os.path.isdir(temp_dir):
         shutil.rmtree(temp_dir)
 
-    os.makedirs(temp_dir)
+    os.makedirs(temp_dir,exist_ok=True)
     return
 
 
@@ -235,6 +235,10 @@ def append_to_csv(filename: str, df: pd.DataFrame, columns: list, dtype: dict):
         return
     # check if filename exists
     if not os.path.exists(filename):
+        # create directory
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+
+        # create a new dataframe with columns
         df_main = pd.DataFrame(columns=columns)
         df_main.to_csv(filename)
     df_main = pd.read_csv(filename, dtype=dtype)
