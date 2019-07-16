@@ -45,9 +45,9 @@ def retrieve_and_upload_video_names_to_s3(ouput_file_name,
 
         # fetch video filenames
         elapsed_time, files = get_names_of_folder_content_from_s3(bucket_name, prefix, s3_profile)
-        print('Moving {} files for date {} took {} seconds'.format(len(files),
-                                                                   date,
-                                                                   elapsed_time))
+        print('Extracting {} file names for date {} took {} seconds'.format(len(files),
+                                                                            date,
+                                                                            elapsed_time))
         if not files:
             continue
 
