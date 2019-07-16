@@ -4,7 +4,7 @@ nbstripout==0.3.3
 bs4
 requests
 boto3
-opencv-contrib-python
+opencv-contrib-python>=4.1.0.25, <5.0
 csvkit
 numpy
 cvlib
@@ -13,3 +13,4 @@ imageio-ffmpeg
 imageio
 pyarrow
 matplotlib
+tensorflow>=1.14.0, <2.0
