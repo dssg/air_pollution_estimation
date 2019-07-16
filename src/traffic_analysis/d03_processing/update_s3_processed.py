@@ -33,8 +33,11 @@ def update_frame_level_table(files, paths, params):
     video_dict = load_videos_into_np(paths["temp_video"])
     delete_and_recreate_dir(paths["temp_video"])
 
-    yolo_df = classify_objects(video_dict, params, paths,
-                               vid_time_length=10, make_videos=False)
+    yolo_df = classify_objects(video_dict=video_dict,
+                               params=params,
+                               paths=paths,
+                               vid_time_length=10,
+                               make_videos=False)
 
     update_s3_parquet("frame_table", yolo_df, paths)
 
