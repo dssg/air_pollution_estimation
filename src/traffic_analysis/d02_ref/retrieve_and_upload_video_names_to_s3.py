@@ -12,7 +12,8 @@ def retrieve_and_upload_video_names_to_s3(ouput_file_name,
                                           to_date=str(datetime.datetime.now().date()),
                                           from_time='00-00-00',
                                           to_time='23-59-59',
-                                          camera_list=None):
+                                          camera_list=None,
+                                          return_files_flag=False):
     """Upload a json to s3 containing the filepaths for videos between the dates, times and cameras specified.
 
         Args:
@@ -60,7 +61,10 @@ def retrieve_and_upload_video_names_to_s3(ouput_file_name,
                                                                    date,
                                                                    end - start))
         if not files:
-            break
+            continue
+
+        assert selected_files[0] != '', 'set your aws credentials'
+
         for filename in files:
             if filename:
                 res = filename.split('_')
@@ -73,5 +77,5 @@ def retrieve_and_upload_video_names_to_s3(ouput_file_name,
 
     upload_json_to_s3(paths, ouput_file_name, selected_files)
 
-    return
-
+    if return_files_flag:
+        return selected_files
