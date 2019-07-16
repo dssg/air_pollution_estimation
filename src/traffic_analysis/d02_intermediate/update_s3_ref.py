@@ -5,7 +5,7 @@ import time as Time
 import subprocess
 from subprocess import Popen, PIPE
 
-from src.traffic_analysis.d00_utils.data_retrieval import connect_to_bucket
+from traffic_analysis.d00_utils.data_retrieval import connect_to_bucket
 
 
 def upload_video_names_to_s3(save_name, paths, from_date='2019-06-01', to_date=str(datetime.datetime.now().date()),
