@@ -17,13 +17,14 @@ def load_video_names_from_s3(ref_file, paths):
     my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
 
     # Download the json files and load the file names into a list
-    local_path = os.path.join(paths["raw_video"], 'temp.json')
-    my_bucket.download_file(paths['s3_ref'] + ref_file + '.json', local_path)
+    # get video names to analyse
+    local_path = os.path.join(paths["video_names"], 'temp.json')
+    my_bucket.download_file(paths['s3_video_names'] + ref_file + '.json', local_path)
     with open(local_path, 'r') as f:
         files = json.load(f)
 
     # TODO: Handle case that annotations not available
-    my_bucket.download_file(paths['s3_ref'] + 'annotations.json', local_path)
+    my_bucket.download_file(paths['s3_video_names'] + 'annotations.json', local_path)
     with open(local_path, 'r') as f:
         files += json.load(f)
 
