@@ -4,9 +4,9 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-from src.traffic_analysis.d00_utils.data_retrieval import connect_to_bucket, load_videos_into_np, delete_and_recreate_dir
-from src.traffic_analysis.d04_modelling.classify_objects import classify_objects
-from src.traffic_analysis.d05_reporting.report_yolo import yolo_report_count_stats
+from traffic_analysis.d00_utils.data_retrieval import connect_to_bucket, load_videos_into_np, delete_and_recreate_dir
+from traffic_analysis.d04_modelling.classify_objects import classify_objects
+from traffic_analysis.d05_reporting.report_yolo import yolo_report_count_stats
 
 
 def update_frame_level_table(files, paths, params):
