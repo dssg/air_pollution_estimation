@@ -11,3 +11,5 @@ cvlib
 datetime
 imageio-ffmpeg
 imageio
+pyarrow
+matplotlib
