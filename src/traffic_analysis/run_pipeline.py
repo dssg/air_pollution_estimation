@@ -8,9 +8,13 @@ from traffic_analysis.d03_processing.update_s3_processed import update_frame_lev
 params = load_parameters()
 paths = load_paths()
 
-retrieve_and_upload_video_names_to_s3('test_search',
-                                      paths, from_date='2019-06-30', to_date='2019-06-30',
-                                      from_time='13-00-00', to_time='13-05-00',
+# creates the test_seach_json. Change the camera list and output file name for full run
+retrieve_and_upload_video_names_to_s3(ouput_file_name='test_search',
+                                      paths=paths,
+                                      from_date='2019-06-30',
+                                      to_date='2019-06-30',
+                                      from_time='13-00-00',
+                                      to_time='13-05-00',
                                       camera_list=params['tims_camera_list'][:2])
 
 upload_annotation_names_to_s3(paths)
