@@ -17,6 +17,8 @@ retrieve_and_upload_video_names_to_s3(ouput_file_name='test_search',
                                       to_time='13-05-00',
                                       camera_list=params['tims_camera_list'][:2])
 
+
+
 upload_annotation_names_to_s3(paths)
 
 selected_videos = load_video_names_from_s3(ref_file='test_search',
