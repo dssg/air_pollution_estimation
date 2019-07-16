@@ -2,7 +2,8 @@ from src.traffic_analysis.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, di
 from src.traffic_analysis.d00_utils.video_helpers import write_mp4
 from src.traffic_analysis.d00_utils.load_confs import load_parameters
 from src.traffic_analysis.d04_modelling.object_detection import detect_bboxes
-from src.traffic_analysis.d04_modelling.vehiclefleet import VehicleFleet
+from src.traffic_analysis.d04_modelling.object_tracking import create_tracker_by_name
+from src.traffic_analysis.d04_modelling.model02.vehiclefleet import VehicleFleet
 import numpy as np
 import sys
 import os
@@ -10,36 +11,6 @@ import cv2
 import yaml
 import time
 import pickle as pkl
-
-
-def create_tracker_by_name(tracker_type: str):
-    """Create tracker based on tracker name"""
-    tracker_types = ['BOOSTING', 'MIL', 'KCF', 'TLD',
-                     'MEDIANFLOW', 'GOTURN', 'MOSSE', 'CSRT']
-
-    if tracker_type == tracker_types[0]:
-        tracker = cv2.TrackerBoosting_create()
-    elif tracker_type == tracker_types[1]:
-        tracker = cv2.TrackerMIL_create()
-    elif tracker_type == tracker_types[2]:
-        tracker = cv2.TrackerKCF_create()
-    elif tracker_type == tracker_types[3]:
-        tracker = cv2.TrackerTLD_create()
-    elif tracker_type == tracker_types[4]:
-        tracker = cv2.TrackerMedianFlow_create()
-    elif tracker_type == tracker_types[5]:
-        tracker = cv2.TrackerGOTURN_create()
-    elif tracker_type == tracker_types[6]:
-        tracker = cv2.TrackerMOSSE_create()
-    elif tracker_type == tracker_types[7]:
-        tracker = cv2.TrackerCSRT_create()
-    else:
-        tracker = None
-        print('Incorrect tracker name')
-        print('Available trackers are:')
-        for t in tracker_types:
-            print(t)
-    return tracker
 
 
 def determine_new_bboxes(bboxes_tracked: list, bboxes_detected: list, iou_threshold: float = 0.1) -> list:
@@ -218,9 +189,6 @@ if __name__ == '__main__':
     detection_implementation = params["yolo_implementation"]
     detection_frequency = params["detection_frequency"]
     iou_threshold = params["iou_threshold"]
-    # iou_convolution_window = params["iou_convolution_window"]
-    # smoothing_method = params["smoothing_method"]
-    # stop_start_iou_threshold = params["stop_start_iou_threshold"]
 
     fleet = track_objects(local_mp4_dir=local_mp4_dir, local_mp4_name=local_mp4_name,
                              # detection params
