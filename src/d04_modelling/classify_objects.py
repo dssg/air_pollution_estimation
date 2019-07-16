@@ -5,9 +5,8 @@ import imageio
 
 from src.d05_reporting.report_yolo import yolo_output_df
 
-
 def classify_objects(video_dict, params, paths, vid_time_length=10, make_videos=True):
-    """ this function classifies objects from local mp4 with cvlib python package.
+    """ this function classifies objects from video dict with cvlib python package.
         Args:
             video_dict (dict): dict of numpy arrays containing all the jamcam videos
             params (dict): dictionary of parameters from yml file
