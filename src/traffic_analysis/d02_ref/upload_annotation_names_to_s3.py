@@ -1,6 +1,7 @@
 from traffic_analysis.d02_ref.ref_utils import upload_json_to_s3
 from traffic_analysis.d02_ref.ref_utils import get_names_of_folder_content_from_s3
 
+
 def upload_annotation_names_to_s3(paths):
     """ Get the list of xml files from s3 and save a json on s3 containing the corresponding video filepaths
                     Args:
@@ -16,7 +17,8 @@ def upload_annotation_names_to_s3(paths):
 
     # fetch video filenames
     elapsed_time, files = get_names_of_folder_content_from_s3(bucket_name, prefix, s3_profile)
-    print(elapsed_time, len(files))
+    print('Extracting {} file names took {} seconds'.format(len(files),
+                                                            elapsed_time))
 
     selected_files = []
     for file in files:
