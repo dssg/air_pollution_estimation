@@ -1,0 +1,5 @@
+visualization:
+  min_date_allowed: "2019-06-01"
+  start_date: "2019-06-01"
+  debug: True
+  tfl_jamcams_website: 'https://s3-eu-west-1.amazonaws.com/jamcams.tfl.gov.uk/'

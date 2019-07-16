@@ -25,3 +25,4 @@ reporting:
   iou_threshold: 0.05 #controls how much two objects' bboxes must overlap to be considered the "same"
   detection_frequency: 50
   selected_labels: ["car", "truck", "bus", "motorbike"]
+

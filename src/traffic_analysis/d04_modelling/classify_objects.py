@@ -13,7 +13,6 @@ def classify_objects(video_dict, params, paths, vid_time_length=10, make_videos=
             paths (dict): dictionary of paths from yml file
             vid_time_length (int): length of the video data in seconds
             make_videos (bool): output videos with object classification labels in processed directory
-
         Returns:
             yolo_df (df): pandas dataframe containing the results of Yolo object detection
     """

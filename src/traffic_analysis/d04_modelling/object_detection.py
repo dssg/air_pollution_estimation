@@ -1,4 +1,4 @@
-from src.d00_utils.bbox_helpers import color_bboxes,bboxcvlib_to_bboxcv2
+from src.traffic_analysis.d00_utils import color_bboxes,bboxcvlib_to_bboxcv2
 import numpy as np 
 import cvlib
 
