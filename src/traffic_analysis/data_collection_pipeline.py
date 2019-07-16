@@ -1,5 +1,5 @@
 from src.traffic_analysis.d00_utils.load_confs import load_parameters, load_paths
-from src.traffic_analysis.d01_data.collect_video_data import download_camera_data, collect_camera_videos, upload_videos
+from src.traffic_analysis.d01_data.collect_video_data import download_camera_data, collect_camera_videos, upload_videos, rename_videos
 from multiprocessing import Process
 
 params = load_parameters()
@@ -24,6 +24,8 @@ def upload_videos_fn():
     upload_videos(local_video_dir=local_video_dir, credentials=paths,
                   iterations=iterations, delay=delay)
 
+def rename_videos_fn():
+    rename_videos(paths=paths, params=params, chunk_size=1000)
 
 def runInParallel(*fns):
     proc = []
@@ -36,4 +38,4 @@ def runInParallel(*fns):
 
 
 print("Running download and upload functions in parallel")
-runInParallel(collect_camera_videos_fn, upload_videos_fn)
+runInParallel(collect_camera_videos_fn, upload_videos_fn, rename_videos_fn)
