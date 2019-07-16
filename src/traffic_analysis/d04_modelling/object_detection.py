@@ -1,9 +1,7 @@
-from src.traffic_analysis.d00_utils.bbox_helpers import color_bboxes, bboxcvlib_to_bboxcv2
+from src.traffic_analysis.d00_utils.bbox_helpers import bboxcvlib_to_bboxcv2
 from src.traffic_analysis.d00_utils.load_confs import load_parameters
 import numpy as np
 import cvlib
-import os
-import yaml
 params = load_parameters()
 
 
@@ -25,7 +23,7 @@ def detect_bboxes(frame: np.ndarray, model: str,
                                                                       nms_thresh=params['detection_nms_threshold'], model='yolov3-tiny')
             bboxes_cv2 = [bboxcvlib_to_bboxcv2(bbox_cvlib) for bbox_cvlib in bboxes_cvlib]
     # sample architecture for how other models/implementations could be added
-    elif implementation == 'jacks_yolo_implementation':
+    elif implementation == 'other_implementation':
         pass
     # if a list of selected_labels has been specified, remove bboxes, labels, confs which
     # do not correspond to labels in selected_labels
