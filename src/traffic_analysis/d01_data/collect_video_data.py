@@ -62,7 +62,7 @@ def collect_camera_videos(local_video_dir: str,
             camera_id = camera_id.replace("JamCams_", "")
             filename = camera_id + ".mp4"
             file_path = os.path.join(download_url, filename)
-            timestamp = str(datetime.datetime.now())
+            timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
             local_path = os.path.join(
                 local_video_dir, "%s_%s" % (timestamp, filename))
 
