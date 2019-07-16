@@ -147,7 +147,8 @@ def delete_and_recreate_dir(temp_dir):
     """
     if os.path.isdir(temp_dir):
         shutil.rmtree(temp_dir)
-    os.mkdir(temp_dir)
+
+    os.mkdirs(temp_dir)
     return
 
 
