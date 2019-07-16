@@ -25,7 +25,7 @@ def get_tims_data_and_upload_to_s3():
                              '..', '..', 'data/01_raw/tims/')
     if (os.path.isdir(local_dir)):
         shutil.rmtree(local_dir)
-    os.mkdirs(local_dir)
+    os.makedirs(local_dir)
 
     # Check every second of the datetime stored in 'date' for a csv file
     # If a csv file exists then we are not up to date and we should check the next 15 minutes

@@ -80,8 +80,10 @@ def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(date
                 json.dump(selected_files, f)
     return selected_files
 
+
 def format_time(timestr):
-    return timestr.replace("-",":")
+    return timestr.replace("-", ":")
+
 
 def generate_dates(from_date, to_date):
     dates = []
@@ -148,7 +150,7 @@ def delete_and_recreate_dir(temp_dir):
     if os.path.isdir(temp_dir):
         shutil.rmtree(temp_dir)
 
-    os.mkdirs(temp_dir)
+    os.makedirs(temp_dir)
     return
 
 
