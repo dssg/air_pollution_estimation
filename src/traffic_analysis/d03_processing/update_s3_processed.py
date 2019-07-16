@@ -71,6 +71,8 @@ def update_s3_parquet(file, df, paths):
 
     # Download the pq file
     my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
+
+    delete_and_recreate_dir(paths["temp_frame_level"])
     local_path = os.path.join(paths['temp_frame_level'], file + '.parquet')
 
     file_to_download = paths['s3_frame_level'] + file + '.parquet'
@@ -81,7 +83,12 @@ def update_s3_parquet(file, df, paths):
         print("Could not download " + file_to_download)
         print("Creating new file instead...")
 
-    table = construct_parquet_table(df)
+    # fix data types
+    df['obj_classification'] = df['obj_classification'].astype(str)
+    df['camera_id'] = df['camera_id'].astype(str)
+    df['confidence'] = df['confidence'].astype('float64')
+
+    table = pa.Table.from_pandas(df)
     pqwriter = pq.ParquetWriter(local_path, table.schema)
     pqwriter.write_table(table)
 
@@ -102,43 +109,6 @@ def update_s3_parquet(file, df, paths):
     os.remove(local_path)
 
     return
-
-
-def construct_parquet_table(df):
-    """ Construct parquet table from pandas dataframe
-                Args:
-                    df (df): dataframe to be converted into parquet file
-
-                Returns:
-                    table(pq): parquet table
-
-    """
-
-    # Process the dataframe
-    table = df.copy()
-    # table['datetime'] = table['datetime'].astype('str')
-    table['confidence'] = table['confidence'].astype('float64')
-    x, y, w, h = [], [], [], []
-    for vals in table['obj_bounds'].values:
-        x.append(vals[0])
-        y.append(vals[1])
-        w.append(vals[2])
-        h.append(vals[3])
-    table['box_x'] = x
-    table['box_y'] = y
-    table['box_w'] = w
-    table['box_h'] = h
-    table.drop('obj_bounds', axis=1, inplace=True)
-
-    # Create parquet table
-    arrays = []
-    names = []
-    for col in table.columns:
-        arrays.append(pa.array(table[col]))
-        names.append(col)
-    table = pa.Table.from_arrays(arrays, names)
-
-    return table
 
 
 def load_s3_parquet(file, paths):
