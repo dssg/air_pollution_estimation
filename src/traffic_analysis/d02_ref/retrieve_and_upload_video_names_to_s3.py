@@ -6,7 +6,7 @@ from traffic_analysis.d02_ref.ref_utils import upload_json_to_s3
 from traffic_analysis.d02_ref.ref_utils import generate_dates
 
 
-def retrieve_and_upload_video_names_to_s3(save_name,
+def retrieve_and_upload_video_names_to_s3(ouput_file_name,
                                           paths,
                                           from_date='2019-06-01',
                                           to_date=str(datetime.datetime.now().date()),
@@ -16,7 +16,7 @@ def retrieve_and_upload_video_names_to_s3(save_name,
     """Upload a json to s3 containing the filepaths for videos between the dates, times and cameras specified.
 
         Args:
-            save_name (str): name of the json to be saved
+            ouput_file_name (str): name of the json to be saved
             paths (dict): dictionary containing temp_video, raw_video, s3_profile and bucket_name paths
             from_date (str): start date (inclusive) for retrieving videos, if None then will retrieve from 2019-06-01 onwards
             to_date (str): end date (inclusive) for retrieving vidoes, if None then will retrieve up to current day
@@ -69,7 +69,7 @@ def retrieve_and_upload_video_names_to_s3(save_name,
                 if from_time <= time_of_day <= to_time and (not camera_list or camera_id in camera_list):
                     selected_files.append("%s%s" % (prefix, filename))
 
-    upload_json_to_s3(paths, save_name, selected_files)
+    upload_json_to_s3(paths, ouput_file_name, selected_files)
 
     return
 
