@@ -1,9 +1,9 @@
 
-from src.d00_utils.data_retrieval import delete_and_recreate_dir
-from src.d00_utils.load_confs import load_parameters, load_paths
-from src.d02_intermediate.update_s3_ref import load_video_names_from_s3, upload_video_names_to_s3, \
+from src.traffic_analysis.d00_utils.data_retrieval import delete_and_recreate_dir
+from src.traffic_analysis.d00_utils.load_confs import load_parameters, load_paths
+from src.traffic_analysis.d02_intermediate.update_s3_ref import load_video_names_from_s3, upload_video_names_to_s3, \
     upload_annotation_names_to_s3
-from src.d03_processing.update_s3_processed import update_frame_level_table
+from src.traffic_analysis.d03_processing.update_s3_processed import update_frame_level_table
 
 params = load_parameters()
 paths = load_paths()

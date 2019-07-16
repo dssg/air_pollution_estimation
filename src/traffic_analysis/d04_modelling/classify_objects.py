@@ -3,7 +3,8 @@ from cvlib.object_detection import draw_bbox
 import cvlib as cv
 import imageio
 
-from src.d05_reporting.report_yolo import yolo_output_df
+from src.traffic_analysis.d05_reporting.report_yolo import yolo_output_df
+
 
 def classify_objects(video_dict, params, paths, vid_time_length=10, make_videos=True):
     """ this function classifies objects from video dict with cvlib python package.
