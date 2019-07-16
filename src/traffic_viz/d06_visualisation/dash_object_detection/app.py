@@ -4,7 +4,7 @@ import dash_html_components as html
 import dash_player as player
 import plotly.graph_objs as go
 from dash.dependencies import Input, Output
-from helper import get_cams, load_camera_statistics, load_objects, load_object_statistics, params
+from src.traffic_viz.d06_visualisation.dash_object_detection.helper import get_cams, load_camera_statistics, load_objects, load_object_statistics, params
 from datetime import datetime as dt
 
 
