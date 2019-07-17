@@ -1,9 +1,8 @@
 import numpy as np
 import pandas as pd
-import datetime
 
 
-def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date,time):
+def frame_info_to_df(obj_info_aggregated, frame_ind):
     """Parse the info corresponding to one frame into one pandas df
 
     Keyword arguments: 
@@ -17,15 +16,12 @@ def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date,time):
     """
     frame_df = pd.DataFrame(obj_info_aggregated, columns = ['obj_bounds', 'obj_classification', 'confidence'])
     frame_df["frame_id"] = frame_ind
-    frame_df["camera_id"] = camera_id
-    frame_df["date"] = date
-    frame_df["time"] = time
 
     return frame_df
 
 
 def yolo_output_df(yolo_dict):
-    """Formats the output of yolo on one video. Returns as pandas df. 
+    """Formats the output of yolo for multiple videos. Returns as pandas df.
 
     Keyword arguments: 
         yolo_dict (dict): nested dictionary where each video is a key for a dict containing:
@@ -49,8 +45,8 @@ def yolo_output_df(yolo_dict):
         assert obj_labels.shape[0] == num_frames
         assert obj_label_confidences.shape[0] == num_frames
 
-        date = datetime.datetime.strptime(name.split("_")[0], '%Y-%m-%d').date()
-        time = datetime.datetime.strptime(name.split("_")[1], '%H-%M-%S.%f').time()
+        date = name.split("_")[0]
+        time = name.split("_")[1].split('.')[0]
         camera_id = name.split('_')[-1][:-4]
 
         frame_df_list = []
@@ -62,35 +58,34 @@ def yolo_output_df(yolo_dict):
             obj_info_aggregated = np.array([obj_bounds_np, obj_labels[frame_ind],
                                             obj_label_confidences[frame_ind]]).transpose()
 
-            frame_df = frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date,time)
+            frame_df = frame_info_to_df(obj_info_aggregated, frame_ind)
             frame_df_list.append(frame_df)
 
         yolo_df = pd.concat(frame_df_list)
 
         #yolo_df index is the index of an objected detected over a frame
         yolo_df.index.name = "obj_ind"
-        yolo_df = yolo_df[["camera_id", "frame_id", "date", "time", "obj_bounds", "obj_classification", "confidence"]]
+        yolo_df = yolo_df[["frame_id", "obj_bounds", "obj_classification", "confidence"]]
         yolo_df['video_id'] = video_num
+        yolo_df['datetime'] = pd.to_datetime(date + ' ' + time, format="%Y-%m-%d %H-%M-%S")
+        yolo_df["camera_id"] = camera_id
+
         df_list.append(yolo_df)
-    df = pd.DataFrame()
+
     # Concatenate dataframes
-    if df_list:
-        df = pd.concat(df_list)
+    df = pd.concat(df_list)
 
     return df
 
 
-def yolo_report_stats(yolo_df):
-    '''Report summary statistics for the output of YOLO on one video. 
+def yolo_report_count_stats(yolo_df):
+    '''Report summary statistics for the output of YOLO for multiple videos.
 
     Keyword arguments: 
-    yolo_df -- pandas df containing formatted output of YOLO for one video (takes the output of yolo_output_df())
+    yolo_df -- pandas df containing formatted output of YOLO for multiple videos (takes the output of yolo_output_df())
 
     Returns: 
-    obj_counts_frame: counts of various types of objects per frame
-    video_summary: summary statistics over whole video 
-
-
+    df: dataframe containing the mean and std of vehicle counts for each video
     '''
     dfs = []
     grouped = yolo_df.groupby('video_id')
