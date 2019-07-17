@@ -123,16 +123,16 @@ def load_s3_parquet(file, paths):
 
     # Download the pq file
     my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
-    local_path = os.path.join(paths['temp_parquet'], file + '.parquet')
+    local_path = os.path.join(paths['temp_frame_level'], file + '.parquet')
 
     df = None
 
     try:
-        my_bucket.download_file(paths['s3_processed_jamcam'] + file + '.parquet', local_path)
+        my_bucket.download_file(paths['s3_frame_level'] + file + '.parquet', local_path)
         df = pd.read_parquet(local_path, engine='pyarrow')
         os.remove(local_path)
 
     except:
-        print("Could not download " + paths['s3_processed_jamcam'] + file + '.parquet')
+        print("Could not download " + paths['s3_frame_level'] + file + '.parquet')
 
     return df
