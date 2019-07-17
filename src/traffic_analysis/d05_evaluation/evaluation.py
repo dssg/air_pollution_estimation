@@ -4,7 +4,7 @@ import glob
 import matplotlib.pyplot as plt
 import xml.etree.ElementTree as ElementTree
 
-from src.d05_reporting.report_yolo import yolo_report_count_stats
+from src.traffic_analysis.d05_reporting.report_yolo import yolo_report_count_stats
 
 
 def parse_annotations(paths, bool_print_summary=False):
@@ -74,11 +74,11 @@ def parse_annotations(paths, bool_print_summary=False):
 
 def get_stop_counts(annotations_df):
     """ Get the number of stops for each vehicle from the annotations dataframe
-                    Args:
-                        annotations_df: pandas dataframe containing the annotations
-                    Returns:
-                        pandas dataframe containing the vehicle ids and the number of stops
-                    Raises:
+    Args:
+        annotations_df: pandas dataframe containing the annotations
+    Returns:
+        pandas dataframe containing the vehicle ids and the number of stops
+    Raises:
     """
     ids, counts = [], []
     df_grouped = annotations_df.sort_values(['frame'], ascending=True).groupby('video_id')
