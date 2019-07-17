@@ -6,7 +6,7 @@ import pyarrow.parquet as pq
 
 from traffic_analysis.d00_utils.data_retrieval import connect_to_bucket, load_videos_into_np, delete_and_recreate_dir
 from traffic_analysis.d04_modelling.classify_objects import classify_objects
-from traffic_analysis.d05_reporting.report_yolo import yolo_report_count_stats
+# from traffic_analysis.d05_reporting.report_yolo import yolo_report_count_stats
 
 
 def update_frame_level_table(file_names, paths, params):
@@ -46,12 +46,12 @@ def update_frame_level_table(file_names, paths, params):
     return
 
 
-def update_video_level_table(paths, params):
-    # TODO needs to be implemented
-    frame_level_df = load_s3_parquet("frame_table", paths)
-    video_level_df = yolo_report_count_stats(frame_level_df)
-
-    return
+# def update_video_level_table(paths, params):
+#    # TODO needs to be implemented
+#    frame_level_df = load_s3_parquet("frame_table", paths)
+#    video_level_df = yolo_report_count_stats(frame_level_df)
+#
+#    return
 
 
 def update_s3_parquet(file, df, paths):
