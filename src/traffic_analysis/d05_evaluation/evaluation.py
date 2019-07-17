@@ -68,7 +68,6 @@ def parse_annotations(paths, bool_print_summary=False):
         stops_df = get_stop_counts(df)
         print('Number of Stops:')
         print(stops_df)
-
     return df
 
 

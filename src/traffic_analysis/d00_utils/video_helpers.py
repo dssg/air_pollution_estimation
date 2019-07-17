@@ -22,12 +22,20 @@ def parse_video_name(video_name:str) -> (str, datetime.datetime):
        upload datetime, in the types we need them in 
       
     Keyword arguments 
-
-    video_name -- format is YYYY-mm-dd_HH-mm-ss_camera_id; ex. 2019-06-20_09-01-41_00001.07591 
+    video_name -- can handle format is id_YYYY-mm-dd_HH-mm-seconds_camera_id, where id is sometimes
+                    not present and seconds is sometimes to integer precision sometimes to decimal 
+                    precision 
     """ 
-    YYYYmmdd, hhmmss, camera_id = video_name.replace(".mp4", "").split("_")
+    video_name = video_name.replace(".mp4", "").replace(".xml", "").split("_")
+    if len(video_name) == 4: 
+        # remove id which is sometimes added by cvat
+        video_name = video_name[1:]
+
+    YYYYmmdd, time, camera_id = video_name
     YYYY, mm, dd = YYYYmmdd.split("-")
-    hh, mm, ss = hhmmss.split("-")
+    hh, mm, seconds = time.split("-")
+    # only want seconds to integer precision
+    ss = seconds.split('.')[0] 
     video_upload_datetime = datetime.datetime(year = int(YYYY), month = int(mm), day = int(dd),
                                               hour = int(hh), minute = int(mm), second = int(ss))
     return camera_id, video_upload_datetime
