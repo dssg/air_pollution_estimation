@@ -56,7 +56,6 @@ def collect_camera_videos(local_video_dir: str,
     while True:
         count = 0
         # download videos for camera
-        start = time.time()
         for camera_id in video_urls_dict.keys():
             count += 1
             camera_id = camera_id.replace("JamCams_", "")
@@ -72,18 +71,12 @@ def collect_camera_videos(local_video_dir: str,
                 urllib.request.urlretrieve(file_path, local_path)
             except Exception as e:
                 send_email_warning(str(e), "Video download failed!")
-
-        end = time.time()
-        time_diff = end - start
-        # send_email_warning("Downloaded %s videos from tfl in %s secs." %
-                        #    (count, time_diff), "Download Successful")
         iteration += 1
         if iteration == iterations:
             break
         if delay:
             time.sleep(delay * 60)
-
-
+ 
 def upload_videos(local_video_dir: str, iterations=None, delay: int = None):
     '''
     This function uploads the video in the local_video_dir to S3. Each video is deleted after an upload.
