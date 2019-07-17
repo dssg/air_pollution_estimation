@@ -41,9 +41,6 @@ def collect_camera_videos(local_video_dir: str,
         iterations: number of times the download should run. The video are downloaded continuously if no value is supplied
         delay: amount of time (minutes) to wait for before downloading new data
     """
-    # check if the local directory exists.
-    if not os.path.exists(local_video_dir):
-        os.makedirs(local_video_dir)
 
     # get all the data in the cam_file
     with open(cam_file, 'r') as f:
@@ -57,9 +54,16 @@ def collect_camera_videos(local_video_dir: str,
             camera_id = camera_id.replace("JamCams_", "")
             filename = camera_id + ".mp4"
             file_path = os.path.join(download_url, filename)
-            timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+            datetime_obj = datetime.datetime.now()
+            timestamp = datetime_obj.strftime("%Y%m%d-%H%M%S")
+            local_video_dir_date = "%s/%s/" % (local_video_dir,
+                                               datetime_obj.date())
+
+            # check if the local directory exists.
+            if not os.path.exists(local_video_dir_date):
+                os.makedirs(local_video_dir_date)
             local_path = os.path.join(
-                local_video_dir, "%s_%s" % (timestamp, filename))
+                local_video_dir_date, "%s_%s" % (timestamp, filename))
 
             # download video
             print("Downloading videos to ", file_path)
@@ -127,7 +131,8 @@ def rename_videos(paths, params, chunk_size=100):
                     s3_profile], stdout=PIPE)
         p1 = Popen(["awk", '{$1=$2=$3=""; print $0}'],
                    stdin=ls.stdout, stdout=PIPE)
-        p2 = Popen(["head", "-n " + str(chunk_size)], stdin=p1.stdout, stdout=PIPE)
+        p2 = Popen(["head", "-n " + str(chunk_size)],
+                   stdin=p1.stdout, stdout=PIPE)
         ls.stdout.close()
         p1.stdout.close()
         output = p2.communicate()[0]
