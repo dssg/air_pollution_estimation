@@ -130,6 +130,24 @@ def append_to_database(df, table, creds):
 
     # TODO define the schema
 
+    x = []
+    y = []
+    w = []
+    h = []
+
+    for vals in df['obj_bounds'].values:
+        x.append(vals[0])
+        y.append(vals[1])
+        w.append(vals[2])
+        h.append(vals[3])
+
+    df['box_x'] = x
+    df['box_y'] = y
+    df['box_w'] = w
+    df['box_h'] = h
+
+    df.drop('obj_bounds', axis=1, inplace=True)
+
     df.to_sql(name=table, con=conn, if_exists='append')
 
     return
