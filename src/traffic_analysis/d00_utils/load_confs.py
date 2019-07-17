@@ -19,6 +19,14 @@ def load_app_parameters():
     return {**params['visualization']}
 
 
+def load_credentials():
+
+    with open(project_dir + '/conf/local/credentials.yml') as f:
+        creds = yaml.safe_load(f)
+
+    return creds
+
+
 def load_paths():
     with open(project_dir + '/conf/base/paths.yml') as f:
         paths = yaml.safe_load(f)

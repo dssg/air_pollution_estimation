@@ -3,13 +3,14 @@ import subprocess
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
+from sqlalchemy import create_engine
 
 from traffic_analysis.d00_utils.data_retrieval import connect_to_bucket, load_videos_into_np, delete_and_recreate_dir
 from traffic_analysis.d04_modelling.classify_objects import classify_objects
 # from traffic_analysis.d05_reporting.report_yolo import yolo_report_count_stats
 
 
-def update_frame_level_table(file_names, paths, params):
+def update_frame_level_table(file_names, paths, params, creds):
     """ Update the frame level table on s3 (pq) based on the videos in the files list
                 Args:
                     file_names (list): list of s3 filepaths for the videos to be processed
@@ -39,9 +40,13 @@ def update_frame_level_table(file_names, paths, params):
                                       vid_time_length=10,
                                       make_videos=False)
 
-    update_s3_parquet(file="frame_table",
-                      df=frame_level_df,
-                      paths=paths)
+    # update_s3_parquet(file="frame_table",
+    #                   df=frame_level_df,
+    #                   paths=paths)
+
+    append_to_database(df=frame_level_df,
+                       table='frame_level',
+                       creds=creds)
 
     return
 
@@ -107,6 +112,25 @@ def update_s3_parquet(file, df, paths):
         print('Parquet upload failed!')
 
     os.remove(local_path)
+
+    return
+
+
+def append_to_database(df, table, creds):
+
+    db_host = creds['postgres']['host']
+    db_name = creds['postgres']['name']
+    db_user = creds['postgres']['user']
+    db_pass = creds['postgres']['passphrase']
+
+    conn = create_engine('postgresql://%s:%s@%s/%s' %
+                         (db_user, db_pass, db_host, db_name),
+                         encoding='latin1',
+                         echo=True)
+
+    # TODO define the schema
+
+    df.to_sql(name=table, con=conn, if_exists='append')
 
     return
 
