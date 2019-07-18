@@ -20,15 +20,17 @@ class TrafficAnalyserInterface(ABC):
         self.paths = paths
 
     @abstractmethod
-    def construct_frame_level_df(self, video_dict: dict) -> pd.DataFrame: pass
+    def construct_frame_level_df(self, video_dict: dict) -> pd.DataFrame: 
         """Should use the video_dict to create frame level df for multiple videos with columns 
         as specified in the project data tables schema
         """
         #assertion code and reordering for df dataframes 
+        pass
         
 
     @abstractmethod
-    def construct_video_level_df(self, frame_level_df: pd.DataFrame) -> pd.DataFrame: pass
+    def construct_video_level_df(self, frame_level_df: pd.DataFrame) -> pd.DataFrame: 
         """Should return video level pandas dataframe for multiple videos with columns as specified in the project
         data tables schema
         """
+        pass

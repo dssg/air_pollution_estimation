@@ -1,7 +1,7 @@
 import os
 import json
 
-from traffic_analysis.d00_utils.data_retrieval import connect_to_bucket
+from src.traffic_analysis.d00_utils.data_retrieval import connect_to_bucket
 
 
 def load_video_names_from_s3(ref_file, paths):
