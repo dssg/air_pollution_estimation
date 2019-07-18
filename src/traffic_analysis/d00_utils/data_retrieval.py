@@ -15,6 +15,8 @@ from subprocess import Popen, PIPE
 
 def get_project_directory():
     """ Returns project directory
+        Returns:
+            project_dir (str): string containing the directory of the project
     """
     project_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..')
 
@@ -195,28 +197,34 @@ def retrieve_tims_from_s3():
 
 def retrieve_detect_model_configs_from_s3(params, paths):
     """ Retrieves required files from s3 folder for detection model
+        Args:
+            params (dict): dictionary of parameters from yml file
+            paths (dict): dictionary of paths from yml file
     """
 
     # initialization
-    my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
-    model = params['yolo_model']
-    s3_filepath_model = "ref/model_conf/" + model
-
-    # get list of all objects in the folder
-    objects = my_bucket.objects.filter(Prefix=s3_filepath_model)
-    files = [obj.key for obj in objects]
     project_dir = get_project_directory()
+    model = params['yolo_model']
     local_filepath_model = os.path.join(project_dir, 'data', '00_detection', model)
 
     # download files from s3 if they do not exist in local
     if not os.path.exists(local_filepath_model):
         os.makedirs(local_filepath_model)
+
+        my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
+        s3_filepath_model = "ref/model_conf/" + model
+
+        # get list of all objects in the folder
+        objects = my_bucket.objects.filter(Prefix=s3_filepath_model)
+        files = [obj.key for obj in objects]
+
         for filename in files:
             path, fn = os.path.split(filename)
             local_filepath_file = os.path.join(local_filepath_model, fn)
             my_bucket.download_file(filename, local_filepath_file)
     else:
         pass
+
 
     return
 

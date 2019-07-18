@@ -1,9 +1,10 @@
 import os
 import numpy as np
 import cv2
-from src.traffic_analysis.d00_utils.load_confs import load_parameters, load_paths
 from src.traffic_analysis.d00_utils.data_retrieval import retrieve_detect_model_configs_from_s3
-
+from src.traffic_analysis.d00_utils.load_confs import load_parameters, load_paths
+import time
+import cvlib as cv
 
 def populate_model(params):
     """ locate files that correspond to the detection model of choice
@@ -69,9 +70,9 @@ def make_bbox_around_object(imcap, detection):
     center_y = int(detection[1] * imheight)
     w = int(detection[2] * imwidth)
     h = int(detection[3] * imheight)
-    x = int(center_x - w / 2)
-    y = int(center_y - h / 2)
-    bbox = [w, h, x, y]
+    x = center_x - w / 2
+    y = center_y - h / 2
+    bbox = [x, y, w, h]
 
     return bbox
 
@@ -88,7 +89,7 @@ def identify_most_probable_object(detection):
 
     scores = detection[5:]  # ignore the physical parameters
     most_probable_object_idx = np.argmax(scores)
-    max_score = np.max(scores)
+    max_score = scores[most_probable_object_idx]
 
     return most_probable_object_idx, max_score
 
@@ -170,8 +171,8 @@ def reduce_overlapping_detections(bboxes_in, label_idxs_in, confs_in, conf_thres
     """
 
     # report the indices of boxes that are screened through nms check
-    idx_boxes_nms = cv2.dnn.NMSBoxes(bboxes=bboxes_in, scores=confs_in,
-                                     score_threshold=conf_thresh, nms_threshold=nms_thresh)
+    idx_boxes_nms = cv2.dnn.NMSBoxes(bboxes_in, confs_in,
+                                     conf_thresh, nms_thresh)
 
     # initialize output lists
     bboxes_out = []
@@ -217,6 +218,7 @@ def detect_objects_in_image(imcap, params, paths):
         Args:
             imcap (nparray): numpy array containing the captured image (width, height, rbg)
             params (dict): dictionary of parameters from yml file
+            paths (dict): dictionary of paths from yml file
         Returns:
             bboxes(list(list(int))): list of width, height, and bottom-left coordinates of detection bboxes
             labels (list(str)): list of detection labels
@@ -245,11 +247,3 @@ def detect_objects_in_image(imcap, params, paths):
     labels = label_detections(params, label_idxs)
 
     return boxes, labels, confs
-
-
-if __name__ == '__main__':
-    params = load_parameters()
-    paths = load_paths()
-    imcap = cv2.imread('C:/Users/joh3146/Documents/dssg/air_pollution_estimation/data/01_raw/jamcams/frame001.jpg')
-    b, l, c = detect_objects_in_image(imcap, params, paths)
-    print('yay')
