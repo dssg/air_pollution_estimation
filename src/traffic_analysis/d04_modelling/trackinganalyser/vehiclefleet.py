@@ -1,5 +1,6 @@
 from src.traffic_analysis.d00_utils.bbox_helpers import color_bboxes, bbox_intersection_over_union, bboxcv2_to_bboxcvlib
 from src.traffic_analysis.d00_utils.stats_helpers import time_series_smoother
+from src.traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
 import os
 import numpy as np
 import pandas as pd
@@ -41,11 +42,11 @@ class VehicleFleet():
         """
         if load_from_pd:
             # sort to ensure that the ordering of self.labels and self.confs corresps to vehicle id
-            frame_level_df = frame_level_df.sort_values(by=['cam_id', 'frame_id'], axis='index')
+            frame_level_df = frame_level_df.sort_values(by=['camera_id', 'frame_id'], axis='index')
             self.labels = np.array(frame_level_df[frame_level_df["frame_id"] == 0]["vehicle_type"])
             self.confs = np.array(frame_level_df[frame_level_df["frame_id"] == 0]["confidence"])
             # get static info
-            self.camera_id = frame_level_df["cam_id"][0]
+            self.camera_id = frame_level_df["camera_id"][0]
             self.video_upload_datetime = frame_level_df["video_upload_datetime"][0]
 
             # extract bbox info into np array
@@ -65,7 +66,7 @@ class VehicleFleet():
             self.bboxes = np.expand_dims(bboxes, axis=2)
             self.labels = labels
             self.confs = confs
-            self.camera_id, self.video_upload_datetime = parse_video_name(video_name)
+            self.camera_id, self.video_upload_datetime = parse_video_or_annotation_name(video_name)
 
     def add_vehicles(self, new_bboxes: np.ndarray, new_labels: np.ndarray, new_confs: np.ndarray):
         """Adds new vehicles to the vehicleFleet, creating appropriate bbox location "history" for the 
@@ -270,12 +271,12 @@ class VehicleFleet():
         frame_level_info_df["vehicle_type"] = frame_level_info_df.apply(lambda row: self.labels[row['vehicle_id']], axis = 1)
         frame_level_info_df["confidence"] = frame_level_info_df.apply(lambda row: self.confs[row['vehicle_id']], axis = 1)
         frame_level_info_df["video_upload_datetime"] = self.video_upload_datetime
-        frame_level_info_df["cam_id"] = self.camera_id
-        # TODO: change vehicle_type to vehicle_type_id, cam_id to proper integer cam_id
-        # frame_level_info_df["cam_id"] = frame_level_info_df["cam_id"].astype('int')
+        frame_level_info_df["camera_id"] = self.camera_id
+        # TODO: change vehicle_type to vehicle_type_id, camera_id to proper integer camera_id
+        # frame_level_info_df["camera_id"] = frame_level_info_df["camera_id"].astype('int')
 
         # reorder columns
-        frame_level_info_df = frame_level_info_df[['cam_id', 'video_upload_datetime',
+        frame_level_info_df = frame_level_info_df[['camera_id', 'video_upload_datetime',
                             'frame_id', 'vehicle_id', 'vehicle_type', 'confidence', 'bboxes']]
 
         return frame_level_info_df
@@ -302,12 +303,12 @@ class VehicleFleet():
         # combine into one dataframe
         video_level_stats_df = counts_df.join([stops_df, starts_df], how='outer',
                                  sort=True).fillna(0)
-        video_level_stats_df["cam_id"] = self.camera_id
+        video_level_stats_df["camera_id"] = self.camera_id
         video_level_stats_df["video_upload_datetime"] = self.video_upload_datetime
         # rownames to a column
         video_level_stats_df.index.name = 'vehicle_type'
         video_level_stats_df.reset_index(inplace=True)
         # reorder columns
-        video_level_stats_df = video_level_stats_df[['cam_id', 'video_upload_datetime',
+        video_level_stats_df = video_level_stats_df[['camera_id', 'video_upload_datetime',
                             'vehicle_type', 'counts', 'stops', 'starts']]
         return video_level_stats_df
