@@ -35,7 +35,7 @@ def classify_objects(video_dict, params, paths, vid_time_length=10, make_videos=
 
             # apply object detection
             bbox, label, conf = cv.detect_common_objects(frame, confidence=params['detection_confidence_threshold'],
-                                                         model=params['yolo_model'])
+                                                         model=params['detection_model'])
             obj_bounds.append(bbox)
             obj_labels.append([l.replace('motorcycle', 'motorbike') for l in label])
             obj_label_confidences.append(conf)

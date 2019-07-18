@@ -1,6 +1,6 @@
-import numpy as np
-import pandas as pd
-import datetime
+from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
+import numpy as np 
+import pandas as pd 
 
 
 def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date_time):
@@ -48,10 +48,10 @@ def yolo_output_df(yolo_dict):
         assert obj_labels.shape[0] == num_frames
         assert obj_label_confidences.shape[0] == num_frames
 
-        date = datetime.datetime.strptime(name.split("_")[0], '%Y-%m-%d').date()
-        time = datetime.datetime.strptime(name.split("_")[1], '%H-%M-%S.%f').time()
-        date_time = datetime.datetime.combine(date, time)
-        camera_id = name.split('_')[-1][:-4]
+        # date = datetime.datetime.strptime(name.split("_")[0], '%Y-%m-%d').date()
+        # time = datetime.datetime.strptime(name.split("_")[1], '%H-%M-%S.%f').time()
+        camera_id, date_time = parse_video_or_annotation_name(name)
+        # camera_id = name.split('_')[-1][:-4]
 
         frame_df_list = []
 
