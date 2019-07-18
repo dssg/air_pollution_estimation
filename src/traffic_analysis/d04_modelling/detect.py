@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import cv2
-from src.traffic_analysis.d00_utils.data_retrieval import retrieve_detect_model_configs_from_s3, get_project_directory
+from traffic_analysis.d00_utils.data_retrieval import retrieve_detect_model_configs_from_s3, get_project_directory
 
 
 def detect_objects_in_image(image_capture, params, paths):
@@ -131,15 +131,20 @@ def pass_image_through_nn(image_capture, params):
     # import classification model
     config, weights = populate_model(params)
 
-    # convert image to "blob"
+    # pre-process image: scaling, and align the BGR channel order of open cv with the RGB order of mean values
     scale = 0.00392  # required scaling for yolo
-    blob = cv2.dnn.blobFromImage(image_capture, scale, (416, 416), (0, 0, 0), True, crop=False)
+    pre_processed_image = cv2.dnn.blobFromImage(image=image_capture,
+                                                scalefactor=scale,
+                                                size=(416, 416),   # spatial size expected by CNN
+                                                mean=(0, 0, 0),    # do not use mean subtraction
+                                                swapRB=True,
+                                                crop=False)
 
     # read model as deep neural network in opencv
     net = cv2.dnn.readNet(weights, config)  # can use other net, see documentation
 
     # input blob to neural network
-    net.setInput(blob)
+    net.setInput(pre_processed_image)
 
     # forward pass of blob through neural network
     output_layers = net.forward(get_output_layers(net))
