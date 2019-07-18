@@ -3,7 +3,7 @@ import pandas as pd
 import datetime
 
 
-def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date,time):
+def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date_time):
     """Parse the info corresponding to one frame into one pandas df
 
     Keyword arguments: 
@@ -18,8 +18,7 @@ def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date,time):
     frame_df = pd.DataFrame(obj_info_aggregated, columns = ['obj_bounds', 'obj_classification', 'confidence'])
     frame_df["frame_id"] = frame_ind
     frame_df["camera_id"] = camera_id
-    frame_df["date"] = date
-    frame_df["time"] = time
+    frame_df["datetime"] = date_time
 
     return frame_df
 
@@ -51,6 +50,7 @@ def yolo_output_df(yolo_dict):
 
         date = datetime.datetime.strptime(name.split("_")[0], '%Y-%m-%d').date()
         time = datetime.datetime.strptime(name.split("_")[1], '%H-%M-%S.%f').time()
+        date_time = datetime.datetime.combine(date, time)
         camera_id = name.split('_')[-1][:-4]
 
         frame_df_list = []
@@ -62,14 +62,14 @@ def yolo_output_df(yolo_dict):
             obj_info_aggregated = np.array([obj_bounds_np, obj_labels[frame_ind],
                                             obj_label_confidences[frame_ind]]).transpose()
 
-            frame_df = frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date,time)
+            frame_df = frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date_time)
             frame_df_list.append(frame_df)
 
         yolo_df = pd.concat(frame_df_list)
 
         #yolo_df index is the index of an objected detected over a frame
         yolo_df.index.name = "obj_ind"
-        yolo_df = yolo_df[["camera_id", "frame_id", "date", "time", "obj_bounds", "obj_classification", "confidence"]]
+        yolo_df = yolo_df[["camera_id", "frame_id", "datetime", "obj_bounds", "obj_classification", "confidence"]]
         yolo_df['video_id'] = video_num
         df_list.append(yolo_df)
     df = pd.DataFrame()
