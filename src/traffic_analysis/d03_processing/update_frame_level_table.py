@@ -35,10 +35,5 @@ def update_frame_level_table(file_names, paths, params, creds):
 
     add_to_frame_table_sql(df=frame_level_df,
                            table='frame_level',
-                           creds=creds)
-
-    return
-
-
-
-
+                           creds=creds,
+                           paths=paths)

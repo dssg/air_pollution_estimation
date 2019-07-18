@@ -3,7 +3,7 @@ from traffic_analysis.d00_utils.load_confs import load_parameters, load_paths, l
 from traffic_analysis.d02_ref.load_video_names_from_s3 import load_video_names_from_s3
 from traffic_analysis.d02_ref.retrieve_and_upload_video_names_to_s3 import retrieve_and_upload_video_names_to_s3
 from traffic_analysis.d02_ref.upload_annotation_names_to_s3 import upload_annotation_names_to_s3
-from traffic_analysis.d03_processing.update_s3_processed import update_frame_level_table
+from traffic_analysis.d03_processing.update_frame_level_table import update_frame_level_table
 
 
 params = load_parameters()

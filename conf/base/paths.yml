@@ -14,3 +14,7 @@ local_paths:
     processed_video: "results/jamcams/"
     plots: "plots/"
     annotations: "annotations/"
+
+db_paths:
+    db_host: 'dssg-london.ck0oseycrr7s.eu-west-2.rds.amazonaws.com'
+    db_name: 'airquality'

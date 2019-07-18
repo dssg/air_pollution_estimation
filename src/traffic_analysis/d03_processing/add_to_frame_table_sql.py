@@ -1,7 +1,7 @@
 import sqlalchemy
 
 
-def add_to_frame_table_sql(df, table, creds):
+def add_to_frame_table_sql(df, table, creds, paths):
 
     x, y, w, h = [], [], [], []
     for vals in df['obj_bounds'].values:
@@ -15,10 +15,10 @@ def add_to_frame_table_sql(df, table, creds):
     df['box_h'] = h
     df.drop('obj_bounds', axis=1, inplace=True)
 
-    db_host = creds['postgres']['host']
-    db_name = creds['postgres']['name']
-    db_user = creds['postgres']['user']
-    db_pass = creds['postgres']['passphrase']
+    db_host = paths['db_paths']['host']
+    db_name = paths['db_paths']['name']
+    db_user = creds['postgres']['username']
+    db_pass = creds['postgres']['password']
 
     conn = sqlalchemy.create_engine('postgresql://%s:%s@%s/%s' %
                                     (db_user, db_pass, db_host, db_name),
