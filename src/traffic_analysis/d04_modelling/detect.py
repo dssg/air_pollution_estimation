@@ -70,21 +70,6 @@ def populate_labels(params):
     return labels
 
 
-def get_output_layers(net):
-    """ (taken from cvlib) grabs another layer from output of object detection?
-        Args:
-            net (opencv.dnn): deep neural network created by opencv
-
-        Returns:
-            output_layers (list(str)): selected layers of neural network to be used in forward pass
-    """
-
-    layer_names = net.getLayerNames()
-    output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
-
-    return output_layers
-
-
 def make_bbox_around_object(image_capture: np.ndarray, unscaled_bbox)->list:
     """ makes bounding boxes around detected objects at original scale of image
         Args:
