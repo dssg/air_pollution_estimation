@@ -10,8 +10,8 @@ data_collection:
 
 modelling:
   # obj detection
-  yolo_model: "yolov3-tiny"
-  yolo_implementation: "cvlib"
+  detection_model: "yolov3-tiny"
+  detection_implementation: "cvlib"
   detection_confidence_threshold: 0.1
   detection_nms_threshold: 0.2
 
@@ -28,8 +28,7 @@ modelling:
 
 
 reporting:
-  chunk_size: 5
-  columns: ["camera_id", "date", "time", "metric", "motorcycle", "truck", "bus", "car"]
-  dtype:
+  chunk_size: 2
+  dtype: 
     camera_id: 'category'
 
