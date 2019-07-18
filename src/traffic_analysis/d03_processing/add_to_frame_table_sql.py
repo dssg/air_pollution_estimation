@@ -15,8 +15,8 @@ def add_to_frame_table_sql(df, table, creds, paths):
     df['box_h'] = h
     df.drop('obj_bounds', axis=1, inplace=True)
 
-    db_host = paths['db_paths']['host']
-    db_name = paths['db_paths']['name']
+    db_host = paths['db_host']
+    db_name = paths['db_name']
     db_user = creds['postgres']['username']
     db_pass = creds['postgres']['password']
 
