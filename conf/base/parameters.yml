@@ -9,7 +9,7 @@ data_collection:
   tims_download_website: "http://roads.data.tfl.gov.uk/TIMS/"
 
 modelling:
-  yolo_model: "yolov3-tiny"
+  detection_model: "yolov3-tiny"
   confidence_threshold: 0.2
 
 reporting:
