@@ -225,7 +225,6 @@ def retrieve_detect_model_configs_from_s3(params, paths):
     else:
         pass
 
-
     return
 
 

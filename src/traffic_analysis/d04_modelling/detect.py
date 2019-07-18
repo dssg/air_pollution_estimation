@@ -2,9 +2,7 @@ import os
 import numpy as np
 import cv2
 from src.traffic_analysis.d00_utils.data_retrieval import retrieve_detect_model_configs_from_s3
-from src.traffic_analysis.d00_utils.load_confs import load_parameters, load_paths
-import time
-import cvlib as cv
+
 
 def populate_model(params):
     """ locate files that correspond to the detection model of choice
