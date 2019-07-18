@@ -42,14 +42,17 @@ class db():
             """,
             """
             CREATE TABLE frame_stats (
-                id SERIAL,
+                obj_ind INTEGER,
                 camera_id INTEGER,
-                video_upload_datetime timestamp,
                 frame_id INTEGER,
-                vehicle_id INTEGER,
-                bboxes INTEGER[],
-                vehicle_type_id INTEGER,
-                confidence FLOAT
+                datetime timestamp,
+                obj_classification VARCHAR(255),
+                confidence FLOAT,
+                video_id INTEGER,
+                box_x INTEGER,
+                box_y INTEGER,
+                box_w INTEGER,
+                box_h INTEGER
             )
             """,
 
