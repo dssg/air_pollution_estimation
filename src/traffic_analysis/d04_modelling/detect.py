@@ -1,7 +1,33 @@
 import os
 import numpy as np
 import cv2
-from src.traffic_analysis.d00_utils.data_retrieval import retrieve_detect_model_configs_from_s3
+from src.traffic_analysis.d00_utils.data_retrieval import retrieve_detect_model_configs_from_s3, get_project_directory
+
+
+def detect_objects_in_image(image_capture, params, paths):
+    """ unifying function that defines the detected objects in an image
+        Args:
+            image_capture (nparray): numpy array containing the captured image (width, height, rbg)
+            params (dict): dictionary of parameters from yml file
+            paths (dict): dictionary of paths from yml file
+        Returns:
+            bboxes(list(list(int))): list of width, height, and bottom-left coordinates of detection bboxes
+            labels (list(str)): list of detection labels
+            confs (list(float)): list of detection scores
+    """
+
+    conf_thresh = params['confidence_threshold']
+    nms_thresh = params['iou_threshold']
+
+    retrieve_detect_model_configs_from_s3(params, paths)
+    output_layers = pass_image_through_nn(image_capture, params)
+    boxes_unfiltered, label_idxs_unfiltered, confs_unfiltered = describe_best_detections(image_capture,
+                                                                                         output_layers, conf_thresh)
+    boxes, label_idxs, confs = reduce_overlapping_detections(boxes_unfiltered, label_idxs_unfiltered,
+                                                             confs_unfiltered, conf_thresh, nms_thresh)
+    labels = label_detections(params, label_idxs)
+
+    return boxes, labels, confs
 
 
 def populate_model(params):
@@ -14,9 +40,9 @@ def populate_model(params):
     """
 
     model = params['yolo_model']
-    project_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..')
-    config_file_path = os.path.join(project_dir, 'data', '00_detection', model, model + '.cfg')  # change if model isn't yolo
-    weights_file_path = os.path.join(project_dir, 'data', '00_detection', model, model + '.weights')  # change if model isn't yolo
+    project_dir = get_project_directory()
+    config_file_path = os.path.join(project_dir, 'data', '00_detection', model, model + '.cfg')
+    weights_file_path = os.path.join(project_dir, 'data', '00_detection', model, model + '.weights')
     return config_file_path, weights_file_path
 
 
@@ -30,8 +56,8 @@ def populate_labels(params):
     """
 
     model = params['yolo_model']
-    project_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..')
-    labels_file_path = os.path.join(project_dir, 'data', '00_detection', model, 'coco.names')  # change if not coco
+    project_dir = get_project_directory()
+    labels_file_path = os.path.join(project_dir, 'data', '00_detection', model, 'coco.names')
     f = open(labels_file_path, 'r')
     labels = [line.strip() for line in f.readlines()]
 
@@ -53,53 +79,53 @@ def get_output_layers(net):
     return output_layers
 
 
-def make_bbox_around_object(imcap, detection):
+def make_bbox_around_object(image_capture, unscaled_bbox):
     """ makes bounding boxes around detected objects at original scale of image
         Args:
-            detection (nparray): nparray with unscaled width, height, and bottom-left coordinates of detected object
-            imcap (nparray): numpy array containing the captured image (width, height, rbg)
+            unscaled_bbox (nparray): nparray with unscaled width, height, and bottom-left coordinates of detected object
+            image_capture (nparray): numpy array containing the captured image (width, height, rbg)
 
         Returns:
-            bbox (list(int)): width, height, and bottom-left coordinates of bounding box
+            scaled_bbox (list(int)): width, height, and bottom-left coordinates of bounding box
     """
 
-    imheight, imwidth = imcap.shape[:2]
-    center_x = int(detection[0] * imwidth)
-    center_y = int(detection[1] * imheight)
-    w = int(detection[2] * imwidth)
-    h = int(detection[3] * imheight)
+    image_capture_height, image_capture_width = image_capture.shape[:2]
+    center_x = int(unscaled_bbox[0] * image_capture_width)
+    center_y = int(unscaled_bbox[1] * image_capture_height)
+    w = int(unscaled_bbox[2] * image_capture_width)
+    h = int(unscaled_bbox[3] * image_capture_height)
     x = center_x - w / 2
     y = center_y - h / 2
-    bbox = [x, y, w, h]
+    scaled_bbox = [x, y, w, h]
 
-    return bbox
+    return scaled_bbox
 
 
-def identify_most_probable_object(detection):
+def identify_most_probable_object(grid_cell):
     """ finds the most likely object to exist in a specific grid cell of image
         Args:
-            detection (nparray): nparray with scores of object labels in grid cell
+            grid_cell (nparray): nparray with scores of object labels in grid cell
 
         Returns:
             most_probable_object_idx (int): index of label of most probable object
-            max_score (float): score (i.e., confidence) of most probable object detected in image
+            most_probable_object_score (float): score (i.e., confidence) of most probable object detected in image
     """
 
-    scores = detection[5:]  # ignore the physical parameters
+    scores = grid_cell[5:]  # ignore the physical parameters
     most_probable_object_idx = np.argmax(scores)
-    max_score = scores[most_probable_object_idx]
+    most_probable_object_score = scores[most_probable_object_idx]
 
-    return most_probable_object_idx, max_score
+    return most_probable_object_idx, most_probable_object_score
 
 
-def predict_objects_in_image(imcap, params):
+def pass_image_through_nn(image_capture, params):
     """ detection model generates scores (i.e., confidence) of each object existing in image
         Args:
-            imcap (nparray): numpy array containing the captured image (width, height, rbg)
+            image_capture (nparray): numpy array containing the captured image (width, height, rbg)
             params (dict): dictionary of parameters from yml file
 
         Returns:
-            predictions (list(nparray)): list of neural network outputs and scores of predicted objects
+            output_layers (list(nparray)): list of neural network output layers and scores of predicted objects
     """
 
     # import classification model
@@ -107,7 +133,7 @@ def predict_objects_in_image(imcap, params):
 
     # convert image to "blob"
     scale = 0.00392  # required scaling for yolo
-    blob = cv2.dnn.blobFromImage(imcap, scale, (416, 416), (0, 0, 0), True, crop=False)
+    blob = cv2.dnn.blobFromImage(image_capture, scale, (416, 416), (0, 0, 0), True, crop=False)
 
     # read model as deep neural network in opencv
     net = cv2.dnn.readNet(weights, config)  # can use other net, see documentation
@@ -116,16 +142,16 @@ def predict_objects_in_image(imcap, params):
     net.setInput(blob)
 
     # forward pass of blob through neural network
-    predictions = net.forward(get_output_layers(net))
+    output_layers = net.forward(get_output_layers(net))
 
-    return predictions
+    return output_layers
 
 
-def describe_best_detections(imcap, predictions, conf_thresh):
+def describe_best_detections(image_capture, output_layers, conf_thresh):
     """ describes the detections that score above the confidence threshold
         Args:
-            imcap (nparray): numpy array containing the captured image (width, height, rbg)
-            predictions (list(nparray)): list of neural network outputs and scores of predicted objects
+            image_capture (nparray): numpy array containing the captured image (width, height, rbg)
+            output_layers (list(nparray)): list of neural network outputs and scores of predicted objects
             conf_thresh (float): minimum confidence required in object detection, between 0 and 1
         Returns:
             bboxes (list(list(int))): list of width, height, and bottom-left coordinates of detection bounding boxes
@@ -138,15 +164,15 @@ def describe_best_detections(imcap, predictions, conf_thresh):
     label_idxs = []
     confs = []
 
-    for prediction in predictions:  # loop through prediction layers
-        for detections in prediction:  # loop through class detection probabilities
+    for output_layer in output_layers:  # loop through output layers from pass thru neural network
+        for grid_cell in output_layer:  # loop through grid cells in output layer
 
             # find most likely object in specific grid cell of image
-            object_label_idx, max_conf = identify_most_probable_object(detections)
+            object_label_idx, max_conf = identify_most_probable_object(grid_cell)
 
             # append object to running list of objects if prediction score is above confidence threshold
             if max_conf > conf_thresh:
-                object_bbox = make_bbox_around_object(imcap, detections)
+                object_bbox = make_bbox_around_object(image_capture, grid_cell)
                 bboxes.append(object_bbox)
                 label_idxs.append(object_label_idx)
                 confs.append(float(max_conf))
@@ -209,39 +235,3 @@ def label_detections(params, label_idxs):
         labels.append(str(label_list[tick]))
 
     return labels
-
-
-def detect_objects_in_image(imcap, params, paths):
-    """ unifying function that defines the detected objects in an image
-        Args:
-            imcap (nparray): numpy array containing the captured image (width, height, rbg)
-            params (dict): dictionary of parameters from yml file
-            paths (dict): dictionary of paths from yml file
-        Returns:
-            bboxes(list(list(int))): list of width, height, and bottom-left coordinates of detection bboxes
-            labels (list(str)): list of detection labels
-            confs (list(float)): list of detection scores
-    """
-
-    # define thresholds based on params file
-    conf_thresh = params['confidence_threshold']
-    nms_thresh = params['iou_threshold']
-
-    # download model configuration files if not already on local from s3
-    retrieve_detect_model_configs_from_s3(params, paths)
-
-    # predict detected objects in the image
-    predictions = predict_objects_in_image(imcap, params)
-
-    # define detected objects based on confidences of detections
-    boxes_unfiltered, label_idxs_unfiltered, confs_unfiltered = describe_best_detections(imcap,
-                                                                                         predictions, conf_thresh)
-
-    # reduce overlap between detections of same object with nms
-    boxes, label_idxs, confs = reduce_overlapping_detections(boxes_unfiltered, label_idxs_unfiltered,
-                                                             confs_unfiltered, conf_thresh, nms_thresh)
-
-    # generate labels of final detections
-    labels = label_detections(params, label_idxs)
-
-    return boxes, labels, confs
