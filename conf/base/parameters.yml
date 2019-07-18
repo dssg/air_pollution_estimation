@@ -27,8 +27,7 @@ modelling:
 
 
 reporting:
-  chunk_size: 5
-  columns: ["camera_id", "date", "time", "metric", "motorcycle", "truck", "bus", "car"]
-  dtype:
+  chunk_size: 2
+  dtype: 
     camera_id: 'category'
 
