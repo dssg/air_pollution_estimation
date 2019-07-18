@@ -1,10 +1,3 @@
-import os
-import subprocess
-import pandas as pd
-import pyarrow as pa
-import pyarrow.parquet as pq
-import sqlalchemy
-
 from traffic_analysis.d00_utils.data_retrieval import connect_to_bucket, load_videos_into_np, delete_and_recreate_dir
 from traffic_analysis.d04_modelling.classify_objects import classify_objects
 from traffic_analysis.d03_processing.add_to_frame_table_sql import add_to_frame_table_sql
