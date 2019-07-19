@@ -34,6 +34,7 @@ def retrieve_and_upload_video_names_to_s3(ouput_file_name,
     s3_profile = paths['s3_profile']
     s3_video = paths['s3_video']
     to_date = dateutil.parser.parse(to_date).date()
+    from_date = dateutil.parser.parse(from_date).date()
     from_time = dateutil.parser.parse(format_time(from_time)).time()
     to_time = dateutil.parser.parse(format_time(to_time)).time()
     selected_files = []
