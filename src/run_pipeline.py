@@ -9,6 +9,7 @@ from traffic_analysis.d03_processing.update_frame_level_table import update_fram
 params = load_parameters()
 paths = load_paths()
 creds = load_credentials()
+s3_credentials = creds[paths['s3_creds']]
 
 # If running first time:
 # creates the test_seach_json. Change the camera list and output file name for full run
@@ -25,7 +26,8 @@ creds = load_credentials()
 
 # Start from here if video names already specified
 selected_videos = load_video_names_from_s3(ref_file='test_search',
-                                           paths=paths)
+                                           paths=paths,
+                                           s3_credentials=s3_credentials)
 
 # select chunks of videos and classify objects
 chunk_size = params['chunk_size']
