@@ -11,7 +11,6 @@ iterations = params['iterations']
 delay = params['delay']
 s3_credentials = creds[paths['s3_creds']]
 
-cam_file = paths['cam_file']
 local_video_dir = paths['temp_video']
 
 # download camera data from tfl
@@ -22,16 +21,15 @@ print("Downloaded tfl camera details.")
 
 
 def collect_camera_videos_fn():
-    collect_camera_videos(local_video_dir=local_video_dir,
-                          download_url=params['jamcam_url'],
-                          cam_file=cam_file,
+    collect_camera_videos(download_url=params['jamcam_url'],
+                          s3_credentials=s3_credentials,
+                          paths=paths,
                           iterations=iterations,
                           delay=delay)
 
 
 def upload_videos_fn():
-    upload_videos(local_video_dir=local_video_dir,
-                  credentials=paths,
+    upload_videos(paths=paths,
                   iterations=iterations,
                   delay=delay)
 
@@ -42,7 +40,7 @@ def rename_videos_fn():
                   chunk_size=1000)
 
 
-def runInParallel(*fns):
+def run_in_parallel(*fns):
     proc = []
     for fn in fns:
         p = Process(target=fn)
@@ -53,4 +51,4 @@ def runInParallel(*fns):
 
 
 print("Running download and upload functions in parallel")
-runInParallel(collect_camera_videos_fn, upload_videos_fn, rename_videos_fn)
+run_in_parallel(collect_camera_videos_fn, upload_videos_fn, rename_videos_fn)
