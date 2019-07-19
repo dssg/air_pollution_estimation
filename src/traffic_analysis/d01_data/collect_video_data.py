@@ -35,35 +35,39 @@ def download_camera_meta_data(tfl_camera_api: str,
     dl.save_json(data=camera_list, file_path=camera_meta_data_path)
 
 
-def collect_camera_videos(local_video_dir: str,
-                          download_url: dict,
-                          cam_file: str = "data/00_ref/cam_file.json",
+def collect_camera_videos(download_url: dict,
+                          s3_credentials: dict,
+                          paths: dict,
                           iterations: int = None,
                           delay: int = 3):
     """
     This function was created to download videos from cameras using the tfl api.
-        local_video_dir: local directly to download the videos in
         download_url: the tfl api to download traffic camera videos
+        s3_credentials: s3 credentials
+        paths:
         cam_file: stores the last time the camera was modified. The file is checked in order to download new videos
         iterations: number of times the download should run. The video are downloaded continuously if no value is supplied
         delay: amount of time (minutes) to wait for before downloading new data
     """
 
-    # get all the data in the cam_file
-    with open(cam_file, 'r') as f:
-        video_urls_dict = dict(json.loads(f.read()))
+    dl = DataLoaderS3(s3_credentials,
+                      bucket_name=paths['bucket_name'])
+
+    video_urls_dict = dict(dl.read_json(paths['s3_camera_details']))
+
     iteration = 0
     while True:
         count = 0
         # download videos for camera
         for camera_id in video_urls_dict.keys():
             count += 1
+
             camera_id = camera_id.replace("JamCams_", "")
             filename = camera_id + ".mp4"
             file_path = os.path.join(download_url, filename)
             datetime_obj = datetime.datetime.now()
             timestamp = datetime_obj.strftime("%Y%m%d-%H%M%S")
-            local_video_dir_date = "%s/%s/" % (local_video_dir,
+            local_video_dir_date = "%s/%s/" % (paths['temp_raw_video'],
                                                datetime_obj.date())
 
             # check if the local directory exists.
@@ -85,7 +89,9 @@ def collect_camera_videos(local_video_dir: str,
             time.sleep(delay * 60)
 
 
-def upload_videos(local_video_dir: str, paths: dict, iterations=None, delay: int = None):
+def upload_videos(paths: dict,
+                  iterations=None,
+                  delay: int = None):
     """
     This function uploads the video in the local_video_dir to S3. Each video is deleted after an upload.
     Args:
@@ -94,6 +100,8 @@ def upload_videos(local_video_dir: str, paths: dict, iterations=None, delay: int
         iterations: number of times the upload should run. The local video directory is checked continuously for new videos if no value is supplied
         delay: amount of time (minutes) to wait for before downloading new data
     """
+
+    local_video_dir = paths['temp_raw_video']
     if not os.path.exists(local_video_dir):
         return
     s3_folder = paths['s3_video']
@@ -170,11 +178,3 @@ def rename_videos(paths, params, chunk_size=100):
                 print(e)
         end = time.time()
         print(end - start)
-
-
-if __name__ == "__main__":
-    from src.traffic_analysis.d00_utils.load_confs import load_parameters, load_paths
-
-    paths = load_paths()
-    params = load_parameters()
-    rename_videos(paths, params)
