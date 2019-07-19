@@ -1,6 +1,3 @@
-import os
-import json
-from traffic_analysis.d00_utils.data_retrieval import connect_to_bucket
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 
 
