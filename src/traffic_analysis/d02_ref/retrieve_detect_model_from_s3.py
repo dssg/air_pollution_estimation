@@ -10,9 +10,8 @@ def retrieve_detect_model_from_s3(params, paths):
             paths (dict): dictionary of paths from yml file
     """
 
-    project_dir = get_project_directory()
     model = params['yolo_model']
-    local_filepath_model = os.path.join(project_dir, 'data', '00_detection', model)
+    local_filepath_model = os.path.join(paths['detect_model'], model)
 
     if not os.path.exists(local_filepath_model):  # download model files from s3 if local model filepath doesn't exist
         # make local file path

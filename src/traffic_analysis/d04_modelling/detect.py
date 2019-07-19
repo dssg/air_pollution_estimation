@@ -18,15 +18,20 @@ def detect_objects_in_image(image_capture, params, paths):
     """
 
     conf_thresh = params['confidence_threshold']
-    nms_thresh = params['iou_threshold']
-
+    iou_threshold = params['iou_threshold']
     retrieve_detect_model_from_s3(params, paths)
-    output_layers = pass_image_through_nn(image_capture, params, paths)
-    boxes_unfiltered, label_idxs_unfiltered, confs_unfiltered = describe_best_detections(image_capture,
-                                                                                         output_layers, conf_thresh)
-    boxes, label_idxs, confs = reduce_overlapping_detections(boxes_unfiltered, label_idxs_unfiltered,
-                                                             confs_unfiltered, conf_thresh, nms_thresh)
-    labels = label_detections(label_idxs, params, paths)
+    network_output = pass_image_through_nn(image_capture=image_capture,
+                                           params=params, paths=paths)
+    boxes_unfiltered, label_idxs_unfiltered, confs_unfiltered = get_detected_objects(image_capture=image_capture,
+                                                                                     network_output=network_output,
+                                                                                     conf_thresh=conf_thresh)
+    boxes, label_idxs, confs = reduce_overlapping_detections(bboxes_in=boxes_unfiltered,
+                                                             label_idxs_in=label_idxs_unfiltered,
+                                                             confs_in=confs_unfiltered,
+                                                             conf_thresh=conf_thresh,
+                                                             iou_thresh=iou_threshold)
+    labels = label_detections(params=params, paths=paths,
+                              label_idxs=label_idxs)
 
     return boxes, labels, confs
 
@@ -68,22 +73,7 @@ def populate_labels(params, paths):
     return labels
 
 
-def get_output_layers(net):
-    """ (taken from cvlib) grabs another layer from output of object detection?
-        Args:
-            net (opencv.dnn): deep neural network created by opencv
-
-        Returns:
-            output_layers (list(str)): selected layers of neural network to be used in forward pass
-    """
-
-    layer_names = net.getLayerNames()
-    output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
-
-    return output_layers
-
-
-def make_bbox_around_object(image_capture, unscaled_bbox):
+def make_bbox_around_object(image_capture: np.ndarray, unscaled_bbox) -> list:
     """ makes bounding boxes around detected objects at original scale of image
         Args:
             unscaled_bbox (nparray): nparray with unscaled width, height, and bottom-left coordinates of detected object
@@ -105,24 +95,24 @@ def make_bbox_around_object(image_capture, unscaled_bbox):
     return scaled_bbox
 
 
-def identify_most_probable_object(grid_cell):
+def identify_most_probable_object(grid_cell_estimate):
     """ finds the most likely object to exist in a specific grid cell of image
         Args:
-            grid_cell (nparray): nparray with scores of object labels in grid cell
+            grid_cell_estimate (nparray): nparray with scores of object labels in grid cell
 
         Returns:
             most_probable_object_idx (int): index of label of most probable object
             most_probable_object_score (float): score (i.e., confidence) of most probable object detected in image
     """
 
-    scores = grid_cell[5:]  # ignore the physical parameters
+    scores = grid_cell_estimate[5:]  # ignore the physical parameters
     most_probable_object_idx = np.argmax(scores)
     most_probable_object_score = scores[most_probable_object_idx]
 
     return most_probable_object_idx, most_probable_object_score
 
 
-def pass_image_through_nn(image_capture, params, paths):
+def pass_image_through_nn(image_capture: np.ndarray, params: dict, paths: dict) -> list:
     """ detection model generates scores (i.e., confidence) of each object existing in image
         Args:
             image_capture (nparray): numpy array containing the captured image (width, height, rbg)
@@ -136,27 +126,42 @@ def pass_image_through_nn(image_capture, params, paths):
     # import classification model
     config, weights = populate_model(params, paths)
 
-    # convert image to "blob"
+    # pre-process image:
+    # scaling
+    # Turn into the right shape for the NN (here 3x416x416)
+    # and align the BGR channel order of open cv with the RGB order of mean values
     scale = 0.00392  # required scaling for yolo
-    blob = cv2.dnn.blobFromImage(image_capture, scale, (416, 416), (0, 0, 0), True, crop=False)
+    pre_processed_image = cv2.dnn.blobFromImage(image=image_capture,
+                                                scalefactor=scale,
+                                                size=(416, 416),   # spatial size expected by CNN
+                                                mean=(0, 0, 0),    # do not use mean subtraction
+                                                swapRB=True,
+                                                crop=False)
 
     # read model as deep neural network in opencv
     net = cv2.dnn.readNet(weights, config)  # can use other net, see documentation
 
-    # input blob to neural network
-    net.setInput(blob)
+    # input image to neural network
+    net.setInput(pre_processed_image)
 
     # forward pass of blob through neural network
-    output_layers = net.forward(get_output_layers(net))
+    layer_names = net.getLayerNames()
+    ids_of_output_layers = [i[0] for i in net.getUnconnectedOutLayers()]
+    # need to offset by 1 since Python starts counting at 0
+    names_of_output_layers = [layer_names[i - 1] for i in ids_of_output_layers]
 
-    return output_layers
+    network_output = net.forward(names_of_output_layers)
+
+    return network_output
 
 
-def describe_best_detections(image_capture, output_layers, conf_thresh):
+def get_detected_objects(image_capture: np.ndarray,
+                         network_output: list,
+                         conf_thresh: float):
     """ describes the detections that score above the confidence threshold
         Args:
             image_capture (nparray): numpy array containing the captured image (width, height, rbg)
-            output_layers (list(nparray)): list of neural network outputs and scores of predicted objects
+            network_output (list(nparray)): list of neural network outputs and scores of predicted objects
             conf_thresh (float): minimum confidence required in object detection, between 0 and 1
         Returns:
             bboxes (list(list(int))): list of width, height, and bottom-left coordinates of detection bounding boxes
@@ -169,15 +174,16 @@ def describe_best_detections(image_capture, output_layers, conf_thresh):
     label_idxs = []
     confs = []
 
-    for output_layer in output_layers:  # loop through output layers from pass thru neural network
-        for grid_cell in output_layer:  # loop through grid cells in output layer
+    for output_layer in network_output:  # loop through outputs from the different output layers
+        for grid_cell_estimates in output_layer:  # loop through grid cells in output layer
 
             # find most likely object in specific grid cell of image
-            object_label_idx, max_conf = identify_most_probable_object(grid_cell)
+            object_label_idx, max_conf = identify_most_probable_object(grid_cell_estimate=grid_cell_estimates)
 
             # append object to running list of objects if prediction score is above confidence threshold
             if max_conf > conf_thresh:
-                object_bbox = make_bbox_around_object(image_capture, grid_cell)
+                object_bbox = make_bbox_around_object(image_capture=image_capture,
+                                                      unscaled_bbox=grid_cell_estimates)
                 bboxes.append(object_bbox)
                 label_idxs.append(object_label_idx)
                 confs.append(float(max_conf))
@@ -185,23 +191,33 @@ def describe_best_detections(image_capture, output_layers, conf_thresh):
     return bboxes, label_idxs, confs
 
 
-def reduce_overlapping_detections(bboxes_in, label_idxs_in, confs_in, conf_thresh, nms_thresh):
+def reduce_overlapping_detections(bboxes_in,
+                                  label_idxs_in,
+                                  confs_in,
+                                  conf_thresh,
+                                  iou_thresh):
     """ removes the detections that score above the nms threshold
         Args:
             bboxes_in (list(list(int))): list of width, height, and bottom-left coordinates of detection bboxes
             label_idxs_in (list(int)): list of indices corresponding to the detection labels
             confs_in (list(float)): list of scores of detections
             conf_thresh (float): minimum confidence required in object detection, between 0 and 1
-            nms_thresh: non maximum suppression (nms) threshold to select for maximum overlap allowed between bboxes
+            iou_thresh: non maximum suppression (nms) threshold to select for maximum overlap allowed between bboxes
         Returns:
             bboxes_out (list(list(int))): list of width, height, and bottom-left coordinates of detection bboxes
             label_idxs_out (list(int)): list of indices corresponding to the detection labels
             confs_out (list(float)): list of detection scores
     """
 
-    # report the indices of boxes that are screened through nms check
-    idx_boxes_nms = cv2.dnn.NMSBoxes(bboxes_in, confs_in,
-                                     conf_thresh, nms_thresh)
+    # report the indices of boxes tto keep according to non maximum suppression (nms).
+    # That is:
+    # 1) Discard detections with probability to be present below conf threshold
+    # 2) For each cell, keep the detection with the highest confidence
+    # 3) Discard predictions with iou above the iou threshold
+    idx_boxes_nms = cv2.dnn.NMSBoxes(bboxes=bboxes_in,
+                                     scores=confs_in,
+                                     score_threshold=conf_thresh,
+                                     nms_threshold=iou_thresh)
 
     # initialize output lists
     bboxes_out = []
