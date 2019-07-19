@@ -4,18 +4,26 @@ import subprocess
 from subprocess import PIPE, Popen
 import time
 import json
-from traffic_analysis.d00_utils.email_service import send_email_warning
 import datetime
 import sys
 import dateutil.parser
+from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
+from traffic_analysis.d00_utils.email_service import send_email_warning
 
 
 def download_camera_meta_data(tfl_camera_api: str,
-                              camera_meta_data_file: str):
+                              paths: dict,
+                              s3_credentials: dict):
     """
     Gets a list of camera ids and info from tfl api
     """
-    if os.path.exists(camera_meta_data_file):
+
+    dl = DataLoaderS3(s3_credentials,
+                      bucket_name=paths['bucket_name'])
+
+    camera_meta_data_path = paths['s3_camera_details']
+
+    if dl.file_exists(camera_meta_data_path):
         return
 
     # get the traffic cameras data
@@ -24,8 +32,7 @@ def download_camera_meta_data(tfl_camera_api: str,
     camera_list = {val["id"]: val for val in data}
 
     # save camera info to file
-    with open(camera_meta_data_file, "w") as f:
-        json.dump(camera_list, f)
+    dl.save_json(data=camera_list, file_path=camera_meta_data_path)
 
 
 def collect_camera_videos(local_video_dir: str,
