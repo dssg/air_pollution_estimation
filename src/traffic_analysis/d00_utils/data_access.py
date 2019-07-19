@@ -27,7 +27,7 @@ class db():
             CREATE TABLE vehicle_types(
                 id SERIAL,
                 vehicle_type VARCHAR(255),
-                vehicle_type_id INTEGER PRIMARY KEY,
+                vehicle_type_id INTEGER PRIMARY KEY
             )
             """,
             """
@@ -42,8 +42,7 @@ class db():
             """,
             """
             CREATE TABLE frame_stats (
-                obj_ind INTEGER,
-                camera_id INTEGER,
+                camera_id VARCHAR(255),
                 frame_id INTEGER,
                 datetime timestamp,
                 obj_classification VARCHAR(255),
@@ -89,13 +88,14 @@ class db():
                 self.conn.close()
         return True
 
-        self.open_connection()
 
     def save_data(self, df, table_name):
+        self.open_connection()
         output = io.StringIO()
         df.to_csv(output, sep='\t', header=False, index=False)
         output.seek(0)
         contents = output.getvalue()
+        print(contents)
         # null values become ''
         self.cursor.copy_from(output, table_name, null="")
         self.conn.commit()
