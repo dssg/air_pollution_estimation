@@ -8,7 +8,7 @@ tfl_cam_api = params['tfl_cam_api']
 cam_file = paths['cam_file']
 iterations = params['iterations']
 delay = params['delay']
-local_video_dir = paths['video_local_dir']
+local_video_dir = paths['temp_video']
 
 # download camera data from tfl
 download_camera_data(tfl_cam_api=tfl_cam_api, cam_file=cam_file)
@@ -24,8 +24,10 @@ def upload_videos_fn():
     upload_videos(local_video_dir=local_video_dir, credentials=paths,
                   iterations=iterations, delay=delay)
 
+
 def rename_videos_fn():
     rename_videos(paths=paths, params=params, chunk_size=1000)
+
 
 def runInParallel(*fns):
     proc = []

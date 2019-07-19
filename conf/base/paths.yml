@@ -12,7 +12,6 @@ local_paths:
   video_names: "data/ref/video_names/"
   processed_video: "results/jamcams/"
   plots: "plots/"
-  video_local_dir: "data/01_raw/video_data"
   cameras: "data/00_ref/cam_file.json"
   jamcam_stats: "data/02_processed/jamcams/JamCamStats.csv"
   cam_file: "data/00_ref/cam_file.json"
