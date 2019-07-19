@@ -25,7 +25,7 @@ data_collection:
     ]
   tims_file_website: "https://s3-eu-west-1.amazonaws.com/roads.data.tfl.gov.uk"
   tims_download_website: "http://roads.data.tfl.gov.uk/TIMS/"
-  tfl_cam_api: "https://api.tfl.gov.uk/Place/Type/jamcams"
+  tfl_camera_api: "https://api.tfl.gov.uk/Place/Type/jamcam"
   jamcam_url: "https://s3-eu-west-1.amazonaws.com/jamcams.tfl.gov.uk/"
   iterations: 0
   delay: 0
