@@ -1,18 +1,23 @@
-from traffic_analysis.d00_utils.load_confs import load_parameters, load_paths
+from traffic_analysis.d00_utils.load_confs import load_parameters, load_paths, load_credentials
 from traffic_analysis.d01_data.collect_video_data import download_camera_meta_data, collect_camera_videos, upload_videos, rename_videos
 from multiprocessing import Process
 
 params = load_parameters()
 paths = load_paths()
+creds = load_credentials()
+
 tfl_cam_api = params['tfl_cam_api']
-cam_file = paths['cam_file']
 iterations = params['iterations']
 delay = params['delay']
+s3_credentials = creds[paths['s3_creds']]
+
+cam_file = paths['cam_file']
 local_video_dir = paths['temp_video']
 
 # download camera data from tfl
 download_camera_meta_data(tfl_camera_api=tfl_cam_api,
-                          camera_meta_data_file=cam_file)
+                          paths=paths,
+                          s3_credentials=s3_credentials)
 print("Downloaded tfl camera details.")
 
 
