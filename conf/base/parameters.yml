@@ -1,22 +1,39 @@
 data_collection:
   jam_cam_website: "http://jamcams.tfl.gov.uk/00001."
-  tims_camera_list: ['00001.03604', '00001.02262']
-#  ['00001.03601', '00001.07591', '00001.01252', '00001.06597',
-#                '00001.08853', '00001.06510', '00001.04280', '00001.04534',
-#                '00001.06590', '00001.07382', '00001.04328', '00001.06514',
-#                '00001.03604', '00001.06501', '00001.05900', '00001.03490',
-#                '00001.08926', '00001.07355', '00001.04336', '00001.09560']
-  tims_file_website: 'https://s3-eu-west-1.amazonaws.com/roads.data.tfl.gov.uk'
+  tims_camera_list:
+    [
+      "00001.03601",
+      "00001.07591",
+      "00001.01252",
+      "00001.06597",
+      "00001.08853",
+      "00001.06510",
+      "00001.04280",
+      "00001.04534",
+      "00001.06590",
+      "00001.07382",
+      "00001.04328",
+      "00001.06514",
+      "00001.03604",
+      "00001.06501",
+      "00001.05900",
+      "00001.03490",
+      "00001.08926",
+      "00001.07355",
+      "00001.04336",
+      "00001.09560",
+    ]
+  tims_file_website: "https://s3-eu-west-1.amazonaws.com/roads.data.tfl.gov.uk"
   tims_download_website: "http://roads.data.tfl.gov.uk/TIMS/"
-  tfl_cam_api: 'https://api.tfl.gov.uk/Place/Type/jamcams'
-  jamcam_url: 'https://s3-eu-west-1.amazonaws.com/jamcams.tfl.gov.uk/'
-  iterations: 0 
+  tfl_cam_api: "https://api.tfl.gov.uk/Place/Type/jamcams"
+  jamcam_url: "https://s3-eu-west-1.amazonaws.com/jamcams.tfl.gov.uk/"
+  iterations: 0
   delay: 0
 
 data_renaming:
-  old_path: 'raw/video_data_new'
-  new_path: 'raw/videos'
-  date_format: '%Y%m%d-%H%M%S'
+  old_path: "raw/video_data_new"
+  new_path: "raw/videos"
+  date_format: "%Y%m%d-%H%M%S"
 
 modelling:
   yolo_model: "yolov3-tiny"
@@ -24,8 +41,8 @@ modelling:
 
 reporting:
   chunk_size: 2
-  dtype: 
-    camera_id: 'category'
+  dtype:
+    camera_id: "category"
   yolo_model: "yolov3-tiny"
   yolo_implementation: "cvlib"
   detection_confidence_threshold: 0.4
@@ -33,4 +50,3 @@ reporting:
   iou_threshold: 0.05 #controls how much two objects' bboxes must overlap to be considered the "same"
   detection_frequency: 50
   selected_labels: ["car", "truck", "bus", "motorbike"]
-
