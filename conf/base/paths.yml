@@ -3,6 +3,7 @@ s3_paths:
   s3_video: "raw/videos/" #path to video data in s3 bucket
   s3_annotations: "ref/annotations/"
   s3_video_names: "ref/video_names/"
+  s3_camera_details: "ref/camera_details/camera_details.json"
   s3_frame_level: "frame_level/"
   s3_profile: "dssg"
 
@@ -13,7 +14,6 @@ local_paths:
   video_names: "data/ref/video_names/"
   processed_video: "results/jamcams/"
   plots: "plots/"
-  cameras: "data/00_ref/cam_file.json"
   annotations: "annotations/"
 
 db_paths:
