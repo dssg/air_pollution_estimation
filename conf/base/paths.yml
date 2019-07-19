@@ -6,6 +6,7 @@ s3_paths:
   s3_camera_details: "ref/camera_details/camera_details.json"
   s3_frame_level: "frame_level/"
   s3_profile: "dssg"
+  s3_creds: "dev_s3"
 
 local_paths:
   temp_video: "data/temp/videos/"
