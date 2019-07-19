@@ -6,7 +6,7 @@ params = load_parameters()
 paths = load_paths()
 creds = load_credentials()
 
-tfl_cam_api = params['tfl_cam_api']
+tfl_camera_api = params['tfl_camera_api']
 iterations = params['iterations']
 delay = params['delay']
 s3_credentials = creds[paths['s3_creds']]
@@ -15,7 +15,7 @@ cam_file = paths['cam_file']
 local_video_dir = paths['temp_video']
 
 # download camera data from tfl
-download_camera_meta_data(tfl_camera_api=tfl_cam_api,
+download_camera_meta_data(tfl_camera_api=tfl_camera_api,
                           paths=paths,
                           s3_credentials=s3_credentials)
 print("Downloaded tfl camera details.")
