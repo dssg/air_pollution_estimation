@@ -13,15 +13,6 @@ import json
 from subprocess import Popen, PIPE
 
 
-def get_project_directory():
-    """ Returns project directory
-        Returns:
-            project_dir (str): string containing the directory of the project
-    """
-    project_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..')
-
-    return project_dir
-
 def retrieve_video_names_from_s3(paths, from_date='2019-06-01', to_date=str(datetime.datetime.now().date()),
                                  from_time='00-00-00', to_time='23-59-59', camera_list=None, save_to_file: bool = True):
     """Retrieve names of jamcam videos from the s3 bucket based on the dates specified.

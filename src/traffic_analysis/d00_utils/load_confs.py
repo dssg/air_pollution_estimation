@@ -1,7 +1,9 @@
 import os
 import yaml
+from src.traffic_analysis.d00_utils import get_project_directory
 
-project_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', '..')
+
+project_dir = get_project_directory()
 
 
 # TODO: do not collapse the hierarchy
