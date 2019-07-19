@@ -1,5 +1,5 @@
-from src.traffic_analysis.d00_utils.load_confs import load_parameters, load_paths
-from src.traffic_analysis.d01_data.collect_video_data import download_camera_meta_data, collect_camera_videos, upload_videos, rename_videos
+from traffic_analysis.d00_utils.load_confs import load_parameters, load_paths
+from traffic_analysis.d01_data.collect_video_data import download_camera_meta_data, collect_camera_videos, upload_videos, rename_videos
 from multiprocessing import Process
 
 params = load_parameters()
