@@ -1,37 +1,33 @@
 import os
 import json
-
 from traffic_analysis.d00_utils.data_retrieval import connect_to_bucket
+from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 
 
-def load_video_names_from_s3(ref_file, paths):
+def load_video_names_from_s3(ref_file,
+                             paths,
+                             s3_credentials: dict):
     """ Load the json file from ref on s3
             Args:
                 ref_file (str): name of the reference file to be loaded
                 paths (dict): dictionary of paths from yml file
+                s3_credentials: s3 credentials
 
             Returns:
                 files (list): list of files to be downloaded from s3
         """
 
-    my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
+    dl = DataLoaderS3(s3_credentials=s3_credentials,
+                      bucket_name=paths['bucket_name'])
 
-    # Download the json files and load the file names into a list
-    # get video names to analyse
-    local_path = os.path.join(paths["video_names"], 'temp.json')
-    my_bucket.download_file(paths['s3_video_names'] + ref_file + '.json', local_path)
-    with open(local_path, 'r') as f:
-        files = json.load(f)
+    files = dl.read_json(file_path=paths['s3_video_names'] + ref_file + '.json')
 
-    # TODO: Handle case that annotations not available
-    my_bucket.download_file(paths['s3_video_names'] + 'annotations.json', local_path)
-    with open(local_path, 'r') as f:
-        files += json.load(f)
+    annotations_path = paths['s3_video_names'] + 'annotations.json'
+    if dl.file_exists(annotations_path):
+        annotation_video_names = dl.read_json(file_path=paths['s3_video_names'] + 'annotations.json')
+        files += annotation_video_names
 
     # avoid duplication
     files = list(set(files))
-
-    # clean up
-    os.remove(local_path)
 
     return files
