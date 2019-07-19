@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import cv2
-from src.traffic_analysis.d00_utils.data_retrieval import retrieve_detect_model_configs_from_s3, get_project_directory
+from src.traffic_analysis.d02_ref.retrieve_detect_model_from_s3 import retrieve_detect_model_from_s3
 
 
 def detect_objects_in_image(image_capture, params, paths):
@@ -10,6 +10,7 @@ def detect_objects_in_image(image_capture, params, paths):
             image_capture (nparray): numpy array containing the captured image (width, height, rbg)
             params (dict): dictionary of parameters from yml file
             paths (dict): dictionary of paths from yml file
+
         Returns:
             bboxes(list(list(int))): list of width, height, and bottom-left coordinates of detection bboxes
             labels (list(str)): list of detection labels
@@ -19,45 +20,48 @@ def detect_objects_in_image(image_capture, params, paths):
     conf_thresh = params['confidence_threshold']
     nms_thresh = params['iou_threshold']
 
-    retrieve_detect_model_configs_from_s3(params, paths)
-    output_layers = pass_image_through_nn(image_capture, params)
+    retrieve_detect_model_from_s3(params, paths)
+    output_layers = pass_image_through_nn(image_capture, params, paths)
     boxes_unfiltered, label_idxs_unfiltered, confs_unfiltered = describe_best_detections(image_capture,
                                                                                          output_layers, conf_thresh)
     boxes, label_idxs, confs = reduce_overlapping_detections(boxes_unfiltered, label_idxs_unfiltered,
                                                              confs_unfiltered, conf_thresh, nms_thresh)
-    labels = label_detections(params, label_idxs)
+    labels = label_detections(label_idxs, params, paths)
 
     return boxes, labels, confs
 
 
-def populate_model(params):
+def populate_model(params, paths):
     """ locate files that correspond to the detection model of choice
         Args:
             params (dict): dictionary of parameters from yml file
+            paths (dict): dictionary of paths from yml file
+
         Returns:
             config_file_path (str): file path to the configuration file
             weights_file_path (str): file path to the weights file
     """
 
     model = params['yolo_model']
-    project_dir = get_project_directory()
-    config_file_path = os.path.join(project_dir, 'data', '00_detection', model, model + '.cfg')
-    weights_file_path = os.path.join(project_dir, 'data', '00_detection', model, model + '.weights')
+    model_file_path = paths['detect_model']
+    config_file_path = os.path.join(model_file_path, model, model + '.cfg')
+    weights_file_path = os.path.join(model_file_path, model, model + '.weights')
     return config_file_path, weights_file_path
 
 
-def populate_labels(params):
+def populate_labels(params, paths):
     """ report full list of object labels corresponding to detection model of choice
         Args:
             params (dict): dictionary of parameters from yml file
+            paths (dict): dictionary of paths from yml file
 
         Returns:
             labels (list(str)): list of object labels strings
     """
 
     model = params['yolo_model']
-    project_dir = get_project_directory()
-    labels_file_path = os.path.join(project_dir, 'data', '00_detection', model, 'coco.names')
+    model_file_path = paths['detect_model']
+    labels_file_path = os.path.join(model_file_path, model, 'coco.names')
     f = open(labels_file_path, 'r')
     labels = [line.strip() for line in f.readlines()]
 
@@ -118,18 +122,19 @@ def identify_most_probable_object(grid_cell):
     return most_probable_object_idx, most_probable_object_score
 
 
-def pass_image_through_nn(image_capture, params):
+def pass_image_through_nn(image_capture, params, paths):
     """ detection model generates scores (i.e., confidence) of each object existing in image
         Args:
             image_capture (nparray): numpy array containing the captured image (width, height, rbg)
             params (dict): dictionary of parameters from yml file
+            paths (dict): dictionary of paths from yml file
 
         Returns:
             output_layers (list(nparray)): list of neural network output layers and scores of predicted objects
     """
 
     # import classification model
-    config, weights = populate_model(params)
+    config, weights = populate_model(params, paths)
 
     # convert image to "blob"
     scale = 0.00392  # required scaling for yolo
@@ -215,17 +220,19 @@ def reduce_overlapping_detections(bboxes_in, label_idxs_in, confs_in, conf_thres
     return bboxes_out, label_idxs_out, confs_out
 
 
-def label_detections(params, label_idxs):
+def label_detections(label_idxs, params, paths):
     """ labels the detected objects according to their index in list
         Args:
-            params (dict): dictionary of parameters from yml file
             label_idxs (list(int)): list of indices corresponding to the detection labels
+            params (dict): dictionary of parameters from yml file
+            paths (dict): dictionary of paths from yml file
+
         Returns:
             labels (list(str)): labels of the reported object detections
     """
 
     # import the list of labels
-    label_list = populate_labels(params)
+    label_list = populate_labels(params, paths)
 
     # initialize the output list
     labels = []

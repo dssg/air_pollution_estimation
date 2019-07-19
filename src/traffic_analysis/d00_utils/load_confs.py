@@ -1,4 +1,3 @@
-import os
 import yaml
 from src.traffic_analysis.d00_utils import get_project_directory
 
