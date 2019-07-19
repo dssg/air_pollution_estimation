@@ -23,7 +23,7 @@ class DataLoaderS3:
         result = self.client.get_object(Bucket=self.bucket_name,
                                         Key=file_path)
 
-        return result['Body'].read().decode()
+        return json.loads(result['Body'].read().decode())
 
     def save_json(self, data, file_path):
 
