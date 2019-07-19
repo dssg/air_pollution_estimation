@@ -1,7 +1,9 @@
 import numpy as np
 import pandas as pd
-import datetime
 import dateutil.parser
+from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
+import numpy as np
+import pandas as pd
 
 
 def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date_time):
@@ -50,12 +52,7 @@ def yolo_output_df(yolo_dict):
         assert obj_labels.shape[0] == num_frames
         assert obj_label_confidences.shape[0] == num_frames
 
-        filename = name.split("_")
-        time_obj = filename[1].replace("-", ":") if len(filename) > 2 else " "
-        date_time_string = "%s %s" % (filename[0], time_obj)
-        date_time_string = date_time_string.strip()
-        date_time = dateutil.parser.parse(date_time_string)
-        camera_id = filename[-1][:-4]
+        camera_id, date_time = parse_video_or_annotation_name(name)
 
         frame_df_list = []
 
