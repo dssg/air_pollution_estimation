@@ -9,12 +9,11 @@ s3_paths:
 local_paths:
   temp_video: "data/temp/videos/"
   temp_frame_level: "data/temp/frame_level/"
+  temp_video_level: "data/temp/video_level/"
   video_names: "data/ref/video_names/"
   processed_video: "results/jamcams/"
   plots: "plots/"
   cameras: "data/00_ref/cam_file.json"
-  jamcam_stats: "data/02_processed/jamcams/JamCamStats.csv"
-  cam_file: "data/00_ref/cam_file.json"
   annotations: "annotations/"
 
 db_paths:
