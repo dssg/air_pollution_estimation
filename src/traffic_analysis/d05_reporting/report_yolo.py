@@ -52,10 +52,9 @@ def yolo_output_df(yolo_dict):
 
         filename = name.split("_")
         time_obj = filename[1].replace("-", ":") if len(filename) > 2 else " "
-        datetimestring = "%s %s" % (filename[0], time_obj)
-        datetimestring = datetimestring.strip()
-        print(datetimestring)
-        date_time = dateutil.parser.parse(datetimestring)
+        date_time_string = "%s %s" % (filename[0], time_obj)
+        date_time_string = date_time_string.strip()
+        date_time = dateutil.parser.parse(date_time_string)
         camera_id = filename[-1][:-4]
 
         frame_df_list = []
