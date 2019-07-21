@@ -1,16 +1,23 @@
 s3_paths:
-    bucket_name: 'air-pollution-uk' #s3 bucket name
-    s3_video: "raw/videos/" #path to video data in s3 bucket
-    s3_profile: "dssg"
+  bucket_name: "air-pollution-uk" #s3 bucket name
+  s3_video: "raw/videos/" #path to video data in s3 bucket
+  s3_annotations: "ref/annotations/"
+  s3_video_names: "ref/video_names/"
+  s3_camera_details: "ref/camera_details/camera_details.json"
+  s3_frame_level: "frame_level/"
+  s3_profile: "dssg"
+  s3_creds: "dev_s3"
 
 local_paths:
-    tims: "data/01_raw/tims/"
-    temp_video: "data/01_raw/jamcams/temp_video/"
-    raw_video: "data/01_raw/jamcams/"
-    processed_video: "data/02_processed/jamcams/"
-    plots: "plots/"
-    video_local_dir: 'data/01_raw/video_data'
-    cameras: "data/00_ref/cam_file.json"
-    jamcam_stats: 'data/02_processed/jamcams/JamCamStats.csv'
-    cam_file: 'data/00_ref/cam_file.json'
+  temp_video: "data/temp/videos/"
+  temp_raw_video: "data/temp/raw_videos/"
+  temp_frame_level: "data/temp/frame_level/"
+  temp_video_level: "data/temp/video_level/"
+  video_names: "data/ref/video_names/"
+  processed_video: "results/jamcams/"
+  plots: "plots/"
+  annotations: "annotations/"
 
+db_paths:
+  db_host: "dssg-london.ck0oseycrr7s.eu-west-2.rds.amazonaws.com"
+  db_name: "airquality"
