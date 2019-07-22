@@ -10,23 +10,27 @@ from traffic_analysis.d03_processing.update_video_level_table import update_vide
 params = load_parameters()
 paths = load_paths()
 creds = load_credentials()
+s3_credentials = creds[paths['s3_creds']]
 
 # If running first time:
 # creates the test_seach_json. Change the camera list and output file name for full run
-# retrieve_and_upload_video_names_to_s3(ouput_file_name='test_search',
-#                                       paths=paths,
-#                                       from_date='2019-06-30',
-#                                       to_date='2019-06-30',
-#                                       from_time='13-00-00',
-#                                       to_time='13-05-00',
-#                                       camera_list=params['tims_camera_list'][:2])
-#
-# upload_annotation_names_to_s3(paths=paths)
+retrieve_and_upload_video_names_to_s3(ouput_file_name='test_search',
+                                      paths=paths,
+                                      s3_credentials=s3_credentials,
+                                      from_date='2019-06-30',
+                                      to_date='2019-06-30',
+                                      from_time='13-00-00',
+                                      to_time='13-05-00',
+                                      camera_list=params['tims_camera_list'][:2])
+
+upload_annotation_names_to_s3(paths=paths,
+                              s3_credentials=s3_credentials)
 
 
 # Start from here if video names already specified
 selected_videos = load_video_names_from_s3(ref_file='test_search',
-                                           paths=paths)
+                                           paths=paths,
+                                           s3_credentials=s3_credentials)
 
 # select chunks of videos and classify objects
 chunk_size = params['chunk_size']
