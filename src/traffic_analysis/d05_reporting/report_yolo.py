@@ -128,5 +128,4 @@ def yolo_report_stats(yolo_df):
             dfs.append(count_df)
 
     df = pd.concat(dfs).fillna(0)
-    print(df.head(10))
     return df

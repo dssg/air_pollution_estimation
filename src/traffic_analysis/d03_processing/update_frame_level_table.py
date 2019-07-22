@@ -4,11 +4,12 @@ from traffic_analysis.d03_processing.add_to_table_sql import add_to_table_sql
 
 
 def update_frame_level_table(file_names, paths, params, creds):
-    """ Update the frame level table on s3 (pq) based on the videos in the files list
+    """ Update the frame level table on the database based on the videos in the files list
                 Args:
                     file_names (list): list of s3 filepaths for the videos to be processed
                     paths (dict): dictionary of paths from yml file
                     params (dict): dictionary of parameters from yml file
+                    creds (dict): dictionary of credentials from yml file
 
                 Returns:
 
@@ -33,4 +34,9 @@ def update_frame_level_table(file_names, paths, params, creds):
                                       vid_time_length=10,
                                       make_videos=False)
 
-    add_to_table_sql(df=frame_level_df,table='frame_stats',creds=creds,paths=paths)
+    add_to_table_sql(df=frame_level_df,
+                     table='frame_stats',
+                     creds=creds,
+                     paths=paths)
+
+    return
