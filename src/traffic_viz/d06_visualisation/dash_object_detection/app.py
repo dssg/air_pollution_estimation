@@ -108,8 +108,8 @@ app.layout = html.Div(
                                             'width': '40%'}),
                                         dcc.Dropdown(
                                             id="dropdown-footage-selection",
-                                            options=cams,
-                                            value=cams[0]["value"],
+                                            options=[{'label': v, 'value': k}
+                                                     for k, v in cams.items()],
                                             clearable=False,
                                             style={'width': '60%'}
                                         )
