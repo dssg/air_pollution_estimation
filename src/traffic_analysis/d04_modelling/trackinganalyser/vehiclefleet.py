@@ -18,8 +18,6 @@ class VehicleFleet():
     convention that axis 0 corresponds to vehicle index, axis 1 corresponds to the information for each 
     vehicle we are interested in, and axis 2 corresponds to the frame/time dimension for the info 
     recorded by axis 1 (if relevant). 
-
-    The only place in which the fake head vehicle is actually removed is in report_frame_level_info
     """
 
     def __init__(self, bboxes: np.ndarray = None,
@@ -43,7 +41,10 @@ class VehicleFleet():
         confs -- confidence returned by detection alg 
         video_name -- name of the video file from s3 bucket
         """
+        # bool for tracking whether there is a fake head vehicle
+        # used to handle case if no vehicles detected in video
         self.fake_head_vehicle = False
+
         if load_from_pd:
             # sort to ensure that the ordering of self.labels and self.confs corresps to vehicle id
             frame_level_df = frame_level_df.sort_values(by=['camera_id', 'frame_id'], axis='index')
@@ -65,11 +66,11 @@ class VehicleFleet():
         else:
             # check if the bboxes are empty
             if bboxes.size == 0: 
-                # add fake vehicle to ensure frame counts correct
+                # add fake vehicle to ensure that self.bboxes.shape[2] == number frames in video
                 bboxes = np.zeros((1,4))
                 labels = np.array(["fake_head_vehicle"])
                 confs = np.array([0.0])
-
+                # update fake head status bool
                 self.fake_head_vehicle = True 
 
             assert bboxes.shape[1] == 4
@@ -82,8 +83,6 @@ class VehicleFleet():
     def add_vehicles(self, new_bboxes: np.ndarray, new_labels: np.ndarray, new_confs: np.ndarray):
         """Adds new vehicles to the vehicleFleet, creating appropriate bbox location "history" for the 
         self.bboxes numpy array 
-
-        job: append more vehicles, come up with na arrays for prev history
 
         Keyword arguments should be in same format as for the init
         """
@@ -109,7 +108,7 @@ class VehicleFleet():
                        format (xmin, ymin, width, height). Each vehicle should be axis 0, 
                        bounding boxes should be axis 1.
         """
-        # no vehicles tracked, or all tracked objects have exited frames
+        # if no vehicles tracked, or all tracked objects have exited frames
         if bboxes_time_t.size == 0: 
             # create bboxes of 0s to append to self.bboxes to ensure 
             # that each frame in a video corresponds to a subarray in self.bboxes
@@ -230,11 +229,6 @@ class VehicleFleet():
             self.confs[i] * 100, '.2f')) + '%' for i, label in enumerate(self.labels)]
         return label_confs
 
-    def compute_colors(self) -> list:
-        """Assigns a color to each label currently present by vehicleFleet
-        """
-        return color_bboxes(self.labels)
-
     def plot_iou_time_series(self, fig_dir: str, fig_name: str, smoothed=False, vehicle_ids=None):
         """Visualize the iou_time_series as a multi-line graph
 
@@ -251,7 +245,7 @@ class VehicleFleet():
             vehicles_ids = range(num_vehicles)
 
         # plot each vehicle
-        vehicle_colors = np.array(self.compute_colors()) / 255
+        vehicle_colors = np.array(color_bboxes(self.labels)) / 255
         iou_inds = np.arange(num_ious)
         for i in range(num_vehicles):
             iou_vehicle = iou[i, :]
@@ -267,9 +261,9 @@ class VehicleFleet():
         plt.close()
 
     def report_frame_level_info(self) -> pd.DataFrame:
-        """Converts the information stored in the VehicleFleet class to a frame level pd dataframe
+        """Converts the information stored in the VehicleFleet class to a frame level pd dataframe.
         Fake head vehicles are removed here, so that report_video_level_info doesn't have to handle
-        this 
+        this.
         """
         column_names = ['camera_id', 'video_upload_datetime',
                         'frame_id', 'vehicle_id', 'vehicle_type', 
@@ -324,8 +318,8 @@ class VehicleFleet():
         return frame_level_info_df
 
     def report_video_level_stats(self, vehicle_counts: dict,
-                           vehicle_stop_counts: dict,
-                           vehicle_start_counts: dict) -> pd.DataFrame:
+                               vehicle_stop_counts: dict,
+                               vehicle_start_counts: dict) -> pd.DataFrame:
         """ Combine the counting dictionaries of vehicle stops, starts, and counts into
         one nice pandas dataframe. 
 
