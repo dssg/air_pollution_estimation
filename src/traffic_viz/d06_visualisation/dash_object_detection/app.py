@@ -1,14 +1,14 @@
-import dash
-import dash_core_components as dcc
-import dash_html_components as html
-import dash_player as player
-import plotly.graph_objs as go
+from helper import (get_cams, load_camera_statistics, load_object_statistics,
+                    load_objects, params)
 from dash.dependencies import Input, Output
-from traffic_viz.d06_visualisation.dash_object_detection.helper import get_cams, load_camera_statistics, load_objects, load_object_statistics, params
+import plotly.graph_objs as go
+import dash_player as player
+import dash_html_components as html
+import dash_core_components as dcc
+import dash
 from datetime import datetime as dt
 
 
-print(params)
 DEBUG = params['debug']
 TFL_BASE_URL = params["tfl_jamcams_website"]
 

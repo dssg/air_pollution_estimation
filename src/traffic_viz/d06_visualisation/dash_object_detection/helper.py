@@ -1,21 +1,35 @@
-import sys
-import os
 import json
-import pandas as pd
+import os
+import sys
+
 import numpy as np
+import pandas as pd
+import os
+import sys
+
+src_dir = os.path.join(os.getcwd(), '..', 'src')
+sys.path.append(src_dir)
+
+from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
+from traffic_analysis.d00_utils.load_confs import (load_app_parameters,
+                                                   load_paths, load_credentials)
 
 print(sys.path)
 
-from src.traffic_analysis.d00_utils.load_confs import load_app_parameters, load_paths
 
 params = load_app_parameters()
 paths = load_paths()
+creds = load_credentials()
+s3_credentials = creds[paths["s3_creds"]]
 
 
 def get_cams():
-    filepath = paths['cameras']
+    dl = DataLoaderS3(s3_credentials,
+                      bucket_name=paths['bucket_name'])
 
-    data = dict(json.loads(open(filepath, 'r').read()))
+    camera_meta_data_path = paths['s3_camera_details']
+
+    data = dict(dl.read_json(camera_meta_data_path))
     values = data.values()
     cam_list = [{'label': item['commonName'],  'value': item['id']}
                 for item in values]
@@ -65,7 +79,7 @@ def load_camera_statistics(camera_id):
     output = pd.DataFrame()
     if not os.path.exists(filepath):
         return output
-        
+
     df = pd.read_csv(filepath, dtype={'camera_id': 'category'})
     df['datetime'] = pd.to_datetime(
         df.date) + pd.to_timedelta(df.time, unit='h')
