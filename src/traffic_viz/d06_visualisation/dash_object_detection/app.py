@@ -4,7 +4,7 @@ import dash_html_components as html
 import dash_player as player
 import plotly.graph_objs as go
 from dash.dependencies import Input, Output
-from src.traffic_viz.d06_visualisation.dash_object_detection.helper import get_cams, load_camera_statistics, load_objects, load_object_statistics, params
+from traffic_viz.d06_visualisation.dash_object_detection.helper import get_cams, load_camera_statistics, load_objects, load_object_statistics, params
 from datetime import datetime as dt
 
 
@@ -19,6 +19,8 @@ server = app.server
 app.scripts.config.serve_locally = True
 app.config['suppress_callback_exceptions'] = True
 cams = get_cams()
+
+
 def markdown_popup():
     return html.Div(
         id='markdown',
@@ -245,7 +247,7 @@ def update_trend_graph(objects, camera_id):
                 name=obj,
                 mode='lines',
             ))
-        
+
     figure = {
         'data': data,
         'layout': go.Layout(
