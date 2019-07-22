@@ -1,6 +1,6 @@
 import os
-from src.traffic_analysis.d00_utils.get_project_directory import get_project_directory
-from src.traffic_analysis.d00_utils.data_retrieval import connect_to_bucket
+from traffic_analysis.d00_utils.get_project_directory import get_project_directory
+from traffic_analysis.d00_utils.data_retrieval import connect_to_bucket
 
 
 def retrieve_detect_model_from_s3(params, paths):
