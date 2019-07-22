@@ -248,34 +248,29 @@ if __name__ == '__main__':
     params = load_parameters()
     paths = load_paths()
 
-    video_dict = load_videos_into_np(paths["annotation_videos"])
-    print("loaded videos")
-    # print(video_dict)
-# ###############3
-#     selected_videos = load_video_names_from_s3(ref_file='test_search',
-#                                            paths=paths)
-#     file_names = selected_videos[:2]
-#     my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
+    #Code from pipeline for testing/demo purposes
+    ###############
+    selected_videos = load_video_names_from_s3(ref_file='test_search',
+                                           paths=paths)
+    file_names = selected_videos[:2]
+    my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
 
-#     delete_and_recreate_dir(paths["temp_video"])
-#     # Download the video file_names using the file list
-#     for file in file_names:
-#         try:
-#             my_bucket.download_file(file, paths["temp_video"] + file.split('/')[-1].replace(
-#                 ':', '-').replace(" ", "_"))
-#         except:
-#             print("Could not download " + file)
+    delete_and_recreate_dir(paths["temp_video"])
+    # Download the video file_names using the file list
+    for file in file_names:
+        try:
+            my_bucket.download_file(file, paths["temp_video"] + file.split('/')[-1].replace(
+                ':', '-').replace(" ", "_"))
+        except:
+            print("Could not download " + file)
 
-#     video_dict = load_videos_into_np(paths["temp_video"])
-#     delete_and_recreate_dir(paths["temp_video"])
-# #############
+    video_dict = load_videos_into_np(paths["temp_video"])
+    delete_and_recreate_dir(paths["temp_video"])
+
     ############### NEW CODE ##############################
-    #everything above this is bits of code copy-pasted from pipeline
     analyser = TrackingAnalyser(video_dict = video_dict, params =params, paths=paths)
     frame_level_df = analyser.construct_frame_level_df(video_dict)
     print(frame_level_df)
-    frame_level_df.to_csv("data/carolinetemp/frame_level_df.csv")
 
     video_level_df = analyser.construct_video_level_df(frame_level_df)
     print(video_level_df)
-    video_level_df.to_csv("data/carolinetemp/video_level_df.csv")
