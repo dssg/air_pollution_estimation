@@ -1,5 +1,6 @@
 import datetime
 
+from traffic_analysis.d00_utils.data_access import db
 from traffic_analysis.d05_reporting.report_yolo import yolo_report_stats
 
 
@@ -30,18 +31,22 @@ def update_video_level_table(file_names, paths, params, creds):
 
     for i in range(len(file_names)):
 
-        filter_string += '(camera_id = ' + camera_ids[i] + ' AND ' + + ') OR '
+        filter_string += '(camera_id=' + camera_ids[i] + ' AND datetime=' + str(datetimes[i]) + ') OR '
 
     filter_string = filter_string[:-4]
     print(filter_string)
 
-    """
-    sql = "SELECT * FROM frame_stats WHERE %s;" % (
-        table_name, condition)
-    """
+    sql_string = "SELECT * FROM frame_stats WHERE %s;" % (filter_string)
 
+    db_host = paths['db_host']
+    db_name = paths['db_name']
+    db_user = creds['postgres']['user']
+    db_pass = creds['postgres']['passphrase']
 
+    conn_string = "password=%s user=%s dbname=%s host=%s" % (
+        db_pass, db_user, db_name, db_host)
 
-
+    db_obj = db(conn_string=conn_string)
+    result = db_obj.execute_raw_query(sql=sql_string)
 
     return
