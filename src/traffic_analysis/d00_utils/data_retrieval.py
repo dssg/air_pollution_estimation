@@ -1,4 +1,3 @@
-# from src.traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
 import boto3
 import cv2
 import os
@@ -22,12 +21,12 @@ def load_video_names(paths):
 def load_videos_into_np(folder):
     # Load files into a dict of numpy arrays using opencv
     video_dict = {}
-    for file in glob.glob(folder + '*.mp4'):
+    for filename in glob.glob(folder + '*.mp4'):
         try:
             video_name = re.split(r"\\|/", file)[-1]
             video_dict[video_name] = mp4_to_npy(file)
         except:
-            print("Could not convert " + file + " to numpy array")
+            print("Could not convert " + filename + " to numpy array")
 
     return video_dict
 
@@ -48,6 +47,7 @@ def download_video_and_convert_to_numpy(local_folder, s3_profile, bucket, filena
 
     """
     my_bucket = connect_to_bucket(s3_profile, bucket)
+    delete_and_recreate_dir(local_folder)
 
     # Download the files
     for filename in filenames:
@@ -66,7 +66,8 @@ def delete_and_recreate_dir(temp_dir):
     """
     if os.path.isdir(temp_dir):
         shutil.rmtree(temp_dir)
-    os.makedirs(temp_dir)
+
+    os.makedirs(temp_dir, exist_ok=True)
     return
 
 
@@ -81,12 +82,12 @@ def mp4_to_npy(local_mp4_path):
                    np.dtype('uint8'))
     fc = 0
     ret = True
-    while (fc < frame_count and ret):
+    while fc < frame_count and ret:
         ret, buf[fc] = cap.read()
         fc += 1
     cap.release()
 
-    if(buf.size == 0):
+    if (buf.size == 0):
         raise Exception('Numpy array is empty')
 
     return buf
@@ -103,12 +104,10 @@ def connect_to_bucket(profile_dir, bucket_name):
 
 
 def retrieve_tims_from_s3():
-
     return
 
 
 def retrieve_cam_details_from_database():
-
     return
 
 
@@ -130,7 +129,7 @@ def describe_s3_bucket(paths):
     files = [obj.key for obj in objects]
     dates = []
     for filename in files:
-        res = re.search("([0-9]{4}\-[0-9]{2}\-[0-9]{2})", filename)
+        res = re.search(r"([0-9]{4}\-[0-9]{2}\-[0-9]{2})", filename)
         dates.append(res.group())
 
     # Plot a bar chart of the dates in the s3 bucket
@@ -148,14 +147,18 @@ def describe_s3_bucket(paths):
     return
 
 
-def append_to_csv(filepath: str, df: pd.DataFrame, columns: list, dtype: dict):
+def append_to_csv(filename: str, df: pd.DataFrame, columns: list, dtype: dict):
     if df.empty:
         return
-    # check if filepath exists
-    if not os.path.exists(filepath):
-        df_main = pd.DataFrame(columns=columns)
-        df_main.to_csv(filepath)
-    df_main = pd.read_csv(filepath, dtype=dtype)
-    df_main = df_main.append(df)
-    df_main.to_csv(filepath, columns=columns, index=False)
+    # check if filename exists
+    if not os.path.exists(filename):
+        # create directory
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
 
+        # create a new dataframe with columns
+        df_main = pd.DataFrame(columns=columns)
+        df_main.to_csv(filename)
+    df_main = pd.read_csv(filename, dtype=dtype)
+    df_main = df_main.append(df)
+    df_main.drop_duplicates(inplace=True)
+    df_main.to_csv(filename, columns=columns, index=False)
