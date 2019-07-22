@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import cv2
-from src.traffic_analysis.d02_ref.retrieve_detect_model_from_s3 import retrieve_detect_model_from_s3
+from traffic_analysis.d02_ref.retrieve_detect_model_from_s3 import retrieve_detect_model_from_s3
 
 
 def detect_objects_in_image(image_capture, params, paths):
