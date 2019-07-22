@@ -1,9 +1,9 @@
-from src.traffic_analysis.d04_modelling.trafficanalyserinterface import TrafficAnalyserInterface
-from src.traffic_analysis.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame, bbox_intersection_over_union
-from src.traffic_analysis.d00_utils.video_helpers import write_mp4
-from src.traffic_analysis.d00_utils.load_confs import load_parameters, load_paths
-from src.traffic_analysis.d04_modelling.object_detection import detect_bboxes
-from src.traffic_analysis.d04_modelling.trackinganalyser.vehiclefleet import VehicleFleet
+from traffic_analysis.d04_modelling.trafficanalyserinterface import TrafficAnalyserInterface
+from traffic_analysis.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame, bbox_intersection_over_union
+from traffic_analysis.d00_utils.video_helpers import write_mp4
+from traffic_analysis.d00_utils.load_confs import load_parameters, load_paths
+from traffic_analysis.d04_modelling.object_detection import detect_bboxes
+from traffic_analysis.d04_modelling.trackinganalyser.vehiclefleet import VehicleFleet
 
 import numpy as np
 import pandas as pd
@@ -12,9 +12,9 @@ import cv2
 import time
 # Imports to run the if-main example. This should be deleted once the tracking analyser is
 # incorporated into pipeline
-from src.traffic_analysis.d00_utils.load_confs import load_parameters, load_paths, load_credentials
-from src.traffic_analysis.d02_ref.load_video_names_from_s3 import load_video_names_from_s3
-from src.traffic_analysis.d00_utils.data_retrieval import connect_to_bucket, load_videos_into_np, delete_and_recreate_dir
+from traffic_analysis.d00_utils.load_confs import load_parameters, load_paths, load_credentials
+from traffic_analysis.d02_ref.load_video_names_from_s3 import load_video_names_from_s3
+from traffic_analysis.d00_utils.data_retrieval import connect_to_bucket, load_videos_into_np, delete_and_recreate_dir
 
 
 class TrackingAnalyser(TrafficAnalyserInterface):

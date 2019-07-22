@@ -1,5 +1,5 @@
-from src.traffic_analysis.d00_utils.bbox_helpers import bboxcvlib_to_bboxcv2
-from src.traffic_analysis.d00_utils.load_confs import load_parameters
+from traffic_analysis.d00_utils.bbox_helpers import bboxcvlib_to_bboxcv2
+from traffic_analysis.d00_utils.load_confs import load_parameters
 import numpy as np
 import cvlib
 params = load_parameters()
