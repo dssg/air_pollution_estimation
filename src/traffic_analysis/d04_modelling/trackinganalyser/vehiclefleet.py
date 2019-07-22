@@ -4,6 +4,7 @@ from src.traffic_analysis.d00_utils.video_helpers import parse_video_or_annotati
 import os
 import numpy as np
 import pandas as pd
+import math
 import collections
 import matplotlib.pyplot as plt
 import datetime
@@ -17,6 +18,8 @@ class VehicleFleet():
     convention that axis 0 corresponds to vehicle index, axis 1 corresponds to the information for each 
     vehicle we are interested in, and axis 2 corresponds to the frame/time dimension for the info 
     recorded by axis 1 (if relevant). 
+
+    The only place in which the fake head vehicle is actually removed is in report_frame_level_info
     """
 
     def __init__(self, bboxes: np.ndarray = None,
@@ -40,6 +43,7 @@ class VehicleFleet():
         confs -- confidence returned by detection alg 
         video_name -- name of the video file from s3 bucket
         """
+        self.fake_head_vehicle = False
         if load_from_pd:
             # sort to ensure that the ordering of self.labels and self.confs corresps to vehicle id
             frame_level_df = frame_level_df.sort_values(by=['camera_id', 'frame_id'], axis='index')
@@ -58,10 +62,17 @@ class VehicleFleet():
             self.bboxes = np.zeros((num_vehicles, 4, num_frames))
             for i in range(num_frames):
                 self.bboxes[:,:,i] = bboxes_np[i]
-
         else:
-            assert bboxes.shape[1] == 4
+            # check if the bboxes are empty
+            if bboxes.size == 0: 
+                # add fake vehicle to ensure frame counts correct
+                bboxes = np.zeros((1,4))
+                labels = np.array(["fake_head_vehicle"])
+                confs = np.array([0.0])
 
+                self.fake_head_vehicle = True 
+
+            assert bboxes.shape[1] == 4
             # add a dimension for time
             self.bboxes = np.expand_dims(bboxes, axis=2)
             self.labels = labels
@@ -98,15 +109,27 @@ class VehicleFleet():
                        format (xmin, ymin, width, height). Each vehicle should be axis 0, 
                        bounding boxes should be axis 1.
         """
-        assert bboxes_time_t.shape[1] == 4
-        self.bboxes = np.concatenate(
-            (self.bboxes, np.expand_dims(bboxes_time_t, axis=2)), axis=2)
+        # no vehicles tracked, or all tracked objects have exited frames
+        if bboxes_time_t.size == 0: 
+            # create bboxes of 0s to append to self.bboxes to ensure 
+            # that each frame in a video corresponds to a subarray in self.bboxes
+            num_vehicles = self.bboxes.shape[0]
+            bboxes_time_t = np.zeros((num_vehicles,4))
+
+        else: # check tracking format is correct 
+            assert bboxes_time_t.shape[1] == 4
+
+        self.bboxes = np.concatenate((self.bboxes, np.expand_dims(bboxes_time_t, axis=2)), 
+                                        axis=2)
         return
 
     def compute_counts(self) -> dict:
         """Get counts of each vehicle type 
         """
-        return collections.Counter(self.labels)
+        count = collections.Counter(self.labels)
+        if self.fake_head_vehicle:
+            count -= 1
+        return count
 
     def compute_iou_time_series(self, interval: int = 15):
         """Compute a convolved IOU time series for each vehicle
@@ -118,8 +141,7 @@ class VehicleFleet():
         """
         self.iou_interval = interval
 
-        num_frames = self.bboxes.shape[2]
-        num_vehicles = self.bboxes.shape[0]
+        num_vehicles, _, num_frames = self.bboxes.shape
         iou_time_series = np.zeros((num_vehicles, num_frames - interval))
 
         # compare bboxes at timepoints t0,t1 for each vehicle; compute iou
@@ -129,15 +151,14 @@ class VehicleFleet():
             bboxes_time_t1 = self.bboxes[:, :, i+interval]
 
             for j in range(num_vehicles):
-
                 iou_time_series[j, i] = bbox_intersection_over_union(bboxcv2_to_bboxcvlib(bboxes_time_t0[j]),
                                                                      bboxcv2_to_bboxcvlib(bboxes_time_t1[j]))
-
-            # iou_time_series[:,i] = vectorized_intersection_over_union(bboxcv2_to_bboxcvlib(bboxes_time_t0, vectorized = True),
-                # bboxcv2_to_bboxcvlib(bboxes_time_t1, vectorized = True))
-            # assert iou_time_series_ind == iou_time_series[0,i], str(iou_time_series_ind) + str(iou_time_series[0,i])
         self.iou_time_series = iou_time_series
-        return
+        # if self.fake_head_vehicle: # handle fake head vehicle
+            # if num_vehicles == 1: # no real vehicles detected
+
+            # self.iou_time_series = self.iou_time_series[1:, :, :]
+        return 
 
     def smooth_iou_time_series(self, smoothing_method: str, **smoothing_settings):
         """Wrapper function for smoothing the iou time series
@@ -170,6 +191,12 @@ class VehicleFleet():
         """
         motion_array = np.copy(
             self.smoothed_iou_time_series) if from_smoothed else np.copy(self.iou_time_series)
+
+        # don't need to worry about fake head vehicle bc iou_time_series for
+        # this vehicle should always be 0 
+        if self.fake_head_vehicle: 
+            assert np.sum(motion_array[0,:]) == 0
+
         # round iou values to binary values
         motion_array[motion_array > stop_start_iou_threshold] = 1
         motion_array[motion_array <= stop_start_iou_threshold] = 0
@@ -230,9 +257,9 @@ class VehicleFleet():
             iou_vehicle = iou[i, :]
             # catch na's or infs
             mask1, mask2 = np.isnan(iou_vehicle), np.isfinite(iou_vehicle)
+            label = self.labels[i+1] if self.fake_head_vehicle else self.labels[i]
             plt.plot(iou_inds[~mask1 & mask2], iou_vehicle[~mask1 & mask2],
-                     # color = vehicle_colors[i], #color line chart by vehicle type
-                     label="vehicle " + str(i) + "; type " + self.labels[i])
+                     label="vehicle " + str(i) + "; type " + label)
         plt.legend(loc='lower right')
         plt.xlabel("IOU over all frames in video, interval = " +
                    str(self.iou_interval))
@@ -241,7 +268,23 @@ class VehicleFleet():
 
     def report_frame_level_info(self) -> pd.DataFrame:
         """Converts the information stored in the VehicleFleet class to a frame level pd dataframe
+        Fake head vehicles are removed here, so that report_video_level_info doesn't have to handle
+        this 
         """
+        column_names = ['camera_id', 'video_upload_datetime',
+                        'frame_id', 'vehicle_id', 'vehicle_type', 
+                        'confidence', 'bboxes']
+        if self.fake_head_vehicle: # handle fake head before reporting 
+            if self.bboxes.shape[0] == 1: #only a fake head vehicle, no other vehicles in fleet 
+                return pd.DataFrame([[self.camera_id, self.video_upload_datetime, 
+                                      math.nan, math.nan, math.nan, 
+                                      math.nan, math.nan]], columns = column_names)
+            else: 
+                self.bboxes = self.bboxes[1,:,:] # remove fake head vehicle 
+                self.labels = self.bboxes[1:]
+                self.confs = self.bboxes[1:]
+                self.fake_head_vehicle = False
+
         num_vehicles, _, num_frames = self.bboxes.shape
 
         # add vehicle index for each frame to all frames at once
@@ -276,8 +319,7 @@ class VehicleFleet():
         # frame_level_info_df["camera_id"] = frame_level_info_df["camera_id"].astype('int')
 
         # reorder columns
-        frame_level_info_df = frame_level_info_df[['camera_id', 'video_upload_datetime',
-                            'frame_id', 'vehicle_id', 'vehicle_type', 'confidence', 'bboxes']]
+        frame_level_info_df = frame_level_info_df[column_names]
 
         return frame_level_info_df
 
@@ -293,6 +335,9 @@ class VehicleFleet():
         vehicle_stop_counts -- dict with keys as vehicle types, values as vehicle stops
         vehicle_start_counts -- dict with keys as vehicle types, values as vehicle starts
         """
+        column_names = ['camera_id', 'video_upload_datetime',
+                        'vehicle_type', 'counts', 'stops', 'starts']
+
         counts_df = pd.DataFrame.from_dict(vehicle_counts,
                                           orient='index', columns=['counts'],)
         stops_df = pd.DataFrame.from_dict(vehicle_stop_counts,
@@ -309,6 +354,5 @@ class VehicleFleet():
         video_level_stats_df.index.name = 'vehicle_type'
         video_level_stats_df.reset_index(inplace=True)
         # reorder columns
-        video_level_stats_df = video_level_stats_df[['camera_id', 'video_upload_datetime',
-                            'vehicle_type', 'counts', 'stops', 'starts']]
+        video_level_stats_df = video_level_stats_df[column_names]
         return video_level_stats_df

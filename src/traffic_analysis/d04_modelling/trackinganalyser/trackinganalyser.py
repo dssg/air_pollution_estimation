@@ -10,7 +10,7 @@ import pandas as pd
 import sys
 import cv2
 import time
-########### Imports to run the if-main example. This can be deleted once the tracking analyser is 
+########### Imports to run the if-main example. This should be deleted once the tracking analyser is 
 ########### incorporated into pipeline 
 from src.traffic_analysis.d00_utils.load_confs import load_parameters, load_paths, load_credentials
 from src.traffic_analysis.d02_ref.load_video_names_from_s3 import load_video_names_from_s3
@@ -128,6 +128,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         start_time = time.time()
         # Create a video capture object to read videos
         n_frames = video.shape[0]
+            
         # assumes vid_length in seconds
         video_frames_per_sec = int(n_frames / video_time_length)
 
@@ -138,10 +139,10 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                                               implementation=self.detection_implementation,
                                               selected_labels=True)
         # store info returned above in vehicleFleet object
-        fleet = VehicleFleet(np.array(bboxes), 
-                            np.array(labels), 
-                            np.array(confs), 
-                            video_name.replace(".mp4", ""))
+        fleet = VehicleFleet(bboxes = np.array(bboxes), 
+                            labels = np.array(labels), 
+                            confs = np.array(confs), 
+                            video_name = video_name.replace(".mp4", ""))
 
         # Create MultiTracker object using bboxes, initialize multitracker
         multitracker = cv2.MultiTracker_create()
@@ -155,7 +156,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             frame = video[frame_ind,:,:,:]
             # get updated location of objects in subsequent frames, update fleet obj
             success, bboxes_tracked = multitracker.update(frame)
-            fleet.update_vehicles(bboxes_tracked)
+            fleet.update_vehicles(np.array(bboxes_tracked))
 
             # draw tracked objects
             display_bboxes_on_frame(frame, bboxes_tracked, 
@@ -229,7 +230,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                                     as stopped; below, we consider the vehicle moving
         """
         video_info_list = []
-        for _, single_frame_level_df in frame_level_df.groupby('cam_id'): 
+        for _, single_frame_level_df in frame_level_df.groupby('camera_id'): 
             fleet = VehicleFleet(frame_level_df = single_frame_level_df, load_from_pd = True)
             # compute the convolved IOU time series for each vehicle and smooth
             fleet.compute_iou_time_series(interval=self.iou_convolution_window)
@@ -247,27 +248,34 @@ if __name__ == '__main__':
     params = load_parameters()
     paths = load_paths()
 
-    selected_videos = load_video_names_from_s3(ref_file='test_search',
-                                           paths=paths)
-    file_names = selected_videos[:2]
-    my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
+    video_dict = load_videos_into_np(paths["annotation_videos"])
+    print("loaded videos")
+    # print(video_dict)
+# ###############3
+#     selected_videos = load_video_names_from_s3(ref_file='test_search',
+#                                            paths=paths)
+#     file_names = selected_videos[:2]
+#     my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
 
-    delete_and_recreate_dir(paths["temp_video"])
-    # Download the video file_names using the file list
-    for file in file_names:
-        try:
-            my_bucket.download_file(file, paths["temp_video"] + file.split('/')[-1].replace(
-                ':', '-').replace(" ", "_"))
-        except:
-            print("Could not download " + file)
+#     delete_and_recreate_dir(paths["temp_video"])
+#     # Download the video file_names using the file list
+#     for file in file_names:
+#         try:
+#             my_bucket.download_file(file, paths["temp_video"] + file.split('/')[-1].replace(
+#                 ':', '-').replace(" ", "_"))
+#         except:
+#             print("Could not download " + file)
 
-    video_dict = load_videos_into_np(paths["temp_video"])
-    delete_and_recreate_dir(paths["temp_video"])
-
+#     video_dict = load_videos_into_np(paths["temp_video"])
+#     delete_and_recreate_dir(paths["temp_video"])
+# #############
     ############### NEW CODE ##############################
     #everything above this is bits of code copy-pasted from pipeline
     analyser = TrackingAnalyser(video_dict = video_dict, params =params, paths=paths)
     frame_level_df = analyser.construct_frame_level_df(video_dict)
     print(frame_level_df)
+    frame_level_df.to_csv("data/carolinetemp/frame_level_df.csv")
+
     video_level_df = analyser.construct_video_level_df(frame_level_df)
     print(video_level_df)
+    video_level_df.to_csv("data/carolinetemp/video_level_df.csv")

@@ -1,3 +1,4 @@
+# from src.traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
 import boto3
 import cv2
 import os
@@ -23,7 +24,8 @@ def load_videos_into_np(folder):
     video_dict = {}
     for file in glob.glob(folder + '*.mp4'):
         try:
-            video_dict[file.split('/')[-1]] = mp4_to_npy(file)
+            video_name = re.split(r"\\|/", file)[-1]
+            video_dict[video_name] = mp4_to_npy(file)
         except:
             print("Could not convert " + file + " to numpy array")
 

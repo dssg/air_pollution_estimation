@@ -15,6 +15,13 @@ class TrafficAnalyserInterface(ABC):
                         for values
         """
         super().__init__()   
+        for video_name in list(video_dict.keys()): 
+            n_frames = video_dict[video_name].shape[0]
+        # Check that video doesn't come from in-use camera (some are) 
+            if n_frames < 75: 
+                del video_dict[video_name]
+                print("Video ", video_name, " has been removed from processing because it may be invalid")
+
         self.video_dict = video_dict 
         self.params = params
         self.paths = paths
@@ -34,3 +41,4 @@ class TrafficAnalyserInterface(ABC):
         data tables schema
         """
         pass
+
