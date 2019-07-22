@@ -18,6 +18,7 @@ local_paths:
   processed_video: "results/jamcams/"
   plots: "plots/"
   annotations: "annotations/"
+  detect_model: "data/ref/detect_model"
 
 db_paths:
   db_host: "dssg-london.ck0oseycrr7s.eu-west-2.rds.amazonaws.com"
