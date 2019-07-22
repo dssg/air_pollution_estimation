@@ -1,5 +1,4 @@
 import os
-from traffic_analysis.d00_utils.get_project_directory import get_project_directory
 from traffic_analysis.d00_utils.data_retrieval import connect_to_bucket
 
 
@@ -19,7 +18,7 @@ def retrieve_detect_model_from_s3(params, paths):
 
         # get location of files in s3 bucket
         my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
-        s3_filepath_model = "ref/model_conf/" + model
+        s3_filepath_model = paths['s3_detect_model'] + model
 
         # get list of all files in the s3 folder
         objects = my_bucket.objects.filter(Prefix=s3_filepath_model)
