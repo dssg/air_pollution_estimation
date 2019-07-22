@@ -121,7 +121,7 @@ app.layout = html.Div(
                                         html.Div(children=["Objects:"], style={
                                             'width': '40%'}),
                                         dcc.Dropdown(
-                                            id="dropdown-objects", clearable=False,
+                                            id="dropdown-vehicles", clearable=False,
                                             style={'width': '60%'},
                                             multi=True
                                         )
@@ -197,7 +197,7 @@ def select_footage(footage):
 
 
 @app.callback(
-    Output("dropdown-objects", "options"),
+    Output("dropdown-vehicles", "options"),
     [
         Input('dropdown-footage-selection', 'value')
     ]
@@ -210,10 +210,10 @@ def update_objects(camera_id):
         print("Empty")
         return []
     if camera_id:
-        objects = load_objects(df)
+        vehicles = load_objects(df)
         options = [
             {"label": obj, "value": obj}
-            for obj in objects]
+            for obj in vehicles]
         return options
 
 
@@ -281,7 +281,7 @@ def update_output(camera_id):
             ),
             html.Div(
                 children=[
-                    html.P(children="Trend of objects in video",
+                    html.P(children="Trend of vehicles in video",
                            className='plot-title'),
                     dcc.Graph(
                         id="trend-graph",
