@@ -1,6 +1,8 @@
 import datetime
+import pandas as pd
 
 from traffic_analysis.d00_utils.data_access import db
+from traffic_analysis.d03_processing.add_to_table_sql import add_to_table_sql
 from traffic_analysis.d05_reporting.report_yolo import yolo_report_stats
 
 
@@ -31,7 +33,7 @@ def update_video_level_table(file_names, paths, params, creds):
 
     for i in range(len(file_names)):
 
-        filter_string += '(camera_id=' + camera_ids[i] + ' AND datetime=' + str(datetimes[i]) + ') OR '
+        filter_string += '(camera_id=\'' + camera_ids[i] + '\' AND datetime=\'' + str(datetimes[i]) + '\') OR '
 
     filter_string = filter_string[:-4]
     print(filter_string)
@@ -47,6 +49,9 @@ def update_video_level_table(file_names, paths, params, creds):
         db_pass, db_user, db_name, db_host)
 
     db_obj = db(conn_string=conn_string)
-    result = db_obj.execute_raw_query(sql=sql_string)
+    frame_level_df = db_obj.execute_raw_query(sql=sql_string)    
+    video_level_df = yolo_report_stats(frame_level_df)
+
+    add_to_table_sql(df=video_level_df,table='video_stats',creds=creds,paths=paths)
 
     return

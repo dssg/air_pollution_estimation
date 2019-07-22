@@ -74,7 +74,6 @@ def yolo_output_df(yolo_dict):
         #yolo_df index is the index of an objected detected over a frame
         yolo_df.index.name = "obj_ind"
         yolo_df = yolo_df[["camera_id", "frame_id", "datetime", "obj_bounds", "obj_classification", "confidence"]]
-        yolo_df['video_id'] = video_num
         df_list.append(yolo_df)
     df = pd.DataFrame()
     # Concatenate dataframes
@@ -111,27 +110,23 @@ def yolo_report_stats(yolo_df):
     dfs = []
     if yolo_df.empty:
         return pd.DataFrame()
-    grouped = yolo_df.groupby('video_id')
+    grouped = yolo_df.groupby(['camera_id', 'datetime'])
 
     for name, group in grouped:
         obj_counts_frame=group.groupby(["frame_id", "obj_classification"]).size().reset_index(name = 'obj_count')
-
-        #long to wide format
-        #some object types were not detected in a frame, so we fill these NAs with 0s
-        obj_counts_frame=obj_counts_frame.pivot(index='frame_id', columns='obj_classification', values='obj_count').fillna(value = 0)
-
-        mean = pd.DataFrame([obj_counts_frame.mean()])
-        mean['metric'] = 'mean'
-        std = pd.DataFrame([obj_counts_frame.std()])
-        std['metric'] = 'std'
-        df = pd.concat([mean, std])
-        assert group['date'].nunique() == 1, "Non-unique date"
-        df['date'] = group['date'].iloc[0]
-        assert group['time'].nunique() == 1, "Non-unique time"
-        df['time'] = group['time'].iloc[0]
-        assert group['camera_id'].nunique() == 1, "Non-unique camera_id"
-        df['camera_id'] = group['camera_id'].iloc[0]
-        dfs.append(df)
+        
+        for type in obj_counts_frame['obj_classification'].unique():
+            type_df = obj_counts_frame[obj_counts_frame['obj_classification']==type]
+            count_df = pd.DataFrame([type_df['obj_count'].mean()], columns=['counts'])
+            count_df['vehicle_type'] = type
+            count_df['camera_id'] = group['camera_id'].iloc[0]
+            count_df['datetime'] = group['datetime'].iloc[0]
+            count_df['starts'] = 0
+            count_df['stops'] = 0
+            assert group['datetime'].nunique() == 1, "Non-unique datetime..." + str(group['datetime'].unique())
+            assert group['camera_id'].nunique() == 1, "Non-unique camera_id"
+            dfs.append(count_df)
 
     df = pd.concat(dfs).fillna(0)
+    print(df.head(10))
     return df

@@ -2,7 +2,7 @@ import sqlalchemy
 
 from traffic_analysis.d00_utils.data_access import db
 
-def add_to_frame_table_sql(df, table, creds, paths):
+def add_to_table_sql(df, table, creds, paths):
 
     db_host = paths['db_host']
     db_name = paths['db_name']

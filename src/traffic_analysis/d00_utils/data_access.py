@@ -47,7 +47,6 @@ class db():
                 datetime timestamp,
                 obj_classification VARCHAR(255),
                 confidence FLOAT,
-                video_id INTEGER,
                 box_x INTEGER,
                 box_y INTEGER,
                 box_w INTEGER,
@@ -57,11 +56,10 @@ class db():
 
             """
             CREATE TABLE video_stats (
-                id SERIAL,
-                camera_id INTEGER,
-                video_upload_datetime timestamp,
-                vehicle_id INTEGER,
                 counts FLOAT,
+                vehicle_type VARCHAR(255),
+                camera_id VARCHAR(255),
+                datetime timestamp,
                 starts FLOAT,
                 stops FLOAT
             )
@@ -146,11 +144,9 @@ class db():
         self.open_connection()
 
         results = None
-        print("here")
         try:
             self.cursor.execute(sql)
             results = self.cursor.fetchall()
-            print(results)
             col_names = list(map(lambda x: x[0], self.cursor.description))
             results = pd.DataFrame(results, columns=col_names)
             self.conn.commit()
