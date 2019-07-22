@@ -81,6 +81,18 @@ def yolo_output_df(yolo_dict):
     if df_list:
         df = pd.concat(df_list)
 
+    x, y, w, h = [], [], [], []
+    for vals in df['obj_bounds'].values:
+        x.append(vals[0])
+        y.append(vals[1])
+        w.append(vals[2])
+        h.append(vals[3])
+    df['box_x'] = x
+    df['box_y'] = y
+    df['box_w'] = w
+    df['box_h'] = h
+    df.drop('obj_bounds', axis=1, inplace=True)
+
     return df
 
 

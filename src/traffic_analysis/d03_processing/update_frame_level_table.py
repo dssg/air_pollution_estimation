@@ -34,6 +34,6 @@ def update_frame_level_table(file_names, paths, params, creds):
                                       make_videos=False)
 
     add_to_frame_table_sql(df=frame_level_df,
-                           table='frame_level',
+                           table='frame_stats',
                            creds=creds,
                            paths=paths)
