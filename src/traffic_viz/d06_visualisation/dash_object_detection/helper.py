@@ -8,6 +8,7 @@ import os
 import sys
 
 src_dir = os.path.join(os.getcwd(), '..', 'src')
+data_dir = os.path.join(os.getcwd(), '..', 'data')
 sys.path.append(src_dir)
 
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
@@ -21,7 +22,7 @@ params = load_app_parameters()
 paths = load_paths()
 creds = load_credentials()
 s3_credentials = creds[paths["s3_creds"]]
-
+LOCAL = True
 
 def get_cams():
     dl = DataLoaderS3(s3_credentials,
@@ -74,13 +75,29 @@ def load_data(path):
 
 
 def load_camera_statistics(camera_id):
-    # TODO: Change path to s3
-    filepath = paths['jamcam_stats']
     output = pd.DataFrame()
-    if not os.path.exists(filepath):
+
+    if LOCAL:
+        filepath = os.path.join(data_dir,paths['s3_video_level_stats'])
+        if not os.path.exists(filepath):
+            print(filepath)
+
+            return output
+        df = pd.read_csv(filepath, dtype={'camera_id': 'category'})
+        df['datetime'] = pd.to_datetime(
+            df.date) + pd.to_timedelta(df.time, unit='h')
+        output = df[df.camera_id == camera_id]
         return output
 
-    df = pd.read_csv(filepath, dtype={'camera_id': 'category'})
+    dl = DataLoaderS3(s3_credentials,
+                      bucket_name=paths['bucket_name'])
+
+    camera_meta_data_path = paths['s3_video_level_stats'] 
+    if not dl.file_exists(camera_meta_data_path):
+        return output
+    
+    data = dict(dl.read_json(camera_meta_data_path))
+    df = pd.DataFrame(data, dtype={'camera_id': 'category'})
     df['datetime'] = pd.to_datetime(
         df.date) + pd.to_timedelta(df.time, unit='h')
     output = df[df.camera_id == camera_id]

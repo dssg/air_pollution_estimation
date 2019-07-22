@@ -5,6 +5,7 @@ s3_paths:
   s3_video_names: "ref/video_names/"
   s3_camera_details: "ref/camera_details/camera_details.json"
   s3_frame_level: "frame_level/"
+  s3_video_level_stats: "ref/video_level/JamCamStats.csv"
   s3_profile: "dssg"
   s3_creds: "dev_s3"
 
