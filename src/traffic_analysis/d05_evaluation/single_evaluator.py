@@ -5,7 +5,10 @@ from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_n
 
 
 class SingleEvaluator():
-    def __init__(self, xml_root, , params):
+    """
+    This is a superclass for FrameLevelEvaluator and VideoLevelEvaluator
+    """
+    def __init__(self, xml_root, xml_name, params: dict):
         """
         """
         self.xml_root = xml_root
@@ -19,8 +22,7 @@ class SingleEvaluator():
         self.selected_labels = params['selected_labels']
 
     def parse_annotation(self) -> pd.DataFrame: 
-        """
-        Returns annotated xml file as a pandas dataframe
+        """Returns annotation xml file as a pandas dataframe
         """
         for track in self.xml_root.iter('track'):
             if track.attrib['label'] == 'vehicle':
@@ -45,9 +47,10 @@ class SingleEvaluator():
 
 class FrameLevelEvaluator(SingleEvaluator): 
     """
+    Not yet implemented. 
     """
     def __init__(self, xml_root, xml_name, frame_level_df: pd.DataFrame):
-        super().__init__(xml_root, xml_name)
+        super().__init__(xml_root, xml_name, params)
         self.ground_truth_df = super().parse_annotations()
         self.frame_level_df = frame_level_df
 
@@ -60,6 +63,9 @@ class FrameLevelEvaluator(SingleEvaluator):
 
 ####################################
 class VideoLevelEvaluator(SingleEvaluator):
+    """
+    Purpose of this class is to conduct video level evaluation for one video.
+    """
     def __init__(self, xml_root,xml_name, video_level_df: pd.DataFrame, params: dict):
         super().__init__(xml_root, xml_name, params)
         print(self.xml_root)
@@ -67,8 +73,37 @@ class VideoLevelEvaluator(SingleEvaluator):
         self.video_level_df = video_level_df
         self.video_level_column_order = params["video_level_column_order"]
 
-    def fill_and_sort_by_vehicle_types(self, df: pd.DataFrame):
+    def evaluate_video(self): 
+        """Conducts evaluation on one video. Compares a true_stats_df generated from the 
+        xml files with a video_level_df output by an instance of TrafficAnalyser. 
         """
+        true_stats_df = self.compute_true_video_level_stats()
+        true_stats_df = self.fill_and_sort_by_vehicle_types(true_stats_df)
+        self.video_level_df = self.fill_and_sort_by_vehicle_types(self.video_level_df)
+
+        diff_columns = [col if i < 3 else 'y_pred-y_'+col
+                        for i, col in enumerate(self.video_level_column_order)]
+        diff_df = pd.DataFrame(columns=diff_columns)
+
+        for stat in self.video_level_column_order[3:]:
+            diff_df['y_pred-y_' + stat] = self.video_level_df[stat] - true_stats_df[stat]
+
+        assert (self.video_level_df['camera_id'].iloc[0] == true_stats_df['camera_id'].iloc[0]), \
+            "camera IDs do not match in VideoLevelEvaluator.evaluate_video()"
+        diff_df['camera_id'] = self.video_level_df['camera_id']
+
+        assert (self.video_level_df['video_upload_datetime'].iloc[0] == true_stats_df['video_upload_datetime'].iloc[0]),\
+            "dates do not match in VideoLevelEvaluator.evaluate_video()"
+        diff_df['video_upload_datetime'] = self.video_level_df['video_upload_datetime']
+
+        diff_df['vehicle_type'] = self.video_level_df['vehicle_type']
+        return diff_df
+
+    def fill_and_sort_by_vehicle_types(self, df: pd.DataFrame):
+        """Ensures that the df passed in has all the vehicle types we care about, 
+        and all the stats we care about (ex. counts, starts, stops, parked). If any of
+        these are missing, this function fills the missing values with 0. Also sorts the 
+        df by vehicle_types. 
         """
         for column_name in self.video_level_column_order: 
             if column_name not in df.columns: 
@@ -88,36 +123,9 @@ class VideoLevelEvaluator(SingleEvaluator):
         df = df.sort_values(by='vehicle_type').reset_index()
         return df
 
-    def evaluate_video(self): 
-        """
-        """
-        true_stats_df = self.compute_true_video_level_stats()
-        true_stats_df = self.fill_and_sort_by_vehicle_types(true_stats_df)
-        self.video_level_df = self.fill_and_sort_by_vehicle_types(self.video_level_df)
-
-        diff_columns = [col if i < 3 else 'y_pred-y_'+col
-                        for i, col in enumerate(self.video_level_column_order)]
-        diff_df = pd.DataFrame(columns=diff_columns)
-
-        for stat in self.video_level_column_order[3:]:
-            diff_df['y_pred-y_' + stat] = self.video_level_df[stat] - true_stats_df[stat]
-
-        # print("camera id video df: ", self.video_level_df['camera_id'].iloc[0], 
-            # "\n", "true_stats_df: ", true_stats_df['camera_id'].iloc[0])
-
-        assert (self.video_level_df['camera_id'].iloc[0] == true_stats_df['camera_id'].iloc[0]), \
-            "camera IDs do not match in VideoLevelEvaluator.evaluate_video()"
-        diff_df['camera_id'] = self.video_level_df['camera_id']
-
-        assert (self.video_level_df['video_upload_datetime'].iloc[0] == true_stats_df['video_upload_datetime'].iloc[0]),\
-            "dates do not match in VideoLevelEvaluator.evaluate_video()"
-        diff_df['video_upload_datetime'] = self.video_level_df['video_upload_datetime']
-
-        diff_df['vehicle_type'] = self.video_level_df['vehicle_type']
-        return diff_df
-
     def compute_true_video_level_stats(self): 
         """
+        Combines counts, parked, stop-starts into one dataframe. 
         """
         counts_df = self.get_true_vehicle_counts()
         parked_df = self.get_true_parked_counts()
@@ -136,12 +144,9 @@ class VideoLevelEvaluator(SingleEvaluator):
     def get_true_vehicle_counts(self):
         '''Report the true counts for one annotated videos.
 
-            Keyword arguments:
-            annotations_df -- pandas df containing the formatted output of the XML files
-                              (takes the output of parse_annotations())
-
-            Returns:
-            df: dataframe containing the true counts for each video
+        Keyword arguments:
+        annotations_df -- pandas df containing the formatted output of the XML files
+                          (takes the output of parse_annotations())
         '''
         types = self.ground_truth_df.groupby('vehicle_id')['vehicle_type'].unique()
         types = [t[0] for t in types]
@@ -157,10 +162,7 @@ class VideoLevelEvaluator(SingleEvaluator):
         return counts_df
 
     def get_true_stop_start_counts(self) -> (pd.DataFrame, pd.DataFrame):
-        """ Get the number of stops for each vehicle from the annotations dataframe
-        Args:
-        Returns:
-        Raises:
+        """ Computes the number of stops for each vehicle from the ground_truth_df
         """
         stop_counts, start_counts= [], []
         vehicle_dfs = self.ground_truth_df.sort_values(['frame_id'], ascending=True).groupby('vehicle_id')
@@ -204,7 +206,7 @@ class VideoLevelEvaluator(SingleEvaluator):
                               on="vehicle_type")
 
     def get_true_parked_counts(self): 
-        """
+        """Computes the number of parked vehicles from the ground_truth_df. 
         """
         parked_counter = []
         for vehicle_id, vehicle_df in self.ground_truth_df.groupby('vehicle_id'): 

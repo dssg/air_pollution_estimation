@@ -9,13 +9,16 @@ import xml.etree.ElementTree as ElementTree
 from functools import reduce 
 
 class ChunkEvaluator(): 
+    """
+    Purpose of this class is to evaluate a chunk of videos, given 
+    a list of the annotation_xml_paths, and lists of the corresponding 
+    video_level_dfs and frame_level_dfs. 
+    """
     def __init__(self,
                  annotation_xml_paths: list,
                  params: dict,
                  frame_level_dfs: list = None,
                  video_level_dfs: list = None):
-        """
-        """
         self.num_videos = len(annotation_xml_paths)
         self.annotation_xml_paths = annotation_xml_paths
 
@@ -29,8 +32,8 @@ class ChunkEvaluator():
 
         self.params = params
 
-    def evaluate_videos(self): 
-        """
+    def evaluate_videos(self)->pd.DataFrame: 
+        """This function evaluates a chunk of videos utilizing multiple SingleEvaluator objects. 
         """
         video_level_diff_dfs = []
         for i, xml_path in enumerate(self.annotation_xml_paths):
@@ -58,7 +61,8 @@ class ChunkEvaluator():
         return all_vehicles_df
 
     def video_statistics(self, df:pd.DataFrame, vehicle_stat_cols:list): 
-        """
+        """Computes mse, standard deviation, and mean difference across all vehicle types 
+        for a chunk of videos
         """
         vehicle_stats_dfs = []
         for vehicle_stat in vehicle_stat_cols: # counts, starts, stops, parked 

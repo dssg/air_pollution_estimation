@@ -26,7 +26,6 @@ modelling:
   smoothing_method: "moving_avg"
   stop_start_iou_threshold: 0.80
 
-
 reporting:
   chunk_size: 2
   dtype: 
