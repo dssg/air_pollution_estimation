@@ -18,7 +18,7 @@ def detect_objects_in_image(image_capture, params, paths):
     """
 
     conf_thresh = params['confidence_threshold']
-    iou_threshold = params['iou_threshold']
+    detection_iou_threshold = params['detection_iou_threshold']
     retrieve_detect_model_from_s3(params, paths)
     network_output = pass_image_through_nn(image_capture=image_capture,
                                            params=params, paths=paths)
@@ -29,7 +29,7 @@ def detect_objects_in_image(image_capture, params, paths):
                                                              label_idxs_in=label_idxs_unfiltered,
                                                              confs_in=confs_unfiltered,
                                                              conf_thresh=conf_thresh,
-                                                             iou_thresh=iou_threshold)
+                                                             iou_thresh=detection_iou_threshold)
     labels = label_detections(params=params, paths=paths,
                               label_idxs=label_idxs)
 
