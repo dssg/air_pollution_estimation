@@ -30,7 +30,6 @@ def detect_objects_in_image(image_capture,
                                   s3_credentials=s3_credentials)
     network_output = pass_image_through_nn(image_capture=image_capture,
                                            model_name=model_name,
-                                           params=params,
                                            paths=paths)
     boxes_unfiltered, label_idxs_unfiltered, confs_unfiltered = get_detected_objects(image_capture=image_capture,
                                                                                      network_output=network_output,
