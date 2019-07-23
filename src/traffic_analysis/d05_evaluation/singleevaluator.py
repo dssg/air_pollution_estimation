@@ -95,7 +95,7 @@ class VideoLevelEvaluator(SingleEvaluator):
         true_stats_df = self.compute_true_video_level_stats()
         true_stats_df = self.fill_and_sort_by_vehicle_types(true_stats_df)
         self.video_level_df = self.fill_and_sort_by_vehicle_types(self.video_level_df)
-        
+
         diff_columns = [col if i < 3 else 'y_pred-y_'+col  \
                         for i,col in enumerate(self.video_level_column_order)]
         diff_df = pd.DataFrame(columns = diff_columns)
@@ -103,12 +103,15 @@ class VideoLevelEvaluator(SingleEvaluator):
         for stat in self.video_level_column_order[3:]:
             diff_df['y_pred-y_' + stat] = self.video_level_df[stat] - true_stats_df[stat]
 
+        # print("camera id video df: ", self.video_level_df['camera_id'].iloc[0], 
+            # "\n", "true_stats_df: ", true_stats_df['camera_id'].iloc[0])
+        
         assert (self.video_level_df['camera_id'].iloc[0] == true_stats_df['camera_id'].iloc[0]), \
-            "camera IDs do not match in report_count_differences()"
+            "camera IDs do not match in VideoLevelEvaluator.evaluate_video()"
         diff_df['camera_id'] = self.video_level_df['camera_id']
 
         assert (self.video_level_df['video_upload_datetime'].iloc[0] == true_stats_df['video_upload_datetime'].iloc[0]), \
-            "dates do not match in report_count_differences()"
+            "dates do not match in VideoLevelEvaluator.evaluate_video()"
         diff_df['video_upload_datetime'] = self.video_level_df['video_upload_datetime']
 
         diff_df['vehicle_type'] = self.video_level_df['vehicle_type']

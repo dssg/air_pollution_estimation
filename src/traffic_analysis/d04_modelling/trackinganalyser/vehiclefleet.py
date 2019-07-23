@@ -339,7 +339,7 @@ class VehicleFleet():
                         'vehicle_type', 'counts', 'stops', 'starts']
 
         counts_df = pd.DataFrame.from_dict(vehicle_counts,
-                                          orient='index', columns=['counts'],)
+                                          orient='index', columns=['counts'])
         stops_df = pd.DataFrame.from_dict(vehicle_stop_counts,
                                           orient='index', columns=['stops'])
         starts_df = pd.DataFrame.from_dict(vehicle_start_counts,
