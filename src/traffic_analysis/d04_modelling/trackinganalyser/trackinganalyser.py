@@ -18,7 +18,7 @@ from traffic_analysis.d00_utils.data_retrieval import connect_to_bucket, load_vi
 
 
 class TrackingAnalyser(TrafficAnalyserInterface):
-    def __init__(self, video_dict, params, paths):
+    def __init__(self, params, paths):
         """
         Model-specific parameters initialized below: 
 
@@ -35,7 +35,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         smoothing_method -- method to smooth the IOU time series for each vehicle
         stop_start_iou_threshold -- threshold to binarize the IOU time series into 0 or 1,denoting "moving" or "stopped"
         """
-        super().__init__(video_dict, params, paths)
+        super().__init__(params, paths)
         self.detection_model = params['detection_model']
         self.detection_implementation = params['detection_implementation']
         self.tracking_model = params['opencv_tracker_type']
@@ -207,9 +207,11 @@ class TrackingAnalyser(TrafficAnalyserInterface):
               (time.time() - start_time))
         return fleet
 
-    def construct_frame_level_df(self) -> pd.DataFrame:
+    def construct_frame_level_df(self, video_dict) -> pd.DataFrame:
         """Construct frame level df for multiple videos 
         """
+        self.check_video_dict(video_dict)
+
         frame_info_list = []
         for name, video in self.video_dict.items():
             fleet = self.detect_and_track_objects(video, name)
@@ -265,9 +267,8 @@ if __name__ == '__main__':
     delete_and_recreate_dir(paths["temp_video"])
 
     ############### NEW CODE ##############################
-    analyser = TrackingAnalyser(
-        video_dict=video_dict, params=params, paths=paths)
-    frame_level_df = analyser.construct_frame_level_df()
+    analyser = TrackingAnalyser(params=params, paths=paths)
+    frame_level_df = analyser.construct_frame_level_df(video_dict=video_dict)
     print(frame_level_df)
 
     video_level_df = analyser.construct_video_level_df(frame_level_df)

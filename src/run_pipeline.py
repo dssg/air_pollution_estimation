@@ -1,15 +1,16 @@
 from traffic_analysis.d00_utils.data_retrieval import delete_and_recreate_dir
 from traffic_analysis.d00_utils.load_confs import load_parameters, load_paths, load_credentials
 from traffic_analysis.d02_ref.load_video_names_from_s3 import load_video_names_from_s3
-from traffic_analysis.d02_ref.retrieve_and_upload_video_names_to_s3 import retrieve_and_upload_video_names_to_s3
-from traffic_analysis.d02_ref.upload_annotation_names_to_s3 import upload_annotation_names_to_s3
 from traffic_analysis.d03_processing.update_frame_level_table import update_frame_level_table
-from traffic_analysis.d04_modelling.model_types import ModelType
+from traffic_analysis.d03_processing.update_video_level_table import update_video_level_table
+from traffic_analysis.d04_modelling.trackinganalyser.trackinganalyser import TrackingAnalyser
 
 params = load_parameters()
 paths = load_paths()
 creds = load_credentials()
 s3_credentials = creds[paths['s3_creds']]
+
+analyzer = TrackingAnalyser(params=params, paths=paths)
 
 # If running first time:
 # creates the test_seach_json. Change the camera list and output file name for full run
@@ -26,7 +27,6 @@ retrieve_and_upload_video_names_to_s3(ouput_file_name='test_search',
 upload_annotation_names_to_s3(paths=paths,
                               s3_credentials=s3_credentials)
 """
-
 # Start from here if video names already specified
 selected_videos = load_video_names_from_s3(ref_file='test_search',
                                            paths=paths,
@@ -36,7 +36,7 @@ selected_videos = load_video_names_from_s3(ref_file='test_search',
 chunk_size = params['chunk_size']
 while selected_videos:
 
-    update_frame_level_table(analyzer=ModelType.IOUAnalyzer,
+    update_frame_level_table(analyzer=analyzer,
                              file_names=selected_videos[:chunk_size],
                              paths=paths,
                              params=params,
@@ -44,30 +44,13 @@ while selected_videos:
 
     # evaluate_frame_level_table
 
-    # update_video_level_table
+    update_video_level_table(analyzer=analyzer,
+                             file_names=selected_videos[:chunk_size],
+                             paths=paths,
+                             creds=creds)
 
     # evaluate_video_level_table
 
     # Move on to next chunk
     selected_videos = selected_videos[chunk_size:]
     delete_and_recreate_dir(paths["temp_video"])
-
-
-"""
-from d05_reporting.report_yolo import yolo_output_df, yolo_report_count_stats
-from d04_modelling.evaluation import parse_annotations, report_count_differences
-# Load Annotations and Evaluate
-yolo_df = pd.read_csv(os.path.join(paths['processed_video'], 'JamCamYolo.csv'))
-annotations_df = parse_annotations(paths['annotations'], bool_print_summary=False)
-count_differences_df = report_count_differences(annotations_df, yolo_df)
-count_differences_df.to_csv(paths['processed_video'] + 'JamCamCountDifferences.csv')
-"""
-
-
-
-
-
-
-
-
-
