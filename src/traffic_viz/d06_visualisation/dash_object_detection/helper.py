@@ -78,6 +78,9 @@ def load_objects(df):
     return load_columns
 
 
-def load_object_statistics(df, object_type):
+def load_object_statistics(df, object_type, start_date, end_date):
     df_object = df.pivot_table(object_type, ["datetime"], "metric")
+    df_object.sort_values("datetime", inplace=True)
+    print(df_object.head().index)
+    df_object = df_object[((start_date <= df_object.index) & (df_object.index <= end_date))]
     return df_object
