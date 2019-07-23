@@ -1,7 +1,6 @@
-from src.traffic_analysis.d05_evaluation.singleevaluator import FrameLevelEvaluator, VideoLevelEvaluator
-from src.traffic_analysis.d00_utils.load_confs import load_parameters
+from traffic_analysis.d05_evaluation.singleevaluator import FrameLevelEvaluator, VideoLevelEvaluator
+from traffic_analysis.d00_utils.load_confs import load_parameters
 
-#TODO: change refs to d05_reporting to d05_evaluation
 import numpy as np 
 import pandas as pd
 import glob
@@ -9,9 +8,10 @@ import re
 import xml.etree.ElementTree as ElementTree
 from functools import reduce 
 
-
 class ChunkEvaluator(): 
     def __init__(self, annotation_xml_paths:list, params:dict, frame_level_dfs:list = None, video_level_dfs:list = None): 
+        """
+        """
         self.num_videos = len(annotation_xml_paths)
         self.annotation_xml_paths = annotation_xml_paths
 
@@ -25,9 +25,9 @@ class ChunkEvaluator():
 
         self.params = params
 
-
     def evaluate_videos(self): 
-
+        """
+        """
         video_level_diff_dfs = []
         for i,xml_path in enumerate(self.annotation_xml_paths): 
             xml_name = re.split(r"\\|/",xml_path)[-1]
@@ -56,9 +56,7 @@ class ChunkEvaluator():
 
     def video_statistics(self, df:pd.DataFrame, vehicle_stat_cols:list): 
         """
-        #Currently supports computing the mse, mean diff, std dev diff 
         """
-        
         vehicle_stats_dfs = []
         for vehicle_stat in vehicle_stat_cols: # counts, starts, stops, parked 
             vehicle_stat_dict = {'statistic': ['mean_diff', 'mse', 'sd']}
@@ -79,23 +77,20 @@ class ChunkEvaluator():
 
         return vehicle_stats_df
 
+    def evaluate_frame_level(self): pass 
 
-    def evaluate_frame_level(): pass 
+    def frame_statistics(self): pass
 
-    def plot_evaluation_stats(self): 
-        pass
-
+    def plot_evaluation_stats(self): pass
 
 if __name__ == '__main__':
-
     params = load_parameters()
-
     xml_paths = ["C:\\Users\\Caroline Wang\\OneDrive\\DSSG\\air_pollution_estimation\\annotations\\15_2019-06-29_13-01-03.094068_00001.01252.xml",
                 "C:\\Users\\Caroline Wang\\OneDrive\\DSSG\\air_pollution_estimation\\annotations\\14_2019-06-29_13-01-19.744908_00001.05900.xml"]
 
     pd.set_option('display.max_columns', 500)
 
-    video_level_dfs = pd.read_csv("data/carolinetemp/video_level_df.csv",
+    video_level_dfs = pd.read_csv("../data/carolinetemp/video_level_df.csv",
                         dtype = {"camera_id": str}, 
                         parse_dates= ["video_upload_datetime"])
     del video_level_dfs['Unnamed: 0']
