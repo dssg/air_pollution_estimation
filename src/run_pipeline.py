@@ -38,7 +38,8 @@ while selected_videos:
     update_frame_level_table(file_names=selected_videos[:chunk_size],
                              paths=paths,
                              params=params,
-                             creds=creds)
+                             creds=creds,
+                             s3_credentials=s3_credentials)
 
     # evaluate_frame_level_table
 
