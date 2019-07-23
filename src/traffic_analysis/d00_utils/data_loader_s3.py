@@ -45,12 +45,12 @@ class DataLoaderS3:
                 raise ex
 
     def download_file(self,
-                      file_do_download,
-                      folder_to_store_file):
+                      path_of_file_to_download,
+                      path_to_download_file_to):
 
         self.client.download_file(Bucket=self.bucket_name,
-                                  Key=file_do_download,
-                                  Filename=folder_to_store_file)
+                                  Key=path_of_file_to_download,
+                                  Filename=path_to_download_file_to)
 
     def list_objects(self,
                      prefix=None)->list:

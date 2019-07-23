@@ -7,7 +7,7 @@ s3_paths:
   s3_frame_level: "frame_level/"
   s3_profile: "dssg"
   s3_creds: "dev_s3"
-  s3_detect_model: "ref/conf/"
+  s3_detect_model: "ref/model_conf/"
 
 local_paths:
   temp_video: "data/temp/videos/"
@@ -18,7 +18,7 @@ local_paths:
   processed_video: "results/jamcams/"
   plots: "plots/"
   annotations: "annotations/"
-  detect_model: "data/ref/detect_model"
+  local_detect_model: "data/ref/detect_model"
 
 db_paths:
   db_host: "dssg-london.ck0oseycrr7s.eu-west-2.rds.amazonaws.com"
