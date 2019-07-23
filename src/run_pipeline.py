@@ -4,6 +4,7 @@ from traffic_analysis.d02_ref.load_video_names_from_s3 import load_video_names_f
 from traffic_analysis.d02_ref.retrieve_and_upload_video_names_to_s3 import retrieve_and_upload_video_names_to_s3
 from traffic_analysis.d02_ref.upload_annotation_names_to_s3 import upload_annotation_names_to_s3
 from traffic_analysis.d03_processing.update_frame_level_table import update_frame_level_table
+from traffic_analysis.d04_modelling.model_types import ModelType
 
 params = load_parameters()
 paths = load_paths()
@@ -12,6 +13,7 @@ s3_credentials = creds[paths['s3_creds']]
 
 # If running first time:
 # creates the test_seach_json. Change the camera list and output file name for full run
+"""
 retrieve_and_upload_video_names_to_s3(ouput_file_name='test_search',
                                       paths=paths,
                                       s3_credentials=s3_credentials,
@@ -23,7 +25,7 @@ retrieve_and_upload_video_names_to_s3(ouput_file_name='test_search',
 
 upload_annotation_names_to_s3(paths=paths,
                               s3_credentials=s3_credentials)
-
+"""
 
 # Start from here if video names already specified
 selected_videos = load_video_names_from_s3(ref_file='test_search',
@@ -34,7 +36,8 @@ selected_videos = load_video_names_from_s3(ref_file='test_search',
 chunk_size = params['chunk_size']
 while selected_videos:
 
-    update_frame_level_table(file_names=selected_videos[:chunk_size],
+    update_frame_level_table(analyzer=ModelType.IOUAnalyzer,
+                             file_names=selected_videos[:chunk_size],
                              paths=paths,
                              params=params,
                              creds=creds)

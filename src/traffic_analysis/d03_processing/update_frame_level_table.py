@@ -1,9 +1,11 @@
 from traffic_analysis.d00_utils.data_retrieval import connect_to_bucket, load_videos_into_np, delete_and_recreate_dir
 from traffic_analysis.d04_modelling.classify_objects import classify_objects
+from traffic_analysis.d04_modelling.model_types import ModelType
+from traffic_analysis.d04_modelling.trackinganalyser.trackinganalyser import TrackingAnalyser
 from traffic_analysis.d03_processing.add_to_frame_table_sql import add_to_frame_table_sql
 
 
-def update_frame_level_table(file_names, paths, params, creds):
+def update_frame_level_table(analyzer, file_names, paths, params, creds):
     """ Update the frame level table on s3 (pq) based on the videos in the files list
                 Args:
                     file_names (list): list of s3 filepaths for the videos to be processed
@@ -27,11 +29,16 @@ def update_frame_level_table(file_names, paths, params, creds):
     video_dict = load_videos_into_np(paths["temp_video"])
     delete_and_recreate_dir(paths["temp_video"])
 
-    frame_level_df = classify_objects(video_dict=video_dict,
-                                      params=params,
-                                      paths=paths,
-                                      vid_time_length=10,
-                                      make_videos=False)
+    if(analyzer == ModelType.IOUAnalyzer):
+        analyser = TrackingAnalyser(
+            video_dict=video_dict, params=params, paths=paths)
+        frame_level_df = analyser.construct_frame_level_df()
+    else:
+        frame_level_df = classify_objects(video_dict=video_dict,
+                                          params=params,
+                                          paths=paths,
+                                          vid_time_length=10,
+                                          make_videos=False)
 
     add_to_frame_table_sql(df=frame_level_df,
                            table='frame_level',
