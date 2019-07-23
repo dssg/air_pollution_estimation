@@ -1,21 +1,23 @@
 from src.traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
+from src.traffic_analysis.d00_utils.load_confs import load_parameters
 import numpy as np 
 import pandas as pd
 import xml.etree.ElementTree as ElementTree
 import re 
 import collections
+import datetime
 
 class SingleEvaluator(): 
-    def __init__(self, xml_root, xml_name, res_df): 
+    def __init__(self, xml_root, xml_name, params): 
         self.xml_root = xml_root
         self.camera_id, self.video_upload_datetime = parse_video_or_annotation_name(xml_name)
-        self.res_df = res_df
-        self.annotated_result = {'vehicle_id': [], 
+        self.annotated_result = {'vehicle_id': [],
                                 'frame_id': [], 
                                 'bboxes': [],
                                 'vehicle_type': [], 
                                 'parked': [], 
                                 'stopped': []}
+        self.selected_labels = params['selected_labels']
 
 
     def parse_annotation(self) -> pd.DataFrame: 
@@ -36,10 +38,7 @@ class SingleEvaluator():
                         # Else just use the name for indexing
                         else:
                             self.annotated_result[attr.attrib['name']].append(attr.text)
-        # for key, value in self.annotated_result.items(): 
-            # print("Key: ", key)
-            # print("\n Value len: ", len(value))
-            # print("\n Value: ", value)
+
         ground_truth_df = pd.DataFrame.from_dict(self.annotated_result)
         ground_truth_df['video_upload_datetime'] = self.video_upload_datetime
         ground_truth_df['camera_id'] = self.camera_id
@@ -48,7 +47,7 @@ class SingleEvaluator():
 
 class FrameLevelEvaluator(SingleEvaluator): 
     def __init__(self, xml_root, xml_name, frame_level_df:pd.DataFrame): 
-        super().__init__(xml_root, xml_name, frame_level_df)
+        super().__init__(xml_root, xml_name)
         self.ground_truth_df = super(FrameLevelEvaluator, self).parse_annotations()
         print("successfully initiated")
 
@@ -61,18 +60,59 @@ class FrameLevelEvaluator(SingleEvaluator):
 
 ####################################
 class VideoLevelEvaluator(SingleEvaluator):
-    def __init__(self, xml_root,xml_name, video_level_df:pd.DataFrame):
-        super().__init__(xml_root, xml_name, video_level_df)
+    def __init__(self, xml_root,xml_name, video_level_df:pd.DataFrame, params):
+        super().__init__(xml_root, xml_name, params)
         print(self.xml_root)
         self.ground_truth_df = super().parse_annotation()
+        self.video_level_df = video_level_df
+        self.video_level_column_order = params["video_level_column_order"]
+
+    def fill_and_sort_by_vehicle_types(self, df): 
+        """
+        """
+        # check that all columns are present; else fill with 0 
+        for column_name in self.video_level_column_order: 
+            if column_name not in df.columns: 
+                df[column_name] = 0
+        df = df[self.video_level_column_order]
+
+        # insert missing vehicle types as row
+        current_vehicle_types = df['vehicle_type'].values
+        for vehicle_type in self.selected_labels:
+            # need to append rows 
+            if vehicle_type not in current_vehicle_types:
+                #append type as new column
+                new_row_dict = {(column_name):(df[column_name].iloc[0] if i<3 else 0) \
+                                for i,column_name in enumerate(self.video_level_column_order)}
+                new_row_dict['vehicle_type'] = vehicle_type
+                df.loc[len(df) + 1] = new_row_dict
+        df = df.sort_values(by='vehicle_type').reset_index()
+        return df
 
     def evaluate_video(self): 
         """
         """
         true_stats_df = self.compute_true_video_level_stats()
-        # implement comparison b/w video_level_stats and true_stats_df
+        true_stats_df = self.fill_and_sort_by_vehicle_types(true_stats_df)
+        self.video_level_df = self.fill_and_sort_by_vehicle_types(self.video_level_df)
+        
+        diff_columns = [col if i < 3 else 'y_pred-y_'+col  \
+                        for i,col in enumerate(self.video_level_column_order)]
+        diff_df = pd.DataFrame(columns = diff_columns)
 
-        return
+        for stat in self.video_level_column_order[3:]:
+            diff_df['y_pred-y_' + stat] = self.video_level_df[stat] - true_stats_df[stat]
+
+        assert (self.video_level_df['camera_id'].iloc[0] == true_stats_df['camera_id'].iloc[0]), \
+            "camera IDs do not match in report_count_differences()"
+        diff_df['camera_id'] = self.video_level_df['camera_id']
+
+        assert (self.video_level_df['video_upload_datetime'].iloc[0] == true_stats_df['video_upload_datetime'].iloc[0]), \
+            "dates do not match in report_count_differences()"
+        diff_df['video_upload_datetime'] = self.video_level_df['video_upload_datetime']
+
+        diff_df['vehicle_type'] = self.video_level_df['vehicle_type']
+        return diff_df
 
     def compute_true_video_level_stats(self): 
         """
@@ -81,13 +121,14 @@ class VideoLevelEvaluator(SingleEvaluator):
         parked_df = self.get_true_parked_counts()
         stops_starts_df = self.get_true_stop_start_counts()
 
+        counts_df['camera_id'] = self.camera_id
+        counts_df['video_upload_datetime'] =  self.video_upload_datetime
         counts_df = counts_df.merge(parked_df, how='outer',
                                  on = "vehicle_type")
         counts_df = counts_df.merge(stops_starts_df, how='outer',
                                  on = "vehicle_type").fillna(0)
 
-        counts_df = counts_df[["camera_id","video_upload_datetime","vehicle_type",
-                               "counts", "stops", "starts", "parked"]]
+        counts_df = counts_df[self.video_level_column_order]
         return counts_df
 
 
@@ -118,9 +159,6 @@ class VideoLevelEvaluator(SingleEvaluator):
         counts_df.reset_index(inplace=True)
 
         counts_df = counts_df.rename({0:"counts"},axis = "columns").fillna(0)
-
-        counts_df['camera_id'] = self.ground_truth_df['camera_id'].values[0]
-        counts_df['video_upload_datetime'] = self.ground_truth_df['video_upload_datetime'].values[0]
 
         return counts_df
 
@@ -193,13 +231,22 @@ class VideoLevelEvaluator(SingleEvaluator):
 
 
 if __name__ == '__main__':
+    params = load_parameters()
+
     xml_path = "C:\\Users\\Caroline Wang\\OneDrive\\DSSG\\air_pollution_estimation\\annotations\\14_2019-06-29_13-01-19.744908_00001.05900.xml"
     xml_name = re.split(r"\\|/",xml_path)[-1]
     xml_root = ElementTree.parse(xml_path).getroot()
+    pd.set_option('display.max_columns', 500)
 
-    video_level_groups = pd.read_csv("data/carolinetemp/video_level_df.csv").groupby(['camera_id', 'video_upload_datetime'])
+    video_level_dfs = pd.read_csv("data/carolinetemp/video_level_df.csv",
+                        dtype = {"camera_id": str}, 
+                        parse_dates= ["video_upload_datetime"])
+    del video_level_dfs['Unnamed: 0']
+
+    video_level_groups = video_level_dfs.groupby(['camera_id', 'video_upload_datetime'])
     for name, group in video_level_groups: 
         # print(name)
         video_level_df = group
-    video_evaluator = VideoLevelEvaluator(xml_root, xml_name,video_level_df)
-    video_evaluator.evaluate_video()
+    video_evaluator = VideoLevelEvaluator(xml_root, xml_name,video_level_df, params)
+    diff_df = video_evaluator.evaluate_video()
+    print(diff_df)

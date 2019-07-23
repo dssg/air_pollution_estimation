@@ -31,4 +31,5 @@ reporting:
   chunk_size: 2
   dtype: 
     camera_id: 'category'
+  video_level_column_order: ["camera_id", video_upload_datetime, "vehicle_type", "counts", "starts", "stops", "parked"]
 
