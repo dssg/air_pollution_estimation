@@ -1,4 +1,4 @@
-from traffic_analysis.d05_evaluation.singleevaluator import FrameLevelEvaluator, VideoLevelEvaluator
+from traffic_analysis.d05_evaluation.single_evaluator import FrameLevelEvaluator, VideoLevelEvaluator
 from traffic_analysis.d00_utils.load_confs import load_parameters
 
 import numpy as np 
@@ -9,7 +9,11 @@ import xml.etree.ElementTree as ElementTree
 from functools import reduce 
 
 class ChunkEvaluator(): 
-    def __init__(self, annotation_xml_paths:list, params:dict, frame_level_dfs:list = None, video_level_dfs:list = None): 
+    def __init__(self,
+                 annotation_xml_paths: list,
+                 params: dict,
+                 frame_level_dfs: list = None,
+                 video_level_dfs: list = None):
         """
         """
         self.num_videos = len(annotation_xml_paths)
@@ -29,14 +33,14 @@ class ChunkEvaluator():
         """
         """
         video_level_diff_dfs = []
-        for i,xml_path in enumerate(self.annotation_xml_paths): 
-            xml_name = re.split(r"\\|/",xml_path)[-1]
+        for i, xml_path in enumerate(self.annotation_xml_paths):
+            xml_name = re.split(r"\\|/", xml_path)[-1]
             xml_root = ElementTree.parse(xml_path).getroot()
-            video_level_evaluator = VideoLevelEvaluator(xml_root,xml_name,
+            video_level_evaluator = VideoLevelEvaluator(xml_root, xml_name,
                                                         self.video_level_dfs[i],
                                                         params)
             video_level_diff_dfs.append(video_level_evaluator.evaluate_video())
-        video_level_diff_df = pd.concat(video_level_diff_dfs, axis = 0) #concat dfs as new rows 
+        video_level_diff_df = pd.concat(video_level_diff_dfs, axis=0)  # concat dfs as new rows
 
         all_vehicles_dfs = []
 
@@ -46,13 +50,12 @@ class ChunkEvaluator():
 
             all_vehicles_dfs.append(single_vehicle_df)
 
-        #put into single df 
-        all_vehicles_df = pd.concat(all_vehicles_dfs, axis = 0)
+        # put into single df
+        all_vehicles_df = pd.concat(all_vehicles_dfs, axis=0)
         all_vehicles_df['n_videos'] = self.num_videos
-        all_vehicles_df.reset_index(inplace = True)
+        all_vehicles_df.reset_index(inplace=True)
         del all_vehicles_df['index']
         return all_vehicles_df
-
 
     def video_statistics(self, df:pd.DataFrame, vehicle_stat_cols:list): 
         """
@@ -72,8 +75,8 @@ class ChunkEvaluator():
             vehicle_stat_df = pd.DataFrame.from_dict(vehicle_stat_dict)
 
             vehicle_stats_dfs.append(vehicle_stat_df)
-        vehicle_stats_df = reduce(lambda  left,right: pd.merge(left,right,on=['statistic'],
-                                            how='outer'), vehicle_stats_dfs)
+        vehicle_stats_df = reduce(lambda left,right: pd.merge(left, right, on=['statistic'],
+                                  how='outer'), vehicle_stats_dfs)
 
         return vehicle_stats_df
 
@@ -91,8 +94,8 @@ if __name__ == '__main__':
     pd.set_option('display.max_columns', 500)
 
     video_level_dfs = pd.read_csv("../data/carolinetemp/video_level_df.csv",
-                        dtype = {"camera_id": str}, 
-                        parse_dates= ["video_upload_datetime"])
+                        dtype={"camera_id": str},
+                        parse_dates=["video_upload_datetime"])
     del video_level_dfs['Unnamed: 0']
 
     video_level_df_list = []
@@ -100,8 +103,8 @@ if __name__ == '__main__':
     for name, group in video_level_groups: 
         video_level_df_list.append(group)
 
-    chunk_evaluator = ChunkEvaluator(annotation_xml_paths = xml_paths,
-                                    params = params,
-                                    video_level_dfs = video_level_df_list)
+    chunk_evaluator = ChunkEvaluator(annotation_xml_paths=xml_paths,
+                                     params=params,
+                                     video_level_dfs=video_level_df_list)
     stats_df = chunk_evaluator.evaluate_videos()
     print("stats df: \n", stats_df)
