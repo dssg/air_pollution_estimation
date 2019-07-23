@@ -1,5 +1,5 @@
 from traffic_analysis.d04_modelling.trafficanalyserinterface import TrafficAnalyserInterface
-from traffic_analysis.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame, bbox_intersection_over_union
+from traffic_analysis.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame, color_bboxes, bbox_intersection_over_union
 from traffic_analysis.d00_utils.video_helpers import write_mp4
 from traffic_analysis.d00_utils.load_confs import load_parameters, load_paths
 from traffic_analysis.d04_modelling.object_detection import detect_bboxes
@@ -28,6 +28,9 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         detection_frequency -- each detection_frequency num of frames, run obj detection alg again to detect new objs
         tracking_model -- specify name of model you want to use for tracking (currently only supports OpenCV trackers)
         iou_threshold -- specify threshold to use to decide whether two detected objs should be considered the same
+        detection_confidence_threshold -- conf above which to return label 
+        detection_nms_threshold -- yolo param
+        selected_labels -- labels which we wish to detect 
 
         (Stop start arguments:)
         iou_convolution_window -- frame window size to perform iou computation on (to get an IOU time 
@@ -41,6 +44,9 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         self.tracking_model = params['opencv_tracker_type']
         self.iou_threshold = params['iou_threshold']
         self.detection_frequency = params['detection_frequency']
+        self.detection_confidence_threshold = params['detection_confidence_threshold']
+        self.detection_nms_threshold = params['detection_nms_threshold']
+        self.selected_labels = params['selected_labels']
 
         self.iou_convolution_window = params['iou_convolution_window']
         self.smoothing_method = params['smoothing_method']
@@ -137,7 +143,9 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         bboxes, labels, confs = detect_bboxes(frame=first_frame,
                                               model=self.detection_model,
                                               implementation=self.detection_implementation,
-                                              selected_labels=True)
+                                              detection_confidence_threshold = self.detection_confidence_threshold,
+                                              detection_nms_threshold = self.detection_nms_threshold,
+                                              selected_labels=self.selected_labels)
         # store info returned above in vehicleFleet object
         fleet = VehicleFleet(bboxes=np.array(bboxes),
                              labels=np.array(labels),
@@ -160,7 +168,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
             # draw tracked objects
             display_bboxes_on_frame(frame, bboxes_tracked,
-                                    fleet.compute_colors(),
+                                    color_bboxes(fleet.labels),
                                     fleet.compute_label_confs())
 
             # every x frames, re-detect boxes
@@ -169,7 +177,9 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 bboxes_detected, labels_detected, confs_detected = detect_bboxes(frame=frame,
                                                                                  model=self.detection_model,
                                                                                  implementation=self.detection_implementation,
-                                                                                 selected_labels=True)
+                                                                                 detection_confidence_threshold = self.detection_confidence_threshold,
+                                                                                 detection_nms_threshold = self.detection_nms_threshold,
+                                                                                 selected_labels=self.selected_labels)
                 # re-initialize MultiTracker
                 new_bbox_inds = self.determine_new_bboxes(bboxes_tracked,
                                                           bboxes_detected)

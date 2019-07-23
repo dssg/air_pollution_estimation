@@ -19,8 +19,6 @@ class TrafficAnalyserInterface(ABC):
         params -- yaml with modelling parameters
         paths -- yaml with paths 
         """
-        super().__init__()
-
         # Check that video doesn't come from in-use camera (some are)
         for video_name in list(video_dict.keys()):
             n_frames = video_dict[video_name].shape[0]
