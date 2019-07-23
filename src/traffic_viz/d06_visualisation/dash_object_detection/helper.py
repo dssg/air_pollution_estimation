@@ -15,9 +15,11 @@ paths = load_paths()
 def get_cams():
     filepath = paths['cameras']
 
-    data = json.loads(open(filepath, 'r').read())
+    data = dict(json.loads(open(filepath, 'r').read()))
+    values = data.values()
     cam_list = [{'label': item['commonName'],  'value': item['id']}
-                for item in dict(data).values()]
+                for item in values]
+    cam_list.sort(key=lambda x: x['label'])
     return cam_list
 
 
@@ -60,6 +62,10 @@ def load_data(path):
 def load_camera_statistics(camera_id):
     # TODO: Change path to s3
     filepath = paths['jamcam_stats']
+    output = pd.DataFrame()
+    if not os.path.exists(filepath):
+        return output
+        
     df = pd.read_csv(filepath, dtype={'camera_id': 'category'})
     df['datetime'] = pd.to_datetime(
         df.date) + pd.to_timedelta(df.time, unit='h')

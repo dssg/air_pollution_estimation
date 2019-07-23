@@ -4,7 +4,7 @@ import dash_html_components as html
 import dash_player as player
 import plotly.graph_objs as go
 from dash.dependencies import Input, Output
-from .helper import get_cams, load_camera_statistics, load_objects, load_object_statistics, params
+from helper import get_cams, load_camera_statistics, load_objects, load_object_statistics, params
 from datetime import datetime as dt
 
 
@@ -186,11 +186,12 @@ def load_all_footage():
 )
 def select_footage(footage):
     # Find desired footage and update player video
-    footage = footage.replace("JamCams_", "")
-    filename = footage + ".mp4"
-    url = TFL_BASE_URL + filename
-    print(url)
-    return url
+    if footage:
+        footage = footage.replace("JamCams_", "")
+        filename = footage + ".mp4"
+        url = TFL_BASE_URL + filename
+        print(url)
+        return url
 
 
 @app.callback(
@@ -215,7 +216,8 @@ def update_objects(camera_id):
 
 
 def transform_camera_id(camera_id):
-    camera_id = camera_id.replace("JamCams_", "")
+    if camera_id:
+        camera_id = camera_id.replace("JamCams_", "")
     return camera_id
 
 
@@ -267,6 +269,7 @@ def update_trend_graph(objects, camera_id):
         Input("dropdown-footage-selection", "value")
     ])
 def update_output(camera_id):
+    print(camera_id)
     if camera_id:
         return [
             dcc.Interval(

@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
-import datetime
+import dateutil.parser
+from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
+import numpy as np
+import pandas as pd
 
 
 
@@ -16,7 +19,8 @@ def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date_time):
     time -- time of the video which the frame came from (Python datetime time object)
 
     """
-    frame_df = pd.DataFrame(obj_info_aggregated, columns = ['obj_bounds', 'obj_classification', 'confidence'])
+    frame_df = pd.DataFrame(obj_info_aggregated, columns=[
+                            'obj_bounds', 'obj_classification', 'confidence'])
     frame_df["frame_id"] = frame_ind
     frame_df["camera_id"] = camera_id
     frame_df["datetime"] = date_time
@@ -44,33 +48,33 @@ def yolo_output_df(yolo_dict):
         obj_labels = np.array(values['labels'])
         obj_label_confidences = np.array(values['confidences'])
 
-        #ensure all three lists have same number of frames (one entry in list corresp to one frame)
+        # ensure all three lists have same number of frames (one entry in list corresp to one frame)
         num_frames = obj_bounds.shape[0]
         assert obj_labels.shape[0] == num_frames
         assert obj_label_confidences.shape[0] == num_frames
 
-        date = datetime.datetime.strptime(name.split("_")[0], '%Y-%m-%d').date()
-        time = datetime.datetime.strptime(name.split("_")[1], '%H-%M-%S.%f').time()
-        date_time = datetime.datetime.combine(date, time)
-        camera_id = name.split('_')[-1][:-4]
+        camera_id, date_time = parse_video_or_annotation_name(name)
 
         frame_df_list = []
 
-        #loop over frames
+        # loop over frames
         for frame_ind in range(num_frames):
-            obj_bounds_np = [np.array(bound) for bound in obj_bounds[frame_ind]]
+            obj_bounds_np = [np.array(bound)
+                             for bound in obj_bounds[frame_ind]]
 
             obj_info_aggregated = np.array([obj_bounds_np, obj_labels[frame_ind],
                                             obj_label_confidences[frame_ind]]).transpose()
 
-            frame_df = frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date_time)
+            frame_df = frame_info_to_df(
+                obj_info_aggregated, frame_ind, camera_id, date_time)
             frame_df_list.append(frame_df)
 
         yolo_df = pd.concat(frame_df_list)
 
-        #yolo_df index is the index of an objected detected over a frame
+        # yolo_df index is the index of an objected detected over a frame
         yolo_df.index.name = "obj_ind"
-        yolo_df = yolo_df[["camera_id", "frame_id", "datetime", "obj_bounds", "obj_classification", "confidence"]]
+        yolo_df = yolo_df[["camera_id", "frame_id", "datetime",
+                           "obj_bounds", "obj_classification", "confidence"]]
         yolo_df['video_id'] = video_num
         df_list.append(yolo_df)
     df = pd.DataFrame()
@@ -94,14 +98,18 @@ def yolo_report_stats(yolo_df):
 
     '''
     dfs = []
+    if yolo_df.empty:
+        return pd.DataFrame()
     grouped = yolo_df.groupby('video_id')
 
     for name, group in grouped:
-        obj_counts_frame=group.groupby(["frame_id", "obj_classification"]).size().reset_index(name = 'obj_count')
+        obj_counts_frame = group.groupby(
+            ["frame_id", "obj_classification"]).size().reset_index(name='obj_count')
 
-        #long to wide format
-        #some object types were not detected in a frame, so we fill these NAs with 0s
-        obj_counts_frame=obj_counts_frame.pivot(index='frame_id', columns='obj_classification', values='obj_count').fillna(value = 0)
+        # long to wide format
+        # some object types were not detected in a frame, so we fill these NAs with 0s
+        obj_counts_frame = obj_counts_frame.pivot(
+            index='frame_id', columns='obj_classification', values='obj_count').fillna(value=0)
 
         mean = pd.DataFrame([obj_counts_frame.mean()])
         mean['metric'] = 'mean'
