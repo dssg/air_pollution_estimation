@@ -58,4 +58,4 @@ class DataLoaderS3:
         objects = self.client.list_objects_v2(Bucket=self.bucket_name,
                                               Prefix=prefix)
 
-        return [file_object.key for file_object in objects['Contents']]
+        return [file_dict['Key'] for file_dict in objects['Contents']]
