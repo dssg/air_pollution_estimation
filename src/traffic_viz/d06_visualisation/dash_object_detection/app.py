@@ -19,6 +19,7 @@ server = app.server
 app.scripts.config.serve_locally = True
 app.config['suppress_callback_exceptions'] = True
 cams = get_cams()
+print(cams["JamCams_00001.02262"])
 
 
 def markdown_popup():
@@ -226,17 +227,24 @@ def transform_camera_id(camera_id):
 @app.callback(
     Output("trend-graph", "figure"),
     [
-        Input("dropdown-objects", "value"),
-        Input("dropdown-footage-selection", "value")
+        Input("dropdown-vehicles", "value"),
+        Input("dropdown-footage-selection", "value"),
+        Input('daterange', 'start_date'),
+        Input('daterange', 'end_date'),
     ]
 )
-def update_trend_graph(objects, camera_id):
+def update_trend_graph(vehicles, camera_id, start_date, end_date):
     global df
+    if not camera_id:
+        return
+    camera_name = cams[camera_id]
+    title = camera_name
     camera_id = transform_camera_id(camera_id)
     df = load_camera_statistics(camera_id)
-    if df.empty or not objects:
+    if df.empty or not vehicles:
         return {}
-    dfs = {obj: load_object_statistics(df, obj) for obj in objects}
+    dfs = {obj: load_object_statistics(
+        df, obj, start_date, end_date) for obj in vehicles}
     print(dfs)
     data = []
     for obj, df_stats in dfs.items():
@@ -252,10 +260,10 @@ def update_trend_graph(objects, camera_id):
         'data': data,
         'layout': go.Layout(
             showlegend=True,
-            # title=title,
+            title=title,
             xaxis={'title': "Datetime"},
             yaxis=go.layout.YAxis(
-                title='Count of objects [#]', automargin=True
+                title='Count of vehicles [#]', automargin=True
             ),
             hovermode='closest',
             autosize=False,
