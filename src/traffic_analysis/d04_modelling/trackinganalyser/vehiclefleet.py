@@ -118,7 +118,8 @@ class VehicleFleet():
 
         else: # check tracking format is correct 
             assert bboxes_time_t.shape[1] == 4
-        
+        print(self.bboxes.shape)
+        print(bboxes_time_t.shape)
         self.bboxes = np.concatenate((self.bboxes, np.expand_dims(bboxes_time_t, axis=2)), 
                                         axis=2)
         return
