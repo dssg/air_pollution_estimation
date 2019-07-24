@@ -177,11 +177,15 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 new_labels = [labels_detected[i] for i in new_bbox_inds]
                 new_confs = [confs_detected[i] for i in new_bbox_inds]
 
+                print("Adding new boxes...")
+                print(new_bboxes)
+
                 # iterate through new bboxes
                 for i, new_bbox in enumerate(new_bboxes):
                     multitracker.add(self.create_tracker_by_name(self.tracking_model),
                                      frame,
                                      tuple(new_bbox))
+
 
                 # update fleet object
                 if new_bboxes != []:

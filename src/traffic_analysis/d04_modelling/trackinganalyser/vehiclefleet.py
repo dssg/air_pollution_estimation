@@ -86,6 +86,7 @@ class VehicleFleet():
 
         Keyword arguments should be in same format as for the init
         """
+        print("Adding box to fleet: " + str(new_bboxes))
         current_time_t = self.bboxes.shape[2]
         num_new_vehicles = new_bboxes.shape[0]
         # create bboxes of all zeros to denote that the vehicle didn't exist at previous times
@@ -117,7 +118,7 @@ class VehicleFleet():
 
         else: # check tracking format is correct 
             assert bboxes_time_t.shape[1] == 4
-
+        
         self.bboxes = np.concatenate((self.bboxes, np.expand_dims(bboxes_time_t, axis=2)), 
                                         axis=2)
         return
