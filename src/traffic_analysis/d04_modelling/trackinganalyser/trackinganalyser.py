@@ -177,8 +177,6 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 new_labels = [labels_detected[i] for i in new_bbox_inds]
                 new_confs = [confs_detected[i] for i in new_bbox_inds]
 
-                print(video_name)
-
                 # iterate through new bboxes
                 for i, new_bbox in enumerate(new_bboxes):
                     multitracker.add(self.create_tracker_by_name(self.tracking_model),
@@ -246,6 +244,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
 
 if __name__ == '__main__':
+
     # sample code showing how this can be incorporated into pipeline
     params = load_parameters()
     paths = load_paths()
@@ -265,6 +264,7 @@ if __name__ == '__main__':
                 ':', '-').replace(" ", "_"))
         except:
             print("Could not download " + file)
+    
 
     video_dict = load_videos_into_np(paths["temp_video"])
     delete_and_recreate_dir(paths["temp_video"])
