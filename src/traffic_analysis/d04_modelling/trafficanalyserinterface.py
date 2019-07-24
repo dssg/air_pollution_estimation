@@ -25,8 +25,7 @@ class TrafficAnalyserInterface(ABC):
         self.params = params
         self.paths = paths
 
-    def check_video_dict(self, video_dict: dict, ):
-
+    def check_video_dict(self, video_dict: dict):
         # Check that video doesn't come from in-use camera (some are)
         for video_name in list(video_dict.keys()):
             n_frames = video_dict[video_name].shape[0]

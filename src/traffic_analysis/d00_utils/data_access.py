@@ -43,25 +43,26 @@ class db():
             """
             CREATE TABLE frame_stats (
                 camera_id VARCHAR(255),
+                video_upload_datetime timestamp,
                 frame_id INTEGER,
-                datetime timestamp,
-                obj_classification VARCHAR(255),
+                vehicle_id INTEGER,
+                vehicle_type VARCHAR(255),
                 confidence FLOAT,
-                box_x INTEGER,
-                box_y INTEGER,
-                box_w INTEGER,
-                box_h INTEGER
+                bbox_x FLOAT,
+                bbox_y FLOAT,
+                bbox_w FLOAT,
+                bbox_h FLOAT
             )
             """,
 
             """
             CREATE TABLE video_stats (
-                counts FLOAT,
-                vehicle_type VARCHAR(255),
                 camera_id VARCHAR(255),
-                datetime timestamp,
-                starts FLOAT,
-                stops FLOAT
+                video_upload_datetime timestamp,
+                vehicle_type VARCHAR(255),
+                counts FLOAT,  
+                stops FLOAT,
+                starts FLOAT
             )
             """
         ]

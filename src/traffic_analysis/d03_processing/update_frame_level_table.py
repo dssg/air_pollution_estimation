@@ -1,3 +1,5 @@
+import pandas as pd
+
 from traffic_analysis.d00_utils.data_retrieval import connect_to_bucket, load_videos_into_np, delete_and_recreate_dir
 from traffic_analysis.d03_processing.add_to_table_sql import add_to_table_sql
 
@@ -28,7 +30,19 @@ def update_frame_level_table(analyzer, file_names, paths, params, creds):
     delete_and_recreate_dir(paths["temp_video"])
 
     frame_level_df = analyzer.construct_frame_level_df(video_dict)
-
+    
+    x, y, w, h = [], [], [], []
+    for vals in frame_level_df['bboxes'].values:
+        x.append(vals[0])
+        y.append(vals[1])
+        w.append(vals[2])
+        h.append(vals[3])
+    frame_level_df['bbox_x'] = x
+    frame_level_df['bbox_y'] = y
+    frame_level_df['bbox_w'] = w
+    frame_level_df['bbox_h'] = h
+    frame_level_df.drop('bboxes', axis=1, inplace=True)
+    print(frame_level_df.head(3))
     add_to_table_sql(df=frame_level_df,
                      table='frame_stats',
                      creds=creds,

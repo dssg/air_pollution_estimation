@@ -1,5 +1,5 @@
 from traffic_analysis.d04_modelling.trafficanalyserinterface import TrafficAnalyserInterface
-from traffic_analysis.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame, bbox_intersection_over_union
+from traffic_analysis.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame, bbox_intersection_over_union, color_bboxes
 from traffic_analysis.d00_utils.video_helpers import write_mp4
 from traffic_analysis.d00_utils.load_confs import load_parameters, load_paths
 from traffic_analysis.d04_modelling.object_detection import detect_bboxes
@@ -160,7 +160,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
             # draw tracked objects
             display_bboxes_on_frame(frame, bboxes_tracked,
-                                    fleet.compute_colors(),
+                                    color_bboxes(fleet.labels),
                                     fleet.compute_label_confs())
 
             # every x frames, re-detect boxes

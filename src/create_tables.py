@@ -8,7 +8,7 @@ db_host = paths['db_host']
 db_name = paths['db_name']
 db_user = creds['postgres']['user']
 db_pass = creds['postgres']['passphrase']
-conn_string = "password=%s user=%s dbname=%s host=%s" % (db_pass, db_user, db_name, db_host)
+conn_string = "password=" + db_pass + " user=" + db_user + " dbname=" + db_name + " host=" + db_host
 
 db_obj = db(conn_string)
 db_obj.create_tables(True)

@@ -26,7 +26,7 @@ def update_video_level_table(analyzer, file_names, paths, creds):
 
     filter_string = ''
     for i in range(len(file_names)):
-        filter_string += '(camera_id=\'' + camera_ids[i] + '\' AND datetime=\'' + str(datetimes[i]) + '\') OR '
+        filter_string += '(camera_id=\'' + camera_ids[i] + '\' AND video_upload_datetime=\'' + str(datetimes[i]) + '\') OR '
 
     filter_string = filter_string[:-4]
     sql_string = "SELECT * FROM frame_stats WHERE %s;" % (filter_string)
@@ -42,6 +42,15 @@ def update_video_level_table(analyzer, file_names, paths, creds):
 
     db_obj = db(conn_string=conn_string)
     frame_level_df = db_obj.execute_raw_query(sql=sql_string)
+    bboxes = []
+    for x, y, w, h in zip(frame_level_df['bbox_x'].values, frame_level_df['bbox_y'].values, frame_level_df['bbox_w'].values, frame_level_df['bbox_h'].values):
+        bboxes.append([x, y, w, h])
+    frame_level_df['bboxes'] = bboxes
+    frame_level_df.drop('bbox_x', axis=1, inplace=True)
+    frame_level_df.drop('bbox_y', axis=1, inplace=True)
+    frame_level_df.drop('bbox_w', axis=1, inplace=True)
+    frame_level_df.drop('bbox_h', axis=1, inplace=True)
+    print(frame_level_df.head(3))
 
     # Create video level table and add to database
     video_level_df = analyzer.construct_video_level_df(frame_level_df)

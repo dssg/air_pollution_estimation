@@ -51,8 +51,8 @@ class VehicleFleet():
             self.labels = np.array(frame_level_df[frame_level_df["frame_id"] == 0]["vehicle_type"])
             self.confs = np.array(frame_level_df[frame_level_df["frame_id"] == 0]["confidence"])
             # get static info
-            self.camera_id = frame_level_df["camera_id"][0]
-            self.video_upload_datetime = frame_level_df["video_upload_datetime"][0]
+            self.camera_id = frame_level_df["camera_id"].iloc[0]
+            self.video_upload_datetime = frame_level_df["video_upload_datetime"].iloc[0]
 
             # extract bbox info into np array
             frame_level_df['bboxes'] = frame_level_df['bboxes'].apply(np.array)
