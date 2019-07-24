@@ -1,7 +1,18 @@
 import collections
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt 
+import time
 from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
+from traffic_analysis.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib
+
+from traffic_analysis.d05_evaluation.compute_mean_average_precision import get_avg_precision_at_iou,plot_pr_curve
+
+############## TO DELETE 
+import re 
+import xml.etree.ElementTree as ElementTree
+from traffic_analysis.d00_utils.load_confs import load_parameters
+import sys
 
 
 class SingleEvaluator():
@@ -49,13 +60,116 @@ class FrameLevelEvaluator(SingleEvaluator):
     """
     Not yet implemented. 
     """
-    def __init__(self, xml_root, xml_name, frame_level_df: pd.DataFrame):
+    def __init__(self, xml_root, xml_name, frame_level_df: pd.DataFrame, params:dict):
         super().__init__(xml_root, xml_name, params)
-        self.ground_truth_df = super().parse_annotations()
+        self.ground_truth_df = super().parse_annotation()
         self.frame_level_df = frame_level_df
+        self.vehicle_types = params['selected_labels']
+        self.n_frames = len(frame_level_df['frame_id'].unique())
 
-    def evaluate_video(self): 
-        pass
+    def evaluate_video(self):
+        """
+        Returns MAP values for each frame 
+        """ 
+        # loop over frames 
+        # print(self.ground_truth_df.shape, self.frame_level_df.shape)
+        # print(self.ground_truth_df)
+
+        self.ground_truth_df = self.ground_truth_df.sort_values(by='frame_id').reset_index()
+        self.frame_level_df = self.frame_level_df.sort_values(by='frame_id').reset_index()
+
+        ground_truth_dict = self.reparse_frame_level_df(self.ground_truth_df, include_confidence = False)
+        predicted_dict = self.reparse_frame_level_df(self.frame_level_df, include_confidence = True)
+        print("GROUND TRUTH DICT\n",ground_truth_dict)
+
+        sys.exit(0)
+        
+        self.map_dict = {vehicle_type:-1.0 for vehicle_type in self.vehicle_types}
+        self.compute_mean_avg_precision(ground_truth_dict, predicted_dict)
+        # edit map_dict to a df 
+        print(self.map_dict)
+        return 
+
+
+    def reparse_frame_level_df(self, df: pd.DataFrame, include_confidence:bool) -> dict: 
+        """
+        """
+        #dict of dict of dicts, with outermost layer being the vehicle type 
+        # get bboxes into format (xmin, ymin, xmin + width, ymin + height) aka cvlib format
+        bboxes_np = arr = np.array(df['bboxes'].values.tolist())
+        # print("bboxes_np: \n",bboxes_np)
+        # print("\n bboxes_np shpae: \n", bboxes_np.shape)
+        assert bboxes_np.shape[1] == 4
+        df['bboxes'] = pd.Series(bboxcv2_to_bboxcvlib(bboxes_np,vectorized = True).tolist())
+
+        if include_confidence: 
+             df_as_dict = {vehicle_type:\
+                                      {'frame'+str(i):\
+                                                {'boxes':[],
+                                                 'scores':[]} \
+                                      for i in range(self.n_frames) }\
+                          for vehicle_type in self.vehicle_types}
+
+        else: 
+            df_as_dict = {vehicle_type:\
+                                      {'frame'+str(i):[] for i in range(self.n_frames) }\
+                          for vehicle_type in self.vehicle_types}
+
+        for (vehicle_type, frame_id), vehicle_frame_df in df.groupby(['vehicle_type', 'frame_id']): 
+
+            if include_confidence: 
+                df_as_dict[vehicle_type]['frame'+str(frame_id)]['boxes'] = vehicle_frame_df['bboxes'].tolist()
+                df_as_dict[vehicle_type]['frame'+str(frame_id)]['scores'] = vehicle_frame_df['confidence'].tolist()
+
+            else: 
+                df_as_dict[vehicle_type]['frame'+str(frame_id)] = vehicle_frame_df['bboxes'].tolist()
+        return df_as_dict 
+
+
+    def compute_mean_avg_precision(self,ground_truth_dict, predicted_dict): 
+        """
+        function computes the mean average precision for a set of bboxes in the annotation
+        frame vs the detected frame 
+        Dfs have bboxes, confidences, labels 
+        """
+
+        for vehicle_type in self.vehicle_types: 
+            vehicle_gt_dict = ground_truth_dict[vehicle_type]
+            vehicle_pred_dict = predicted_dict[vehicle_type]
+
+            start_time = time.time()
+            # ax = None
+            avg_precs = []
+            iou_thrs = []
+            for idx, iou_thr in enumerate(np.linspace(0.5, 0.95, 10)):
+                data = get_avg_precision_at_iou(vehicle_gt_dict, vehicle_pred_dict, iou_thr=iou_thr)
+                avg_precs.append(data['avg_prec'])
+                iou_thrs.append(iou_thr)
+
+                precisions = data['precisions']
+                recalls = data['recalls']
+                # ax = plot_pr_curve(
+                    # precisions, recalls, label='{:.2f}'.format(iou_thr), color=COLORS[idx*2], ax=ax)
+
+            # prettify for printing:
+            avg_precs = [float('{:.4f}'.format(ap)) for ap in avg_precs]
+            iou_thrs = [float('{:.4f}'.format(thr)) for thr in iou_thrs]
+            mean_avg_precision = 100*np.mean(avg_precs)
+
+            self.map_dict[vehicle_type] = mean_avg_precision
+            print('map: {:.2f}'.format(mean_avg_precision))
+            print('avg precs: ', avg_precs)
+            print('iou_thrs:  ', iou_thrs)
+
+            # plt.legend(loc='upper right', title='IOU Thr', frameon=True)
+            # for xval in np.linspace(0.0, 1.0, 11):
+            #     plt.vlines(xval, 0.0, 1.1, color='gray', alpha=0.3, linestyles='dashed')
+            end_time = time.time()
+
+            print('\nCalculating mAP takes {:.4f} secs'.format(end_time - start_time))
+            # plt.show()
+            # print("ground truth frame: \n", gt_frame, "\n predicted frame: \n",pred_frame)
+        return 
 
     def plot_video(self): 
         pass
@@ -226,3 +340,27 @@ class VideoLevelEvaluator(SingleEvaluator):
         parked_df.reset_index(inplace=True)
 
         return parked_df
+
+if __name__ == '__main__':
+    params = load_parameters()
+
+    xml_path = "C:\\Users\\Caroline Wang\\OneDrive\\DSSG\\air_pollution_estimation\\annotations\\15_2019-06-29_13-01-03.094068_00001.01252.xml"
+    xml_name = re.split(r"\\|/", xml_path)[-1]
+    xml_root = ElementTree.parse(xml_path).getroot()
+
+    pd.set_option('display.max_columns', 500)
+
+    frame_level_dfs = pd.read_csv("../data/carolinetemp/frame_level_df.csv",
+                        dtype={"camera_id": str},
+                        converters={"bboxes": lambda x: [float(coord) for coord in x.strip("[]").split(", ")]},
+                        parse_dates=["video_upload_datetime"]
+                        )
+    del frame_level_dfs['Unnamed: 0']
+
+    frame_level_df_list = []
+    frame_level_groups = frame_level_dfs.groupby(['camera_id', 'video_upload_datetime'])
+    for name, group in frame_level_groups: 
+        frame_level_df_list.append(group)
+
+    frame_level_evaluator = FrameLevelEvaluator(xml_root, xml_name, frame_level_df_list[0], params)
+    frame_level_evaluator.evaluate_video()
