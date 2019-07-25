@@ -65,9 +65,6 @@ class VehicleFleet():
             # reshape array
             self.bboxes = np.zeros((num_vehicles, 4, num_frames))
             for i in range(num_frames):
-                print(i)
-                print('self.bboxes: ' + str(self.bboxes[:,:,i].shape))
-                print('bboxes_np: ' + str(bboxes_np[i].shape))
                 self.bboxes[:,:,i] = bboxes_np[i]
         else:
             # check if the bboxes are empty
