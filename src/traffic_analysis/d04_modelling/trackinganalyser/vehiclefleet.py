@@ -57,11 +57,17 @@ class VehicleFleet():
             # extract bbox info into np array
             frame_level_df['bboxes'] = frame_level_df['bboxes'].apply(np.array)
             bboxes_np = np.array(frame_level_df[['frame_id', 'bboxes']].groupby('frame_id')['bboxes'].apply(np.vstack))
+            print(self.camera_id)
+            print(self.video_upload_datetime)
+            print(bboxes_np)
             num_vehicles, num_frames = bboxes_np[0].shape[0], bboxes_np.shape[0]
 
             # reshape array
             self.bboxes = np.zeros((num_vehicles, 4, num_frames))
             for i in range(num_frames):
+                print(i)
+                print('self.bboxes: ' + str(self.bboxes[:,:,i].shape))
+                print('bboxes_np: ' + str(bboxes_np[i].shape))
                 self.bboxes[:,:,i] = bboxes_np[i]
         else:
             # check if the bboxes are empty
@@ -86,7 +92,6 @@ class VehicleFleet():
 
         Keyword arguments should be in same format as for the init
         """
-        print("Adding box to fleet: " + str(new_bboxes))
         current_time_t = self.bboxes.shape[2]
         num_new_vehicles = new_bboxes.shape[0]
         # create bboxes of all zeros to denote that the vehicle didn't exist at previous times

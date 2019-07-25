@@ -228,7 +228,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         frame_level_df -- df returned by above function
         """
         video_info_list = []
-        for _, single_frame_level_df in frame_level_df.groupby('camera_id'):
+        for _, single_frame_level_df in frame_level_df.groupby(['camera_id', 'video_upload_datetime']):
             fleet = VehicleFleet(
                 frame_level_df=single_frame_level_df, load_from_pd=True)
             # compute the convolved IOU time series for each vehicle and smooth
