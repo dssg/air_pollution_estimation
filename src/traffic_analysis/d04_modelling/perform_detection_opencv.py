@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import cv2
-from traffic_analysis.d02_ref.retrieve_detect_model_from_s3 import retrieve_detect_model_from_s3
+from traffic_analysis.d02_ref.retrieve_detection_model_from_s3 import retrieve_detection_model_from_s3
 
 
 def detect_objects_in_image(image_capture, params, paths):
@@ -19,7 +19,7 @@ def detect_objects_in_image(image_capture, params, paths):
 
     conf_thresh = params['confidence_threshold']
     iou_threshold = params['iou_threshold']
-    retrieve_detect_model_from_s3(params, paths)
+    retrieve_detection_model_from_s3(params, paths)
     network_output = pass_image_through_nn(image_capture=image_capture,
                                            params=params, paths=paths)
     boxes_unfiltered, label_idxs_unfiltered, confs_unfiltered = get_detected_objects(image_capture=image_capture,
@@ -48,7 +48,7 @@ def populate_model(params, paths):
     """
 
     model = params['yolo_model']
-    model_file_path = paths['detect_model']
+    model_file_path = paths['detection_model']
     config_file_path = os.path.join(model_file_path, model, model + '.cfg')
     weights_file_path = os.path.join(model_file_path, model, model + '.weights')
     return config_file_path, weights_file_path
@@ -65,7 +65,7 @@ def populate_labels(params, paths):
     """
 
     model = params['yolo_model']
-    model_file_path = paths['detect_model']
+    model_file_path = paths['detection_model']
     labels_file_path = os.path.join(model_file_path, model, 'coco.names')
     f = open(labels_file_path, 'r')
     labels = [line.strip() for line in f.readlines()]

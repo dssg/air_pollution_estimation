@@ -2,7 +2,7 @@ import os
 from traffic_analysis.d00_utils.data_retrieval import connect_to_bucket
 
 
-def retrieve_detect_model_from_s3(params, paths):
+def retrieve_detection_model_from_s3(params, paths):
     """ Retrieves required files from s3 folder for detection model specified in params
         Args:
             params (dict): dictionary of parameters from yml file
@@ -10,7 +10,7 @@ def retrieve_detect_model_from_s3(params, paths):
     """
 
     model = params['yolo_model']
-    local_filepath_model = os.path.join(paths['detect_model'], model)
+    local_filepath_model = os.path.join(paths['detection_model'], model)
 
     if not os.path.exists(local_filepath_model):  # download model files from s3 if local model filepath doesn't exist
         # make local file path
@@ -18,7 +18,7 @@ def retrieve_detect_model_from_s3(params, paths):
 
         # get location of files in s3 bucket
         my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
-        s3_filepath_model = paths['s3_detect_model'] + model
+        s3_filepath_model = paths['s3_detection_model'] + model
 
         # get list of all files in the s3 folder
         objects = my_bucket.objects.filter(Prefix=s3_filepath_model)
