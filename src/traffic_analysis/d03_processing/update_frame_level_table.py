@@ -46,7 +46,7 @@ def update_frame_level_table(analyzer,
 
     x, y, w, h = [], [], [], []
     for vals in frame_level_df['bboxes'].values:
-        if vals:
+        if isinstance(vals, list):
             x.append(vals[0])
             y.append(vals[1])
             w.append(vals[2])
