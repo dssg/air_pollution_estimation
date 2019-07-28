@@ -43,7 +43,8 @@ def update_frame_level_table(analyzer,
     delete_and_recreate_dir(paths["temp_video"])
 
     frame_level_df = analyzer.construct_frame_level_df(video_dict)
-
+    frame_level_df.dropna(how='any', inplace=True)
+    frame_level_df = frame_level_df.astype({'frame_id': 'int64'})
     x, y, w, h = [], [], [], []
     for vals in frame_level_df['bboxes'].values:
         if isinstance(vals, list) and len(vals) > 3:
