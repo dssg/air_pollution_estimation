@@ -57,6 +57,8 @@ def update_video_level_table(analyzer, file_names, paths, creds):
 
     # Create video level table and add to database
     video_level_df = analyzer.construct_video_level_df(frame_level_df)
+    if video_level_df.empty:
+        return
 
     add_to_table_sql(df=video_level_df,
                      table='video_stats',
