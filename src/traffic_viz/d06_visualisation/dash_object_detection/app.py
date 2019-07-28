@@ -19,7 +19,6 @@ server = app.server
 app.scripts.config.serve_locally = True
 app.config['suppress_callback_exceptions'] = True
 cams = get_cams()
-print(cams["JamCams_00001.02262"])
 
 
 def markdown_popup():
