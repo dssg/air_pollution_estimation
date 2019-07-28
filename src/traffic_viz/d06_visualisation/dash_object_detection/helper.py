@@ -16,9 +16,6 @@ from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 from traffic_analysis.d00_utils.load_confs import (load_app_parameters,
                                                    load_paths, load_credentials)
 
-print(sys.path)
-
-
 params = load_app_parameters()
 paths = load_paths()
 creds = load_credentials()
@@ -37,8 +34,6 @@ def get_cams():
     # [{'label': item['commonName'],  'value': item['id']}
                 # for item in values]
     cam_dict = OrderedDict( sorted(cam_dict.items(), key=lambda x: x[1]))
-    print(cam_dict)
-
     return cam_dict
 
 def load_camera_statistics(camera_id):

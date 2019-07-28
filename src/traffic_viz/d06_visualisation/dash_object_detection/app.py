@@ -48,7 +48,6 @@ def markdown_popup():
 
 
 # Main App
-
 app.layout = html.Div(
     children=[
         html.Div(
@@ -176,7 +175,6 @@ app.layout = html.Div(
 # Data Loading
 @app.server.before_first_request
 def load_all_footage():
-
     pass
 
 
