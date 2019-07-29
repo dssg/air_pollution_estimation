@@ -39,7 +39,8 @@ modelling:
   # obj detection
   detection_model: "yolov3-tiny"
   detection_implementation: "cvlib"
-  detection_confidence_threshold: 0.1
+  detection_iou_threshold: 0.05
+  detection_confidence_threshold: 0.2
   detection_nms_threshold: 0.2
 
   # tracking

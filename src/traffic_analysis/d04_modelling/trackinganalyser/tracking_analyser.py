@@ -39,7 +39,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         super().__init__(video_dict, params, paths)
         self.detection_model = params['detection_model']
         self.detection_implementation = params['detection_implementation']
-        self.tracking_model = params['opencv_tracker_type']
+        self.tracker = self.create_tracker_by_name(tracker_type=params['opencv_tracker_type'])
         self.iou_threshold = params['iou_threshold']
         self.detection_frequency = params['detection_frequency']
         self.detection_confidence_threshold = params['detection_confidence_threshold']
@@ -151,9 +151,9 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                              video_name=video_name.replace(".mp4", ""))
 
         # Create MultiTracker object using bboxes, initialize multitracker
-        multitracker = cv2.MultiTracker_create()
+        multi_tracker = cv2.MultiTracker_create()
         for bbox in bboxes:
-            multitracker.add(newTracker=self.create_tracker_by_name(self.tracking_model), 
+            multi_tracker.add(newTracker=self.tracker, 
                              image=first_frame, 
                              boundingBox=tuple(bbox))
 
@@ -164,7 +164,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         for frame_ind in range(1, n_frames):
             frame = video[frame_ind, :, :, :]
             # get updated location of objects in subsequent frames, update fleet obj
-            success, bboxes_tracked = multitracker.update(image=frame)
+            success, bboxes_tracked = multi_tracker.update(image=frame)
             fleet.update_vehicles(np.array(bboxes_tracked))
 
             if make_video:
@@ -179,37 +179,38 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 bboxes_detected, labels_detected, confs_detected = detect_bboxes(frame=frame,
                                                                                  model=self.detection_model,
                                                                                  implementation=self.detection_implementation,
-                                                                                 detection_confidence_threshold = self.detection_confidence_threshold,
-                                                                                 detection_nms_threshold = self.detection_nms_threshold,
+                                                                                 detection_confidence_threshold=self.detection_confidence_threshold,
+                                                                                 detection_nms_threshold=self.detection_nms_threshold,
                                                                                  selected_labels=self.selected_labels)
                 # re-initialize MultiTracker
                 new_bbox_inds = self.determine_new_bboxes(bboxes_tracked,
                                                           bboxes_detected)
-                new_bboxes = [bboxes_detected[i] for i in new_bbox_inds]
-                new_labels = [labels_detected[i] for i in new_bbox_inds]
-                new_confs = [confs_detected[i] for i in new_bbox_inds]
-
+        
                 # update fleet object
                 if len(new_bbox_inds) > 0:
+                    new_bboxes = [bboxes_detected[i] for i in new_bbox_inds]
+                    new_labels = [labels_detected[i] for i in new_bbox_inds]
+                    new_confs = [confs_detected[i] for i in new_bbox_inds]
+
                     fleet.add_vehicles(np.array(new_bboxes),
                                        np.array(new_labels),
                                        np.array(new_confs))
 
-                # iterate through new bboxes
-                for i, new_bbox in enumerate(new_bboxes):
-                    multitracker.add(newTracker=self.create_tracker_by_name(self.tracking_model),
-                                     image=frame,
-                                     boundingBox=tuple(new_bbox))
+                    # iterate through new bboxes
+                    for i, new_bbox in enumerate(new_bboxes):
+                        multi_tracker.add(newTracker=self.tracker,
+                                         image=frame,
+                                         boundingBox=tuple(new_bbox))
 
-        if make_video:
-            processed_video.append(frame)
+            if make_video:
+                processed_video.append(frame)
 
-            # code to display video frame by frame while it is being processed
-            # cv2.imshow('MultiTracker', frame)
-            # # quit on ESC button
-            # if cv2.waitKey(1) & 0xFF == 27:  # Esc pressed
-            #   break
-
+                # code to display video frame by frame while it is being processed
+                # cv2.imshow('MultiTracker', frame)
+                # # quit on ESC button
+                # if cv2.waitKey(1) & 0xFF == 27:  # Esc pressed
+                #   break
+        if make_video: 
             write_mp4(local_mp4_dir=local_mp4_dir,
                       mp4_name=video_name + "_tracked.mp4",
                       video=np.array(processed_video),
@@ -264,7 +265,8 @@ if __name__ == '__main__':
     ###############
     selected_videos = load_video_names_from_s3(ref_file='test_search',
                                                paths=paths,
-                                               s3_credentials = creds)
+                                               s3_credentials = creds[paths['s3_creds']]
+)
     file_names = selected_videos[:2]
     my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
 
