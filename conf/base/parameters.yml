@@ -56,5 +56,5 @@ modelling:
 
 reporting:
   chunk_size: 2
-  dtype: 
+  dtype:
     camera_id: 'category'
