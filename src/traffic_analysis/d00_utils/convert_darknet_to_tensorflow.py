@@ -7,7 +7,7 @@ import os
 import tensorflow as tf
 import numpy as np
 
-from traffic_analysis.d00_utils.generate_tf_model import yolov3
+from traffic_analysis.d00_utils.generate_tensorflow_model import yolov3
 from traffic_analysis.d02_ref.retrieve_detection_model_from_s3 import retrieve_detection_model_from_s3
 
 
