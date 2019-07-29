@@ -1,8 +1,6 @@
 import datetime
-import pandas as pd
 
-from traffic_analysis.d00_utils.data_access import db
-from traffic_analysis.d03_processing.add_to_table_sql import add_to_table_sql
+from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 from traffic_analysis.d05_reporting.report_yolo import yolo_report_stats
 
 
@@ -41,15 +39,12 @@ def update_video_level_table(file_names, paths, creds):
     conn_string = "password=%s user=%s dbname=%s host=%s" % (
         db_pass, db_user, db_name, db_host)
 
-    db_obj = db(conn_string=conn_string)
-    frame_level_df = db_obj.execute_raw_query(sql=sql_string)
+    db_obj = DataLoaderSQL(creds=creds, paths=paths)
+    frame_level_df = db_obj.execute_raw_sql_query(sql=sql_string)
 
     # Create video level table and add to database
     video_level_df = yolo_report_stats(frame_level_df)
 
-    add_to_table_sql(df=video_level_df,
-                     table='video_stats',
-                     creds=creds,
-                     paths=paths)
+    db_obj.add_to_sql(df=video_level_df, table_name='video_stats')
 
     return

@@ -160,4 +160,4 @@ def append_to_csv(filename: str, df: pd.DataFrame, columns: list, dtype: dict):
     df_main = pd.read_csv(filename, dtype=dtype)
     df_main = df_main.append(df)
     df_main.drop_duplicates(inplace=True)
-    df_main.to_csv(filename, columns=columns, index=False)
+    df_main.add_to_sql(filename, columns=columns, index=False)

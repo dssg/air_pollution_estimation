@@ -1,6 +1,6 @@
 from traffic_analysis.d00_utils.data_retrieval import connect_to_bucket, load_videos_into_np, delete_and_recreate_dir
 from traffic_analysis.d04_modelling.classify_objects import classify_objects
-from traffic_analysis.d03_processing.add_to_table_sql import add_to_table_sql
+from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 
 
 def update_frame_level_table(file_names, paths, params, creds):
@@ -34,9 +34,7 @@ def update_frame_level_table(file_names, paths, params, creds):
                                       vid_time_length=10,
                                       make_videos=False)
 
-    add_to_table_sql(df=frame_level_df,
-                     table='frame_stats',
-                     creds=creds,
-                     paths=paths)
+    db_obj = DataLoaderSQL(creds=creds, paths=paths)
+    db_obj.add_to_sql(df=frame_level_df, table_name='frame_stats')
 
     return
