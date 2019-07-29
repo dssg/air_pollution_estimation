@@ -1,3 +1,6 @@
+from __future__ import absolute_import, division, print_function
+
+from traffic_analysis.d00_utils.bbox_helpers import bbox_intersection_over_union
 """
 author: Timothy C. Arlen
 date: 28 Feb 2018
@@ -12,7 +15,6 @@ NOTE: Requires the files `ground_truth_boxes.json` and `predicted_boxes.json` wh
 downloaded fromt this gist.
 """
 
-from __future__ import absolute_import, division, print_function
 
 from copy import deepcopy
 import json
@@ -35,27 +37,27 @@ COLORS = [
     '#c7c7c7', '#bcbd22', '#dbdb8d', '#17becf', '#9edae5']
 
 
-def calc_iou_individual(pred_box, gt_box):
+def calc_iou_individual(pred_bbox, gt_bbox):
     """Calculate IoU of single predicted and ground truth box
     Args:
-        pred_box (list of floats): location of predicted object as
+        pred_bbox (list of floats): location of predicted object as
             [xmin, ymin, xmax, ymax]
-        gt_box (list of floats): location of ground truth object as
+        gt_bbox (list of floats): location of ground truth object as
             [xmin, ymin, xmax, ymax]
     Returns:
         float: value of the IoU for the two boxes.
     Raises:
         AssertionError: if the box is obviously malformed
     """
-    x1_t, y1_t, x2_t, y2_t = gt_box
-    x1_p, y1_p, x2_p, y2_p = pred_box
+    x1_t, y1_t, x2_t, y2_t = gt_bbox
+    x1_p, y1_p, x2_p, y2_p = pred_bbox
 
     if (x1_p > x2_p) or (y1_p > y2_p):
         raise AssertionError(
-            "Prediction box is malformed? pred box: {}".format(pred_box))
+            "Prediction box is malformed? pred box: {}".format(pred_bbox))
     if (x1_t > x2_t) or (y1_t > y2_t):
         raise AssertionError(
-            "Ground Truth box is malformed? true box: {}".format(gt_box))
+            "Ground Truth box is malformed? true box: {}".format(gt_bbox))
 
     if (x2_t < x1_p or x2_p < x1_t or y2_t < y1_p or y2_p < y1_t):
         return 0.0
@@ -67,55 +69,64 @@ def calc_iou_individual(pred_box, gt_box):
 
     inter_area = (far_x - near_x + 1) * (far_y - near_y + 1)
     true_box_area = (x2_t - x1_t + 1) * (y2_t - y1_t + 1)
-    pred_box_area = (x2_p - x1_p + 1) * (y2_p - y1_p + 1)
-    iou = inter_area / (true_box_area + pred_box_area - inter_area)
+    pred_bbox_area = (x2_p - x1_p + 1) * (y2_p - y1_p + 1)
+    iou = inter_area / (true_box_area + pred_bbox_area - inter_area)
     return iou
 
 
-def get_single_image_results(gt_boxes, pred_boxes, iou_thr):
+def get_single_frame_results(gt_bboxes, pred_bboxes, iou_thr):
     """Calculates number of true_pos, false_pos, false_neg from single batch of boxes.
     Args:
-        gt_boxes (list of list of floats): list of locations of ground truth
+        gt_bboxes (list of list of floats): list of locations of ground truth
             objects as [xmin, ymin, xmax, ymax]
-        pred_boxes (dict): dict of dicts of 'boxes' (formatted like `gt_boxes`)
+        pred_bboxes (dict): dict of dicts of 'bboxes' (formatted like `gt_bboxes`)
             and 'scores'
         iou_thr (float): value of IoU to consider as threshold for a
             true prediction.
     Returns:
         dict: true positives (int), false positives (int), false negatives (int)
     """
-
-    all_pred_indices = range(len(pred_boxes))
-    all_gt_indices = range(len(gt_boxes))
+    # print("gt box: ",gt_bboxes, "pred boxes",pred_bboxes)
+    all_pred_indices = range(len(pred_bboxes))
+    all_gt_indices = range(len(gt_bboxes))
     if len(all_pred_indices) == 0:
+        print("no pred boxes")
         tp = 0
         fp = 0
-        fn = len(gt_boxes)
+        fn = len(gt_bboxes)
         return {'true_pos': tp, 'false_pos': fp, 'false_neg': fn}
     if len(all_gt_indices) == 0:
+        print("no gt boxes")
+
         tp = 0
-        fp = len(pred_boxes)
+        fp = len(pred_bboxes)
         fn = 0
         return {'true_pos': tp, 'false_pos': fp, 'false_neg': fn}
 
     gt_idx_thr = []
     pred_idx_thr = []
     ious = []
-    for ipb, pred_box in enumerate(pred_boxes):
-        for igb, gt_box in enumerate(gt_boxes):
-            iou = calc_iou_individual(pred_box, gt_box)
+    for ipb, pred_bbox in enumerate(pred_bboxes):
+        for igb, gt_bbox in enumerate(gt_bboxes):
+            print(pred_bbox, gt_bbox)
+            iou = bbox_intersection_over_union(pred_bbox, gt_bbox)
+            print(iou)
             if iou > iou_thr:
                 gt_idx_thr.append(igb)
                 pred_idx_thr.append(ipb)
                 ious.append(iou)
 
     args_desc = np.argsort(ious)[::-1]
+    print("ious: ", ious)
+    print("args desc: ", args_desc)
     if len(args_desc) == 0:
+        print("no matches found")
         # No matches
         tp = 0
-        fp = len(pred_boxes)
-        fn = len(gt_boxes)
+        fp = len(pred_bboxes)
+        fn = len(gt_bboxes)
     else:
+        print("matches found")
         gt_match_idx = []
         pred_match_idx = []
         for idx in args_desc:
@@ -126,30 +137,31 @@ def get_single_image_results(gt_boxes, pred_boxes, iou_thr):
                 gt_match_idx.append(gt_idx)
                 pred_match_idx.append(pr_idx)
         tp = len(gt_match_idx)
-        fp = len(pred_boxes) - len(pred_match_idx)
-        fn = len(gt_boxes) - len(gt_match_idx)
+        fp = len(pred_bboxes) - len(pred_match_idx)
+        fn = len(gt_bboxes) - len(gt_match_idx)
 
     return {'true_pos': tp, 'false_pos': fp, 'false_neg': fn}
 
 
-def calc_precision_recall(img_results):
+def calc_precision_recall(frame_results):
     """Calculates precision and recall from the set of images
     Args:
-        img_results (dict): dictionary formatted like:
+        frame_results (dict): dictionary formatted like:
             {
-                'img_id1': {'true_pos': int, 'false_pos': int, 'false_neg': int},
-                'img_id2': ...
+                'frame1': {'true_pos': int, 'false_pos': int, 'false_neg': int},
+                'frame2': ...
                 ...
             }
     Returns:
         tuple: of floats of (precision, recall)
     """
     true_pos = 0; false_pos = 0; false_neg = 0
-    for _, res in img_results.items():
+    for _, res in frame_results.items():
         true_pos += res['true_pos']
         false_pos += res['false_pos']
         false_neg += res['false_neg']
 
+    # print("TRUE POS FALSE POS FALSE NEG", true_pos, false_pos, false_neg)
     try:
         precision = true_pos/(true_pos + false_pos)
     except ZeroDivisionError:
@@ -158,32 +170,32 @@ def calc_precision_recall(img_results):
         recall = true_pos/(true_pos + false_neg)
     except ZeroDivisionError:
         recall = 0.0
-
+    # print("precision is: ", precision, "\n recall is: ", recall)
     return (precision, recall)
 
-def get_model_scores_map(pred_boxes):
+def get_model_scores_map(pred_bboxes):
     """Creates a dictionary of from model_scores to image ids.
     Args:
-        pred_boxes (dict): dict of dicts of 'boxes' and 'scores'
+        pred_bboxes (dict): dict of dicts of 'bboxes' and 'scores'
     Returns:
         dict: keys are model_scores and values are image ids (usually filenames)
     """
     model_scores_map = {}
-    for img_id, val in pred_boxes.items():
-        if len(val)>0:
-            for score in val['scores']:
+    for frame_id, frame_dict in pred_bboxes.items():
+        if len(frame_dict['bboxes'])>0:
+            for score in frame_dict['scores']:
                 if score not in model_scores_map.keys():
-                    model_scores_map[score] = [img_id]
+                    model_scores_map[score] = [frame_id]
                 else:
-                    model_scores_map[score].append(img_id)
+                    model_scores_map[score].append(frame_id)
     return model_scores_map
 
-def get_avg_precision_at_iou(gt_boxes, pred_boxes, iou_thr=0.5):
+def get_avg_precision_at_iou(gt_bboxes, pred_bboxes, iou_thr=0.5):
     """Calculates average precision at given IoU threshold.
     Args:
-        gt_boxes (list of list of floats): list of locations of ground truth
+        gt_bboxes (list of list of floats): list of locations of ground truth
             objects as [xmin, ymin, xmax, ymax]
-        pred_boxes (list of list of floats): list of locations of predicted
+        pred_bboxes (list of list of floats): list of locations of predicted
             objects as [xmin, ymin, xmax, ymax]
         iou_thr (float): value of IoU to consider as threshold for a
             true prediction.
@@ -198,48 +210,50 @@ def get_avg_precision_at_iou(gt_boxes, pred_boxes, iou_thr=0.5):
             'models_thrs' (list of floats): model threshold value that
                 precision and recall were computed for.
     """
-    model_scores_map = get_model_scores_map(pred_boxes)
+    model_scores_map = get_model_scores_map(pred_bboxes)
     sorted_model_scores = sorted(model_scores_map.keys())
 
     # Sort the predicted boxes in descending order (lowest scoring boxes first):
-    for img_id in pred_boxes.keys():
-        if len(pred_boxes[img_id]) > 0:
-            arg_sort = np.argsort(pred_boxes[img_id]['scores'])
-            pred_boxes[img_id]['scores'] = np.array(pred_boxes[img_id]['scores'])[arg_sort].tolist()
-            pred_boxes[img_id]['boxes'] = np.array(pred_boxes[img_id]['boxes'])[arg_sort].tolist()
+    for frame_id, frame_dict in pred_bboxes.items():
 
-    pred_boxes_pruned = deepcopy(pred_boxes)
+        if len(frame_dict['bboxes']) > 0:
+            arg_sort = np.argsort(frame_dict['scores'])
+            frame_dict['scores'] = np.array(frame_dict['scores'])[arg_sort].tolist()
+            frame_dict['bboxes'] = np.array(frame_dict['bboxes'])[arg_sort].tolist()
+
+    pred_bboxes_pruned = deepcopy(pred_bboxes)
 
     precisions = []
     recalls = []
     model_thrs = []
-    img_results = {}
+    frame_results = {}
     # Loop over model score thresholds and calculate precision, recall
     for ithr, model_score_thr in enumerate(sorted_model_scores[:-1]):
-        # On first iteration, define img_results for the first time:
-        img_ids = gt_boxes.keys() if ithr == 0 else model_scores_map[model_score_thr]
-        for img_id in img_ids:
-            gt_boxes_img = gt_boxes[img_id]
-            if len(pred_boxes_pruned[img_id]) > 0:
-                box_scores = pred_boxes_pruned[img_id]['scores']
+        # On first iteration, define frame_results for the first time:
+        frame_ids = gt_bboxes.keys() if ithr == 0 else model_scores_map[model_score_thr]
+        for frame_id in frame_ids:
+            gt_bboxes_frame = gt_bboxes[frame_id]
+            if len(pred_bboxes_pruned[frame_id]['bboxes']) > 0:
+                box_scores = pred_bboxes_pruned[frame_id]['scores']
                 start_idx = 0
                 for score in box_scores:
                     if score < model_score_thr:
-#                         pred_boxes_pruned[img_id]
+#                         pred_bboxes_pruned[frame_id]
                         start_idx += 1
                     else:
                         break
 
                 # Remove boxes, scores of lower than threshold scores:
-                pred_boxes_pruned[img_id]['scores'] = pred_boxes_pruned[img_id]['scores'][start_idx:]
-                pred_boxes_pruned[img_id]['boxes'] = pred_boxes_pruned[img_id]['boxes'][start_idx:]
+                pred_bboxes_pruned[frame_id]['scores'] = pred_bboxes_pruned[frame_id]['scores'][start_idx:]
+                pred_bboxes_pruned[frame_id]['bboxes'] = pred_bboxes_pruned[frame_id]['bboxes'][start_idx:]
 
                 # Recalculate image results for this image
-                img_results[img_id] = get_single_image_results(
-                    gt_boxes_img, pred_boxes_pruned[img_id]['boxes'], iou_thr)
+                frame_results[frame_id] = get_single_frame_results(
+                    gt_bboxes_frame, pred_bboxes_pruned[frame_id]['bboxes'], iou_thr)
             else:
-                img_results[img_id] = {'true_pos': 0, 'false_pos': 0, 'false_neg': len(gt_boxes_img)}
-        prec, rec = calc_precision_recall(img_results)
+                frame_results[frame_id] = {'true_pos': 0, 'false_pos': 0, 'false_neg': len(gt_bboxes_frame)}
+        # print(frame_results)
+        prec, rec = calc_precision_recall(frame_results)
         precisions.append(prec)
         recalls.append(rec)
         model_thrs.append(model_score_thr)
@@ -285,15 +299,15 @@ def plot_pr_curve(
 if __name__ == "__main__":
 
     with open('ground_truth_boxes.json') as infile:
-        gt_boxes = json.load(infile)
+        gt_bboxes = json.load(infile)
 
     with open('predicted_boxes.json') as infile:
-        pred_boxes = json.load(infile)
+        pred_bboxes = json.load(infile)
 
     # Runs it for one IoU threshold
     iou_thr = 0.7
     start_time = time.time()
-    data = get_avg_precision_at_iou(gt_boxes, pred_boxes, iou_thr=iou_thr)
+    data = get_avg_precision_at_iou(gt_bboxes, pred_bboxes, iou_thr=iou_thr)
     end_time = time.time()
     print('Single IoU calculation took {:.4f} secs'.format(end_time - start_time))
     print('avg precision: {:.4f}'.format(data['avg_prec']))
@@ -303,7 +317,7 @@ if __name__ == "__main__":
     avg_precs = []
     iou_thrs = []
     for idx, iou_thr in enumerate(np.linspace(0.5, 0.95, 10)):
-        data = get_avg_precision_at_iou(gt_boxes, pred_boxes, iou_thr=iou_thr)
+        data = get_avg_precision_at_iou(gt_bboxes, pred_bboxes, iou_thr=iou_thr)
         avg_precs.append(data['avg_prec'])
         iou_thrs.append(iou_thr)
 

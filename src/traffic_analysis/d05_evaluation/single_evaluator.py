@@ -80,14 +80,15 @@ class FrameLevelEvaluator(SingleEvaluator):
 
         ground_truth_dict = self.reparse_frame_level_df(self.ground_truth_df, include_confidence = False)
         predicted_dict = self.reparse_frame_level_df(self.frame_level_df, include_confidence = True)
-        print("GROUND TRUTH DICT\n",ground_truth_dict)
+        # print("PREDICTED DICT\n",predicted_dict)
 
-        sys.exit(0)
+        # sys.exit(0)
         
         self.map_dict = {vehicle_type:-1.0 for vehicle_type in self.vehicle_types}
         self.compute_mean_avg_precision(ground_truth_dict, predicted_dict)
         # edit map_dict to a df 
-        print(self.map_dict)
+        # print(self.map_dict)
+        # print()
         return 
 
 
@@ -105,7 +106,7 @@ class FrameLevelEvaluator(SingleEvaluator):
         if include_confidence: 
              df_as_dict = {vehicle_type:\
                                       {'frame'+str(i):\
-                                                {'boxes':[],
+                                                {'bboxes':[],
                                                  'scores':[]} \
                                       for i in range(self.n_frames) }\
                           for vehicle_type in self.vehicle_types}
@@ -118,7 +119,7 @@ class FrameLevelEvaluator(SingleEvaluator):
         for (vehicle_type, frame_id), vehicle_frame_df in df.groupby(['vehicle_type', 'frame_id']): 
 
             if include_confidence: 
-                df_as_dict[vehicle_type]['frame'+str(frame_id)]['boxes'] = vehicle_frame_df['bboxes'].tolist()
+                df_as_dict[vehicle_type]['frame'+str(frame_id)]['bboxes'] = vehicle_frame_df['bboxes'].tolist()
                 df_as_dict[vehicle_type]['frame'+str(frame_id)]['scores'] = vehicle_frame_df['confidence'].tolist()
 
             else: 
@@ -157,8 +158,8 @@ class FrameLevelEvaluator(SingleEvaluator):
             mean_avg_precision = 100*np.mean(avg_precs)
 
             self.map_dict[vehicle_type] = mean_avg_precision
-            print('map: {:.2f}'.format(mean_avg_precision))
             print('avg precs: ', avg_precs)
+            print('map: {:.2f}'.format(mean_avg_precision))
             print('iou_thrs:  ', iou_thrs)
 
             # plt.legend(loc='upper right', title='IOU Thr', frameon=True)
@@ -182,7 +183,6 @@ class VideoLevelEvaluator(SingleEvaluator):
     """
     def __init__(self, xml_root,xml_name, video_level_df: pd.DataFrame, params: dict):
         super().__init__(xml_root, xml_name, params)
-        print(self.xml_root)
         self.ground_truth_df = super().parse_annotation()
         self.video_level_df = video_level_df
         self.video_level_column_order = params["video_level_column_order"]
