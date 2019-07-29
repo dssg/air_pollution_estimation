@@ -8,6 +8,7 @@ import tensorflow as tf
 import numpy as np
 
 from traffic_analysis.d00_utils.generate_tf_model import yolov3
+from traffic_analysis.d02_ref.retrieve_detection_model_from_s3 import retrieve_detection_model_from_s3
 
 
 def yolov3_darknet_to_tensorflow(paths, params):
@@ -24,16 +25,18 @@ def yolov3_darknet_to_tensorflow(paths, params):
         pass
 
     else:
+        retrieve_detection_model_from_s3(paths, params)
+
         num_class = 80
         img_size = 416
-        weight_path = os.path.join(model_file_path, 'yolov3_darknet', 'yolov3.weights')
+        weight_path = os.path.join(model_file_path, 'yolov3', 'yolov3.weights')
         save_path = os.path.join(model_file_path, 'yolov3_tf', 'yolov3.ckpt')
         anchors = parse_anchors(paths)
 
         # build tensorflow model as a yolov3 class
         model = yolov3(num_class, anchors)
 
-        # save model locally as tensorflow ckpt
+        # save model locally as tensorflow .ckpt
         with tf.Session() as sess:
 
             # tf model initialization
@@ -57,7 +60,7 @@ def parse_anchors(paths):
     """
 
     model_file_path = paths['detection_model']
-    anchor_path = os.path.join(model_file_path, 'yolov3_darknet', 'yolov3_anchors.txt')
+    anchor_path = os.path.join(model_file_path, 'yolov3', 'yolov3_anchors.txt')
     anchors = np.reshape(np.asarray(open(anchor_path, 'r').read().split(','), np.float32), [-1, 2])
 
     return anchors
