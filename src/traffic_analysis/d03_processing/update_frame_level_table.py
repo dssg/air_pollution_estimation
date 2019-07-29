@@ -1,10 +1,13 @@
-from traffic_analysis.d00_utils.data_retrieval import connect_to_bucket, load_videos_into_np, delete_and_recreate_dir
+from traffic_analysis.d00_utils.data_retrieval import load_videos_into_np, delete_and_recreate_dir
 from traffic_analysis.d04_modelling.classify_objects import classify_objects
 from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
+from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 
-
-def update_frame_level_table(file_names, paths, params, creds):
-    """ Update the frame level table on the database based on the videos in the files list
+def update_frame_level_table(file_names: list,
+                             paths: dict,
+                             params: dict,
+                             creds: dict):
+    """ Update the frame level table on s3 (pq) based on the videos in the files list
                 Args:
                     file_names (list): list of s3 filepaths for the videos to be processed
                     paths (dict): dictionary of paths from yml file
@@ -14,14 +17,19 @@ def update_frame_level_table(file_names, paths, params, creds):
                 Returns:
 
     """
-    my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
+    s3_credentials = creds[paths['s3_creds']]
+    dl = DataLoaderS3(s3_credentials,
+                      bucket_name=paths['bucket_name'])
 
     delete_and_recreate_dir(paths["temp_video"])
     # Download the video file_names using the file list
     for file in file_names:
         try:
-            my_bucket.download_file(file, paths["temp_video"] + file.split('/')[-1].replace(
-                ':', '-').replace(" ", "_"))
+            path_to_download_file_to = (paths["temp_video"]
+                                        + file.split('/')[-1].replace(':', '-').replace(" ", "_")
+                                        )
+            dl.download_file(path_of_file_to_download=file,
+                             path_to_download_file_to=path_to_download_file_to)
         except:
             print("Could not download " + file)
 
