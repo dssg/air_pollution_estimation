@@ -3,6 +3,7 @@ import datetime
 from traffic_analysis.d00_utils.data_access import db
 from traffic_analysis.d03_processing.add_to_table_sql import add_to_table_sql
 from traffic_analysis.d05_reporting.report_yolo import yolo_report_stats
+from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
 
 
 def update_video_level_table(analyzer, file_names, paths, creds):
@@ -18,15 +19,17 @@ def update_video_level_table(analyzer, file_names, paths, creds):
     # Build the sql string
     datetimes = []
     camera_ids = []
-    for file in file_names:
-
-        name = file.split('/')[-1]
-        datetimes.append(datetime.datetime.strptime(name.split('_')[0], "%Y-%m-%d %H:%M:%S.%f"))
-        camera_ids.append(name.split('_')[-1][:-4])
+    for filename in file_names:
+        name = filename.split('/')[-1]
+        camera_id, date_time = parse_video_or_annotation_name(name)
+        datetimes.append(date_time)
+        camera_ids.append(camera_id)
 
     filter_string = ''
     for i in range(len(file_names)):
-        filter_string += '(camera_id=\'' + camera_ids[i] + '\' AND video_upload_datetime=\'' + str(datetimes[i]) + '\') OR '
+        filter_string += '(camera_id=\'' + \
+            camera_ids[i] + '\' AND video_upload_datetime=\'' + \
+            str(datetimes[i]) + '\') OR '
 
     filter_string = filter_string[:-4]
     sql_string = "SELECT * FROM frame_stats WHERE %s;" % (filter_string)
@@ -54,6 +57,8 @@ def update_video_level_table(analyzer, file_names, paths, creds):
 
     # Create video level table and add to database
     video_level_df = analyzer.construct_video_level_df(frame_level_df)
+    if video_level_df.empty:
+        return
 
     add_to_table_sql(df=video_level_df,
                      table='video_stats',

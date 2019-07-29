@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 
 
-
 def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date_time):
     """Parse the info corresponding to one frame into one pandas df
 
@@ -54,12 +53,10 @@ def yolo_output_df(yolo_dict):
         assert obj_label_confidences.shape[0] == num_frames
 
         filename = name.split("_")
-        time_obj = filename[1].replace("-",":") if len(filename) > 2 else " "
-        datetimestring = "%s %s"%(filename[0], time_obj)
+        time_obj = filename[1].replace("-", ":") if len(filename) > 2 else " "
+        datetimestring = "%s %s" % (filename[0], time_obj)
         datetimestring = datetimestring.strip()
         print(datetimestring)
-        date_time = dateutil.parser.parse(datetimestring)
-        camera_id = filename[-1][:-4]
         camera_id, date_time = parse_video_or_annotation_name(name)
 
         frame_df_list = []
@@ -72,7 +69,8 @@ def yolo_output_df(yolo_dict):
             obj_info_aggregated = np.array([obj_bounds_np, obj_labels[frame_ind],
                                             obj_label_confidences[frame_ind]]).transpose()
 
-            frame_df = frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date_time)
+            frame_df = frame_info_to_df(
+                obj_info_aggregated, frame_ind, camera_id, date_time)
             frame_df = frame_info_to_df(
                 obj_info_aggregated, frame_ind, camera_id, date_time)
             frame_df_list.append(frame_df)
@@ -122,17 +120,20 @@ def yolo_report_stats(yolo_df):
     grouped = yolo_df.groupby(['camera_id', 'datetime'])
 
     for name, group in grouped:
-        obj_counts_frame=group.groupby(["frame_id", "obj_classification"]).size().reset_index(name = 'obj_count')
-        
+        obj_counts_frame = group.groupby(
+            ["frame_id", "obj_classification"]).size().reset_index(name='obj_count')
+
         for type in obj_counts_frame['obj_classification'].unique():
-            type_df = obj_counts_frame[obj_counts_frame['obj_classification']==type]
-            count_df = pd.DataFrame([type_df['obj_count'].mean()], columns=['counts'])
+            type_df = obj_counts_frame[obj_counts_frame['obj_classification'] == type]
+            count_df = pd.DataFrame(
+                [type_df['obj_count'].mean()], columns=['counts'])
             count_df['vehicle_type'] = type
             count_df['camera_id'] = group['camera_id'].iloc[0]
             count_df['datetime'] = group['datetime'].iloc[0]
             count_df['starts'] = 0
             count_df['stops'] = 0
-            assert group['datetime'].nunique() == 1, "Non-unique datetime..." + str(group['datetime'].unique())
+            assert group['datetime'].nunique(
+            ) == 1, "Non-unique datetime..." + str(group['datetime'].unique())
             assert group['camera_id'].nunique() == 1, "Non-unique camera_id"
             dfs.append(count_df)
 

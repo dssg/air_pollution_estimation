@@ -29,27 +29,30 @@ def update_frame_level_table(analyzer,
 
     delete_and_recreate_dir(paths["temp_video"])
     # Download the video file_names using the file list
-    for file in file_names:
+    for filename in file_names:
         try:
             path_to_download_file_to = (paths["temp_video"]
-                                        + file.split('/')[-1].replace(':', '-').replace(" ", "_")
+                                        + filename.split('/')[-1].replace(':', '-').replace(" ", "_")
                                         )
-            dl.download_file(path_of_file_to_download=file,
+            dl.download_file(path_of_file_to_download=filename,
                              path_to_download_file_to=path_to_download_file_to)
         except:
-            print("Could not download " + file)
+            print("Could not download " + filename)
 
     video_dict = load_videos_into_np(paths["temp_video"])
     delete_and_recreate_dir(paths["temp_video"])
 
     frame_level_df = analyzer.construct_frame_level_df(video_dict)
-    
+    frame_level_df.dropna(how='any', inplace=True)
+    frame_level_df = frame_level_df.astype(
+        {'frame_id': 'int64', 'vehicle_id': 'int64'})
     x, y, w, h = [], [], [], []
     for vals in frame_level_df['bboxes'].values:
-        x.append(vals[0])
-        y.append(vals[1])
-        w.append(vals[2])
-        h.append(vals[3])
+        if isinstance(vals, list) and len(vals) > 3:
+            x.append(vals[0])
+            y.append(vals[1])
+            w.append(vals[2])
+            h.append(vals[3])
     frame_level_df['bbox_x'] = x
     frame_level_df['bbox_y'] = y
     frame_level_df['bbox_w'] = w

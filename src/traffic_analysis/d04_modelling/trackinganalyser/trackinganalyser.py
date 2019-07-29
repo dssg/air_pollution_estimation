@@ -183,7 +183,6 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                                      frame,
                                      tuple(new_bbox))
 
-
                 # update fleet object
                 if new_bboxes != []:
                     fleet.add_vehicles(np.array(new_bboxes),
@@ -227,6 +226,9 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
         frame_level_df -- df returned by above function
         """
+        if frame_level_df.empty:
+            return frame_level_df
+
         video_info_list = []
         for _, single_frame_level_df in frame_level_df.groupby(['camera_id', 'video_upload_datetime']):
             fleet = VehicleFleet(
@@ -264,7 +266,6 @@ if __name__ == '__main__':
                 ':', '-').replace(" ", "_"))
         except:
             print("Could not download " + file)
-    
 
     video_dict = load_videos_into_np(paths["temp_video"])
     delete_and_recreate_dir(paths["temp_video"])
