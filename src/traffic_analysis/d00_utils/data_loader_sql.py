@@ -1,7 +1,7 @@
 import pandas as pd
 import psycopg2
 import io
-
+w
 
 class DataLoaderSQL():
     def __init__(self, creds, paths):

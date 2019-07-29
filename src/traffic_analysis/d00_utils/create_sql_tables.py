@@ -1,13 +1,17 @@
 import psycopg2
 
+from traffic_analysis.d00_utils.load_confs import load_credentials, load_paths
+from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 
-def create_sql_tables(conn_string, drop=False):
-    connection_string = conn_string
-    conn = psycopg2.connect(connection_string)
-    cursor = conn.cursor()
+def create_sql_tables(drop=False):
+
+    dl = DataLoaderSQL(creds=load_credentials(), paths=load_paths())
+    dl.open_connection()
+    conn = dl.conn
+    cursor = dl.cursor
 
     drop_commands = None
-    if(drop):
+    if drop:
         drop_commands = [
             "DROP TABLE vehicle_types, cameras, frame_stats, video_stats CASCADE;"
         ]

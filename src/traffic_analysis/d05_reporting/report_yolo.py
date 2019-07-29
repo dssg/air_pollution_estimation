@@ -52,13 +52,6 @@ def yolo_output_df(yolo_dict):
         assert obj_labels.shape[0] == num_frames
         assert obj_label_confidences.shape[0] == num_frames
 
-        filename = name.split("_")
-        time_obj = filename[1].replace("-",":") if len(filename) > 2 else " "
-        datetimestring = "%s %s"%(filename[0], time_obj)
-        datetimestring = datetimestring.strip()
-        print(datetimestring)
-        date_time = dateutil.parser.parse(datetimestring)
-        camera_id = filename[-1][:-4]
         camera_id, date_time = parse_video_or_annotation_name(name)
 
         frame_df_list = []
@@ -71,7 +64,6 @@ def yolo_output_df(yolo_dict):
             obj_info_aggregated = np.array([obj_bounds_np, obj_labels[frame_ind],
                                             obj_label_confidences[frame_ind]]).transpose()
 
-            frame_df = frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date_time)
             frame_df = frame_info_to_df(
                 obj_info_aggregated, frame_ind, camera_id, date_time)
             frame_df_list.append(frame_df)
