@@ -21,7 +21,7 @@ data_collection:
       "00001.08926",
       "00001.07355",
       "00001.04336",
-      "00001.09560",
+      "00001.09560"
     ]
   tims_file_website: "https://s3-eu-west-1.amazonaws.com/roads.data.tfl.gov.uk"
   tims_download_website: "http://roads.data.tfl.gov.uk/TIMS/"
