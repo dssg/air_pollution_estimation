@@ -32,7 +32,7 @@ class ChunkEvaluator():
 
         self.params = params
 
-    def evaluate_videos(self)->pd.DataFrame: 
+    def evaluate_video_level(self)->pd.DataFrame: 
         """This function evaluates a chunk of videos utilizing multiple SingleEvaluator objects. 
         """
         video_level_diff_dfs = []
@@ -84,7 +84,17 @@ class ChunkEvaluator():
 
         return vehicle_stats_df
 
-    def evaluate_frame_level(self): pass 
+    def evaluate_frame_level(self): 
+        frame_level_mAP_dfs = []       
+        for i, xml_path in enumerate(self.annotation_xml_paths):
+            xml_name = re.split(r"\\|/", xml_path)[-1]
+            xml_root = ElementTree.parse(xml_path).getroot()
+            frame_level_evaluator = FrameLevelEvaluator(xml_root, xml_name,
+                                                        self.frame_level_dfs[i],
+                                                        params)
+            frame_level_mAP_dfs.append(frame_level_evaluator.evaluate_video())
+        frame_level_diff_df = pd.concat(frame_level_mAP_dfs, axis=0)  # concat dfs as new rows
+        return frame_level_diff_df
 
     def frame_statistics(self): pass
 
@@ -97,7 +107,7 @@ if __name__ == '__main__':
 
     pd.set_option('display.max_columns', 500)
 
-    video_level_dfs = pd.read_csv("../data/carolinetemp/video_level_df.csv",
+    video_level_dfs = pd.read_csv("../../data/carolinetemp/video_level_df.csv",
                         dtype={"camera_id": str},
                         parse_dates=["video_upload_datetime"])
     del video_level_dfs['Unnamed: 0']
@@ -106,9 +116,23 @@ if __name__ == '__main__':
     video_level_groups = video_level_dfs.groupby(['camera_id', 'video_upload_datetime'])
     for name, group in video_level_groups: 
         video_level_df_list.append(group)
+########################################
+    frame_level_dfs = pd.read_csv("../../data/carolinetemp/frame_level_df.csv",
+                        dtype={"camera_id": str},
+                        converters={"bboxes": lambda x: [float(coord) for coord in x.strip("[]").split(", ")]}, 
+                        parse_dates=["video_upload_datetime"])
+    del frame_level_dfs['Unnamed: 0']
+
+    frame_level_df_list = []
+    frame_level_groups = frame_level_dfs.groupby(['camera_id', 'video_upload_datetime'])
+    for name, group in frame_level_groups: 
+        frame_level_df_list.append(group)
 
     chunk_evaluator = ChunkEvaluator(annotation_xml_paths=xml_paths,
                                      params=params,
-                                     video_level_dfs=video_level_df_list)
-    stats_df = chunk_evaluator.evaluate_videos()
-    print("stats df: \n", stats_df)
+                                     video_level_dfs=video_level_df_list,
+                                     frame_level_dfs = frame_level_df_list)
+    # stats_df = chunk_evaluator.evaluate_video_level()
+    # print("stats df: \n", stats_df)
+    frame_stats_df = chunk_evaluator.evaluate_frame_level()
+    print("stats df: \n", frame_stats_df)

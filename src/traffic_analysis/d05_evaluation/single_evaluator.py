@@ -71,38 +71,46 @@ class FrameLevelEvaluator(SingleEvaluator):
         """
         Returns MAP values for each frame 
         """ 
-        # loop over frames 
-        # print(self.ground_truth_df.shape, self.frame_level_df.shape)
-        # print(self.ground_truth_df)
 
         self.ground_truth_df = self.ground_truth_df.sort_values(by='frame_id').reset_index()
         self.frame_level_df = self.frame_level_df.sort_values(by='frame_id').reset_index()
+        # need to delete bboxes of [0,0,0,0] from frame_level_df
+
+        zeros_mask = self.frame_level_df.bboxes.apply(lambda x: all(True if bbox_entry == 0.0 else False for bbox_entry in x) )
+        self.frame_level_df = self.frame_level_df[~zeros_mask].reset_index()
 
         ground_truth_dict = self.reparse_frame_level_df(self.ground_truth_df, include_confidence = False)
-        predicted_dict = self.reparse_frame_level_df(self.frame_level_df, include_confidence = True)
-        # print("PREDICTED DICT\n",predicted_dict)
-
-        # sys.exit(0)
+        predicted_dict = self.reparse_frame_level_df(self.frame_level_df, include_confidence = True, bbox_format = 'cv2')
         
-        self.map_dict = {vehicle_type:-1.0 for vehicle_type in self.vehicle_types}
-        self.compute_mean_avg_precision(ground_truth_dict, predicted_dict)
-        # edit map_dict to a df 
-        # print(self.map_dict)
-        # print()
-        return 
+        mAP_dict = self.compute_mean_avg_precision(ground_truth_dict, predicted_dict)
+        mAP_df = pd.DataFrame.from_dict(mAP_dict, orient='index', columns=['mean_avg_precision'])
+
+        assert (self.frame_level_df['camera_id'].iloc[0] == self.camera_id), \
+            "camera IDs from annotation file and frame_level_df do not match in FrameLevelEvaluator.evaluate_video()"
+        mAP_df['camera_id'] = self.camera_id
+
+        assert (self.frame_level_df['video_upload_datetime'].iloc[0] == self.video_upload_datetime),\
+            "dates from annotation file and frame_level_df do not match in FrameLevelEvaluator.evaluate_video()"
+        mAP_df['video_upload_datetime'] = self.video_upload_datetime
+
+        mAP_df.index.name = 'vehicle_type'
+        mAP_df.reset_index(inplace=True)
+
+        return mAP_df
 
 
-    def reparse_frame_level_df(self, df: pd.DataFrame, include_confidence:bool) -> dict: 
+    def reparse_frame_level_df(self, df: pd.DataFrame, include_confidence:bool, bbox_format:str = 'cvlib') -> dict: 
         """
         """
         #dict of dict of dicts, with outermost layer being the vehicle type 
-        # get bboxes into format (xmin, ymin, xmin + width, ymin + height) aka cvlib format
-        bboxes_np = arr = np.array(df['bboxes'].values.tolist())
-        # print("bboxes_np: \n",bboxes_np)
-        # print("\n bboxes_np shpae: \n", bboxes_np.shape)
+        bboxes_np = np.array(df['bboxes'].values.tolist())
         assert bboxes_np.shape[1] == 4
-        df['bboxes'] = pd.Series(bboxcv2_to_bboxcvlib(bboxes_np,vectorized = True).tolist())
 
+        if bbox_format == 'cv2':
+            # convert to format cvlib
+            df['bboxes'] = pd.Series(bboxcv2_to_bboxcvlib(bboxes_np,vectorized = True).tolist())
+
+        # initialize dictionaries to correct shape
         if include_confidence: 
              df_as_dict = {vehicle_type:\
                                       {'frame'+str(i):\
@@ -116,14 +124,14 @@ class FrameLevelEvaluator(SingleEvaluator):
                                       {'frame'+str(i):[] for i in range(self.n_frames) }\
                           for vehicle_type in self.vehicle_types}
 
+        #fill dictionary
         for (vehicle_type, frame_id), vehicle_frame_df in df.groupby(['vehicle_type', 'frame_id']): 
-
             if include_confidence: 
                 df_as_dict[vehicle_type]['frame'+str(frame_id)]['bboxes'] = vehicle_frame_df['bboxes'].tolist()
                 df_as_dict[vehicle_type]['frame'+str(frame_id)]['scores'] = vehicle_frame_df['confidence'].tolist()
-
-            else: 
+            else:
                 df_as_dict[vehicle_type]['frame'+str(frame_id)] = vehicle_frame_df['bboxes'].tolist()
+
         return df_as_dict 
 
 
@@ -133,12 +141,13 @@ class FrameLevelEvaluator(SingleEvaluator):
         frame vs the detected frame 
         Dfs have bboxes, confidences, labels 
         """
+        mAP_dict = {vehicle_type:-1.0 for vehicle_type in self.vehicle_types}
 
         for vehicle_type in self.vehicle_types: 
             vehicle_gt_dict = ground_truth_dict[vehicle_type]
             vehicle_pred_dict = predicted_dict[vehicle_type]
 
-            start_time = time.time()
+            # start_time = time.time()
             # ax = None
             avg_precs = []
             iou_thrs = []
@@ -157,20 +166,19 @@ class FrameLevelEvaluator(SingleEvaluator):
             iou_thrs = [float('{:.4f}'.format(thr)) for thr in iou_thrs]
             mean_avg_precision = 100*np.mean(avg_precs)
 
-            self.map_dict[vehicle_type] = mean_avg_precision
-            print('avg precs: ', avg_precs)
-            print('map: {:.2f}'.format(mean_avg_precision))
-            print('iou_thrs:  ', iou_thrs)
+            mAP_dict[vehicle_type] = mean_avg_precision
+            # print('avg precs: ', avg_precs)
+            # print('map: {:.2f}'.format(mean_avg_precision))
+            # print('iou_thrs:  ', iou_thrs)
 
             # plt.legend(loc='upper right', title='IOU Thr', frameon=True)
             # for xval in np.linspace(0.0, 1.0, 11):
             #     plt.vlines(xval, 0.0, 1.1, color='gray', alpha=0.3, linestyles='dashed')
-            end_time = time.time()
+            # end_time = time.time()
 
-            print('\nCalculating mAP takes {:.4f} secs'.format(end_time - start_time))
+            # print('\nCalculating mAP takes {:.4f} secs'.format(end_time - start_time))
             # plt.show()
-            # print("ground truth frame: \n", gt_frame, "\n predicted frame: \n",pred_frame)
-        return 
+        return mAP_dict
 
     def plot_video(self): 
         pass
@@ -349,8 +357,9 @@ if __name__ == '__main__':
     xml_root = ElementTree.parse(xml_path).getroot()
 
     pd.set_option('display.max_columns', 500)
+    pd.options.display.max_rows=2000
 
-    frame_level_dfs = pd.read_csv("../data/carolinetemp/frame_level_df.csv",
+    frame_level_dfs = pd.read_csv("../../data/carolinetemp/frame_level_df.csv",
                         dtype={"camera_id": str},
                         converters={"bboxes": lambda x: [float(coord) for coord in x.strip("[]").split(", ")]},
                         parse_dates=["video_upload_datetime"]
@@ -363,4 +372,5 @@ if __name__ == '__main__':
         frame_level_df_list.append(group)
 
     frame_level_evaluator = FrameLevelEvaluator(xml_root, xml_name, frame_level_df_list[0], params)
-    frame_level_evaluator.evaluate_video()
+    mAP_df = frame_level_evaluator.evaluate_video()
+    print(mAP_df)
