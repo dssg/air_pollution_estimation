@@ -44,5 +44,4 @@ def detect_bboxes(frame: np.ndarray, model: str,
             del bboxes_cv2[i]
             del labels[i]
             del confs[i]
-    print("labels to add:", labels)
     return bboxes_cv2, labels, confs
