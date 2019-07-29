@@ -1,7 +1,7 @@
 from traffic_analysis.d00_utils.bbox_helpers import bboxcvlib_to_bboxcv2
-from traffic_analysis.d00_utils.load_confs import load_parameters
 import numpy as np
 import cvlib
+
 
 def detect_bboxes(frame: np.ndarray, model: str,
                   detection_confidence_threshold: float,
@@ -36,7 +36,7 @@ def detect_bboxes(frame: np.ndarray, model: str,
     if selected_labels is not None:
         for i, label in enumerate(selected_labels):
             # specify object types to ignore
-            if label not in :
+            if label not in selected_labels:
                 del_inds.append(i)
 
         # delete items from lists in reverse to avoid index shifting issue
