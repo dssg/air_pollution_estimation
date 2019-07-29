@@ -1,7 +1,7 @@
 import psycopg2
 
 
-def create_tables(conn_string, drop=False):
+def create_sql_tables(conn_string, drop=False):
     connection_string = conn_string
     conn = psycopg2.connect(connection_string)
     cursor = conn.cursor()

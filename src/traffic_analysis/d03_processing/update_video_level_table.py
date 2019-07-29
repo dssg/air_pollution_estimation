@@ -1,6 +1,7 @@
 import datetime
 
 from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
+from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
 from traffic_analysis.d05_reporting.report_yolo import yolo_report_stats
 
 
@@ -17,11 +18,11 @@ def update_video_level_table(file_names, paths, creds):
     # Build the sql string
     datetimes = []
     camera_ids = []
-    for file in file_names:
-
-        name = file.split('/')[-1]
-        datetimes.append(datetime.datetime.strptime(name.split('_')[0], "%Y-%m-%d %H:%M:%S.%f"))
-        camera_ids.append(name.split('_')[-1][:-4])
+    for filename in file_names:
+        name = filename.split('/')[-1]
+        camera_id, date_time = parse_video_or_annotation_name(name)
+        datetimes.append(date_time)
+        camera_ids.append(camera_id)
 
     filter_string = ''
     for i in range(len(file_names)):
