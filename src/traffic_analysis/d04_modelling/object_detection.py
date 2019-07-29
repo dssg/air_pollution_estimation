@@ -7,7 +7,7 @@ def detect_bboxes(frame: np.ndarray, model: str,
                   detection_confidence_threshold: float,
                   detection_nms_threshold: float, 
                   implementation: str = None, 
-                  selected_labels: str = None) -> (list, list, list):
+                  selected_labels: list = None) -> (list, list, list):
     '''Detect bounding boxes on a frame using specified model and optionally an implementation.
     bboxes returned in format (xmin, ymin, w, h). Colors are assigned to bboxes by the type. 
 
@@ -34,9 +34,9 @@ def detect_bboxes(frame: np.ndarray, model: str,
     # do not correspond to labels in selected_labels
     del_inds = []
     if selected_labels is not None:
-        for i, label in enumerate(selected_labels):
+        for i, detected_label in enumerate(labels):
             # specify object types to ignore
-            if label not in selected_labels:
+            if detected_label not in selected_labels:
                 del_inds.append(i)
 
         # delete items from lists in reverse to avoid index shifting issue
@@ -44,5 +44,5 @@ def detect_bboxes(frame: np.ndarray, model: str,
             del bboxes_cv2[i]
             del labels[i]
             del confs[i]
-
+    print("labels to add:", labels)
     return bboxes_cv2, labels, confs

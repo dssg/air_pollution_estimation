@@ -159,6 +159,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
         if make_video:
             processed_video = []
+
         # Process video and track objects
         for frame_ind in range(1, n_frames):
             frame = video[frame_ind, :, :, :]
@@ -280,13 +281,13 @@ if __name__ == '__main__':
 
     # video_dict = load_videos_into_np(paths["temp_video"])
     video_dict = load_videos_into_np(localpath)
-    print(video_dict)
 
     # delete_and_recreate_dir(paths["temp_video"])
 
     ############### NEW CODE ##############################
-    analyser = TrackingAnalyser(
-        video_dict=video_dict, params=params, paths=paths)
+    analyser = TrackingAnalyser(video_dict=video_dict, 
+                                params=params, 
+                                paths=paths)
     frame_level_df = analyser.construct_frame_level_df()
     print(frame_level_df)
 
