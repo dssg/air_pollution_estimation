@@ -93,12 +93,22 @@ class ChunkEvaluator():
                                                         self.frame_level_dfs[i],
                                                         params)
             frame_level_mAP_dfs.append(frame_level_evaluator.evaluate_video())
-        frame_level_diff_df = pd.concat(frame_level_mAP_dfs, axis=0)  # concat dfs as new rows
-        return frame_level_diff_df
+        frame_level_mAP_df = pd.concat(frame_level_mAP_dfs, axis=0)  # concat dfs as new rows
+        return frame_level_mAP_df
 
     def frame_statistics(self): pass
 
-    def plot_evaluation_stats(self): pass
+    def plot_chunk_stats(self, 
+                         video_level_diff_df: pd.DataFrame, 
+                         frame_level_mAP_df: pd.DataFrame, 
+                         save_dir: str = None): 
+        
+        
+        if save_dir is not None :
+            pass
+        return None
+
+
 
 if __name__ == '__main__':
     params = load_parameters()
