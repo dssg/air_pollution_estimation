@@ -283,9 +283,9 @@ class VehicleFleet:
                                       math.nan, math.nan, math.nan, 
                                       math.nan, math.nan]], columns = column_names)
             else: 
-                self.bboxes = self.bboxes[1,:,:] # remove fake head vehicle 
-                self.labels = self.bboxes[1:]
-                self.confs = self.bboxes[1:]
+                self.bboxes = self.bboxes[1:,:,:] # remove fake head vehicle 
+                self.labels = self.labels[1:]
+                self.confs = self.confs[1:]
                 self.fake_head_vehicle = False
 
         num_vehicles, _, num_frames = self.bboxes.shape

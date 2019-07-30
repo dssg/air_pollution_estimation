@@ -8,11 +8,6 @@ import numpy as np
 import pandas as pd
 import cv2
 import time
-# Imports to run the if-main example. 
-# TODO: this should be deleted once the tracking analyser is incorporated into pipeline
-from traffic_analysis.d00_utils.load_confs import load_parameters, load_paths, load_credentials
-from traffic_analysis.d02_ref.load_video_names_from_s3 import load_video_names_from_s3
-from traffic_analysis.d00_utils.data_retrieval import connect_to_bucket, load_videos_into_np, delete_and_recreate_dir
 
 
 class TrackingAnalyser(TrafficAnalyserInterface):
