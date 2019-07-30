@@ -2,7 +2,7 @@ from traffic_analysis.d04_modelling.traffic_analyser_interface import TrafficAna
 from traffic_analysis.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame, color_bboxes, bbox_intersection_over_union
 from traffic_analysis.d00_utils.video_helpers import write_mp4
 from traffic_analysis.d04_modelling.object_detection import detect_bboxes
-from traffic_analysis.d04_modelling.trackinganalyser.vehicle_fleet import VehicleFleet
+from traffic_analysis.d04_modelling.tracking.vehicle_fleet import VehicleFleet
 
 import numpy as np
 import pandas as pd
