@@ -1,4 +1,4 @@
-from helper import (get_cams, load_camera_statistics, load_object_statistics,
+from traffic_viz.d06_visualisation.dash_object_detection.helper import (get_cams, load_camera_statistics, load_object_statistics,
                     load_objects, params)
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
