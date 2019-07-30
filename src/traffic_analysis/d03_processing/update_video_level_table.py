@@ -16,6 +16,7 @@ def update_video_level_table(frame_level_df=None, file_names=None, paths=None, c
                 Returns:
 
     """
+    db_obj = DataLoaderSQL(creds=creds, paths=paths)
 
     if(frame_level_df is None):
         # Build the sql string
@@ -34,7 +35,6 @@ def update_video_level_table(frame_level_df=None, file_names=None, paths=None, c
     video_level_df = yolo_report_stats(frame_level_df=frame_level_df, params=params)
     video_level_df['creation_datetime'] = datetime.datetime.now()
 
-    db_obj = DataLoaderSQL(creds=creds, paths=paths)
     db_obj.add_to_sql(df=video_level_df, table_name='video_stats')
 
     return
