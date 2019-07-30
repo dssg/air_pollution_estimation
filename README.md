@@ -13,7 +13,7 @@ Better insight extraction from traffic data will aid the effort to both understa
 ## Introduction
 
 <p float="left">
-  <img src ="readme_resources/images/dssg_imperial_logo.png" alt="alt text" />
+  <img src ="readme_resources/images/dssg_imperial_logo.png" alt="alt text" width="400" height="150"  />
 </p> 
 
 ### Data Science for Social Good at Imperial College London
