@@ -182,7 +182,7 @@ class VehicleFleet:
         default_settings = {"window_size": 25}
         for setting_name, setting_value in smoothing_settings.items():
             default_settings[setting_name] = setting_value
-        self.smoothed_iou_time_series = time_series_smoother(self.iou_time_series,
+        self.smoothed_iou_time_series = time_series_smoother(array=self.iou_time_series,
                                                              method=smoothing_method,
                                                              **default_settings)
         return
@@ -335,8 +335,8 @@ class VehicleFleet:
         return frame_level_info_df
 
     def report_video_level_stats(self, vehicle_counts: dict,
-                               vehicle_stop_counts: dict,
-                               vehicle_start_counts: dict) -> pd.DataFrame:
+                                 vehicle_stop_counts: dict,
+                                 vehicle_start_counts: dict) -> pd.DataFrame:
         """ Combine the counting dictionaries of vehicle stops, starts, and counts into
         one nice pandas dataframe. 
 

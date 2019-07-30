@@ -238,13 +238,11 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         frame_level_df -- df returned by above function
         """
         video_info_list = []
-        for _, single_frame_level_df in frame_level_df.groupby(['camera_id','video_upload_datetime']):
-            fleet = VehicleFleet(
-                frame_level_df=single_frame_level_df, load_from_pd=True)
+        for _, single_frame_level_df in frame_level_df.groupby(['camera_id', 'video_upload_datetime']):
+            fleet = VehicleFleet(frame_level_df=single_frame_level_df, load_from_pd=True)
             # compute the convolved IOU time series for each vehicle and smooth
             fleet.compute_iou_time_series(interval=self.iou_convolution_window)
-            fleet.smooth_iou_time_series(
-                smoothing_method=self.smoothing_method)
+            fleet.smooth_iou_time_series(smoothing_method=self.smoothing_method)
             # sample plotting options
             # fleet.plot_iou_time_series(fig_dir="data", fig_name="param_tuning", smoothed=True)
             video_level_df = fleet.report_video_level_stats(fleet.compute_counts(),
