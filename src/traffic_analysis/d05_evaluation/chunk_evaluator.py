@@ -39,9 +39,10 @@ class ChunkEvaluator():
         for i, xml_path in enumerate(self.annotation_xml_paths):
             xml_name = re.split(r"\\|/", xml_path)[-1]
             xml_root = ElementTree.parse(xml_path).getroot()
-            video_level_evaluator = VideoLevelEvaluator(xml_root, xml_name,
-                                                        self.video_level_dfs[i],
-                                                        params)
+            video_level_evaluator = VideoLevelEvaluator(xml_root = xml_root, 
+                                                        xml_name = xml_name,
+                                                        video_level_df = self.video_level_dfs[i],
+                                                        params = self.params)
             video_level_diff_dfs.append(video_level_evaluator.evaluate_video())
         video_level_diff_df = pd.concat(video_level_diff_dfs, axis=0)  # concat dfs as new rows
 
@@ -84,6 +85,20 @@ class ChunkEvaluator():
 
         return vehicle_stats_df
 
+    def plot_video_level_stats(self, 
+                               video_level_diff_df: pd.DataFrame, 
+                               save_path: str = None): 
+        """Plots video level stats. If save_dir is supplied, 
+        will save to that path. 
+        """
+        # multiple line graph where each line reps a vehicle type 
+        # each point on the line reps a mean diff for a specific time 
+        
+        if save_path is not None :
+            pass
+        return None
+
+###########################################
     def evaluate_frame_level(self): 
         frame_level_mAP_dfs = []       
         for i, xml_path in enumerate(self.annotation_xml_paths):
@@ -91,23 +106,24 @@ class ChunkEvaluator():
             xml_root = ElementTree.parse(xml_path).getroot()
             frame_level_evaluator = FrameLevelEvaluator(xml_root, xml_name,
                                                         self.frame_level_dfs[i],
-                                                        params)
+                                                        self.params)
             frame_level_mAP_dfs.append(frame_level_evaluator.evaluate_video())
         frame_level_mAP_df = pd.concat(frame_level_mAP_dfs, axis=0)  # concat dfs as new rows
         return frame_level_mAP_df
 
     def frame_statistics(self): pass
 
-    def plot_chunk_stats(self, 
-                         video_level_diff_df: pd.DataFrame, 
+    def plot_frame_level_stats(self, 
                          frame_level_mAP_df: pd.DataFrame, 
-                         save_dir: str = None): 
+                         save_path: str = None): 
+        """Plots frame level stats. If save_dir is supplied, 
+        will save to that path. 
+        """
         
         
-        if save_dir is not None :
+        if save_path is not None :
             pass
         return None
-
 
 
 if __name__ == '__main__':

@@ -82,7 +82,7 @@ class FrameLevelEvaluator(SingleEvaluator):
         ground_truth_dict = self.reparse_frame_level_df(self.ground_truth_df, include_confidence = False)
         predicted_dict = self.reparse_frame_level_df(self.frame_level_df, include_confidence = True, bbox_format = 'cv2')
         
-        mAP_dict = self.compute_mean_avg_precision(ground_truth_dict, predicted_dict)
+        mAP_dict = self.compute_mAP_video(ground_truth_dict, predicted_dict)
         mAP_df = pd.DataFrame.from_dict(mAP_dict, orient='index', columns=['mean_avg_precision'])
 
         assert (self.frame_level_df['camera_id'].iloc[0] == self.camera_id), \
@@ -124,7 +124,7 @@ class FrameLevelEvaluator(SingleEvaluator):
                                       {'frame'+str(i):[] for i in range(self.n_frames) }\
                           for vehicle_type in self.vehicle_types}
 
-        #fill dictionary
+        # fill dictionary
         for (vehicle_type, frame_id), vehicle_frame_df in df.groupby(['vehicle_type', 'frame_id']): 
             if include_confidence: 
                 df_as_dict[vehicle_type]['frame'+str(frame_id)]['bboxes'] = vehicle_frame_df['bboxes'].tolist()
@@ -135,7 +135,7 @@ class FrameLevelEvaluator(SingleEvaluator):
         return df_as_dict 
 
 
-    def compute_mean_avg_precision(self,ground_truth_dict, predicted_dict): 
+    def compute_mAP_video(self,ground_truth_dict, predicted_dict): 
         """
         function computes the mean average precision for a set of bboxes in the annotation
         frame vs the detected frame 
@@ -149,27 +149,27 @@ class FrameLevelEvaluator(SingleEvaluator):
 
             # start_time = time.time()
             # ax = None
+
             avg_precs = []
             iou_thrs = []
+            # compute avg precision for 10 IOU thresholds from .5 to .95 (COCO challenge standard)
             for idx, iou_thr in enumerate(np.linspace(0.5, 0.95, 10)):
-                data = get_avg_precision_at_iou(vehicle_gt_dict, vehicle_pred_dict, iou_thr=iou_thr)
-                avg_precs.append(data['avg_prec'])
+                data_dict = get_avg_precision_at_iou(vehicle_gt_dict, vehicle_pred_dict, iou_thr=iou_thr)
+                avg_precs.append(data_dict['avg_prec'])
                 iou_thrs.append(iou_thr)
 
-                precisions = data['precisions']
-                recalls = data['recalls']
+                precisions = data_dict['precisions']
+                recalls = data_dict['recalls']
                 # ax = plot_pr_curve(
                     # precisions, recalls, label='{:.2f}'.format(iou_thr), color=COLORS[idx*2], ax=ax)
 
-            # prettify for printing:
+            # rounding
             avg_precs = [float('{:.4f}'.format(ap)) for ap in avg_precs]
             iou_thrs = [float('{:.4f}'.format(thr)) for thr in iou_thrs]
-            mean_avg_precision = 100*np.mean(avg_precs)
 
+            # avg the avg precision for each IOU value
+            mean_avg_precision = 100*np.mean(avg_precs)
             mAP_dict[vehicle_type] = mean_avg_precision
-            # print('avg precs: ', avg_precs)
-            # print('map: {:.2f}'.format(mean_avg_precision))
-            # print('iou_thrs:  ', iou_thrs)
 
             # plt.legend(loc='upper right', title='IOU Thr', frameon=True)
             # for xval in np.linspace(0.0, 1.0, 11):
