@@ -141,8 +141,8 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         bboxes, labels, confs = detect_bboxes(frame=first_frame,
                                               model=self.detection_model,
                                               implementation=self.detection_implementation,
-                                              detection_confidence_threshold = self.detection_confidence_threshold,
-                                              detection_nms_threshold = self.detection_nms_threshold,
+                                              detection_confidence_threshold=self.detection_confidence_threshold,
+                                              detection_nms_threshold=self.detection_nms_threshold,
                                               selected_labels=self.selected_labels)
         # store info returned above in vehicleFleet object
         fleet = VehicleFleet(bboxes=np.array(bboxes),
@@ -153,9 +153,9 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         # Create MultiTracker object using bboxes, initialize multitracker
         multi_tracker = cv2.MultiTracker_create()
         for bbox in bboxes:
-            multi_tracker.add(newTracker=self.tracker, 
-                             image=first_frame, 
-                             boundingBox=tuple(bbox))
+            multi_tracker.add(newTracker=self.tracker,
+                              image=first_frame,
+                              boundingBox=tuple(bbox))
 
         if make_video:
             processed_video = []
@@ -199,8 +199,8 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                     # iterate through new bboxes
                     for i, new_bbox in enumerate(new_bboxes):
                         multi_tracker.add(newTracker=self.tracker,
-                                         image=frame,
-                                         boundingBox=tuple(new_bbox))
+                                          image=frame,
+                                          boundingBox=tuple(new_bbox))
 
             if make_video:
                 processed_video.append(frame)
