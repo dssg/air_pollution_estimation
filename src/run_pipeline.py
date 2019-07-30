@@ -18,9 +18,9 @@ analyzer = TrackingAnalyser(params=params, paths=paths)
 
 retrieve_and_upload_video_names_to_s3(ouput_file_name='tims_cameras_all',
                                       paths=paths,
-                                      from_date='2019-07-01',
+                                      from_date='2019-07-17', to_date='2019-07-17',
                                       s3_credentials=s3_credentials,
-                                      camera_list=params['tims_camera_list'][:5])
+                                      camera_list=['00001.03604', '00001.02262'])
 """
 upload_annotation_names_to_s3(paths=paths,
                               s3_credentials=s3_credentials)
