@@ -5,15 +5,12 @@ from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 def create_sql_tables(drop=False):
 
     dl = DataLoaderSQL(creds=load_credentials(), paths=load_paths())
-    dl.open_connection()
 
     drop_commands = None
     if drop:
         drop_commands = [
             "DROP TABLE vehicle_types, cameras, frame_stats, video_stats CASCADE;"
         ]
-
-    dl.execute_raw_sql_query(drop_commands)
 
     commands = [
         """
@@ -50,17 +47,33 @@ def create_sql_tables(drop=False):
 
         """
         CREATE TABLE video_stats (
-            counts FLOAT,
             vehicle_type VARCHAR(100),
             camera_id VARCHAR(20),
             video_upload_datetime timestamp,
-            starts FLOAT,
-            stops FLOAT,
+            counts FLOAT,
             creation_datetime timestamp
         )
         """
     ]
 
-    dl.execute_raw_sql_query(commands)
+    try:
+        dl.open_connection()
+
+        if(drop_commands is not None):
+            for command in drop_commands:
+                dl.cursor.execute(command)
+
+        for command in commands:
+            dl.cursor.execute(command)
+
+        dl.conn.commit()
+    except(Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        return False
+
+    finally:
+        dl.cursor.close()
+        if dl.conn:
+            dl.conn.close()
 
     return True

@@ -15,8 +15,9 @@ def update_video_level_table(frame_level_df=None, file_names=None, paths=None, c
                 Returns:
 
     """
+    db_obj = DataLoaderSQL(creds=creds, paths=paths)
 
-    if(not frame_level_df):
+    if(frame_level_df is None):
         # Build the sql string
         filter_string = ''
 
@@ -27,8 +28,6 @@ def update_video_level_table(frame_level_df=None, file_names=None, paths=None, c
 
         filter_string = filter_string[:-4]
         sql_string = "SELECT * FROM frame_stats WHERE %s;" % (filter_string)
-
-        db_obj = DataLoaderSQL(creds=creds, paths=paths)
         frame_level_df = db_obj.execute_raw_sql_query(sql=sql_string)
 
     # Create video level table and add to database
