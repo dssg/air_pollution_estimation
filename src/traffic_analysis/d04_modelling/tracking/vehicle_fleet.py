@@ -117,6 +117,16 @@ class VehicleFleet:
         else: # check tracking format is correct 
             assert bboxes_time_t.shape[1] == 4
 
+        if(self.bboxes.shape[0] == 2 and self.fake_head_vehicle):
+            self.fake_head_vehicle = False
+            self.bboxes = self.bboxes[1:, :, :]
+            self.confs = self.confs[1:]
+            self.labels = self.labels[1:]
+
+        assert self.bboxes.shape[0] == bboxes_time_t.shape[0], "Error! " \
+                                                               "Number of vehicles in multitracker " \
+                                                               "and fleet do not match!"
+
         self.bboxes = np.concatenate((self.bboxes, np.expand_dims(bboxes_time_t, axis=2)), 
                                         axis=2)
         return
