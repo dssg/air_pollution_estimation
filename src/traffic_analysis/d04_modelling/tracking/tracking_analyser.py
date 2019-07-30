@@ -2,7 +2,7 @@ from traffic_analysis.d04_modelling.traffic_analyser_interface import TrafficAna
 from traffic_analysis.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame, color_bboxes, bbox_intersection_over_union
 from traffic_analysis.d00_utils.video_helpers import write_mp4
 from traffic_analysis.d04_modelling.object_detection import detect_bboxes
-from traffic_analysis.d04_modelling.trackinganalyser.vehicle_fleet import VehicleFleet
+from traffic_analysis.d04_modelling.tracking.vehicle_fleet import VehicleFleet
 
 import numpy as np
 import pandas as pd
@@ -136,8 +136,8 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         bboxes, labels, confs = detect_bboxes(frame=first_frame,
                                               model=self.detection_model,
                                               implementation=self.detection_implementation,
-                                              detection_confidence_threshold = self.detection_confidence_threshold,
-                                              detection_nms_threshold = self.detection_nms_threshold,
+                                              detection_confidence_threshold=self.detection_confidence_threshold,
+                                              detection_nms_threshold=self.detection_nms_threshold,
                                               selected_labels=self.selected_labels)
         # store info returned above in vehicleFleet object
         fleet = VehicleFleet(bboxes=np.array(bboxes),
@@ -148,9 +148,9 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         # Create MultiTracker object using bboxes, initialize multitracker
         multi_tracker = cv2.MultiTracker_create()
         for bbox in bboxes:
-            multi_tracker.add(newTracker=self.tracker, 
-                             image=first_frame, 
-                             boundingBox=tuple(bbox))
+            multi_tracker.add(newTracker=self.tracker,
+                              image=first_frame,
+                              boundingBox=tuple(bbox))
 
         if make_video:
             processed_video = []
@@ -194,8 +194,8 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                     # iterate through new bboxes
                     for i, new_bbox in enumerate(new_bboxes):
                         multi_tracker.add(newTracker=self.tracker,
-                                         image=frame,
-                                         boundingBox=tuple(new_bbox))
+                                          image=frame,
+                                          boundingBox=tuple(new_bbox))
 
             if make_video:
                 processed_video.append(frame)
@@ -233,13 +233,11 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         frame_level_df -- df returned by above function
         """
         video_info_list = []
-        for _, single_frame_level_df in frame_level_df.groupby(['camera_id','video_upload_datetime']):
-            fleet = VehicleFleet(
-                frame_level_df=single_frame_level_df, load_from_pd=True)
+        for _, single_frame_level_df in frame_level_df.groupby(['camera_id', 'video_upload_datetime']):
+            fleet = VehicleFleet(frame_level_df=single_frame_level_df, load_from_pd=True)
             # compute the convolved IOU time series for each vehicle and smooth
             fleet.compute_iou_time_series(interval=self.iou_convolution_window)
-            fleet.smooth_iou_time_series(
-                smoothing_method=self.smoothing_method)
+            fleet.smooth_iou_time_series(smoothing_method=self.smoothing_method)
             # sample plotting options
             # fleet.plot_iou_time_series(fig_dir="data", fig_name="param_tuning", smoothed=True)
             video_level_df = fleet.report_video_level_stats(fleet.compute_counts(),
