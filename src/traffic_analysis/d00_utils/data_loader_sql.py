@@ -1,9 +1,10 @@
 import pandas as pd
 import psycopg2
 import io
-w
+import datetime
 
-class DataLoaderSQL():
+
+class DataLoaderSQL:
     def __init__(self, creds, paths):
 
         db_host = paths['db_host']
@@ -23,8 +24,8 @@ class DataLoaderSQL():
             # self.conn.op
         self.cursor = self.conn.cursor()
 
-
     def add_to_sql(self, df, table_name):
+        df['creation_datetime'] = datetime.datetime.now()
         self.open_connection()
         output = io.StringIO()
         df.to_csv(output, sep='\t', header=False, index=False)
@@ -33,7 +34,6 @@ class DataLoaderSQL():
         # null values become ''
         self.cursor.copy_from(output, table_name, null="")
         self.conn.commit()
-
 
     def add_column_to_sql_table(self, table_name, new_column_name, data_type):
         self.open_connection()

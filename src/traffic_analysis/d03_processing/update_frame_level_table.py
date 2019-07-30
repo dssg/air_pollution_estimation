@@ -3,6 +3,7 @@ from traffic_analysis.d04_modelling.classify_objects import classify_objects
 from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 
+
 def update_frame_level_table(file_names: list,
                              paths: dict,
                              params: dict,
@@ -45,4 +46,4 @@ def update_frame_level_table(file_names: list,
     db_obj = DataLoaderSQL(creds=creds, paths=paths)
     db_obj.add_to_sql(df=frame_level_df, table_name='frame_stats')
 
-    return
+    return frame_level_df

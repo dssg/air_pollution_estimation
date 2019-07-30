@@ -20,7 +20,7 @@ def create_sql_tables(drop=False):
         """
         CREATE TABLE vehicle_types(
             id SERIAL,
-            vehicle_type VARCHAR(255),
+            vehicle_type VARCHAR(100),
             vehicle_type_id INTEGER PRIMARY KEY
         )
         """,
@@ -31,50 +31,37 @@ def create_sql_tables(drop=False):
             longitude FLOAT,
             borough INTEGER,
             tfl_camera_id INTEGER,
-            camera_name VARCHAR(500)
+            camera_name VARCHAR(100)
         )
         """,
         """
         CREATE TABLE frame_stats (
-            camera_id VARCHAR(255),
+            camera_id VARCHAR(20),
             frame_id INTEGER,
-            datetime timestamp,
-            obj_classification VARCHAR(255),
+            video_upload_datetime timestamp,
+            obj_classification VARCHAR(100),
             confidence FLOAT,
             box_x INTEGER,
             box_y INTEGER,
             box_w INTEGER,
-            box_h INTEGER
+            box_h INTEGER,
+            creation_datetime timestamp
         )
         """,
 
         """
         CREATE TABLE video_stats (
             counts FLOAT,
-            vehicle_type VARCHAR(255),
-            camera_id VARCHAR(255),
-            datetime timestamp,
+            vehicle_type VARCHAR(100),
+            camera_id VARCHAR(20),
+            video_upload_datetime timestamp,
             starts FLOAT,
-            stops FLOAT
+            stops FLOAT,
+            creation_datetime timestamp
         )
         """
     ]
-    try:
 
-        if(drop_commands is not None):
-            for command in drop_commands:
-                cursor.execute(command)
+    dl.execute_raw_sql_query(commands)
 
-        for command in commands:
-            cursor.execute(command)
-
-        conn.commit()
-    except(Exception, psycopg2.DatabaseError) as error:
-        print(error)
-        return False
-
-    finally:
-        cursor.close()
-        if conn:
-            conn.close()
     return True
