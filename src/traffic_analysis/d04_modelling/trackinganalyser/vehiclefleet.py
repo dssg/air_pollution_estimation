@@ -126,7 +126,8 @@ class VehicleFleet():
             self.bboxes = self.bboxes[1:, :, :]
             self.confs = self.confs[1:]
             self.labels = self.labels[1:]
-
+        print(self.bboxes.shape)
+        print(bboxes_time_t.shape)
         assert self.bboxes.shape[0] == bboxes_time_t.shape[0], "Error! " \
                                                                "Number of vehicles in multitracker " \
                                                                "and fleet do not match!"
