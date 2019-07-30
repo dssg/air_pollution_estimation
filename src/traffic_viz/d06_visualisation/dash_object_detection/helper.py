@@ -4,8 +4,6 @@ import json
 import pandas as pd
 import numpy as np
 
-print(sys.path)
-
 from src.traffic_analysis.d00_utils.load_confs import load_app_parameters, load_paths
 
 params = load_app_parameters()
