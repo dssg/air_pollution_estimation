@@ -7,7 +7,7 @@ import os
 import tensorflow as tf
 import numpy as np
 
-from traffic_analysis.d00_utils.generate_tensorflow_model import yolov3
+from traffic_analysis.d00_utils.generate_tensorflow_model import YoloV3
 from traffic_analysis.d02_ref.retrieve_detection_model_from_s3 import retrieve_detection_model_from_s3
 
 
@@ -34,7 +34,7 @@ def yolov3_darknet_to_tensorflow(paths, params):
         anchors = parse_anchors(paths)
 
         # build tensorflow model as a yolov3 class
-        model = yolov3(num_class, anchors)
+        model = YoloV3(num_class, anchors)
 
         # save model locally as tensorflow .ckpt
         with tf.Session() as sess:
