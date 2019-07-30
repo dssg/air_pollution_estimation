@@ -13,7 +13,7 @@ Better insight extraction from traffic data will aid the effort to both understa
 ## Introduction
 
 <p float="left">
-  <img src ="readme_resources/images/dssg_imperial_logo.png" alt="alt text" width="288" height="99" />
+  <img src ="readme_resources/images/dssg_imperial_logo.png" alt="alt text" />
 </p> 
 
 ### Data Science for Social Good at Imperial College London
@@ -70,7 +70,7 @@ We recommend that credentials be stored in a git-ignored `YAML` file in `air_pol
 
 ## Repo Structure 
 <p float="left">
-  <img src ="readme_resources/images/s3_structure.png" alt="alt text" width="288" height="99" />
+  <img src ="readme_resources/images/s3_structure.png" alt="alt text" />
 </p> 
 
 #### Data loading pipeline
