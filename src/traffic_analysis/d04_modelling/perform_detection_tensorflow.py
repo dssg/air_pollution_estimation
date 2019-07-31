@@ -127,4 +127,3 @@ def rescale_boxes(boxes, formatting_params):
     boxes_resized = boxes
 
     return boxes_resized
-

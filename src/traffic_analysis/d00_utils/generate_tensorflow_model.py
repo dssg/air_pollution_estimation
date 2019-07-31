@@ -143,62 +143,6 @@ class YoloV3(object):
         # prob_logits: [N, 13, 13, 3, class_num]
         return x_y_offset, boxes, conf_logits, prob_logits
 
-    def forward(self, inputs, is_training=False, reuse=False):
-        # the input img_size, form: [height, weight]
-        # it will be used later
-        self.img_size = tf.shape(inputs)[1:3]
-        # set batch norm params
-        batch_norm_params = {
-            'decay': self.batch_norm_decay,
-            'epsilon': 1e-05,
-            'scale': True,
-            'is_training': is_training,
-            'fused': None,  # Use fused batch norm if possible.
-        }
-
-        with slim.arg_scope([slim.conv2d, slim.batch_norm], reuse=reuse):
-            with slim.arg_scope([slim.conv2d],
-                                normalizer_fn=slim.batch_norm,
-                                normalizer_params=batch_norm_params,
-                                biases_initializer=None,
-                                activation_fn=lambda x: tf.nn.leaky_relu(x, alpha=0.1),
-                                weights_regularizer=slim.l2_regularizer(self.weight_decay)):
-                with tf.variable_scope('darknet53_body'):
-                    route_1, route_2, route_3 = darknet53_body(inputs)
-
-                with tf.variable_scope('yolov3_head'):
-                    inter1, net = yolo_block(route_3, 512)
-                    feature_map_1 = slim.conv2d(net, 3 * (5 + self.class_num), 1,
-                                                stride=1, normalizer_fn=None,
-                                                activation_fn=None, biases_initializer=tf.zeros_initializer())
-                    feature_map_1 = tf.identity(feature_map_1, name='feature_map_1')
-
-                    inter1 = conv2d(inter1, 256, 1)
-                    inter1 = upsample_layer(inter1,
-                                            route_2.get_shape().as_list() if self.use_static_shape else tf.shape(
-                                                route_2))
-                    concat1 = tf.concat([inter1, route_2], axis=3)
-
-                    inter2, net = yolo_block(concat1, 256)
-                    feature_map_2 = slim.conv2d(net, 3 * (5 + self.class_num), 1,
-                                                stride=1, normalizer_fn=None,
-                                                activation_fn=None, biases_initializer=tf.zeros_initializer())
-                    feature_map_2 = tf.identity(feature_map_2, name='feature_map_2')
-
-                    inter2 = conv2d(inter2, 128, 1)
-                    inter2 = upsample_layer(inter2,
-                                            route_1.get_shape().as_list() if self.use_static_shape else tf.shape(
-                                                route_1))
-                    concat2 = tf.concat([inter2, route_1], axis=3)
-
-                    _, feature_map_3 = yolo_block(concat2, 128)
-                    feature_map_3 = slim.conv2d(feature_map_3, 3 * (5 + self.class_num), 1,
-                                                stride=1, normalizer_fn=None,
-                                                activation_fn=None, biases_initializer=tf.zeros_initializer())
-                    feature_map_3 = tf.identity(feature_map_3, name='feature_map_3')
-
-            return feature_map_1, feature_map_2, feature_map_3
-
     def predict(self, feature_maps):
         '''
         Receive the returned feature_maps from `forward` function,
@@ -565,9 +509,7 @@ class VehicleDetector(object):
                                                 activation_fn=None, biases_initializer=tf.zeros_initializer())
                     yolo_feature_3 = tf.identity(yolo_feature_3, name='feature_map_3')
 
-                    yolo_features = tf.concat(yolo_feature_1, yolo_feature_2, yolo_feature_3)
-
-            return yolo_features
+            return yolo_feature_1, yolo_feature_2, yolo_feature_3
 
     def forward_thru_transfer_learning_layer(self, yolo_features, is_training=False):
         ''' forward pass through the transfer learning layer
