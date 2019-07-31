@@ -4,7 +4,6 @@ from traffic_viz.d06_visualisation.dash_object_detection.helper import (
     load_object_statistics,
     params,
 )
-from traffic_analysis.d00_utils.load_confs import load_parameters()
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
 import dash_player as player
@@ -12,16 +11,12 @@ import dash_html_components as html
 import dash_core_components as dcc
 import dash
 from datetime import datetime as dt
+from traffic_viz.d06_visualisation.dash_object_detection.server import app, server
 
 
 DEBUG = params["debug"]
 TFL_BASE_URL = params["tfl_jamcams_website"]
 
-app = dash.Dash(__name__, hot_reload=True)
-server = app.server
-
-app.scripts.config.serve_locally = True
-app.config["suppress_callback_exceptions"] = True
 cams = get_cams()
 
 
@@ -120,8 +115,7 @@ app.layout = html.Div(
                                 ),
                                 html.Div(
                                     [
-                                        html.Div("Date Range:", style={
-                                                 "width": "40%"}),
+                                        html.Div("Date Range:", style={"width": "40%"}),
                                         html.Div(
                                             [
                                                 dcc.DatePickerRange(
@@ -174,8 +168,7 @@ app.layout = html.Div(
 
 # Footage Selection
 @app.callback(
-    Output("video-display",
-           "url"), [Input("dropdown-footage-selection", "value")]
+    Output("video-display", "url"), [Input("dropdown-footage-selection", "value")]
 )
 def select_footage(footage):
     # Find desired footage and update player video
@@ -237,8 +230,7 @@ def update_trend_graph(vehicle_types, camera_id, start_date, end_date):
     data = []
     for obj, df_stats in dfs.items():
         data.append(
-            go.Scatter(x=df_stats.index,
-                       y=df_stats["mean"], name=obj, mode="lines")
+            go.Scatter(x=df_stats.index, y=df_stats["mean"], name=obj, mode="lines")
         )
 
     figure = {
@@ -247,8 +239,7 @@ def update_trend_graph(vehicle_types, camera_id, start_date, end_date):
             showlegend=True,
             title=title,
             xaxis={"title": "Datetime"},
-            yaxis=go.layout.YAxis(
-                title="Count of vehicle types [#]", automargin=True),
+            yaxis=go.layout.YAxis(title="Count of vehicle types [#]", automargin=True),
             hovermode="closest",
             autosize=False,
         ),
@@ -265,8 +256,7 @@ def update_output(camera_id):
     print(camera_id)
     if camera_id:
         return [
-            dcc.Interval(id="interval-visual-mode",
-                         interval=700, n_intervals=0),
+            dcc.Interval(id="interval-visual-mode", interval=700, n_intervals=0),
             html.Div(
                 children=[
                     html.P(
