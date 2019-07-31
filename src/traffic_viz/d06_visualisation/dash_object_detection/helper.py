@@ -4,6 +4,7 @@ import sys
 import numpy as np
 import pandas as pd
 from collections import OrderedDict
+from flask_caching import Cache
 
 src_dir = os.path.join(os.getcwd(), "..", "src")
 data_dir = os.path.join(os.getcwd(), "..", "data")
@@ -14,6 +15,13 @@ from traffic_analysis.d00_πutils.load_confs import (
     load_app_parameters,
     load_paths,
     load_credentials,
+)
+from traffic_viz.d06_visualisation.dash_object_detection.server import server
+
+
+TIMEOUT = 60
+cache = Cache(
+    server, config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "cache-directory"}
 )
 
 params = load_app_parameters()
