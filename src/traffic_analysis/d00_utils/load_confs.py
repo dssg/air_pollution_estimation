@@ -1,5 +1,5 @@
 import yaml
-from src.traffic_analysis.d00_utils.get_project_directory import get_project_directory
+from traffic_analysis.d00_utils.get_project_directory import get_project_directory
 
 
 project_dir = get_project_directory()
