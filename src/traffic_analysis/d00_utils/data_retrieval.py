@@ -11,7 +11,7 @@ import json
 
 
 def load_video_names(paths):
-    save_folder = 'raw_video'
+    save_folder = "raw_video"
     filepath = os.path.join(paths[save_folder], "searched_videos")
     with open(filepath, "r") as f:
         videos = list(json.load(f))
@@ -21,16 +21,18 @@ def load_video_names(paths):
 def load_videos_into_np(folder):
     # Load files into a dict of numpy arrays using opencv
     video_dict = {}
-    for filename in glob.glob(folder + '*.mp4'):
+    for filename in glob.glob(folder + "*.mp4"):
         try:
-            video_dict[filename.split('/')[-1]] = mp4_to_npy(filename)
+            video_dict[filename.split("/")[-1]] = mp4_to_npy(filename)
         except:
             print("Could not convert " + filename + " to numpy array")
 
     return video_dict
 
 
-def download_video_and_convert_to_numpy(local_folder, s3_profile, bucket, filenames: list):
+def download_video_and_convert_to_numpy(
+    local_folder, s3_profile, bucket, filenames: list
+):
     """Downloads videos from s3 to a local temp directory and then loads them into numpy arrays, before
     deleting the temp directory (default behavior).
 
@@ -51,8 +53,11 @@ def download_video_and_convert_to_numpy(local_folder, s3_profile, bucket, filena
     # Download the files
     for filename in filenames:
         try:
-            my_bucket.download_file(filename, local_folder + filename.split('/')[-1].replace(
-                ':', '-').replace(" ", "_"))
+            my_bucket.download_file(
+                filename,
+                local_folder
+                + filename.split("/")[-1].replace(":", "-").replace(" ", "_"),
+            )
         except:
             print("Could not download " + filename)
     return load_videos_into_np(local_folder)
@@ -77,8 +82,7 @@ def mp4_to_npy(local_mp4_path):
     frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-    buf = np.empty((frame_count, frame_height, frame_width, 3),
-                   np.dtype('uint8'))
+    buf = np.empty((frame_count, frame_height, frame_width, 3), np.dtype("uint8"))
     fc = 0
     ret = True
     while fc < frame_count and ret:
@@ -86,8 +90,8 @@ def mp4_to_npy(local_mp4_path):
         fc += 1
     cap.release()
 
-    if (buf.size == 0):
-        raise Exception('Numpy array is empty')
+    if buf.size == 0:
+        raise Exception("Numpy array is empty")
 
     return buf
 
@@ -96,7 +100,7 @@ def connect_to_bucket(profile_dir, bucket_name):
     """Connects to the s3 bucket"""
     # Set up boto3 session
     s3_session = boto3.Session(profile_name=profile_dir)
-    s3_resource = s3_session.resource('s3')
+    s3_resource = s3_session.resource("s3")
     my_bucket = s3_resource.Bucket(bucket_name)
 
     return my_bucket
@@ -121,7 +125,7 @@ def describe_s3_bucket(paths):
             Raises:
 
         """
-    my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
+    my_bucket = connect_to_bucket(paths["s3_profile"], paths["bucket_name"])
 
     # Get list of all dates in the s3 bucket
     objects = my_bucket.objects.filter(Prefix="raw/video_data_new/")
@@ -135,12 +139,11 @@ def describe_s3_bucket(paths):
     unique_dates, counts = np.unique(dates, return_counts=True)
     plt.figure()
     plt.bar(np.arange(unique_dates.shape[0]), counts)
-    plt.xticks(np.arange(unique_dates.shape[0]),
-               unique_dates, rotation='vertical')
-    plt.xlabel('Date')
-    plt.ylabel('Number of Videos')
+    plt.xticks(np.arange(unique_dates.shape[0]), unique_dates, rotation="vertical")
+    plt.xlabel("Date")
+    plt.ylabel("Number of Videos")
     plt.tight_layout()
-    plt.savefig(paths['plots'] + '01_exploratory/s3_description.pdf')
+    plt.savefig(paths["plots"] + "01_exploratory/s3_description.pdf")
     plt.close()
 
     return

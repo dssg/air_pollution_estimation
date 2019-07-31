@@ -1,6 +1,10 @@
 # # Explore Tracking Methods in OpenCV
 # Source: https://www.learnopencv.com/multitracker-multiple-object-tracking-using-opencv-c-python/
-from src.traffic_analysis.d00_utils import bboxcv2_to_bboxcvlib, display_bboxes_on_frame,bbox_intersection_over_union
+from src.traffic_analysis.d00_utils import (
+    bboxcv2_to_bboxcvlib,
+    display_bboxes_on_frame,
+    bbox_intersection_over_union,
+)
 from src.traffic_analysis.d00_utils import write_mp4
 from src.traffic_analysis.d04_modelling import detect_bboxes
 import numpy as np
@@ -10,10 +14,19 @@ import time
 import collections
 
 
-def create_tracker_by_name(tracker_type:str):
+def create_tracker_by_name(tracker_type: str):
     """Create tracker based on tracker name"""
-    tracker_types = ['BOOSTING', 'MIL', 'KCF','TLD', 'MEDIANFLOW', 'GOTURN', 'MOSSE', 'CSRT']
-    
+    tracker_types = [
+        "BOOSTING",
+        "MIL",
+        "KCF",
+        "TLD",
+        "MEDIANFLOW",
+        "GOTURN",
+        "MOSSE",
+        "CSRT",
+    ]
+
     if tracker_type == tracker_types[0]:
         tracker = cv2.TrackerBoosting_create()
     elif tracker_type == tracker_types[1]:
@@ -32,14 +45,16 @@ def create_tracker_by_name(tracker_type:str):
         tracker = cv2.TrackerCSRT_create()
     else:
         tracker = None
-        print('Incorrect tracker name')
-        print('Available trackers are:')
+        print("Incorrect tracker name")
+        print("Available trackers are:")
         for t in tracker_types:
             print(t)
     return tracker
 
 
-def determine_new_bboxes(bboxes_tracked:list, bboxes_detected:list, iou_threshold:float = 0.1) -> list: 
+def determine_new_bboxes(
+    bboxes_tracked: list, bboxes_detected: list, iou_threshold: float = 0.1
+) -> list:
     """Return the indices of "new" bboxes in bboxes_detected so that a new tracker can be added for that 
     
     Keyword arguments: 
@@ -50,31 +65,37 @@ def determine_new_bboxes(bboxes_tracked:list, bboxes_detected:list, iou_threshol
                    will be considered new. 
     """
 
-    new_bboxes_inds = set(range(len(bboxes_detected))) #init with all inds
+    new_bboxes_inds = set(range(len(bboxes_detected)))  # init with all inds
     old_bboxes_inds = set()
-    for i,box_a in enumerate(bboxes_detected): 
+    for i, box_a in enumerate(bboxes_detected):
         # if find a box which has high IOU with an already-tracked box, consider it an old box
         for box_b in bboxes_tracked:
             # format conversion needed
-            iou = bbox_intersection_over_union(bboxcv2_to_bboxcvlib(box_a), bboxcv2_to_bboxcvlib(box_b))
-            if iou > iou_threshold: #assume bbox has already been tracked and is not new 
-                old_bboxes_inds.add(i) #add to set
+            iou = bbox_intersection_over_union(
+                bboxcv2_to_bboxcvlib(box_a), bboxcv2_to_bboxcvlib(box_b)
+            )
+            if (
+                iou > iou_threshold
+            ):  # assume bbox has already been tracked and is not new
+                old_bboxes_inds.add(i)  # add to set
 
-    new_bboxes_inds=list(new_bboxes_inds.difference(old_bboxes_inds))
+    new_bboxes_inds = list(new_bboxes_inds.difference(old_bboxes_inds))
     return new_bboxes_inds
 
 
-def track_objects(local_mp4_dir: str, 
-                  local_mp4_name: str,
-                  detection_model:str,
-                  detection_confidence: float,
-                  detection_implementation: str,
-                  detection_frequency: int,
-                  tracking_model: str,
-                  iou_threshold: float, 
-                  selected_labels: list,
-                  video_time_length: int =10, 
-                  make_video: bool =True) -> (list,list,dict):
+def track_objects(
+    local_mp4_dir: str,
+    local_mp4_name: str,
+    detection_model: str,
+    detection_confidence: float,
+    detection_implementation: str,
+    detection_frequency: int,
+    tracking_model: str,
+    iou_threshold: float,
+    selected_labels: list,
+    video_time_length: int = 10,
+    make_video: bool = True,
+) -> (list, list, dict):
     """
     Given a path to an input video, this function will initialize a specified tracking algorithm 
     (currently only supports OpenCV's built in multitracker method) with the specified object 
@@ -98,25 +119,32 @@ def track_objects(local_mp4_dir: str,
     """
 
     start_time = time.time()
-    
+
     # Create a video vid_objture object to read videos
-    vid_obj = cv2.VideoCapture(local_mp4_dir+ "/" + local_mp4_name)
+    vid_obj = cv2.VideoCapture(local_mp4_dir + "/" + local_mp4_name)
     n_frames = int(vid_obj.get(cv2.CAP_PROP_FRAME_COUNT))
-    vid_obj_frames_per_sec = int(n_frames / video_time_length)  # assumes vid_length in seconds
+    vid_obj_frames_per_sec = int(
+        n_frames / video_time_length
+    )  # assumes vid_length in seconds
 
     # Read first frame
     success, frame = vid_obj.read()
     if not success:
-        print('Failed to read video')
+        print("Failed to read video")
         sys.exit(0)
 
-    bboxes, labels, confs, colors = detect_bboxes(frame=frame, 
-                                                model=detection_model,
-                                                confidence=detection_confidence,
-                                                implementation=detection_implementation,
-                                                selected_labels = selected_labels)
+    bboxes, labels, confs, colors = detect_bboxes(
+        frame=frame,
+        model=detection_model,
+        confidence=detection_confidence,
+        implementation=detection_implementation,
+        selected_labels=selected_labels,
+    )
 
-    label_confs = [label +' ' + str(format(confs[i] * 100, '.2f')) + '%' for i,label in enumerate(labels)]
+    label_confs = [
+        label + " " + str(format(confs[i] * 100, ".2f")) + "%"
+        for i, label in enumerate(labels)
+    ]
 
     # Create MultiTracker object
     multitracker = cv2.MultiTracker_create()
@@ -130,7 +158,8 @@ def track_objects(local_mp4_dir: str,
     # Process video and track objects
     while vid_obj.isOpened():
         success, frame = vid_obj.read()
-        if not success: break
+        if not success:
+            break
 
         # get updated location of objects in subsequent frames
         success, bboxes_tracked = multitracker.update(frame)
@@ -139,36 +168,47 @@ def track_objects(local_mp4_dir: str,
         display_bboxes_on_frame(frame, bboxes_tracked, colors, label_confs)
 
         # every x frames, re-detect boxes
-        if frame_counter%detection_frequency == 0: 
+        if frame_counter % detection_frequency == 0:
             # redetect bounding boxes
-            bboxes_detected, labels_detected, \
-            confs_detected, colors_detected = detect_bboxes(frame=frame, 
-                                                            model=detection_model,
-                                                            confidence=detection_confidence,
-                                                            implementation=detection_implementation,
-                                                            selected_labels = selected_labels)
+            bboxes_detected, labels_detected, confs_detected, colors_detected = detect_bboxes(
+                frame=frame,
+                model=detection_model,
+                confidence=detection_confidence,
+                implementation=detection_implementation,
+                selected_labels=selected_labels,
+            )
 
             # re-initialize MultiTracker
-            new_bbox_inds = determine_new_bboxes(bboxes_tracked, bboxes_detected, iou_threshold)
+            new_bbox_inds = determine_new_bboxes(
+                bboxes_tracked, bboxes_detected, iou_threshold
+            )
             # TODO: change this to multiple lines
-            new_bboxes, new_labels, new_confs, new_colors, new_label_confs = \
-                        [bboxes_detected[i] for i in new_bbox_inds],\
-                        [labels_detected[i] for i in new_bbox_inds],\
-                        [confs_detected[i] for i in new_bbox_inds],\
-                        [colors_detected[i] for i in new_bbox_inds],\
-                        [labels_detected[i] +' ' + str(format(confs_detected[i] * 100, '.2f')) + '%' \
-                                            for i in new_bbox_inds]
+            new_bboxes, new_labels, new_confs, new_colors, new_label_confs = (
+                [bboxes_detected[i] for i in new_bbox_inds],
+                [labels_detected[i] for i in new_bbox_inds],
+                [confs_detected[i] for i in new_bbox_inds],
+                [colors_detected[i] for i in new_bbox_inds],
+                [
+                    labels_detected[i]
+                    + " "
+                    + str(format(confs_detected[i] * 100, ".2f"))
+                    + "%"
+                    for i in new_bbox_inds
+                ],
+            )
 
-            # iterate through new bboxes                                         
-            for i,new_bbox in enumerate(new_bboxes):
-                multitracker.add(create_tracker_by_name(tracking_model), frame, new_bbox)
+            # iterate through new bboxes
+            for i, new_bbox in enumerate(new_bboxes):
+                multitracker.add(
+                    create_tracker_by_name(tracking_model), frame, new_bbox
+                )
 
             # append new bboxes, colors, labels, confidences to list
-            bboxes+=new_bboxes
-            labels+=new_labels
-            confs+=new_confs
-            colors+=new_colors
-            label_confs+=new_label_confs
+            bboxes += new_bboxes
+            labels += new_labels
+            confs += new_confs
+            colors += new_colors
+            label_confs += new_label_confs
 
         processed_video.append(frame)
         frame_counter += 1
@@ -179,12 +219,14 @@ def track_objects(local_mp4_dir: str,
         # if cv2.waitKey(1) & 0xFF == 27:  # Esc pressed
         #   break
 
-    if make_video: 
-        write_mp4(local_mp4_dir=local_mp4_dir, 
-                            mp4_name=local_mp4_name[:-4] + "_tracked.mp4", 
-                            video=np.array(processed_video),
-                            fps=vid_obj_frames_per_sec)     
+    if make_video:
+        write_mp4(
+            local_mp4_dir=local_mp4_dir,
+            mp4_name=local_mp4_name[:-4] + "_tracked.mp4",
+            video=np.array(processed_video),
+            fps=vid_obj_frames_per_sec,
+        )
 
-    print('Run time is %s seconds' % (time.time() - start_time))
+    print("Run time is %s seconds" % (time.time() - start_time))
     counts = collections.Counter(labels)
-    return labels,confs, counts
+    return labels, confs, counts

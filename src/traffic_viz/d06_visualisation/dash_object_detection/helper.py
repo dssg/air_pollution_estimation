@@ -64,13 +64,6 @@ def load_camera_statistics(camera_id):
     return output
 
 
-def load_objects(df):
-    # remove_columns = ["date", "metric", "time", "camera_id", "datetime"]
-    load_columns = ["bus", "car", "motorcycle", "truck"]
-    # columns = set(df.columns).inter(load_columns)
-    return load_columns
-
-
 def load_object_statistics(df, object_type, start_date, end_date):
     df_object = df.pivot_table(object_type, ["datetime"], "metric")
     df_object.sort_values("datetime", inplace=True)
