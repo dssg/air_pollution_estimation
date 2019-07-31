@@ -11,13 +11,12 @@ data_dir = os.path.join(os.getcwd(), "..", "data")
 sys.path.append(src_dir)
 
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
-from traffic_analysis.d00_πutils.load_confs import (
+from traffic_analysis.d00_utils.load_confs import (
     load_app_parameters,
     load_paths,
     load_credentials,
 )
 from traffic_viz.d06_visualisation.dash_object_detection.server import server
-
 
 TIMEOUT = 60
 cache = Cache(
@@ -28,7 +27,7 @@ params = load_app_parameters()
 paths = load_paths()
 creds = load_credentials()
 s3_credentials = creds[paths["s3_creds"]]
-LOCAL = True
+DEBUG = params["debug"]
 
 
 def get_cams():
@@ -48,7 +47,7 @@ def get_cams():
 def load_camera_statistics(camera_id):
     output = pd.DataFrame()
 
-    if LOCAL:
+    if DEBUG:
         filepath = os.path.join(data_dir, paths["s3_video_level_stats"])
         if not os.path.exists(filepath):
             print(filepath)
@@ -73,8 +72,8 @@ def load_camera_statistics(camera_id):
 
 
 def load_object_statistics(df, object_type, start_date, end_date):
-    df_object = df.pivot_table(object_type, ["datetime"], "metric")
-    df_object.sort_values("datetime", inplace=True)
+    df_object = df.pivot_table(object_type, ["video_upload_datetime"], "metric")
+    df_object.sort_values("video_upload_datetime", inplace=True)
     print(df_object.head().index)
     df_object = df_object[
         ((start_date <= df_object.index) & (df_object.index <= end_date))
