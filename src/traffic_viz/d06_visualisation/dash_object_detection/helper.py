@@ -74,7 +74,6 @@ def load_camera_statistics(camera_id):
 def load_object_statistics(df, object_type, start_date, end_date):
     df_object = df.pivot_table(object_type, ["video_upload_datetime"], "metric")
     df_object.sort_values("video_upload_datetime", inplace=True)
-    print(df_object.head().index)
     df_object = df_object[
         ((start_date <= df_object.index) & (df_object.index <= end_date))
     ]
