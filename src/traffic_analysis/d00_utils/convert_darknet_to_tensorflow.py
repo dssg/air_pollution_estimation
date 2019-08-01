@@ -28,9 +28,12 @@ def yolov3_darknet_to_tensorflow(paths,
         pass
 
     else:
-        download_detection_model_from_s3(model_name=detection_model,
-                                         params=params,
-                                         s3_credentials=s3_credentials)
+        if not os.path.exists(os.path.join(model_file_path, detection_model, 'coco.names')):
+            download_detection_model_from_s3(model_name=detection_model,
+                                             paths=paths,
+                                             s3_credentials=s3_credentials)
+
+        os.mkdir(os.path.join(model_file_path, 'yolov3_tf'))
 
         num_class = 80
         img_size = 416
@@ -64,7 +67,7 @@ def parse_anchors(paths):
             anchors (np.array(float)): shape [N, 2] containing the anchors of the yolov3 model
     """
 
-    model_file_path = paths['detection_model']
+    model_file_path = paths['local_detection_model']
     anchor_path = os.path.join(model_file_path, 'yolov3', 'yolov3_anchors.txt')
     anchors = np.reshape(np.asarray(open(anchor_path, 'r').read().split(','), np.float32), [-1, 2])
 
@@ -130,5 +133,4 @@ def load_weights(var_list, yolov3_weights_file):
             i += 1
 
     return assign_ops
-
 
