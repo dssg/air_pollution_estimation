@@ -43,3 +43,19 @@ class DataLoaderS3:
                 return False
             else:
                 raise ex
+
+    def download_file(self,
+                      path_of_file_to_download,
+                      path_to_download_file_to):
+
+        self.client.download_file(Bucket=self.bucket_name,
+                                  Key=path_of_file_to_download,
+                                  Filename=path_to_download_file_to)
+
+    def list_objects(self,
+                     prefix=None)->list:
+
+        objects = self.client.list_objects_v2(Bucket=self.bucket_name,
+                                              Prefix=prefix)
+
+        return [file_dict['Key'] for file_dict in objects['Contents']]

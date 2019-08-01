@@ -1,7 +1,6 @@
 import datetime
 import dateutil.parser
 
-from traffic_analysis.d02_ref.ref_utils import upload_json_to_s3
 from traffic_analysis.d02_ref.ref_utils import generate_dates
 from traffic_analysis.d02_ref.ref_utils import get_names_of_folder_content_from_s3
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
