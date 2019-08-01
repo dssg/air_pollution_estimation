@@ -8,14 +8,18 @@ s3_paths:
   s3_frame_level: "frame_level/"
   s3_profile: "dssg"
   s3_creds: "dev_s3"
+  s3_detect_model: "ref/model_conf/"
 
 local_paths:
-    temp_video: "data/temp/videos/"
-    temp_frame_level: "data/temp/frame_level/"
-    video_names: "data/ref/video_names/"
-    processed_video: "results/jamcams/"
-    plots: "plots/"
-    annotations: "annotations/"
+  temp_video: "data/temp/videos/"
+  temp_raw_video: "data/temp/raw_videos/"
+  temp_frame_level: "data/temp/frame_level/"
+  temp_video_level: "data/temp/video_level/"
+  video_names: "data/ref/video_names/"
+  processed_video: "results/jamcams/"
+  plots: "plots/"
+  annotations: "annotations/"
+  local_detect_model: "data/ref/detect_model"
 
 db_paths:
   db_host: "dssg-london.ck0oseycrr7s.eu-west-2.rds.amazonaws.com"
