@@ -1,20 +1,28 @@
 # coding: utf-8
 # This file contains the parameter used in train.py
 
+## EVENTUALLY CHANGE THIS TO YAML
+
 from __future__ import division, print_function
 
-from traffic_analysis.d04_modelling.transfer_learning.train_utils import parse_anchors, read_class_names
+from traffic_analysis.d04_modelling.transfer_learning.tensorflow_training_utils import parse_anchors, read_class_names
+from traffic_analysis.d00_utils.get_project_directory import get_project_directory
 import math
+import os
 
-### Some paths
-train_file = './data/my_data/train.txt'  # The path of the training txt file.
-val_file = './data/my_data/val.txt'  # The path of the validation txt file.
-restore_path = './data/darknet_weights/yolov3.ckpt'  # The path of the weights to restore.
-save_dir = './checkpoint/'  # The directory of the weights to save.
-log_dir = './data/logs/'  # The directory to store the tensorboard log files.
-progress_log_path = './data/progress.log'  # The path to record the training progress.
-anchor_path = './data/yolo_anchors.txt'  # The path of the anchor txt file.
-class_name_path = './data/coco.names'  # The path of the class names.
+# paths
+project_dir = get_project_directory
+local_model_file_path = os.path.join(project_dir, 'data', 'ref', 'detection_model')
+local_annotation_file_path = os.path.join(project_dir, 'data', 'ref', 'annotations')
+
+train_file = os.path.join(local_annotation_file_path, 'transfer_learning', 'TRAIN.TXT')
+val_file = os.path.join(local_annotation_file_path, 'transfer_learning', 'VAL.TXT')
+restore_path = os.path.join(local_model_file_path, 'yolo_tf', 'yolov3.ckpt')
+save_dir = os.path.join(local_model_file_path, 'vehicle_detector')  # directory where weights are saved
+log_dir = os.path.join(local_model_file_path, 'vehicle_detector', 'logs')  # The directory to store the log files.
+progress_log_path = os.path.join(local_model_file_path, 'vehicle_detector', 'logs', 'progress.log')  # training progress
+anchor_path = os.path.join(local_model_file_path, 'yolov3', 'yolo_anchors.txt')  # The path of the anchor txt file.
+class_name_path = os.path.join(local_model_file_path, 'vehicle_detector', 'COCO.NAMES')  # The path of the class names.
 
 ### Training releated numbers
 batch_size = 6
