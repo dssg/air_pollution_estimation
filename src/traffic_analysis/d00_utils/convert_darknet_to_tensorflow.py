@@ -7,26 +7,30 @@ import os
 import tensorflow as tf
 import numpy as np
 
-from traffic_analysis.d00_utils.generate_tensorflow_model import yolov3
+from traffic_analysis.d00_utils.generate_tensorflow_model import YoloV3
 from traffic_analysis.d02_ref.download_detection_model_from_s3 import download_detection_model_from_s3
 
 
-def yolov3_darknet_to_tensorflow(paths, params):
+def yolov3_darknet_to_tensorflow(paths,
+                                 params,
+                                 s3_credentials):
     """ saves a tensorflow model build of yolo, taken from darknet weights
         Args:
             params (dict): dictionary of parameters from yml file
             paths (dict): dictionary of paths from yml file
+            s3_credentials (dict): s3 credentials
     """
 
-    model_file_path = paths['detection_model']
+    model_file_path = paths['local_detection_model']
     detection_model = params['detection_model']
 
     if not detection_model == 'yolov3':  # can only create tf model with yolov3 darknet weights
         pass
 
     else:
-        download_detection_model_from_s3(paths=paths,
-                                         params=params)
+        download_detection_model_from_s3(model_name=detection_model,
+                                         params=params,
+                                         s3_credentials=s3_credentials)
 
         num_class = 80
         img_size = 416
@@ -35,7 +39,7 @@ def yolov3_darknet_to_tensorflow(paths, params):
         anchors = parse_anchors(paths)
 
         # build tensorflow model as a yolov3 class
-        model = yolov3(num_class, anchors)
+        model = YoloV3(num_class, anchors)
 
         # save model locally as tensorflow .ckpt
         with tf.Session() as sess:
@@ -126,3 +130,5 @@ def load_weights(var_list, yolov3_weights_file):
             i += 1
 
     return assign_ops
+
+
