@@ -8,24 +8,32 @@ import tensorflow as tf
 import numpy as np
 
 from traffic_analysis.d00_utils.generate_tensorflow_model import YoloV3
-from traffic_analysis.d02_ref.retrieve_detection_model_from_s3 import retrieve_detection_model_from_s3
+from traffic_analysis.d02_ref.download_detection_model_from_s3 import download_detection_model_from_s3
 
 
-def yolov3_darknet_to_tensorflow(paths, params):
+def yolov3_darknet_to_tensorflow(paths,
+                                 params,
+                                 s3_credentials):
     """ saves a tensorflow model build of yolo, taken from darknet weights
         Args:
             params (dict): dictionary of parameters from yml file
             paths (dict): dictionary of paths from yml file
+            s3_credentials (dict): s3 credentials
     """
 
-    model_file_path = paths['detection_model']
+    model_file_path = paths['local_detection_model']
     detection_model = params['detection_model']
 
     if not detection_model == 'yolov3':  # can only create tf model with yolov3 darknet weights
         pass
 
     else:
-        retrieve_detection_model_from_s3(paths, params)
+        if not os.path.exists(os.path.join(model_file_path, detection_model, 'coco.names')):
+            download_detection_model_from_s3(model_name=detection_model,
+                                             paths=paths,
+                                             s3_credentials=s3_credentials)
+
+        os.mkdir(os.path.join(model_file_path, 'yolov3_tf'))
 
         num_class = 80
         img_size = 416
@@ -59,7 +67,7 @@ def parse_anchors(paths):
             anchors (np.array(float)): shape [N, 2] containing the anchors of the yolov3 model
     """
 
-    model_file_path = paths['detection_model']
+    model_file_path = paths['local_detection_model']
     anchor_path = os.path.join(model_file_path, 'yolov3', 'yolov3_anchors.txt')
     anchors = np.reshape(np.asarray(open(anchor_path, 'r').read().split(','), np.float32), [-1, 2])
 
