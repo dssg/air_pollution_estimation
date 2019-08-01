@@ -1,8 +1,9 @@
 from traffic_viz.d06_visualisation.dash_object_detection.helper import (
     get_cams,
     load_camera_statistics,
-    load_object_statistics,
-    params,
+    load_vehicle_type_statistics,
+    app_params,
+    get_vehicle_types
 )
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
@@ -13,8 +14,8 @@ from datetime import datetime as dt
 from traffic_viz.d06_visualisation.dash_object_detection.server import app
 
 
-DEBUG = params["debug"]
-TFL_BASE_URL = params["tfl_jamcams_website"]
+DEBUG = app_params["debug"]
+TFL_BASE_URL = app_params["tfl_jamcams_website"]
 
 cams = get_cams()
 
@@ -114,18 +115,19 @@ app.layout = html.Div(
                                 ),
                                 html.Div(
                                     [
-                                        html.Div("Date Range:", style={"width": "40%"}),
+                                        html.Div("Date Range:", style={
+                                                 "width": "40%"}),
                                         html.Div(
                                             [
                                                 dcc.DatePickerRange(
                                                     id="daterange",
-                                                    min_date_allowed=params[
+                                                    min_date_allowed=app_params[
                                                         "min_date_allowed"
                                                     ],
                                                     max_date_allowed=dt.now(),
                                                     end_date=dt.now(),
                                                     clearable=True,
-                                                    start_date=params["start_date"],
+                                                    start_date=app_params["start_date"],
                                                 )
                                             ],
                                             className="",
@@ -190,7 +192,7 @@ def update_objects(camera_id):
         print("Empty")
         return []
     if camera_id:
-        vehicle_types = params["selected_labels"]
+        vehicle_types = get_vehicle_types()
         options = [{"label": obj, "value": obj} for obj in vehicle_types]
         return options
 
@@ -221,16 +223,17 @@ def update_trend_graph(vehicle_types, camera_id, start_date, end_date):
     if df.empty or not vehicle_types:
         return {}
     dfs = {
-        obj: load_object_statistics(df, obj, start_date, end_date)
+        obj: load_vehicle_type_statistics(df, obj, start_date, end_date)
         for obj in vehicle_types
     }
     print(dfs)
     data = []
     for obj, df_stats in dfs.items():
+        print(df_stats.head())
         data.append(
             go.Scatter(
-                x=df_stats.index,
-                y=df_stats["mean"],
+                x=df_stats["video_upload_datetime"],
+                y=df_stats["counts"],
                 name=obj,
                 mode="lines"))
 
