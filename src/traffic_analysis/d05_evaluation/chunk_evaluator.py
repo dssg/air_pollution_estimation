@@ -1,12 +1,13 @@
-from traffic_analysis.d05_evaluation.single_evaluator import FrameLevelEvaluator, VideoLevelEvaluator
+from traffic_analysis.d05_evaluation.video_level_evaluator import VideoLevelEvaluator
 from traffic_analysis.d00_utils.load_confs import load_parameters
 
 import numpy as np 
 import pandas as pd
-import glob
 import re 
+import math
 import xml.etree.ElementTree as ElementTree
 from functools import reduce 
+
 
 class ChunkEvaluator(): 
     """
@@ -50,11 +51,11 @@ class ChunkEvaluator():
         return video_level_diff_df
 
     def aggregate_video_stats_all_vehicle_types(self,
-                                                video_level_diff_df) -> pd.DataFrame:
+                                                video_level_diff_df: pd.DataFrame) -> pd.DataFrame:
         all_vehicles_dfs = []
 
         for vehicle_type, vehicle_type_df in video_level_diff_df.groupby(["vehicle_type"]):
-            single_vehicle_df = self.aggregate_statistics_one_vehicle_type(
+            single_vehicle_df = self.aggregate_stats_one_vehicle_type(
                 vehicle_type_df, self.params['video_level_stats'])
             single_vehicle_df['vehicle_type'] = vehicle_type
 
@@ -67,23 +68,26 @@ class ChunkEvaluator():
         del all_vehicles_df['index']
         return all_vehicles_df
 
-    def aggregate_statistics_one_vehicle_type(self,
-                                              df: pd.DataFrame,
-                                              vehicle_stat_cols: list):
-        """Computes mse, standard deviation, and mean difference across one
+    def aggregate_stats_one_vehicle_type(self,
+                                         df: pd.DataFrame,
+                                         vehicle_stat_cols: list):
+        """Computes rmse, standard deviation, and mean difference across one
         vehicle types for a chunk of videos
         """
         vehicle_stats_dfs = []
         for vehicle_stat in vehicle_stat_cols:  # counts, starts, stops, parked
-            vehicle_stat_dict = {'statistic': ['mean_diff', 'mse', 'sd']}
+            vehicle_stat_dict = {'statistic': ['mean_diff', 'rmse', 'sd']}
 
             mean_diff = np.sum(
                 df["y_pred-y_"+vehicle_stat].values)/self.num_videos
-            mse = np.sum(
-                np.square(df["y_pred-y_"+vehicle_stat].values))/self.num_videos
+
+            rmse = math.sqrt(
+                  np.sum(
+                  np.square(df["y_pred-y_"+vehicle_stat].values))/self.num_videos)
+
             sd = np.std(df["y_pred-y_"+vehicle_stat].values)
 
-            vehicle_stat_dict[vehicle_stat] = [mean_diff, mse, sd]
+            vehicle_stat_dict[vehicle_stat] = [mean_diff, rmse, sd]
             vehicle_stat_df = pd.DataFrame.from_dict(vehicle_stat_dict)
 
             vehicle_stats_dfs.append(vehicle_stat_df)
