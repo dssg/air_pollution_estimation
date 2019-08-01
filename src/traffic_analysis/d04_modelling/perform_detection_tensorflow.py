@@ -7,11 +7,11 @@ import cv2
 import os
 import numpy as np
 
-from traffic_analysis.d00_utils.tensorflow_detection_utils import read_class_names, remove_overlapping_boxes, \
-    letterbox_resize
-from traffic_analysis.d00_utils.convert_darknet_to_tensorflow import parse_anchors
-from traffic_analysis.d00_utils.generate_tensorflow_model import YoloV3
-from traffic_analysis.d00_utils.convert_darknet_to_tensorflow import yolov3_darknet_to_tensorflow
+from traffic_analysis.d04_modelling.transfer_learning.tensorflow_detection_utils import read_class_names, \
+    remove_overlapping_boxes, letterbox_resize
+from traffic_analysis.d04_modelling.transfer_learning.convert_darknet_to_tensorflow import parse_anchors, \
+    yolov3_darknet_to_tensorflow
+from traffic_analysis.d04_modelling.transfer_learning.generate_tensorflow_model import YoloV3
 
 
 def detect_objects_in_image(image_capture, params, paths):

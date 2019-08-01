@@ -470,4 +470,3 @@ class VehicleDetector(object):
                     feature_map_3 = tf.identity(feature_map_3, name='feature_map_3')
 
             return feature_map_1, feature_map_2, feature_map_3
-        
