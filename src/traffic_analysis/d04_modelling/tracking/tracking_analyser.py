@@ -11,7 +11,7 @@ import time
 
 
 class TrackingAnalyser(TrafficAnalyserInterface):
-    def __init__(self, video_dict, params, paths):
+    def __init__(self, params, paths):
         """
         Model-specific parameters initialized below: 
 
@@ -21,9 +21,9 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         detection_frequency -- each detection_frequency num of frames, run obj detection alg again to detect new objs
         tracking_model -- specify name of model you want to use for tracking (currently only supports OpenCV trackers)
         iou_threshold -- specify threshold to use to decide whether two detected objs should be considered the same
-        detection_confidence_threshold -- conf above which to return label 
+        detection_confidence_threshold -- conf above which to return label
         detection_nms_threshold -- yolo param
-        selected_labels -- labels which we wish to detect 
+        selected_labels -- labels which we wish to detect
 
         (Stop start arguments:)
         iou_convolution_window -- frame window size to perform iou computation on (to get an IOU time 
@@ -31,7 +31,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         smoothing_method -- method to smooth the IOU time series for each vehicle
         stop_start_iou_threshold -- threshold to binarize the IOU time series into 0 or 1,denoting "moving" or "stopped"
         """
-        super().__init__(video_dict, params, paths)
+        super().__init__(params, paths)
         self.detection_model = params['detection_model']
         self.detection_implementation = params['detection_implementation']
         self.tracker = self.create_tracker_by_name(tracker_type=params['opencv_tracker_type'])
@@ -138,7 +138,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                                               implementation=self.detection_implementation,
                                               detection_confidence_threshold=self.detection_confidence_threshold,
                                               detection_nms_threshold=self.detection_nms_threshold,
-                                              selected_labels=self.selected_labels)
+                                 selected_labels=self.selected_labels)
         # store info returned above in vehicleFleet object
         fleet = VehicleFleet(bboxes=np.array(bboxes),
                              labels=np.array(labels),
@@ -180,7 +180,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 # re-initialize MultiTracker
                 new_bbox_inds = self.determine_new_bboxes(bboxes_tracked,
                                                           bboxes_detected)
-        
+
                 # update fleet object
                 if len(new_bbox_inds) > 0:
                     new_bboxes = [bboxes_detected[i] for i in new_bbox_inds]
@@ -205,7 +205,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 # # quit on ESC button
                 # if cv2.waitKey(1) & 0xFF == 27:  # Esc pressed
                 #   break
-        if make_video: 
+        if make_video:
             write_mp4(local_mp4_dir=local_mp4_dir,
                       mp4_name=video_name + "_tracked.mp4",
                       video=np.array(processed_video),
@@ -215,9 +215,11 @@ class TrackingAnalyser(TrafficAnalyserInterface):
               (time.time() - start_time))
         return fleet
 
-    def construct_frame_level_df(self) -> pd.DataFrame:
+    def construct_frame_level_df(self, video_dict) -> pd.DataFrame:
         """Construct frame level df for multiple videos 
         """
+        self.check_video_dict(video_dict)
+
         frame_info_list = []
         for video_name, video in self.video_dict.items():
             fleet = self.detect_and_track_objects(video, video_name)
@@ -232,9 +234,13 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
         frame_level_df -- df returned by above function
         """
+        if frame_level_df.empty:
+            return frame_level_df
+
         video_info_list = []
         for _, single_frame_level_df in frame_level_df.groupby(['camera_id', 'video_upload_datetime']):
-            fleet = VehicleFleet(frame_level_df=single_frame_level_df, load_from_pd=True)
+            fleet = VehicleFleet(
+                frame_level_df=single_frame_level_df, load_from_pd=True)
             # compute the convolved IOU time series for each vehicle and smooth
             fleet.compute_iou_time_series(interval=self.iou_convolution_window)
             fleet.smooth_iou_time_series(smoothing_method=self.smoothing_method)

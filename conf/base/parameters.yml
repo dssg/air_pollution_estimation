@@ -21,7 +21,7 @@ data_collection:
       "00001.08926",
       "00001.07355",
       "00001.04336",
-      "00001.09560",
+      "00001.09560"
     ]
   tims_file_website: "https://s3-eu-west-1.amazonaws.com/roads.data.tfl.gov.uk"
   tims_download_website: "http://roads.data.tfl.gov.uk/TIMS/"
@@ -55,8 +55,8 @@ modelling:
   stop_start_iou_threshold: 0.80
 
 reporting:
-  chunk_size: 2
+  chunk_size: 10
   dtype:
     camera_id: 'category'
-  video_level_column_order: ["camera_id", video_upload_datetime, "vehicle_type", "counts", "starts", "stops", "parked"]
+  video_level_column_order: ["camera_id", "video_upload_datetime", "vehicle_type", "counts", "starts", "stops", "parked"]
   video_level_stats: ['counts', 'stops','starts','parked']
