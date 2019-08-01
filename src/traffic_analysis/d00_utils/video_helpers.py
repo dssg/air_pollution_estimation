@@ -20,13 +20,13 @@ def write_mp4(local_mp4_dir: str, mp4_name: str, video: np.ndarray, fps: int):
 
 
 def parse_video_or_annotation_name(video_name: str) -> (str, datetime.datetime):
-    """Helper function to parse the jamcam video/annotation names into camera_id and
-       upload datetime, in the types we need them in
+    """Helper function to parse the jamcam video/annotation names into camera_id and 
+       upload datetime, in the types we need them in 
 
-    Keyword arguments
+    Keyword arguments 
     video_name -- can handle format is YYYY-mm-dd_HH-mm-seconds_camera_id, where id is sometimes
-                    not present and seconds is sometimes to integer precision sometimes to decimal
-                    precision; can also handle if the entire path name is passed in
+                    not present and seconds is sometimes to integer precision sometimes to decimal 
+                    precision; can also handle if the entire path name is passed in 
     """
     video_name = re.split(
         r"_|\\|/", video_name.replace(".mp4", "").replace(".xml", ""))
@@ -37,7 +37,7 @@ def parse_video_or_annotation_name(video_name: str) -> (str, datetime.datetime):
         video_name = video_name[-3:]
 
     date_str, time_str, camera_id = (video_name[-3], video_name[-2], video_name[-1]) if len(
-        video_name) > 2 else (video_name[-3], " ", video_name[-1])
+        video_name) > 2 else (video_name[-2], " ", video_name[-1])
     video_upload_datetime = "%s %s" % (date_str, time_str.replace("-", ":"))
     video_upload_datetime = dateutil.parser.parse(
         video_upload_datetime.strip())
