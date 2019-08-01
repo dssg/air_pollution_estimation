@@ -10,7 +10,7 @@ import numpy as np
 from traffic_analysis.d00_utils.tensorflow_detection_utils import read_class_names, remove_overlapping_boxes, \
     letterbox_resize
 from traffic_analysis.d00_utils.convert_darknet_to_tensorflow import parse_anchors
-from traffic_analysis.d00_utils.generate_tensorflow_model import yolov3
+from traffic_analysis.d00_utils.generate_tensorflow_model import YoloV3
 from traffic_analysis.d00_utils.convert_darknet_to_tensorflow import yolov3_darknet_to_tensorflow
 
 
@@ -68,7 +68,7 @@ def pass_image_through_nn(image_capture, paths, params):
 
         # initialize tensorflow yolov3 model
         init_data = tf.placeholder(tf.float32, [1, 416, 416, 3], name='init_data')
-        yolo_model = yolov3(n_classes, anchors)
+        yolo_model = YoloV3(n_classes, anchors)
         with tf.variable_scope('yolov3'):
             feature_map = yolo_model.forward(init_data, False)
 
