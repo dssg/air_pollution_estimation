@@ -35,6 +35,6 @@ def update_video_level_table(frame_level_df=None, file_names=None, paths=None, c
     video_level_df = yolo_report_stats(frame_level_df=frame_level_df, params=params)
     video_level_df['creation_datetime'] = datetime.datetime.now()
 
-    db_obj.add_to_sql(df=video_level_df, table_name='video_stats')
+    db_obj.add_to_sql(df=video_level_df, table_name='video_stats2')
 
     return
