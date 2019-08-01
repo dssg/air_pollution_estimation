@@ -8,7 +8,7 @@ import tensorflow as tf
 slim = tf.contrib.slim
 
 
-class yolov3(object):
+class YoloV3(object):
     """ creates a yolov3 model in tensorflow from darknet weights
     """
 
