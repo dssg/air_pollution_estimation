@@ -1,19 +1,21 @@
+import numpy as np
+import pandas as pd
+import glob
+import re
+import xml.etree.ElementTree as ElementTree
+from functools import reduce
+
 from traffic_analysis.d05_evaluation.single_evaluator import FrameLevelEvaluator, VideoLevelEvaluator
 from traffic_analysis.d00_utils.load_confs import load_parameters
 
-import numpy as np 
-import pandas as pd
-import glob
-import re 
-import xml.etree.ElementTree as ElementTree
-from functools import reduce 
 
-class ChunkEvaluator(): 
+class ChunkEvaluator():
     """
-    Purpose of this class is to evaluate a chunk of videos, given 
-    a list of the annotation_xml_paths, and lists of the corresponding 
-    video_level_dfs and frame_level_dfs. 
+    Purpose of this class is to evaluate a chunk of videos, given
+    a list of the annotation_xml_paths, and lists of the corresponding
+    video_level_dfs and frame_level_dfs.
     """
+
     def __init__(self,
                  annotation_xml_paths: list,
                  params: dict,
@@ -22,34 +24,40 @@ class ChunkEvaluator():
         self.num_videos = len(annotation_xml_paths)
         self.annotation_xml_paths = annotation_xml_paths
 
-        if frame_level_dfs is not None: 
-            assert self.num_videos == len(frame_level_dfs) 
+        if frame_level_dfs is not None:
+            assert self.num_videos == len(frame_level_dfs)
             self.frame_level_dfs = frame_level_dfs
 
-        if video_level_dfs is not None: 
+        if video_level_dfs is not None:
             assert self.num_videos == len(video_level_dfs)
             self.video_level_dfs = video_level_dfs
 
         self.params = params
 
-    def evaluate_video_level(self)->pd.DataFrame: 
-        """This function evaluates a chunk of videos utilizing multiple SingleEvaluator objects. 
+    def evaluate_video_level(self)-> pd.DataFrame:
+        """This function evaluates a chunk of videos utilizing multiple SingleEvaluator
+           objects.
         """
         video_level_diff_dfs = []
         for i, xml_path in enumerate(self.annotation_xml_paths):
             xml_name = re.split(r"\\|/", xml_path)[-1]
             xml_root = ElementTree.parse(xml_path).getroot()
-            video_level_evaluator = VideoLevelEvaluator(xml_root = xml_root, 
-                                                        xml_name = xml_name,
-                                                        video_level_df = self.video_level_dfs[i],
-                                                        params = self.params)
+            video_level_evaluator = VideoLevelEvaluator(xml_root=xml_root,
+                                                        xml_name=xml_name,
+                                                        video_level_df=self.video_level_dfs[i],
+                                                        params=self.params)
             video_level_diff_dfs.append(video_level_evaluator.evaluate_video())
-        video_level_diff_df = pd.concat(video_level_diff_dfs, axis=0)  # concat dfs as new rows
+        video_level_diff_df = pd.concat(
+            video_level_diff_dfs, axis=0)  # concat dfs as new rows
+        return video_level_diff_df
 
+    def aggregate_video_stats_all_vehicle_types(self,
+                                                video_level_diff_df) -> pd.DataFrame:
         all_vehicles_dfs = []
 
         for vehicle_type, vehicle_type_df in video_level_diff_df.groupby(["vehicle_type"]):
-            single_vehicle_df = self.video_statistics(vehicle_type_df, self.params['video_level_stats'])
+            single_vehicle_df = self.aggregate_statistics_one_vehicle_type(
+                vehicle_type_df, self.params['video_level_stats'])
             single_vehicle_df['vehicle_type'] = vehicle_type
 
             all_vehicles_dfs.append(single_vehicle_df)
@@ -61,46 +69,37 @@ class ChunkEvaluator():
         del all_vehicles_df['index']
         return all_vehicles_df
 
-    def video_statistics(self, df:pd.DataFrame, vehicle_stat_cols:list): 
-        """Computes mse, standard deviation, and mean difference across all vehicle types 
-        for a chunk of videos
+    def aggregate_statistics_one_vehicle_type(self,
+                                              df: pd.DataFrame,
+                                              vehicle_stat_cols: list):
+        """Computes mse, standard deviation, and mean difference across one
+        vehicle types for a chunk of videos
         """
         vehicle_stats_dfs = []
-        for vehicle_stat in vehicle_stat_cols: # counts, starts, stops, parked 
+        for vehicle_stat in vehicle_stat_cols:  # counts, starts, stops, parked
             vehicle_stat_dict = {'statistic': ['mean_diff', 'mse', 'sd']}
 
-            #compute mean diff
-            mean_diff = np.sum(df["y_pred-y_"+vehicle_stat].values)/self.num_videos
-            #compute MSE
-            mse = np.sum(np.square(df["y_pred-y_"+vehicle_stat].values))/self.num_videos
-            #compute SD
+            mean_diff = np.sum(
+                df["y_pred-y_"+vehicle_stat].values)/self.num_videos
+            mse = np.sum(
+                np.square(df["y_pred-y_"+vehicle_stat].values))/self.num_videos
             sd = np.std(df["y_pred-y_"+vehicle_stat].values)
 
             vehicle_stat_dict[vehicle_stat] = [mean_diff, mse, sd]
             vehicle_stat_df = pd.DataFrame.from_dict(vehicle_stat_dict)
 
             vehicle_stats_dfs.append(vehicle_stat_df)
-        vehicle_stats_df = reduce(lambda left,right: pd.merge(left, right, on=['statistic'],
-                                  how='outer'), vehicle_stats_dfs)
+        vehicle_stats_df = reduce(lambda left, right: pd.merge(left,
+                                                               right,
+                                                               on=['statistic'],
+                                                               how='outer'),
+                                  vehicle_stats_dfs)
 
         return vehicle_stats_df
 
-    def plot_video_level_stats(self, 
-                               video_level_diff_df: pd.DataFrame, 
-                               save_path: str = None): 
-        """Plots video level stats. If save_dir is supplied, 
-        will save to that path. 
-        """
-        # multiple line graph where each line reps a vehicle type 
-        # each point on the line reps a mean diff for a specific time 
-        
-        if save_path is not None :
-            pass
-        return None
-
-###########################################
-    def evaluate_frame_level(self): 
-        frame_level_mAP_dfs = []       
+    # frame level evaluation
+    def evaluate_frame_level(self):
+        frame_level_mAP_dfs = []
         for i, xml_path in enumerate(self.annotation_xml_paths):
             xml_name = re.split(r"\\|/", xml_path)[-1]
             xml_root = ElementTree.parse(xml_path).getroot()
@@ -108,57 +107,6 @@ class ChunkEvaluator():
                                                         self.frame_level_dfs[i],
                                                         self.params)
             frame_level_mAP_dfs.append(frame_level_evaluator.evaluate_video())
-        frame_level_mAP_df = pd.concat(frame_level_mAP_dfs, axis=0)  # concat dfs as new rows
+        frame_level_mAP_df = pd.concat(
+            frame_level_mAP_dfs, axis=0)  # concat dfs as new rows
         return frame_level_mAP_df
-
-    def frame_statistics(self): pass
-
-    def plot_frame_level_stats(self, 
-                         frame_level_mAP_df: pd.DataFrame, 
-                         save_path: str = None): 
-        """Plots frame level stats. If save_dir is supplied, 
-        will save to that path. 
-        """
-        
-        
-        if save_path is not None :
-            pass
-        return None
-
-
-if __name__ == '__main__':
-    params = load_parameters()
-    xml_paths = ["C:\\Users\\Caroline Wang\\OneDrive\\DSSG\\air_pollution_estimation\\annotations\\15_2019-06-29_13-01-03.094068_00001.01252.xml",
-                "C:\\Users\\Caroline Wang\\OneDrive\\DSSG\\air_pollution_estimation\\annotations\\14_2019-06-29_13-01-19.744908_00001.05900.xml"]
-
-    pd.set_option('display.max_columns', 500)
-
-    video_level_dfs = pd.read_csv("../../data/carolinetemp/video_level_df.csv",
-                        dtype={"camera_id": str},
-                        parse_dates=["video_upload_datetime"])
-    del video_level_dfs['Unnamed: 0']
-
-    video_level_df_list = []
-    video_level_groups = video_level_dfs.groupby(['camera_id', 'video_upload_datetime'])
-    for name, group in video_level_groups: 
-        video_level_df_list.append(group)
-########################################
-    frame_level_dfs = pd.read_csv("../../data/carolinetemp/frame_level_df.csv",
-                        dtype={"camera_id": str},
-                        converters={"bboxes": lambda x: [float(coord) for coord in x.strip("[]").split(", ")]}, 
-                        parse_dates=["video_upload_datetime"])
-    del frame_level_dfs['Unnamed: 0']
-
-    frame_level_df_list = []
-    frame_level_groups = frame_level_dfs.groupby(['camera_id', 'video_upload_datetime'])
-    for name, group in frame_level_groups: 
-        frame_level_df_list.append(group)
-
-    chunk_evaluator = ChunkEvaluator(annotation_xml_paths=xml_paths,
-                                     params=params,
-                                     video_level_dfs=video_level_df_list,
-                                     frame_level_dfs = frame_level_df_list)
-    # stats_df = chunk_evaluator.evaluate_video_level()
-    # print("stats df: \n", stats_df)
-    frame_stats_df = chunk_evaluator.evaluate_frame_level()
-    print("stats df: \n", frame_stats_df)
