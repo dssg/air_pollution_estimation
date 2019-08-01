@@ -9,19 +9,19 @@ def create_sql_tables(drop=False):
     drop_commands = None
     if drop:
         drop_commands = [
-            "DROP TABLE vehicle_types, cameras, frame_stats, video_stats CASCADE;"
+            "DROP TABLE vehicle_types2, cameras2, frame_stats2, video_stats2 CASCADE;"
         ]
 
     commands = [
         """
-        CREATE TABLE vehicle_types(
+        CREATE TABLE vehicle_types2(
             id SERIAL,
             vehicle_type VARCHAR(100),
             vehicle_type_id INTEGER PRIMARY KEY
         )
         """,
         """
-        CREATE TABLE cameras(
+        CREATE TABLE cameras2(
             id SERIAL,
             latitude FLOAT, 
             longitude FLOAT,
@@ -31,7 +31,7 @@ def create_sql_tables(drop=False):
         )
         """,
         """
-        CREATE TABLE frame_stats (
+        CREATE TABLE frame_stats2(
             camera_id VARCHAR(20),
             frame_id INTEGER,
             video_upload_datetime timestamp,
@@ -46,7 +46,7 @@ def create_sql_tables(drop=False):
         """,
 
         """
-        CREATE TABLE video_stats (
+        CREATE TABLE video_stats2(
             vehicle_type VARCHAR(100),
             camera_id VARCHAR(20),
             video_upload_datetime timestamp,
