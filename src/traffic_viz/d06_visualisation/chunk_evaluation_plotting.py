@@ -3,21 +3,23 @@ import pandas as pd
 
 
 def plot_video_stats_diff_distribution(video_level_diff_df: pd.DataFrame,
+                                       video_stat_types: list, 
                                        show_plot: bool = True,
                                        save_path: str = None):
-	"""For each statistic type (counts, starts, stops, etc.) plots the
-	distribution of difference from ground truth for each vehicle type
+    """For each statistic type (counts, starts, stops, etc.) plots the
+    distribution of difference from ground truth for each vehicle type
 
-	Args:
-		video_level_diff_df: the output of ChunkEvaluator.evaluate_video_level()
-		show_plot: If true, will display the plot
-		save_path: if specified, will save to this location (specify full path with
-		desired filename)
-	"""
+    Args:
+        video_level_diff_df: the output of ChunkEvaluator.evaluate_video_level()
+        video_stat_types: list of video level stats computed (pass from params)
+        show_plot: If true, will display the plot
+        save_path: if specified, will save to this location (specify full path with
+        desired filename)
+    """
     plt.style.use('seaborn-deep')
-
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2, figsize=(25,20))
-    for i,stat_type in enumerate(params["video_level_stats"]):
+    
+    for i,stat_type in enumerate(video_stat_types):
         stat_list = []
         vehicle_types=[]
         for vehicle_type, vehicle_group_df in video_level_diff_df.groupby("vehicle_type"):
@@ -50,16 +52,16 @@ def plot_video_stats_diff_distribution(video_level_diff_df: pd.DataFrame,
     
     
 def plot_video_level_summary_stats(video_level_stats_df: pd.DataFrame, 
-		                           metrics = {'mean_diff': "", 'mse':""},
-		                           show_plots = True): 
-	"""For each error metric specified, will plot a multi-bar bar chart with bars 
-	for each vehicle type and stats type.
+                                   metrics = {'mean_diff': "", 'mse':""},
+                                   show_plots = True): 
+    """For each error metric specified, will plot a multi-bar bar chart with bars 
+    for each vehicle type and stats type.
 
-	Args: 
-		video_level_stats_df: output of ChunkEvaluator.aggregate_video_stats_all_vehicle_types()
-		metrics: dictionary where the metric type is the key and the value is the desired save path
-		show_plots: If true, will display the plots 
-	"""
+    Args: 
+        video_level_stats_df: output of ChunkEvaluator.aggregate_video_stats_all_vehicle_types()
+        metrics: dictionary where the metric type is the key and the value is the desired save path
+        show_plots: If true, will display the plots 
+    """
     n_videos = video_level_stats_df['n_videos'].iloc[0]
     
     if 'mean_diff' in metrics: 
@@ -124,15 +126,15 @@ def plot_video_level_summary_stats(video_level_stats_df: pd.DataFrame,
 def plot_mAP_over_time(frame_level_mAP_df: pd.DataFrame, 
                        show_plot: bool = True, 
                        save_path: str = None):
-	"""Plots mean average precision for a chunk of videos as a line plot, with a 
-	different line for each vehicle type. 
+    """Plots mean average precision for a chunk of videos as a line plot, with a 
+    different line for each vehicle type. 
 
-	Args: 
-	frame_level_mAP_df: output of ChunkEvaluator.evaluate_frame_level()
-	show_plot: If true, will display the plot 
-	save_path: if specified, will save to this location (specify full path with 
-	desired filename) 
-	"""
+    Args: 
+    frame_level_mAP_df: output of ChunkEvaluator.evaluate_frame_level()
+    show_plot: If true, will display the plot 
+    save_path: if specified, will save to this location (specify full path with 
+    desired filename) 
+    """
     frame_level_mAP_df = frame_level_mAP_df.sort_values(by='video_upload_datetime',ascending=True)
 
     fig = plt.figure(figsize = (10,7))
