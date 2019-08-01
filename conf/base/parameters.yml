@@ -37,7 +37,7 @@ data_renaming:
 
 modelling:
   # obj detection
-  detection_model: "yolov3-tiny"
+  detection_model: "yolov3"
   detection_implementation: "cvlib"
   detection_iou_threshold: 0.05
   detection_confidence_threshold: 0.2
