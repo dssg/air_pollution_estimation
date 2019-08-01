@@ -1277,3 +1277,43 @@ def gpu_nms(boxes, scores, num_classes, max_boxes=50, score_thresh=0.5, nms_thre
     label = tf.concat(label_list, axis=0)
 
     return boxes, score, label
+
+
+def py_nms(boxes, scores, max_boxes=50, iou_thresh=0.5):
+    """
+    Pure Python NMS baseline.
+
+    Arguments: boxes: shape of [-1, 4], the value of '-1' means that dont know the
+                     exact number of boxes
+              scores: shape of [-1,]
+              max_boxes: representing the maximum of boxes to be selected by non_max_suppression
+              iou_thresh: representing iou_threshold for deciding to keep boxes
+    """
+    assert boxes.shape[1] == 4 and len(scores.shape) == 1
+
+    x1 = boxes[:, 0]
+    y1 = boxes[:, 1]
+    x2 = boxes[:, 2]
+    y2 = boxes[:, 3]
+
+    areas = (x2 - x1) * (y2 - y1)
+    order = scores.argsort()[::-1]
+
+    keep = []
+    while order.size > 0:
+        i = order[0]
+        keep.append(i)
+        xx1 = np.maximum(x1[i], x1[order[1:]])
+        yy1 = np.maximum(y1[i], y1[order[1:]])
+        xx2 = np.minimum(x2[i], x2[order[1:]])
+        yy2 = np.minimum(y2[i], y2[order[1:]])
+
+        w = np.maximum(0.0, xx2 - xx1 + 1)
+        h = np.maximum(0.0, yy2 - yy1 + 1)
+        inter = w * h
+        ovr = inter / (areas[i] + areas[order[1:]] - inter)
+
+        inds = np.where(ovr <= iou_thresh)[0]
+        order = order[inds + 1]
+
+    return keep[:max_boxes]

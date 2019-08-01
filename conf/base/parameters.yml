@@ -36,7 +36,7 @@ data_renaming:
   date_format: "%Y%m%d-%H%M%S"
 
 modelling:
-  detection_model: "yolov3_tf"
+  detection_model: "yolov3"
   detection_confidence_threshold: 0.2
   detection_iou_threshold: 0.05
 
@@ -44,7 +44,7 @@ reporting:
   chunk_size: 2
   dtype:
     camera_id: "category"
-  yolo_model: "yolov3-tiny"
+  yolo_model: "yolov3"
   yolo_implementation: "cvlib"
   opencv_tracker_type: "CSRT"
   iou_threshold: 0.05 #controls how much two objects' bboxes must overlap to be considered the "same"

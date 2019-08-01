@@ -7,7 +7,7 @@ s3_paths:
   s3_frame_level: "frame_level/"
   s3_profile: "dssg"
   s3_creds: "dev_s3"
-  s3_detection_model: "ref/conf/"
+  s3_detection_model: "ref/model_conf/"
 
 local_paths:
   temp_video: "data/temp/videos/"

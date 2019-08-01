@@ -7,7 +7,8 @@ import os
 import tensorflow as tf
 import numpy as np
 
-from traffic_analysis.d00_utils.generate_tensorflow_model import YoloV3
+from traffic_analysis.d00_utils.load_confs import load_paths, load_parameters
+from traffic_analysis.d04_modelling.transfer_learning.tensorflow_model import YoloV3
 from traffic_analysis.d02_ref.retrieve_detection_model_from_s3 import retrieve_detection_model_from_s3
 
 
@@ -25,7 +26,7 @@ def yolov3_darknet_to_tensorflow(paths, params):
         pass
 
     else:
-        retrieve_detection_model_from_s3(paths, params)
+        retrieve_detection_model_from_s3(paths=paths, params=params)
 
         num_class = 80
         img_size = 416
@@ -125,3 +126,9 @@ def load_weights(var_list, yolov3_weights_file):
             i += 1
 
     return assign_ops
+
+
+paths = load_paths()
+params = load_parameters()
+
+yolov3_darknet_to_tensorflow(paths=paths, params=params)
