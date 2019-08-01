@@ -8,7 +8,7 @@ import tensorflow as tf
 import numpy as np
 
 from traffic_analysis.d00_utils.generate_tensorflow_model import yolov3
-from traffic_analysis.d02_ref.retrieve_detection_model_from_s3 import retrieve_detection_model_from_s3
+from traffic_analysis.d02_ref.download_detection_model_from_s3 import download_detection_model_from_s3
 
 
 def yolov3_darknet_to_tensorflow(paths, params):
@@ -25,7 +25,8 @@ def yolov3_darknet_to_tensorflow(paths, params):
         pass
 
     else:
-        retrieve_detection_model_from_s3(paths, params)
+        download_detection_model_from_s3(paths=paths,
+                                         params=params)
 
         num_class = 80
         img_size = 416
