@@ -10,7 +10,7 @@ import args
 from src.traffic_analysis.d00_utils.tensorflow_training_utils import get_batch_data, shuffle_and_overwrite, \
     make_summary, config_learning_rate, config_optimizer, AverageMeter, evaluate_on_cpu, evaluate_on_gpu, \
     get_preds_gpu, voc_eval, parse_gt_rec, gpu_nms
-from src.traffic_analysis.d00_utils.generate_tensorflow_model import VehicleDetector
+from src.traffic_analysis.d00_utils.generate_tensorflow_model import YoloV3
 
 
 # setting loggers
@@ -66,12 +66,11 @@ for y in y_true:
 ##################
 # Model definition
 ##################
-model = VehicleDetector(args.class_num, args.anchors, args.use_label_smooth, args.use_focal_loss, args.batch_norm_decay, args.weight_decay, use_static_shape=False)
-with tf.variable_scope('VehicleDetector'):
-    yolo_features = model.forward_thru_yolov3(image, is_training=False)
-    pred_feature_maps = model.forward_thru_transfer_learning_layer(yolo_features, is_training=is_training)
-loss = model.compute_loss(pred_feature_maps, y_true)
-y_pred = model.predict(pred_feature_maps)
+yolo_model = YoloV3(args.class_num, args.anchors, args.use_label_smooth, args.use_focal_loss, args.batch_norm_decay, args.weight_decay, use_static_shape=False)
+with tf.variable_scope('yolov3'):
+    pred_feature_maps = yolo_model.forward(image, is_training=is_training)
+loss = yolo_model.compute_loss(pred_feature_maps, y_true)
+y_pred = yolo_model.predict(pred_feature_maps)
 
 l2_loss = tf.losses.get_regularization_loss()
 
@@ -221,3 +220,4 @@ with tf.Session() as sess:
             writer.add_summary(make_summary('validation_statistics/loss_wh', val_loss_wh.average), global_step=epoch)
             writer.add_summary(make_summary('validation_statistics/loss_conf', val_loss_conf.average), global_step=epoch)
             writer.add_summary(make_summary('validation_statistics/loss_class', val_loss_class.average), global_step=epoch)
+
