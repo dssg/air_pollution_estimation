@@ -23,7 +23,8 @@ def load_videos_into_np(folder):
     video_dict = {}
     for filename in glob.glob(folder + "*.mp4"):
         try:
-            video_dict[filename.split("/")[-1]] = mp4_to_npy(filename)
+            video_name = re.split(r"\\|/", filename)[-1]
+            video_dict[video_name] = mp4_to_npy(filename)
         except:
             print("Could not convert " + filename + " to numpy array")
 

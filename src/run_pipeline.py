@@ -15,7 +15,6 @@ from traffic_analysis.d03_processing.update_frame_level_table import (
     update_frame_level_table,
 )
 
-
 params = load_parameters()
 paths = load_paths()
 creds = load_credentials()

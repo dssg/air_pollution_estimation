@@ -20,9 +20,9 @@ def detect_objects_in_image(image_capture, params, paths, s3_credentials: dict):
             confs (list(float)): list of detection scores
     """
 
-    conf_thresh = params["confidence_threshold"]
+    conf_thresh = params["detection_confidence_threshold"]
     detection_iou_threshold = params["detection_iou_threshold"]
-    model_name = params["yolo_model"]
+    model_name = params["detection_model"]
 
     download_detect_model_from_s3(
         model_name=model_name, paths=paths, s3_credentials=s3_credentials
