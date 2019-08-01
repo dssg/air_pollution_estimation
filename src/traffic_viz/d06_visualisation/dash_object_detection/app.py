@@ -9,9 +9,8 @@ import plotly.graph_objs as go
 import dash_player as player
 import dash_html_components as html
 import dash_core_components as dcc
-import dash
 from datetime import datetime as dt
-from traffic_viz.d06_visualisation.dash_object_detection.server import app, server
+from traffic_viz.d06_visualisation.dash_object_detection.server import app
 
 
 DEBUG = params["debug"]
@@ -167,9 +166,8 @@ app.layout = html.Div(
 
 
 # Footage Selection
-@app.callback(
-    Output("video-display", "url"), [Input("dropdown-footage-selection", "value")]
-)
+@app.callback(Output("video-display", "url"),
+              [Input("dropdown-footage-selection", "value")])
 def select_footage(footage):
     # Find desired footage and update player video
     if footage:
@@ -230,16 +228,22 @@ def update_trend_graph(vehicle_types, camera_id, start_date, end_date):
     data = []
     for obj, df_stats in dfs.items():
         data.append(
-            go.Scatter(x=df_stats.index, y=df_stats["mean"], name=obj, mode="lines")
-        )
+            go.Scatter(
+                x=df_stats.index,
+                y=df_stats["mean"],
+                name=obj,
+                mode="lines"))
 
     figure = {
         "data": data,
         "layout": go.Layout(
             showlegend=True,
             title=title,
-            xaxis={"title": "Datetime"},
-            yaxis=go.layout.YAxis(title="Count of vehicle types [#]", automargin=True),
+            xaxis={
+                "title": "Datetime"},
+            yaxis=go.layout.YAxis(
+                title="Count of vehicle types [#]",
+                automargin=True),
             hovermode="closest",
             autosize=False,
         ),
@@ -256,7 +260,10 @@ def update_output(camera_id):
     print(camera_id)
     if camera_id:
         return [
-            dcc.Interval(id="interval-visual-mode", interval=700, n_intervals=0),
+            dcc.Interval(
+                id="interval-visual-mode",
+                interval=700,
+                n_intervals=0),
             html.Div(
                 children=[
                     html.P(
