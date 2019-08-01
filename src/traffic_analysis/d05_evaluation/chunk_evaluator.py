@@ -1,12 +1,11 @@
 import numpy as np
 import pandas as pd
-import glob
 import re
 import xml.etree.ElementTree as ElementTree
 from functools import reduce
 
-from traffic_analysis.d05_evaluation.single_evaluator import FrameLevelEvaluator, VideoLevelEvaluator
-from traffic_analysis.d00_utils.load_confs import load_parameters
+from traffic_analysis.d05_evaluation.frame_level_evaluator import FrameLevelEvaluator
+from traffic_analysis.d05_evaluation.video_level_evaluator import VideoLevelEvaluator
 
 
 class ChunkEvaluator():
