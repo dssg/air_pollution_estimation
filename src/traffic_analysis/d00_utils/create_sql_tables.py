@@ -1,3 +1,5 @@
+import psycopg2
+
 from traffic_analysis.d00_utils.load_confs import load_credentials, load_paths
 from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 
