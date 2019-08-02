@@ -27,9 +27,9 @@ upload_annotation_names_to_s3(paths=paths,
                               s3_credentials=s3_credentials)
 """
 # Start from here if video names already specified
-selected_videos = load_video_names_from_s3(
-    ref_file="test_search", paths=paths, s3_credentials=s3_credentials
-)
+selected_videos = load_video_names_from_s3(ref_file='test_search',
+                                           paths=paths,
+                                           s3_credentials=s3_credentials)
 
 # select chunks of videos and classify objects
 chunk_size = params["chunk_size"]

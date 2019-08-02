@@ -1,15 +1,12 @@
 import numpy as np
 import pandas as pd
-import dateutil.parser
 from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
-import numpy as np
-import pandas as pd
 
 
 def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date_time):
     """Parse the info corresponding to one frame into one pandas df
 
-    Keyword arguments: 
+    Keyword arguments:
     obj_info_aggregated -- np array, contains 3 subarrays: object bounds, object
                            labels, object label confidences
     frame_ind -- np arrays of lists
@@ -30,9 +27,9 @@ def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date_time):
 
 
 def yolo_output_df(yolo_dict):
-    """Formats the output of yolo on one video. Returns as pandas df. 
+    """Formats the output of yolo on one video. Returns as pandas df.
 
-    Keyword arguments: 
+    Keyword arguments:
         yolo_dict (dict): nested dictionary where each video is a key for a dict containing:
                 obj_bounds (list of np arrays): n-dim list of list of arrays marking the corners of the bounding boxes of objects, for n frames
                 obj_labels (list of str): n-dim list of list of labels assigned to classified objects, for n frames
@@ -108,7 +105,7 @@ def yolo_report_stats(frame_level_df, params):
 
     Returns: 
     obj_counts_frame: counts of various types of objects per frame
-    video_summary: summary statistics over whole video 
+    video_summary: summary statistics over whole video
 
 
     '''

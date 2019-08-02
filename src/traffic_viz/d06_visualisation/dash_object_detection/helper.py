@@ -80,8 +80,7 @@ def load_vehicle_type_statistics(df, vehicle_type, start_date, end_date):
     df_vehicle_type = df[df.vehicle_type == vehicle_type]
     df_vehicle_type.sort_values("video_upload_datetime", inplace=True)
     df_vehicle_type = df_vehicle_type[
-        ((start_date <= df_vehicle_type.video_upload_datetime)
-         & (df_vehicle_type.video_upload_datetime <= end_date))
+        ((start_date <= df_vehicle_type.video_upload_datetime) & (df_vehicle_type.video_upload_datetime <= end_date))
     ]
     print(df_vehicle_type)
     return df_vehicle_type

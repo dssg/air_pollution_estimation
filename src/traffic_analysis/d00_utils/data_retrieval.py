@@ -2,7 +2,6 @@ import boto3
 import cv2
 import os
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 import re
 import shutil
@@ -31,9 +30,7 @@ def load_videos_into_np(folder):
     return video_dict
 
 
-def download_video_and_convert_to_numpy(
-    local_folder, s3_profile, bucket, filenames: list
-):
+def download_video_and_convert_to_numpy(local_folder, s3_profile, bucket, filenames: list):
     """Downloads videos from s3 to a local temp directory and then loads them into numpy arrays, before
     deleting the temp directory (default behavior).
 
@@ -54,11 +51,8 @@ def download_video_and_convert_to_numpy(
     # Download the files
     for filename in filenames:
         try:
-            my_bucket.download_file(
-                filename,
-                local_folder
-                + filename.split("/")[-1].replace(":", "-").replace(" ", "_"),
-            )
+            my_bucket.download_file(filename, local_folder + filename.split('/')[-1].replace(
+                ':', '-').replace(" ", "_"))
         except:
             print("Could not download " + filename)
     return load_videos_into_np(local_folder)
@@ -83,7 +77,8 @@ def mp4_to_npy(local_mp4_path):
     frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-    buf = np.empty((frame_count, frame_height, frame_width, 3), np.dtype("uint8"))
+    buf = np.empty((frame_count, frame_height, frame_width, 3),
+                   np.dtype('uint8'))
     fc = 0
     ret = True
     while fc < frame_count and ret:
@@ -91,8 +86,8 @@ def mp4_to_npy(local_mp4_path):
         fc += 1
     cap.release()
 
-    if buf.size == 0:
-        raise Exception("Numpy array is empty")
+    if (buf.size == 0):
+        raise Exception('Numpy array is empty')
 
     return buf
 
@@ -140,9 +135,10 @@ def describe_s3_bucket(paths):
     unique_dates, counts = np.unique(dates, return_counts=True)
     plt.figure()
     plt.bar(np.arange(unique_dates.shape[0]), counts)
-    plt.xticks(np.arange(unique_dates.shape[0]), unique_dates, rotation="vertical")
-    plt.xlabel("Date")
-    plt.ylabel("Number of Videos")
+    plt.xticks(np.arange(unique_dates.shape[0]),
+               unique_dates, rotation='vertical')
+    plt.xlabel('Date')
+    plt.ylabel('Number of Videos')
     plt.tight_layout()
     plt.savefig(paths["plots"] + "01_exploratory/s3_description.pdf")
     plt.close()

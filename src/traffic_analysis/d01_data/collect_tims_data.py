@@ -21,9 +21,9 @@ def get_tims_data_and_upload_to_s3():
     website = "http://roads.data.tfl.gov.uk/TIMS/"
 
     # Set up the local directory for temporary downloading
-    local_dir = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "..", "..", "data/01_raw/tims/"
-    )
+    local_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                             '..', '..', 'data/01_raw/tims/')
+    if (os.path.isdir(local_dir)):
     if os.path.isdir(local_dir):
         shutil.rmtree(local_dir)
     os.makedirs(local_dir)
