@@ -47,6 +47,6 @@ def update_frame_level_table(file_names: list,
     frame_level_df['creation_datetime'] = datetime.datetime.now()
 
     db_obj = DataLoaderSQL(creds=creds, paths=paths)
-    db_obj.add_to_sql(df=frame_level_df, table_name='frame_stats2')
+    db_obj.add_to_sql(df=frame_level_df, table_name=paths['db_frame_level'])
 
     return frame_level_df
