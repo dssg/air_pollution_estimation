@@ -18,7 +18,7 @@ def update_video_level_table(frame_level_df=None, file_names=None, paths=None, c
     """
     db_obj = DataLoaderSQL(creds=creds, paths=paths)
 
-    if(frame_level_df is None):
+    if frame_level_df is None:
         # Build the sql string
         filter_string = ''
 
@@ -28,13 +28,11 @@ def update_video_level_table(frame_level_df=None, file_names=None, paths=None, c
             filter_string += '(camera_id=\'' + camera_id + '\' AND video_upload_datetime=\'' + str(date_time) + '\') OR '
 
         filter_string = filter_string[:-4]
-        sql_string = "SELECT * FROM frame_stats WHERE %s;" % (filter_string)
-        frame_level_df = db_obj.execute_raw_sql_query(sql=sql_string)
+        sql_string = "SELECT * FROM {} WHERE {};".format(paths['db_frame_level'], filter_string)
+        frame_level_df = db_obj.select_from_table(sql=sql_string)
 
     # Create video level table and add to database
     video_level_df = yolo_report_stats(frame_level_df=frame_level_df, params=params)
     video_level_df['creation_datetime'] = datetime.datetime.now()
 
-    db_obj.add_to_sql(df=video_level_df, table_name='video_stats2')
-
-    return
+    db_obj.add_to_sql(df=video_level_df, table_name=paths['db_video_level'])
