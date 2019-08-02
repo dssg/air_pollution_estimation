@@ -10,16 +10,15 @@ class FrameLevelEvaluator:
     """
     def __init__(self,
                  videos_to_eval: pd.DataFrame,
-                 video_level_df: pd.DataFrame,
-                 video_level_column_order: list,
+                 frame_level_df: pd.DataFrame,
+                 frame_level_column_order: list,
                  selected_labels: list):
 
         # data frames to work with
         self.videos_to_eval = videos_to_eval
-        self.video_level_df = video_level_df
+        self.frame_level_df = frame_level_df
         self.video_level_ground_truth = pd.DataFrame({})
 
         # parameters
-        self.video_level_column_order = video_level_column_order
+        self.frame_level_column_order = frame_level_column_order
         self.selected_labels = selected_labels
-        self.stats_to_evaluate = ['counts', 'starts', 'stops']

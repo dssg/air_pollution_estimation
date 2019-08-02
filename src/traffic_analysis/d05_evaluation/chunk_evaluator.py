@@ -19,7 +19,8 @@ class ChunkEvaluator:
     def __init__(self,
                  annotation_xml_paths: list,
                  params: dict,
-                 video_level_df: pd.DataFrame=None):
+                 video_level_df: pd.DataFrame=None,
+                 frame_level_df: pd.DataFrame=None):
 
         annotations_available = {}
         for xml_path in annotation_xml_paths:
@@ -35,21 +36,35 @@ class ChunkEvaluator:
                                  .rename(columns={'index': 'xml_path'}))
 
         if video_level_df is not None:
-            videos_to_eval = video_level_df[['camera_id', 'video_upload_datetime']].drop_duplicates()
+            video_level_videos_to_eval = video_level_df[['camera_id', 'video_upload_datetime']].drop_duplicates()
 
             # evaluate only those videos for which we have annotations
-            self.videos_to_eval = pd.merge(left=annotations_available,
-                                           right=videos_to_eval,
+            self.video_level_videos_to_eval = pd.merge(left=annotations_available,
+                                           right=video_level_videos_to_eval,
                                            on=['camera_id', 'video_upload_datetime'],
                                            how='inner')
 
-            self.num_videos = len(self.videos_to_eval)
+            self.num_video_level_videos = len(self.video_level_videos_to_eval)
 
-            assert self.num_videos > 0
+            assert self.num_video_level_videos > 0
             self.video_level_df = video_level_df
 
             self.video_level_column_order = params['video_level_column_order']
             self.selected_labels = params['selected_labels']
+
+        if frame_level_df is not None: 
+            frame_level_videos_to_eval = frame_level_df[['camera_id', 'video_upload_datetime']].drop_duplicates()
+
+            # evaluate only those frame level videos for which we have annotations
+            self.frame_level_videos_to_eval = pd.merge(left=annotations_available,
+                                           right=frame_level_videos_to_eval,
+                                           on=['camera_id', 'video_upload_datetime'],
+                                           how='inner')
+            self.num_frame_level_videos = len(self.video_level_videos_to_eval)
+
+            assert self.num_frame_level_videos > 0
+            self.frame_level_df = frame_level_df
+            # self.video_level_column_order = params['video_level_column_order']
 
         self.params = params
 
@@ -59,7 +74,7 @@ class ChunkEvaluator:
         """
 
 
-        video_level_evaluator = VideoLevelEvaluator(videos_to_eval=self.videos_to_eval,
+        video_level_evaluator = VideoLevelEvaluator(videos_to_eval=self.video_level_videos_to_eval,
                                                     video_level_df=self.video_level_df,
                                                     video_level_column_order=self.video_level_column_order,
                                                     selected_labels=self.selected_labels)
@@ -83,7 +98,8 @@ class ChunkEvaluator:
 
 if __name__ == '__main__':
     params = load_parameters()
-    print(params)
+    pd.set_option('display.max_columns', 500)
+
     annotations_dir = "C:\\Users\\Caroline Wang\\OneDrive\\DSSG\\air_pollution_estimation\\annotations"
     xml_paths = [os.path.join(annotations_dir, '14_2019-06-29_13-01-19.744908_00001.05900.xml'),
                  os.path.join(annotations_dir, '15_2019-06-29_13-01-03.094068_00001.01252.xml')]
@@ -98,5 +114,6 @@ if __name__ == '__main__':
                                      params=params,
                                      video_level_df=video_level_df)
     video_level_performance = chunk_evaluator.evaluate_video_level()
-    print(chunk_evaluator.videos_to_eval)
+
+    print(chunk_evaluator.video_level_videos_to_eval)
     print(video_level_performance)
