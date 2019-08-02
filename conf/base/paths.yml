@@ -9,12 +9,14 @@ s3_paths:
   s3_profile: "dssg"
   s3_creds: "dev_s3"
   s3_detect_model: "ref/model_conf/"
+  s3_detrac_annotations: "ref/annotations/detrac/"
 
 local_paths:
   temp_video: "data/temp/videos/"
   temp_raw_video: "data/temp/raw_videos/"
   temp_frame_level: "data/temp/frame_level/"
   temp_video_level: "data/temp/video_level/"
+  temp_annotation: "data/temp/annotation/"
   video_names: "data/ref/video_names/"
   processed_video: "results/jamcams/"
   plots: "plots/"
