@@ -19,7 +19,7 @@ class DataLoaderS3:
         self.client = client
 
     def read_json(self, file_path):
-
+        
         result = self.client.get_object(Bucket=self.bucket_name,
                                         Key=file_path)
 
