@@ -79,8 +79,8 @@ class ChunkEvaluator:
                                                     video_level_column_order=self.video_level_column_order,
                                                     selected_labels=self.selected_labels)
 
-        video_level_performance = video_level_evaluator.evaluate()
-        return video_level_performance
+        video_level_performance, video_level_diff_df = video_level_evaluator.evaluate()
+        return video_level_performance, video_level_diff_df
 
     # # frame level evaluation
     # def evaluate_frame_level(self):
@@ -113,7 +113,7 @@ if __name__ == '__main__':
     chunk_evaluator = ChunkEvaluator(annotation_xml_paths=xml_paths,
                                      params=params,
                                      video_level_df=video_level_df)
-    video_level_performance = chunk_evaluator.evaluate_video_level()
+    video_level_performance, video_level_diff_df = chunk_evaluator.evaluate_video_level()
 
-    print(chunk_evaluator.video_level_videos_to_eval)
     print(video_level_performance)
+    print(video_level_diff_df)

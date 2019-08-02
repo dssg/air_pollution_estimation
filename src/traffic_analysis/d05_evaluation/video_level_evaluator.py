@@ -30,11 +30,11 @@ class VideoLevelEvaluator:
         :return: Data frame summarising the performance
         """
         self.video_level_ground_truth = self.get_ground_truth()
-        performance_df = self.summarise_performance()
-        return performance_df
+        diff_df = self.compute_diffs()
+        performance_df = self.summarise_performance(diff_df)
+        return performance_df, diff_df
 
-    def summarise_performance(self):
-
+    def compute_diffs(self):
         # get data sets
         video_level_ground_truth = self.video_level_ground_truth
         video_level_estimates = pd.merge(left=self.videos_to_eval[['camera_id', 'video_upload_datetime']],
@@ -49,16 +49,20 @@ class VideoLevelEvaluator:
         video_level_estimates.rename(columns=pred_rename_dict, inplace=True)
 
         id_cols = ['camera_id', 'video_upload_datetime', 'vehicle_type']
-        combi = pd.merge(left=video_level_ground_truth[id_cols + list(truth_rename_dict.values())],
+        diff_df = pd.merge(left=video_level_ground_truth[id_cols + list(truth_rename_dict.values())],
                          right=video_level_estimates[id_cols + list(pred_rename_dict.values())],
                          on=id_cols,
                          how='left').fillna(0)
         for stat in self.stats_to_evaluate:
-            combi[stat + '_diff'] = combi[stat + '_pred'] - combi[stat + '_true']
-        
+            diff_df[stat + '_diff'] = diff_df[stat + '_pred'] - diff_df[stat + '_true']
+        return diff_df
+
+    def summarise_performance(self, 
+                              diff_df: pd.DataFrame):
         # reshape for convenient summarising
+        id_cols = ['camera_id', 'video_upload_datetime', 'vehicle_type']
         diff_cols = [stat + '_diff' for stat in self.stats_to_evaluate]
-        diff_melted = combi.melt(id_vars=id_cols,
+        diff_melted = diff_df.melt(id_vars=id_cols,
                                  value_vars=diff_cols,
                                  value_name='stat_diff',
                                  var_name='stat')
