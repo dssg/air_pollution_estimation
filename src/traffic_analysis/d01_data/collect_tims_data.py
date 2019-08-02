@@ -78,3 +78,4 @@ def upload_to_s3(file):
                            's3://air-pollution-uk/raw/tims_data/',
                            '--profile',
                            'dssg'])
+    
