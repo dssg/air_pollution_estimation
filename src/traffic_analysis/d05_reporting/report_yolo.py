@@ -1,12 +1,16 @@
 import numpy as np
 import pandas as pd
+import dateutil.parser
 from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
+import numpy as np
+import pandas as pd
+
 
 
 def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date_time):
     """Parse the info corresponding to one frame into one pandas df
 
-    Keyword arguments:
+    Keyword arguments: 
     obj_info_aggregated -- np array, contains 3 subarrays: object bounds, object
                            labels, object label confidences
     frame_ind -- np arrays of lists
@@ -15,10 +19,8 @@ def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date_time):
     time -- time of the video which the frame came from (Python datetime time object)
 
     """
-    frame_df = pd.DataFrame(
-        obj_info_aggregated, columns=[
-            "obj_bounds", "obj_classification", "confidence"]
-    )
+    frame_df = pd.DataFrame(obj_info_aggregated, columns=[
+                            'obj_bounds', 'obj_classification', 'confidence'])
     frame_df["frame_id"] = frame_ind
     frame_df["camera_id"] = camera_id
     frame_df["video_upload_datetime"] = date_time
@@ -27,9 +29,9 @@ def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date_time):
 
 
 def yolo_output_df(yolo_dict):
-    """Formats the output of yolo on one video. Returns as pandas df.
+    """Formats the output of yolo on one video. Returns as pandas df. 
 
-    Keyword arguments:
+    Keyword arguments: 
         yolo_dict (dict): nested dictionary where each video is a key for a dict containing:
                 obj_bounds (list of np arrays): n-dim list of list of arrays marking the corners of the bounding boxes of objects, for n frames
                 obj_labels (list of str): n-dim list of list of labels assigned to classified objects, for n frames
@@ -42,9 +44,9 @@ def yolo_output_df(yolo_dict):
     df_list = []
 
     for video_num, (name, values) in enumerate(yolo_dict.items()):
-        obj_bounds = np.array(values["bounds"])
-        obj_labels = np.array(values["labels"])
-        obj_label_confidences = np.array(values["confidences"])
+        obj_bounds = np.array(values['bounds'])
+        obj_labels = np.array(values['labels'])
+        obj_label_confidences = np.array(values['confidences'])
 
         # ensure all three lists have same number of frames (one entry in list corresp to one frame)
         num_frames = obj_bounds.shape[0]
@@ -60,14 +62,11 @@ def yolo_output_df(yolo_dict):
             obj_bounds_np = [np.array(bound)
                              for bound in obj_bounds[frame_ind]]
 
-            obj_info_aggregated = np.array(
-                [obj_bounds_np, obj_labels[frame_ind],
-                    obj_label_confidences[frame_ind]]
-            ).transpose()
+            obj_info_aggregated = np.array([obj_bounds_np, obj_labels[frame_ind],
+                                            obj_label_confidences[frame_ind]]).transpose()
 
             frame_df = frame_info_to_df(
-                obj_info_aggregated, frame_ind, camera_id, date_time
-            )
+                obj_info_aggregated, frame_ind, camera_id, date_time)
             frame_df_list.append(frame_df)
 
         yolo_df = pd.concat(frame_df_list)
@@ -105,7 +104,7 @@ def yolo_report_stats(frame_level_df, params):
 
     Returns: 
     obj_counts_frame: counts of various types of objects per frame
-    video_summary: summary statistics over whole video
+    video_summary: summary statistics over whole video 
 
 
     '''
@@ -127,10 +126,8 @@ def yolo_report_stats(frame_level_df, params):
                           .reset_index())
 
     # restrict to objects of interest and impute 0 for non-detected items
-    all_vehicle_types = pd.DataFrame(
-        {'obj_classification': params['selected_labels']})
-    all_video_dates = frame_object_type[[
-        'camera_id', 'video_upload_datetime']].drop_duplicates()
+    all_vehicle_types = pd.DataFrame({'obj_classification': params['selected_labels']})
+    all_video_dates = frame_object_type[['camera_id', 'video_upload_datetime']].drop_duplicates()
 
     video_level_df = (pd.merge(left=all_vehicle_types.assign(foo=1),
                                right=all_video_dates.assign(foo=1),
@@ -140,8 +137,7 @@ def yolo_report_stats(frame_level_df, params):
 
     video_level_df = pd.merge(left=video_level_df,
                               right=video_level_counts,
-                              on=['camera_id', 'video_upload_datetime',
-                                  'obj_classification'],
+                              on=['camera_id', 'video_upload_datetime', 'obj_classification'],
                               how='left')
     video_level_df = video_level_df.fillna(0)
 

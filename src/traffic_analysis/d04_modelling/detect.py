@@ -1,12 +1,13 @@
 import os
 import numpy as np
 import cv2
-from traffic_analysis.d02_ref.download_detect_model_from_s3 import (
-    download_detect_model_from_s3,
-)
+from traffic_analysis.d02_ref.download_detect_model_from_s3 import download_detect_model_from_s3
 
 
-def detect_objects_in_image(image_capture, params, paths, s3_credentials: dict):
+def detect_objects_in_image(image_capture,
+                            params,
+                            paths,
+                            s3_credentials: dict):
     """ unifying function that defines the detected objects in an image
         Args:
             image_capture (nparray): numpy array containing the captured image (width, height, rbg)
@@ -20,29 +21,27 @@ def detect_objects_in_image(image_capture, params, paths, s3_credentials: dict):
             confs (list(float)): list of detection scores
     """
 
-    conf_thresh = params["detection_confidence_threshold"]
-    detection_iou_threshold = params["detection_iou_threshold"]
-    model_name = params["detection_model"]
+    conf_thresh = params['detection_confidence_threshold']
+    detection_iou_threshold = params['detection_iou_threshold']
+    model_name = params['detection_model']
 
-    download_detect_model_from_s3(
-        model_name=model_name, paths=paths, s3_credentials=s3_credentials
-    )
-    network_output = pass_image_through_nn(
-        image_capture=image_capture, model_name=model_name, paths=paths
-    )
-    boxes_unfiltered, label_idxs_unfiltered, confs_unfiltered = get_detected_objects(
-        image_capture=image_capture,
-        network_output=network_output,
-        conf_thresh=conf_thresh,
-    )
-    boxes, label_idxs, confs = reduce_overlapping_detections(
-        bboxes_in=boxes_unfiltered,
-        label_idxs_in=label_idxs_unfiltered,
-        confs_in=confs_unfiltered,
-        conf_thresh=conf_thresh,
-        iou_thresh=detection_iou_threshold,
-    )
-    labels = label_detections(model_name=model_name, paths=paths, label_idxs=label_idxs)
+    download_detect_model_from_s3(model_name=model_name,
+                                  paths=paths,
+                                  s3_credentials=s3_credentials)
+    network_output = pass_image_through_nn(image_capture=image_capture,
+                                           model_name=model_name,
+                                           paths=paths)
+    boxes_unfiltered, label_idxs_unfiltered, confs_unfiltered = get_detected_objects(image_capture=image_capture,
+                                                                                     network_output=network_output,
+                                                                                     conf_thresh=conf_thresh)
+    boxes, label_idxs, confs = reduce_overlapping_detections(bboxes_in=boxes_unfiltered,
+                                                             label_idxs_in=label_idxs_unfiltered,
+                                                             confs_in=confs_unfiltered,
+                                                             conf_thresh=conf_thresh,
+                                                             iou_thresh=detection_iou_threshold)
+    labels = label_detections(model_name=model_name,
+                              paths=paths,
+                              label_idxs=label_idxs)
 
     return boxes, labels, confs
 
@@ -57,9 +56,9 @@ def populate_labels(model_name: str, paths):
             labels (list(str)): list of object labels strings
     """
 
-    model_file_path = paths["local_detect_model"]
-    labels_file_path = os.path.join(model_file_path, model_name, "coco.names")
-    f = open(labels_file_path, "r")
+    model_file_path = paths['local_detect_model']
+    labels_file_path = os.path.join(model_file_path, model_name, 'coco.names')
+    f = open(labels_file_path, 'r')
     labels = [line.strip() for line in f.readlines()]
 
     return labels
@@ -104,9 +103,9 @@ def identify_most_probable_object(grid_cell_estimate):
     return most_probable_object_idx, most_probable_object_score
 
 
-def pass_image_through_nn(
-    image_capture: np.ndarray, model_name: str, paths: dict
-) -> list:
+def pass_image_through_nn(image_capture: np.ndarray,
+                          model_name: str,
+                          paths: dict) -> list:
     """ detection model generates scores (i.e., confidence) of each object existing in image
         Args:
             image_capture (nparray): numpy array containing the captured image (width, height, rbg)
@@ -122,25 +121,17 @@ def pass_image_through_nn(
     # Turn into the right shape for the NN (here 3x416x416)
     # and align the BGR channel order of open cv with the RGB order of mean values
     scale = 0.00392  # required scaling for yolo
-    pre_processed_image = cv2.dnn.blobFromImage(
-        image=image_capture,
-        scalefactor=scale,
-        size=(416, 416),  # spatial size expected by CNN
-        mean=(0, 0, 0),  # do not use mean subtraction
-        swapRB=True,
-        crop=False,
-    )
+    pre_processed_image = cv2.dnn.blobFromImage(image=image_capture,
+                                                scalefactor=scale,
+                                                size=(416, 416),   # spatial size expected by CNN
+                                                mean=(0, 0, 0),    # do not use mean subtraction
+                                                swapRB=True,
+                                                crop=False)
 
     # read model as deep neural network in opencv
-    config_file_path = os.path.join(
-        paths["local_detect_model"], model_name, model_name + ".cfg"
-    )
-    weights_file_path = os.path.join(
-        paths["local_detect_model"], model_name, model_name + ".weights"
-    )
-    net = cv2.dnn.readNet(
-        weights_file_path, config_file_path
-    )  # can use other net, see documentation
+    config_file_path = os.path.join(paths['local_detect_model'], model_name, model_name + '.cfg')
+    weights_file_path = os.path.join(paths['local_detect_model'], model_name, model_name + '.weights')
+    net = cv2.dnn.readNet(weights_file_path, config_file_path)  # can use other net, see documentation
 
     # input image to neural network
     net.setInput(pre_processed_image)
@@ -156,9 +147,9 @@ def pass_image_through_nn(
     return network_output
 
 
-def get_detected_objects(
-    image_capture: np.ndarray, network_output: list, conf_thresh: float
-):
+def get_detected_objects(image_capture: np.ndarray,
+                         network_output: list,
+                         conf_thresh: float):
     """ describes the detections that score above the confidence threshold
         Args:
             image_capture (nparray): numpy array containing the captured image (width, height, rbg)
@@ -175,23 +166,16 @@ def get_detected_objects(
     label_idxs = []
     confs = []
 
-    for (
-        output_layer
-    ) in network_output:  # loop through outputs from the different output layers
-        for (
-            grid_cell_estimates
-        ) in output_layer:  # loop through grid cells in output layer
+    for output_layer in network_output:  # loop through outputs from the different output layers
+        for grid_cell_estimates in output_layer:  # loop through grid cells in output layer
 
             # find most likely object in specific grid cell of image
-            object_label_idx, max_conf = identify_most_probable_object(
-                grid_cell_estimate=grid_cell_estimates
-            )
+            object_label_idx, max_conf = identify_most_probable_object(grid_cell_estimate=grid_cell_estimates)
 
             # append object to running list of objects if prediction score is above confidence threshold
             if max_conf > conf_thresh:
-                object_bbox = make_bbox_around_object(
-                    image_capture=image_capture, unscaled_bbox=grid_cell_estimates
-                )
+                object_bbox = make_bbox_around_object(image_capture=image_capture,
+                                                      unscaled_bbox=grid_cell_estimates)
                 bboxes.append(object_bbox)
                 label_idxs.append(object_label_idx)
                 confs.append(float(max_conf))
@@ -199,9 +183,11 @@ def get_detected_objects(
     return bboxes, label_idxs, confs
 
 
-def reduce_overlapping_detections(
-    bboxes_in, label_idxs_in, confs_in, conf_thresh, iou_thresh
-):
+def reduce_overlapping_detections(bboxes_in,
+                                  label_idxs_in,
+                                  confs_in,
+                                  conf_thresh,
+                                  iou_thresh):
     """ removes the detections that score above the nms threshold
         Args:
             bboxes_in (list(list(int))): list of width, height, and bottom-left coordinates of detection bboxes
@@ -220,12 +206,10 @@ def reduce_overlapping_detections(
     # 1) Discard detections with probability to be present below conf threshold
     # 2) For each cell, keep the detection with the highest confidence
     # 3) Discard predictions with iou above the iou threshold
-    idx_boxes_nms = cv2.dnn.NMSBoxes(
-        bboxes=bboxes_in,
-        scores=confs_in,
-        score_threshold=conf_thresh,
-        nms_threshold=iou_thresh,
-    )
+    idx_boxes_nms = cv2.dnn.NMSBoxes(bboxes=bboxes_in,
+                                     scores=confs_in,
+                                     score_threshold=conf_thresh,
+                                     nms_threshold=iou_thresh)
 
     # initialize output lists
     bboxes_out = []
@@ -244,7 +228,9 @@ def reduce_overlapping_detections(
     return bboxes_out, label_idxs_out, confs_out
 
 
-def label_detections(label_idxs, model_name: str, paths):
+def label_detections(label_idxs,
+                     model_name: str,
+                     paths):
     """ labels the detected objects according to their index in list
         Args:
             label_idxs (list(int)): list of indices corresponding to the detection labels
@@ -256,7 +242,8 @@ def label_detections(label_idxs, model_name: str, paths):
     """
 
     # import the list of labels
-    label_list = populate_labels(model_name=model_name, paths=paths)
+    label_list = populate_labels(model_name=model_name,
+                                 paths=paths)
 
     # initialize the output list
     labels = []

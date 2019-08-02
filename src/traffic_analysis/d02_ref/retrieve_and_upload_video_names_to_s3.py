@@ -6,17 +6,16 @@ from traffic_analysis.d02_ref.ref_utils import get_names_of_folder_content_from_
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 
 
-def retrieve_and_upload_video_names_to_s3(
-    ouput_file_name,
-    paths,
-    s3_credentials,
-    from_date="2019-06-01",
-    to_date=str(datetime.datetime.now().date()),
-    from_time="00-00-00",
-    to_time="23-59-59",
-    camera_list=None,
-    return_files_flag=False,
-):
+def retrieve_and_upload_video_names_to_s3(ouput_file_name,
+                                          paths,
+                                          s3_credentials,
+                                          from_date='2019-06-01',
+                                          to_date=str(
+                                              datetime.datetime.now().date()),
+                                          from_time='00-00-00',
+                                          to_time='23-59-59',
+                                          camera_list=None,
+                                          return_files_flag=False):
     """Upload a json to s3 containing the filepaths for videos between the dates, times and cameras specified.
 
         Args:
@@ -31,10 +30,10 @@ def retrieve_and_upload_video_names_to_s3(
         Returns:
 
     """
-    print("From: " + from_date + " To: " + to_date)
-    bucket_name = paths["bucket_name"]
-    s3_profile = paths["s3_profile"]
-    s3_video = paths["s3_video"]
+    print('From: ' + from_date + ' To: ' + to_date)
+    bucket_name = paths['bucket_name']
+    s3_profile = paths['s3_profile']
+    s3_video = paths['s3_video']
     to_date = dateutil.parser.parse(to_date).date()
     from_date = dateutil.parser.parse(from_date).date()
     from_time = dateutil.parser.parse(format_time(from_time)).time()
@@ -44,34 +43,30 @@ def retrieve_and_upload_video_names_to_s3(
     # Generate the list of dates
     dates = generate_dates(from_date, to_date)
     for date in dates:
-        date = date.strftime("%Y-%m-%d")
+        date = date.strftime('%Y-%m-%d')
         prefix = "%s%s/" % (s3_video, date)
 
         # fetch video filenames
         elapsed_time, files = get_names_of_folder_content_from_s3(
-            bucket_name, prefix, s3_profile
-        )
-        print(
-            "Extracting {} file names for date {} took {} seconds".format(
-                len(files), date, elapsed_time
-            )
-        )
+            bucket_name, prefix, s3_profile)
+        print('Extracting {} file names for date {} took {} seconds'.format(len(files),
+                                                                            date,
+                                                                            elapsed_time))
         if not files:
             continue
 
         for filename in files:
             if filename:
-                res = filename.split("_")
+                res = filename.split('_')
                 camera_id = res[-1][:-4]
                 time_of_day = res[0].split(".")[0]
                 time_of_day = dateutil.parser.parse(time_of_day).time()
-                if from_time <= time_of_day <= to_time and (
-                    not camera_list or camera_id in camera_list
-                ):
+                if from_time <= time_of_day <= to_time and (not camera_list or camera_id in camera_list):
                     selected_files.append("%s%s" % (prefix, filename))
 
-    dl = DataLoaderS3(s3_credentials, bucket_name=paths["bucket_name"])
-    file_path = paths["s3_video_names"] + ouput_file_name + ".json"
+    dl = DataLoaderS3(s3_credentials,
+                      bucket_name=paths['bucket_name'])
+    file_path = paths['s3_video_names'] + ouput_file_name + '.json'
     dl.save_json(data=selected_files, file_path=file_path)
 
     if return_files_flag:

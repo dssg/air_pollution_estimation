@@ -9,7 +9,7 @@ from traffic_analysis.d03_processing.update_video_level_table import update_vide
 params = load_parameters()
 paths = load_paths()
 creds = load_credentials()
-s3_credentials = creds[paths["s3_creds"]]
+s3_credentials = creds[paths['s3_creds']]
 
 # If running first time:
 # creates the test_seach_json. Change the camera list and output file name for full run
@@ -32,7 +32,7 @@ selected_videos = load_video_names_from_s3(ref_file='test_search',
                                            s3_credentials=s3_credentials)
 
 # select chunks of videos and classify objects
-chunk_size = params["chunk_size"]
+chunk_size = params['chunk_size']
 while selected_videos:
     frame_level_df = update_frame_level_table(file_names=selected_videos[:chunk_size],
                                               paths=paths,
@@ -63,3 +63,12 @@ annotations_df = parse_annotations(paths['annotations'], bool_print_summary=Fals
 count_differences_df = report_count_differences(annotations_df, yolo_df)
 count_differences_df.to_csv(paths['processed_video'] + 'JamCamCountDifferences.csv')
 """
+
+
+
+
+
+
+
+
+

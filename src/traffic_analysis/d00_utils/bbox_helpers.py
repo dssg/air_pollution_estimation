@@ -1,4 +1,4 @@
-import numpy as np
+import numpy as np 
 import cv2
 from random import randint
 
@@ -15,15 +15,15 @@ def manually_draw_bboxes(frame: np.ndarray) -> (list, list):
         # draw bounding boxes over objects
         # selectROI's default behaviour is to draw box starting from the center
         # when fromCenter is set to false, you can draw box starting from top left corner
-        bbox = cv2.selectROI("MultiTracker", frame)
+        bbox = cv2.selectROI('MultiTracker', frame)
         bboxes.append(bbox)
         colors.append((randint(0, 255), randint(0, 255), randint(0, 255)))
         print("Press q to quit selecting boxes and start tracking. Press any other key to select next object.")
         k = cv2.waitKey(0) & 0xFF
-        if k == 113:  # q is pressed
+        if (k == 113):  # q is pressed
             break
 
-        print("Selected bounding boxes {}".format(bboxes))
+        print('Selected bounding boxes {}'.format(bboxes))
 
     return bboxes, colors
 
@@ -34,14 +34,14 @@ def bboxcvlib_to_bboxcv2(bbox_cvlib, vectorized=False):
 
     If vectorized is set to True, will handle np arrays of bboxes. Format would be (num_bboxes, 4)
     """
-    if not vectorized:  # handles subscriptable objects
+    if vectorized == False:  # handles subscriptable objects
         xmin, ymin, xmin_plus_w, ymin_plus_h = bbox_cvlib[
             0], bbox_cvlib[1], bbox_cvlib[2], bbox_cvlib[3]
         bbox_cv2 = [xmin, ymin, xmin_plus_w - xmin, ymin_plus_h - ymin]
 
     else:  # handles np arrays
         xmin, ymin, xmin_plus_w, ymin_plus_h = bbox_cvlib[:, 0], bbox_cvlib[:, 1],\
-            bbox_cvlib[:, 2], bbox_cvlib[:, 3]
+                                               bbox_cvlib[:, 2], bbox_cvlib[:, 3]
         bbox_cv2 = np.array([xmin, ymin,
                              xmin_plus_w - xmin,
                              ymin_plus_h - ymin]).transpose()
@@ -49,19 +49,19 @@ def bboxcvlib_to_bboxcv2(bbox_cvlib, vectorized=False):
     return bbox_cv2
 
 
-def bboxcv2_to_bboxcvlib(bbox_cv2, vectorized=False):
+def bboxcv2_to_bboxcvlib(bbox_cv2,  vectorized=False):
     """Convert bboxes from format returned by cv2 (xmin,ymin,w,h)
     to format accepted by cvlib (xmin,ymin, xmin+w, ymin+H)
 
     If vectorized is set to True, will handle np arrays of bboxes. Format would be (num_bboxes, 4)
 
     """
-    if not vectorized:  # handles subscriptable items
+    if vectorized == False:  # handles subscriptable items
         xmin, ymin, w, h = bbox_cv2[0], bbox_cv2[1], bbox_cv2[2], bbox_cv2[3]
-        bbox_cvlib = [xmin, ymin, xmin + w, ymin + h]
+        bbox_cvlib = [xmin, ymin, xmin+w, ymin+h]
 
     else:  # handles np arrays with multiple bboxes
-        xmin, ymin, w, h = bbox_cv2[:, 0], bbox_cv2[:, 1], bbox_cv2[:, 2], bbox_cv2[:, 3]
+        xmin, ymin, w, h = bbox_cv2[:, 0], bbox_cv2[:,1], bbox_cv2[:, 2], bbox_cv2[:, 3]
         bbox_cvlib = np.array([xmin, ymin, xmin+w, ymin+h]).transpose()
 
     return bbox_cvlib
@@ -91,7 +91,7 @@ def color_bboxes(labels: list) -> list:
 def bbox_intersection_over_union(bbox_a, bbox_b) -> float:
     """Compute intersection over union for two bounding boxes
 
-    Keyword arguments:
+    Keyword arguments: 
 
     bbox_a -- format is (xmin, ymin, xmin+width, ymin+height)
     bbox_b -- format is (xmin, ymin, xmin+width, ymin+height)
@@ -108,7 +108,8 @@ def bbox_intersection_over_union(bbox_a, bbox_b) -> float:
     y_lower_right = min(bbox_a[3], bbox_b[3])  # ycoords plus h
 
     # compute the area of intersection rectangle
-    inter_area = abs(max((x_lower_right - x_upper_left, 0)) * max((y_lower_right - y_upper_left), 0))
+    inter_area = abs(max((x_lower_right - x_upper_left, 0))
+                   * max((y_lower_right - y_upper_left), 0))
     if inter_area == 0:
         return 0
     # compute the area of both the prediction and ground-truth

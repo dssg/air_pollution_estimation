@@ -2,6 +2,7 @@ import boto3
 import cv2
 import os
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import re
 import shutil
@@ -10,7 +11,7 @@ import json
 
 
 def load_video_names(paths):
-    save_folder = "raw_video"
+    save_folder = 'raw_video'
     filepath = os.path.join(paths[save_folder], "searched_videos")
     with open(filepath, "r") as f:
         videos = list(json.load(f))
@@ -20,7 +21,7 @@ def load_video_names(paths):
 def load_videos_into_np(folder):
     # Load files into a dict of numpy arrays using opencv
     video_dict = {}
-    for filename in glob.glob(folder + "*.mp4"):
+    for filename in glob.glob(folder + '*.mp4'):
         try:
             video_name = re.split(r"\\|/", filename)[-1]
             video_dict[video_name] = mp4_to_npy(filename)
@@ -96,7 +97,7 @@ def connect_to_bucket(profile_dir, bucket_name):
     """Connects to the s3 bucket"""
     # Set up boto3 session
     s3_session = boto3.Session(profile_name=profile_dir)
-    s3_resource = s3_session.resource("s3")
+    s3_resource = s3_session.resource('s3')
     my_bucket = s3_resource.Bucket(bucket_name)
 
     return my_bucket
@@ -121,7 +122,7 @@ def describe_s3_bucket(paths):
             Raises:
 
         """
-    my_bucket = connect_to_bucket(paths["s3_profile"], paths["bucket_name"])
+    my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
 
     # Get list of all dates in the s3 bucket
     objects = my_bucket.objects.filter(Prefix="raw/video_data_new/")
@@ -140,7 +141,7 @@ def describe_s3_bucket(paths):
     plt.xlabel('Date')
     plt.ylabel('Number of Videos')
     plt.tight_layout()
-    plt.savefig(paths["plots"] + "01_exploratory/s3_description.pdf")
+    plt.savefig(paths['plots'] + '01_exploratory/s3_description.pdf')
     plt.close()
 
     return
