@@ -30,10 +30,10 @@ def retrieve_and_upload_video_names_to_s3(ouput_file_name,
         Returns:
 
     """
-    print("From: " + from_date + " To: " + to_date)
-    bucket_name = paths["bucket_name"]
-    s3_profile = paths["s3_profile"]
-    s3_video = paths["s3_video"]
+    print('From: ' + from_date + ' To: ' + to_date)
+    bucket_name = paths['bucket_name']
+    s3_profile = paths['s3_profile']
+    s3_video = paths['s3_video']
     to_date = dateutil.parser.parse(to_date).date()
     from_date = dateutil.parser.parse(from_date).date()
     from_time = dateutil.parser.parse(format_time(from_time)).time()
@@ -43,7 +43,7 @@ def retrieve_and_upload_video_names_to_s3(ouput_file_name,
     # Generate the list of dates
     dates = generate_dates(from_date, to_date)
     for date in dates:
-        date = date.strftime("%Y-%m-%d")
+        date = date.strftime('%Y-%m-%d')
         prefix = "%s%s/" % (s3_video, date)
 
         # fetch video filenames
@@ -57,7 +57,7 @@ def retrieve_and_upload_video_names_to_s3(ouput_file_name,
 
         for filename in files:
             if filename:
-                res = filename.split("_")
+                res = filename.split('_')
                 camera_id = res[-1][:-4]
                 time_of_day = res[0].split(".")[0]
                 time_of_day = dateutil.parser.parse(time_of_day).time()
