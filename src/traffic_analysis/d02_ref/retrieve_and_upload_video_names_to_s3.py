@@ -6,7 +6,7 @@ from traffic_analysis.d02_ref.ref_utils import get_names_of_folder_content_from_
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 
 
-def retrieve_and_upload_video_names_to_s3(ouput_file_name,
+def retrieve_and_upload_video_names_to_s3(output_file_name,
                                           paths,
                                           s3_credentials,
                                           from_date='2019-06-01',
@@ -19,7 +19,7 @@ def retrieve_and_upload_video_names_to_s3(ouput_file_name,
     """Upload a json to s3 containing the filepaths for videos between the dates, times and cameras specified.
 
         Args:
-            ouput_file_name (str): name of the json to be saved
+            output_file_name (str): name of the json to be saved
             paths (dict): dictionary containing temp_video, raw_video, s3_profile and bucket_name paths
             s3_credentials (dict): S3 Credentials
             from_date (str): start date (inclusive) for retrieving videos, if None then will retrieve from 2019-06-01 onwards
@@ -66,7 +66,7 @@ def retrieve_and_upload_video_names_to_s3(ouput_file_name,
 
     dl = DataLoaderS3(s3_credentials,
                       bucket_name=paths['bucket_name'])
-    file_path = paths['s3_video_names'] + ouput_file_name + '.json'
+    file_path = paths['s3_video_names'] + output_file_name + '.json'
     dl.save_json(data=selected_files, file_path=file_path)
 
     if return_files_flag:

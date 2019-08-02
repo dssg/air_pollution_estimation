@@ -10,7 +10,11 @@ def load_parameters():
     with open(project_dir + '/conf/base/parameters.yml') as f:
         params = yaml.safe_load(f)
 
-    return {**params['data_collection'], **params['modelling'], **params['reporting'], **params['data_renaming']}
+    merged_params = {}
+    for key, sub_dict in params.items():
+        merged_params = {**merged_params, **sub_dict}
+
+    return merged_params
 
 
 def load_app_parameters():
@@ -39,3 +43,5 @@ def load_paths():
         local_paths[key] = project_dir + '/' + val
 
     return {**s3_paths, **local_paths, **db_paths}
+
+def 

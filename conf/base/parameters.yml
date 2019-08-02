@@ -35,6 +35,10 @@ data_renaming:
   new_path: "raw/videos"
   date_format: "%Y%m%d-%H%M%S"
 
+pipeline_settings:
+  dataset_ref_name: "tims_cameras_all"
+  traffic_analyser: "TrackingAnalyser"
+
 modelling:
   # obj detection
   detection_model: "yolov3-tiny"

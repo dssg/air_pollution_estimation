@@ -5,18 +5,21 @@ from traffic_analysis.d02_ref.retrieve_and_upload_video_names_to_s3 import retri
 from traffic_analysis.d03_processing.update_frame_level_table import update_frame_level_table
 from traffic_analysis.d03_processing.update_video_level_table import update_video_level_table
 from traffic_analysis.d04_modelling.trackinganalyser.trackinganalyser import TrackingAnalyser
-
+#############
+import sys 
+#############
 params = load_parameters()
 paths = load_paths()
 creds = load_credentials()
 s3_credentials = creds[paths['s3_creds']]
 
-analyzer = TrackingAnalyser(params=params, paths=paths)
+traffic_analyser = eval(params["traffic_analyser"])(params=params, paths=paths)
 
+print(params)
 # If running first time:
 # creates the test_seach_json. Change the camera list and output file name for full run
 
-retrieve_and_upload_video_names_to_s3(ouput_file_name='tims_cameras_all',
+retrieve_and_upload_video_names_to_s3(output_file_name= params['dataset_ref_name'],
                                       paths=paths,
                                       from_date='2019-07-17', to_date='2019-07-17',
                                       s3_credentials=s3_credentials,
@@ -26,11 +29,13 @@ upload_annotation_names_to_s3(paths=paths,
                               s3_credentials=s3_credentials)
 """
 # Start from here if video names already specified
-selected_videos = load_video_names_from_s3(ref_file='tims_cameras_all',
+selected_videos = load_video_names_from_s3(ref_file= params['dataset_ref_name'],
                                            paths=paths,
                                            s3_credentials=s3_credentials)
-
+print(selected_videos)
 # select chunks of videos and classify objects
+sys.exit(0)
+
 chunk_size = params['chunk_size']
 while selected_videos:
 
