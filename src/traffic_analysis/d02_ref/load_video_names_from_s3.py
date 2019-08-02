@@ -16,10 +16,10 @@ def load_video_names_from_s3(ref_file,
 
     dl = DataLoaderS3(s3_credentials=s3_credentials,
                       bucket_name=paths['bucket_name'])
-    
-    files = dl.read_json(file_path=paths["s3_video_names"] + ref_file + ".json")
 
-    annotations_path = paths["s3_video_names"] + "annotations.json"
+    files = dl.read_json(file_path=paths['s3_video_names'] + ref_file + '.json')
+
+    annotations_path = paths['s3_video_names'] + 'annotations.json'
     if dl.file_exists(annotations_path):
         annotation_video_names = dl.read_json(file_path=paths['s3_video_names'] + 'annotations.json')
         files += annotation_video_names
