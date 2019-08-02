@@ -24,7 +24,6 @@ def get_tims_data_and_upload_to_s3():
     local_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                              '..', '..', 'data/01_raw/tims/')
     if (os.path.isdir(local_dir)):
-    if os.path.isdir(local_dir):
         shutil.rmtree(local_dir)
     os.makedirs(local_dir)
 
@@ -38,25 +37,15 @@ def get_tims_data_and_upload_to_s3():
         counter += 1
         for i in range(60):
             # File to check for
-            name = (
-                "detdata"
-                + date.strftime("%d%m%Y-%H%M")
-                + "{num:02d}".format(num=i)
-                + ".csv"
-            )
+            name = "detdata" + date.strftime("%d%m%Y-%H%M") + '{num:02d}'.format(num=i) + ".csv"
             url = website + name
             if requests.head(url).status_code == requests.codes.ok:
                 # Download
-                t = threading.Thread(
-                    name="upload_to_s3",
-                    target=download_from_site(url, local_dir + name),
-                )
+                t = threading.Thread(name='upload_to_s3', target=download_from_site(url, local_dir + name))
                 t.start()
                 t.join()
                 # Upload
-                t = threading.Thread(
-                    name="upload_to_s3", target=upload_to_s3(local_dir + name)
-                )
+                t = threading.Thread(name='upload_to_s3', target=upload_to_s3(local_dir + name))
                 t.start()
                 t.join()
                 # Delete the file
@@ -71,11 +60,9 @@ def get_tims_data_and_upload_to_s3():
             date += datetime.timedelta(minutes=15)
 
         # Every 24 hours send an email to say we are up to date
-        if counter % 96 == 0:
-            send_email_warning(
-                msg="TIMS data successfully collected in the last 24 hours",
-                subj="TIMS Data Collection Successful",
-            )
+        if(counter % 96 == 0):
+            send_email_warning(msg='TIMS data successfully collected in the last 24 hours',
+                               subj='TIMS Data Collection Successful')
             counter = 0
 
     return
@@ -86,14 +73,8 @@ def download_from_site(url, file):
 
 
 def upload_to_s3(file):
-    res = subprocess.call(
-        [
-            "aws",
-            "s3",
-            "cp",
-            file,
-            "s3://air-pollution-uk/raw/tims_data/",
-            "--profile",
-            "dssg",
-        ]
-    )
+    res = subprocess.call(["aws", "s3", 'cp',
+                           file,
+                           's3://air-pollution-uk/raw/tims_data/',
+                           '--profile',
+                           'dssg'])
