@@ -59,6 +59,8 @@ def load_camera_statistics(camera_id):
             return output
         df = pd.read_csv(filepath, dtype={"camera_id": "category"})
         df["video_upload_datetime"] = pd.to_datetime(df.video_upload_datetime)
+        df.sort_values("video_upload_datetime", inplace=True)
+        df.drop_duplicates(inplace=True)
         output = df[df.camera_id == camera_id]
         print(output)
 
