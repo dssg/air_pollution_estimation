@@ -1,5 +1,11 @@
+# testing imports 
+import os 
+from traffic_analysis.d00_utils.load_confs import load_parameters
+###################
 from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
 from traffic_analysis.d05_evaluation.video_level_evaluator import VideoLevelEvaluator
+from traffic_analysis.d05_evaluation.frame_level_evaluator import FrameLevelEvaluator
+
 import pandas as pd
 import re
 
@@ -61,16 +67,36 @@ class ChunkEvaluator:
         video_level_performance = video_level_evaluator.evaluate()
         return video_level_performance
 
-    # frame level evaluation
-    def evaluate_frame_level(self):
-        frame_level_mAP_dfs = []
-        for i, xml_path in enumerate(self.annotation_xml_paths):
-            xml_name = re.split(r"\\|/", xml_path)[-1]
-            xml_root = ElementTree.parse(xml_path).getroot()
-            frame_level_evaluator = FrameLevelEvaluator(xml_root, xml_name,
-                                                        self.frame_level_dfs[i],
-                                                        self.params)
-            frame_level_mAP_dfs.append(frame_level_evaluator.evaluate_video())
-        frame_level_mAP_df = pd.concat(
-            frame_level_mAP_dfs, axis=0)  # concat dfs as new rows
-        return frame_level_mAP_df
+    # # frame level evaluation
+    # def evaluate_frame_level(self):
+    #     frame_level_mAP_dfs = []
+    #     for i, xml_path in enumerate(self.annotation_xml_paths):
+    #         xml_name = re.split(r"\\|/", xml_path)[-1]
+    #         xml_root = ElementTree.parse(xml_path).getroot()
+    #         frame_level_evaluator = FrameLevelEvaluator(xml_root, xml_name,
+    #                                                     self.frame_level_dfs[i],
+    #                                                     self.params)
+    #         frame_level_mAP_dfs.append(frame_level_evaluator.evaluate_video())
+    #     frame_level_mAP_df = pd.concat(
+    #         frame_level_mAP_dfs, axis=0)  # concat dfs as new rows
+    #     return frame_level_mAP_df
+
+if __name__ == '__main__':
+    params = load_parameters()
+    print(params)
+    annotations_dir = "C:\\Users\\Caroline Wang\\OneDrive\\DSSG\\air_pollution_estimation\\annotations"
+    xml_paths = [os.path.join(annotations_dir, '14_2019-06-29_13-01-19.744908_00001.05900.xml'),
+                 os.path.join(annotations_dir, '15_2019-06-29_13-01-03.094068_00001.01252.xml')]
+
+    video_level_df = pd.read_csv("../data/carolinetemp/video_level_df.csv",
+                        dtype={"camera_id": str},
+                        parse_dates=["video_upload_datetime"])
+    del video_level_df['Unnamed: 0']
+
+
+    chunk_evaluator = ChunkEvaluator(annotation_xml_paths=xml_paths,
+                                     params=params,
+                                     video_level_df=video_level_df)
+    video_level_performance = chunk_evaluator.evaluate_video_level()
+    print(chunk_evaluator.videos_to_eval)
+    print(video_level_performance)

@@ -55,7 +55,7 @@ class VideoLevelEvaluator:
                          how='left').fillna(0)
         for stat in self.stats_to_evaluate:
             combi[stat + '_diff'] = combi[stat + '_pred'] - combi[stat + '_true']
-
+        
         # reshape for convenient summarising
         diff_cols = [stat + '_diff' for stat in self.stats_to_evaluate]
         diff_melted = combi.melt(id_vars=id_cols,
