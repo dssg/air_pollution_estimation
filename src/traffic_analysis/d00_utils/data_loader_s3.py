@@ -19,11 +19,11 @@ class DataLoaderS3:
         self.client = client
 
     def read_json(self, file_path):
-
+        
         result = self.client.get_object(Bucket=self.bucket_name,
                                         Key=file_path)
 
-        return json.loads(result["Body"].read().decode())
+        return json.loads(result['Body'].read().decode())
 
     def save_json(self, data, file_path):
 
@@ -39,7 +39,7 @@ class DataLoaderS3:
             return True
 
         except ClientError as ex:
-            if ex.response["Error"]["Code"] == "NoSuchKey":
+            if ex.response['Error']['Code'] == 'NoSuchKey':
                 return False
             else:
                 raise ex
@@ -53,9 +53,9 @@ class DataLoaderS3:
                                   Filename=path_to_download_file_to)
 
     def list_objects(self,
-                     prefix=None) -> list:
+                     prefix=None)->list:
 
         objects = self.client.list_objects_v2(Bucket=self.bucket_name,
                                               Prefix=prefix)
 
-        return [file_dict["Key"] for file_dict in objects["Contents"]]
+        return [file_dict['Key'] for file_dict in objects['Contents']]
