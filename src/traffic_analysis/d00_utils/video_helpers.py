@@ -29,7 +29,7 @@ def parse_video_or_annotation_name(video_name: str) -> (str, datetime.datetime):
                     precision; can also handle if the entire path name is passed in
     """
     video_name = re.split(
-        r"_|\\|/", video_name.replace(".mp4", "").replace(".xml", ""))  
+        r"_|\\|/", video_name.replace(".mp4", "").replace(".xml", ""))
     if len(video_name) > 3:
         # remove id which is sometimes added by cvat
         # or remove folder names which are sometimes getting included
