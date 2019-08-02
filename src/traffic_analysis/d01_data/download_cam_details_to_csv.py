@@ -11,7 +11,10 @@ res = urllib.request.urlopen(website)
 data = json.loads(res.read())
 
 # List of fields to be removed from the json
-fields_to_remove = ["$type", "url", "placeType", "children", "childrenUrls"]
+fields_to_remove = ['$type', 'url',
+                    'placeType',
+                    'children',
+                    'childrenUrls']
 
 # Remove the fields and create a list of dictionaries for each camera
 processed_data = []
