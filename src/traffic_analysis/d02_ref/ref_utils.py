@@ -21,17 +21,11 @@ def upload_json_to_s3(paths, save_name, selected_files):
     with open(filepath, "w") as f:
         json.dump(selected_files, f)
     try:
-        res = subprocess.call(
-            [
-                "aws",
-                "s3",
-                "cp",
-                filepath,
-                "s3://air-pollution-uk/" + paths["s3_video_names"],
-                "--profile",
-                "dssg",
-            ]
-        )
+        res = subprocess.call(["aws", "s3", 'cp',
+                               filepath,
+                               's3://air-pollution-uk/' + paths['s3_video_names'],
+                               '--profile',
+                               'dssg'])
     except:
         print("JSON video name upload failed!")
     # Delete the json from local
@@ -59,19 +53,12 @@ def generate_dates(from_date, to_date):
 def get_names_of_folder_content_from_s3(bucket_name, prefix, s3_profile):
 
     start = Time.time()
-    ls = Popen(
-        [
-            "aws",
-            "s3",
-            "ls",
-            "s3://%s/%s" % (bucket_name, prefix),
-            "--profile",
-            s3_profile,
-        ],
-        stdout=PIPE,
-    )
-    p1 = Popen(["awk", '{$1=$2=$3=""; print $0}'], stdin=ls.stdout, stdout=PIPE)
-    p2 = Popen(["sed", "s/^[ \t]*//"], stdin=p1.stdout, stdout=PIPE)
+    ls = Popen(["aws", "s3", 'ls', 's3://%s/%s' % (bucket_name, prefix),
+                '--profile',
+                s3_profile], stdout=PIPE)
+    p1 = Popen(['awk', '{$1=$2=$3=""; print $0}'],
+               stdin=ls.stdout, stdout=PIPE)
+    p2 = Popen(['sed', 's/^[ \t]*//'], stdin=p1.stdout, stdout=PIPE)
     ls.stdout.close()
     p1.stdout.close()
     output = p2.communicate()[0]
