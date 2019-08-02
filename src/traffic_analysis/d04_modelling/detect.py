@@ -132,7 +132,7 @@ def pass_image_through_nn(image_capture: np.ndarray,
     config_file_path = os.path.join(paths['local_detect_model'], model_name, model_name + '.cfg')
     weights_file_path = os.path.join(paths['local_detect_model'], model_name, model_name + '.weights')
     net = cv2.dnn.readNet(weights_file_path, config_file_path)  # can use other net, see documentation
-    
+
     # input image to neural network
     net.setInput(pre_processed_image)
 
@@ -168,7 +168,7 @@ def get_detected_objects(image_capture: np.ndarray,
 
     for output_layer in network_output:  # loop through outputs from the different output layers
         for grid_cell_estimates in output_layer:  # loop through grid cells in output layer
-          
+
             # find most likely object in specific grid cell of image
             object_label_idx, max_conf = identify_most_probable_object(grid_cell_estimate=grid_cell_estimates)
 
@@ -244,7 +244,7 @@ def label_detections(label_idxs,
     # import the list of labels
     label_list = populate_labels(model_name=model_name,
                                  paths=paths)
-    
+
     # initialize the output list
     labels = []
 
