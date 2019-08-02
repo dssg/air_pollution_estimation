@@ -41,5 +41,4 @@ def parse_video_or_annotation_name(video_name: str) -> (str, datetime.datetime):
     video_upload_datetime = "%s %s" % (date_str, time_str.replace("-", ":"))
     video_upload_datetime = dateutil.parser.parse(
         video_upload_datetime.strip())
-    video_upload_datetime = dateutil.parser.parse(video_upload_datetime.strip())
     return camera_id, video_upload_datetime
