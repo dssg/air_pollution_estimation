@@ -58,7 +58,7 @@ def bboxcv2_to_bboxcvlib(bbox_cv2, vectorized=False):
     """
     if not vectorized:  # handles subscriptable items
         xmin, ymin, w, h = bbox_cv2[0], bbox_cv2[1], bbox_cv2[2], bbox_cv2[3]
-        bbox_cvlib = [xmin, ymin, xmin + w, ymin + h]
+        bbox_cvlib = [xmin, ymin, xmin+w, ymin+h]
 
     else:  # handles np arrays with multiple bboxes
         xmin, ymin, w, h = bbox_cv2[:, 0], bbox_cv2[:, 1], bbox_cv2[:, 2], bbox_cv2[:, 3]
