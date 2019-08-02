@@ -39,7 +39,7 @@ def get_tims_data_and_upload_to_s3():
             # File to check for
             name = "detdata" + date.strftime("%d%m%Y-%H%M") + '{num:02d}'.format(num=i) + ".csv"
             url = website + name
-            if requests.head(url).status_code == requests.codes.ok:
+            if requests.head(url).status_code  == requests.codes.ok:
                 # Download
                 t = threading.Thread(name='upload_to_s3', target=download_from_site(url, local_dir + name))
                 t.start()
@@ -50,11 +50,11 @@ def get_tims_data_and_upload_to_s3():
                 t.join()
                 # Delete the file
                 os.remove(local_dir + name)
-                print("Processed TIMS file: " + name)
+                print('Processed TIMS file: ' + name)
                 break
 
         # Up to date so wait 15 minutes before checking again
-        if date > datetime.datetime.now():
+        if(date > datetime.datetime.now()):
             time.sleep(900)
         else:
             date += datetime.timedelta(minutes=15)
@@ -67,9 +67,10 @@ def get_tims_data_and_upload_to_s3():
 
     return
 
-
 def download_from_site(url, file):
     urllib.request.urlretrieve(url, file)
+
+
 
 
 def upload_to_s3(file):
@@ -78,4 +79,3 @@ def upload_to_s3(file):
                            's3://air-pollution-uk/raw/tims_data/',
                            '--profile',
                            'dssg'])
-    
