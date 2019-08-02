@@ -12,7 +12,7 @@ class DataLoaderSQL:
         db_pass = creds['postgres']['passphrase']
 
         self.connection_string = "password=%s user=%s dbname=%s host=%s" % (
-        db_pass, db_user, db_name, db_host)
+            db_pass, db_user, db_name, db_host)
 
         self.conn = None
         self.cursor = None
@@ -34,48 +34,15 @@ class DataLoaderSQL:
         self.conn.commit()
 
     def add_column_to_sql_table(self, table_name, new_column_name, data_type):
-        self.open_connection()
-
-        results = None
-        try:
-            sql = "ALTER TABLE %s ADD COLUMN %s %s;" % (
-                table_name, new_column_name, data_type)
-
-            self.cursor.execute(sql)
-            self.conn.commit()
-
-            return True
-
-        except(Exception, psycopg2.DatabaseError) as error:
-            print(error)
-            self.conn.rollback()
-        finally:
-            self.cursor.close()
-            if self.conn:
-                self.conn.close()
-        return False
+        sql = "ALTER TABLE %s ADD COLUMN %s %s;" % (
+            table_name, new_column_name, data_type)
+        return self.execute_raw_sql_query(self, sql)
 
     def update_sql_table(self, table_name, values, condition):
-        self.open_connection()
+        sql = "UPDATE %s SET %s WHERE %s;" % (table_name, values[0], condition)
+        return self.execute_raw_sql_query(self, sql)
 
-        try:
-            sql = "UPDATE %s SET %s WHERE %s;" % (
-                table_name, values[0], condition)
-            result = self.cursor.execute(sql, (values[1]))
-            print(result)
-            self.conn.commit()
-
-            return True
-        except(Exception, psycopg2.DatabaseError) as error:
-            print(error)
-            self.conn.rollback()
-        finally:
-            self.cursor.close()
-            if self.conn:
-                self.conn.close()
-        return False
-
-    def execute_raw_sql_query(self, sql):
+    def select_from_table(self, sql):
         self.open_connection()
 
         results = None
@@ -85,7 +52,11 @@ class DataLoaderSQL:
             col_names = list(map(lambda x: x[0], self.cursor.description))
             results = pd.DataFrame(results, columns=col_names)
             self.conn.commit()
-
+        except(Exception, psycopg2.errors.UndefinedTable) as error:
+            results = None
+            print('Table does not exist. Please create first. Here is the full error message:')
+            print(error)
+            self.conn.rollback()
         except(Exception, psycopg2.DatabaseError) as error:
             print(error)
             self.conn.rollback()
@@ -95,3 +66,19 @@ class DataLoaderSQL:
 
                 self.conn.close()
         return results
+
+    def execute_raw_sql_query(self, sql):
+        self.open_connection()
+
+        try:
+            self.cursor.execute(sql)
+            self.conn.commit()
+            return True
+        except(Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            self.conn.rollback()
+        finally:
+            self.cursor.close()
+            if self.conn:
+                self.conn.close()
+        return False
