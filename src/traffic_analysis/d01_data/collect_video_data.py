@@ -21,7 +21,7 @@ def download_camera_meta_data(tfl_camera_api: str,
     dl = DataLoaderS3(s3_credentials,
                       bucket_name=paths['bucket_name'])
 
-    camera_meta_data_path = paths["s3_camera_details"]
+    camera_meta_data_path = paths['s3_camera_details']
 
     if dl.file_exists(camera_meta_data_path):
         return
@@ -53,7 +53,7 @@ def collect_camera_videos(download_url: dict,
     dl = DataLoaderS3(s3_credentials,
                       bucket_name=paths['bucket_name'])
 
-    video_urls_dict = dict(dl.read_json(paths["s3_camera_details"]))
+    video_urls_dict = dict(dl.read_json(paths['s3_camera_details']))
 
     iteration = 0
     while True:
@@ -101,12 +101,12 @@ def upload_videos(paths: dict,
         delay: amount of time (minutes) to wait for before downloading new data
     """
 
-    local_video_dir = paths["temp_raw_video"]
+    local_video_dir = paths['temp_raw_video']
     if not os.path.exists(local_video_dir):
         return
-    s3_folder = paths["s3_video"]
-    bucket_name = paths["bucket_name"]
-    s3_profile = paths["s3_profile"]
+    s3_folder = paths['s3_video']
+    bucket_name = paths['bucket_name']
+    s3_profile = paths['s3_profile']
     target_dir_on_s3 = "s3://%s/%s" % (bucket_name, s3_folder)
 
     iteration = 0
@@ -129,10 +129,10 @@ def upload_videos(paths: dict,
 
 
 def rename_videos(paths, params, chunk_size=100):
-    bucket_name = paths["bucket_name"]
-    s3_profile = paths["s3_profile"]
-    s3_folder = "s3://%s/%s" % (bucket_name, params["old_path"])
-    date_format = params["date_format"]
+    bucket_name = paths['bucket_name']
+    s3_profile = paths['s3_profile']
+    s3_folder = "s3://%s/%s" % (bucket_name, params['old_path'])
+    date_format = params['date_format']
 
     if len(sys.argv) > 1:
         chunk_size = sys.argv[1]
@@ -161,7 +161,7 @@ def rename_videos(paths, params, chunk_size=100):
             try:
                 if full_path:
                     old_filename = "s3://%s/%s" % (bucket_name, full_path)
-                    filename = full_path.split("/")[-1]
+                    filename = full_path.split('/')[-1]
                     filename = filename.strip()
                     res = filename.split("_")
                     datetime_obj = dateutil.parser.parse(res[0])
