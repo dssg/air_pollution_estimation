@@ -18,7 +18,7 @@ def download_detect_model_from_s3(model_name: str,
         os.makedirs(local_folder_path_model)
 
         dl = DataLoaderS3(s3_credentials,
-                          bucket_name=paths['bucket_name'])"])
+                          bucket_name=paths['bucket_name'])
 
         files_to_download = dl.list_objects(prefix=paths['s3_detect_model'] + model_name)
 
