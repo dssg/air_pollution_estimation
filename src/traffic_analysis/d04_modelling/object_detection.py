@@ -10,7 +10,9 @@ def detect_bboxes(frame: np.ndarray, model: str,
                   selected_labels: list = None) -> (list, list, list):
     '''Detect bounding boxes on a frame using specified model and optionally an implementation.
     bboxes returned in format (xmin, ymin, w, h). Colors are assigned to bboxes by the type. 
+
     Keyword arguments 
+
     frame -- one frame of a video 
     model -- specify the name of an object model to use
     implementation -- specify the implementation of the model to use 
