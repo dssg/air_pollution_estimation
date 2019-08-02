@@ -86,7 +86,7 @@ class VideoLevelEvaluator:
             frame_level_ground_truth = parse_annotation(xml_root)
 
             # get video level ground truth
-            video_level_ground_truth = (self.compute_video_level_ground_truth(frame_level_ground_truth))
+            video_level_ground_truth = self.compute_video_level_ground_truth(frame_level_ground_truth)
 
             video_level_ground_truth['camera_id'] = video['camera_id']
             video_level_ground_truth['video_upload_datetime'] = video['video_upload_datetime']
@@ -120,6 +120,8 @@ class VideoLevelEvaluator:
                                            .shift(1)))
                                          .fillna(0)  # the first frame does not count as motion change
                                          )
+        ground_truth['starts'] = (ground_truth['motion_change'] == -1).astype(int)
+        ground_truth['stops'] = (ground_truth['motion_change'] == 1).astype(int)
 
         # aggregate to vehicle level
         vehicle_df = (ground_truth
@@ -129,14 +131,10 @@ class VideoLevelEvaluator:
                       .reset_index())
 
         start_stop = (ground_truth
-                      .groupby(['vehicle_id', 'motion_change'])
-                      .size()
-                      .unstack(fill_value=0)
-                      .reset_index()
-                      .rename(columns={-1: 'starts',
-                                       1: 'stops',
-                                       0: 'no_change'})
-                      .drop(columns=['no_change']))
+                      .groupby(['vehicle_id'])
+                      ['starts', 'stops']
+                      .sum()
+                      .reset_index())
 
         vehicle_df = pd.merge(left=vehicle_df,
                               right=start_stop,

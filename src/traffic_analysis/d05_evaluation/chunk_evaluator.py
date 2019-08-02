@@ -13,8 +13,7 @@ class ChunkEvaluator:
     def __init__(self,
                  annotation_xml_paths: list,
                  params: dict,
-                 frame_level_dfs: list = None,
-                 video_level_df: list = None):
+                 video_level_df: pd.DataFrame=None):
 
         annotations_available = {}
         for xml_path in annotation_xml_paths:
@@ -47,7 +46,7 @@ class ChunkEvaluator:
             self.selected_labels = params['selected_labels']
 
         self.params = params
-        
+
     def evaluate_video_level(self)-> pd.DataFrame:
         """This function evaluates a chunk of videos utilizing multiple SingleEvaluator
            objects.
