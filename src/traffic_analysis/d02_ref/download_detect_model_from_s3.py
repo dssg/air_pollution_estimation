@@ -12,7 +12,7 @@ def download_detect_model_from_s3(model_name: str,
             s3_credentials: s3 credentials
     """
     # only cary out if model_name has not been downloaded before
-    local_folder_path_model = os.path.join(paths["local_detect_model"], model_name)
+    local_folder_path_model = os.path.join(paths['local_detect_model'], model_name)
 
     if not os.path.exists(local_folder_path_model):
         os.makedirs(local_folder_path_model)
@@ -28,3 +28,4 @@ def download_detect_model_from_s3(model_name: str,
             path_to_download_file_to = os.path.join(local_folder_path_model, file_name)
             dl.download_file(path_of_file_to_download=path_of_file_to_download,
                              path_to_download_file_to=path_to_download_file_to)
+
