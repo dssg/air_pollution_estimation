@@ -11,12 +11,15 @@ from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 from traffic_analysis.d00_utils.email_service import send_email_warning
 
 
-def download_camera_meta_data(tfl_camera_api: str, paths: dict, s3_credentials: dict):
+def download_camera_meta_data(tfl_camera_api: str,
+                              paths: dict,
+                              s3_credentials: dict):
     """
     Gets a list of camera ids and info from tfl api
     """
 
-    dl = DataLoaderS3(s3_credentials, bucket_name=paths["bucket_name"])
+    dl = DataLoaderS3(s3_credentials,
+                      bucket_name=paths['bucket_name'])
 
     camera_meta_data_path = paths["s3_camera_details"]
 
@@ -32,13 +35,11 @@ def download_camera_meta_data(tfl_camera_api: str, paths: dict, s3_credentials: 
     dl.save_json(data=camera_list, file_path=camera_meta_data_path)
 
 
-def collect_camera_videos(
-    download_url: dict,
-    s3_credentials: dict,
-    paths: dict,
-    iterations: int = None,
-    delay: int = 3,
-):
+def collect_camera_videos(download_url: dict,
+                          s3_credentials: dict,
+                          paths: dict,
+                          iterations: int = None,
+                          delay: int = 3):
     """
     This function was created to download videos from cameras using the tfl api.
         download_url: the tfl api to download traffic camera videos
@@ -49,7 +50,8 @@ def collect_camera_videos(
         delay: amount of time (minutes) to wait for before downloading new data
     """
 
-    dl = DataLoaderS3(s3_credentials, bucket_name=paths["bucket_name"])
+    dl = DataLoaderS3(s3_credentials,
+                      bucket_name=paths['bucket_name'])
 
     video_urls_dict = dict(dl.read_json(paths["s3_camera_details"]))
 
@@ -65,17 +67,14 @@ def collect_camera_videos(
             file_path = os.path.join(download_url, filename)
             datetime_obj = datetime.datetime.now()
             timestamp = datetime_obj.strftime("%Y%m%d-%H%M%S")
-            local_video_dir_date = "%s/%s/" % (
-                paths["temp_raw_video"],
-                datetime_obj.date(),
-            )
+            local_video_dir_date = "%s/%s/" % (paths['temp_raw_video'],
+                                               datetime_obj.date())
 
             # check if the local directory exists.
             if not os.path.exists(local_video_dir_date):
                 os.makedirs(local_video_dir_date)
             local_path = os.path.join(
-                local_video_dir_date, "%s_%s" % (timestamp, filename)
-            )
+                local_video_dir_date, "%s_%s" % (timestamp, filename))
 
             # download video
             print("Downloading videos from ", file_path)
@@ -90,7 +89,9 @@ def collect_camera_videos(
             time.sleep(delay * 60)
 
 
-def upload_videos(paths: dict, iterations=None, delay: int = None):
+def upload_videos(paths: dict,
+                  iterations=None,
+                  delay: int = None):
     """
     This function uploads the video in the local_video_dir to S3. Each video is deleted after an upload.
     Args:
@@ -111,18 +112,12 @@ def upload_videos(paths: dict, iterations=None, delay: int = None):
     iteration = 0
     while True:
         try:
-            res = subprocess.call(
-                [
-                    "aws",
-                    "s3",
-                    "mv",
-                    local_video_dir,
-                    target_dir_on_s3,
-                    "--recursive",
-                    "--profile",
-                    s3_profile,
-                ]
-            )
+            res = subprocess.call(["aws", "s3", 'mv',
+                                   local_video_dir,
+                                   target_dir_on_s3,
+                                   '--recursive',
+                                   '--profile',
+                                   s3_profile])
         except Exception as e:
             send_email_warning(str(e), "Video upload failed.")
         iteration += 1
@@ -143,21 +138,16 @@ def rename_videos(paths, params, chunk_size=100):
         chunk_size = sys.argv[1]
     while True:
         start = time.time()
-        ls = Popen(
-            [
-                "aws",
-                "s3",
-                "ls",
-                s3_folder,
-                "--summarize",
-                "--recursive",
-                "--profile",
-                s3_profile,
-            ],
-            stdout=PIPE,
-        )
-        p1 = Popen(["awk", '{$1=$2=$3=""; print $0}'], stdin=ls.stdout, stdout=PIPE)
-        p2 = Popen(["head", "-n " + str(chunk_size)], stdin=p1.stdout, stdout=PIPE)
+        ls = Popen(["aws", "s3", 'ls',
+                    s3_folder,
+                    '--summarize',
+                    '--recursive',
+                    '--profile',
+                    s3_profile], stdout=PIPE)
+        p1 = Popen(["awk", '{$1=$2=$3=""; print $0}'],
+                   stdin=ls.stdout, stdout=PIPE)
+        p2 = Popen(["head", "-n " + str(chunk_size)],
+                   stdin=p1.stdout, stdout=PIPE)
         ls.stdout.close()
         p1.stdout.close()
         output = p2.communicate()[0]
@@ -178,22 +168,12 @@ def rename_videos(paths, params, chunk_size=100):
                     timestamp = datetime_obj.strftime(date_format)
                     new_filename = "_".join([timestamp, res[1]])
                     new_filename = "s3://%s/%s/%s/%s" % (
-                        bucket_name,
-                        params["new_path"],
-                        str(datetime_obj.date()),
-                        new_filename,
-                    )
-                    res = subprocess.call(
-                        [
-                            "aws",
-                            "s3",
-                            "mv",
-                            old_filename,
-                            new_filename,
-                            "--profile",
-                            s3_profile,
-                        ]
-                    )
+                        bucket_name, params['new_path'], str(datetime_obj.date()), new_filename)
+                    res = subprocess.call(["aws", "s3", 'mv',
+                                           old_filename,
+                                           new_filename,
+                                           '--profile',
+                                           s3_profile])
             except Exception as e:
                 print(e)
         end = time.time()
