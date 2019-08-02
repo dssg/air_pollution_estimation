@@ -18,10 +18,9 @@ def upload_annotation_names_to_s3(paths,
     prefix = "%s" % (paths["s3_annotations"])
 
     # fetch video filenames
-    elapsed_time, files = get_names_of_folder_content_from_s3(
-        bucket_name, prefix, s3_profile
-    )
-    print("Extracting {} file names took {} seconds".format(len(files), elapsed_time))
+    elapsed_time, files = get_names_of_folder_content_from_s3(bucket_name, prefix, s3_profile)
+    print('Extracting {} file names took {} seconds'.format(len(files),
+                                                            elapsed_time))
 
     selected_files = []
     for file in files:
@@ -35,6 +34,7 @@ def upload_annotation_names_to_s3(paths,
             name = name.replace(".xml", ".mp4")
             selected_files.append(paths["s3_video"] + date + "/" + name)
 
-    dl = DataLoaderS3(s3_credentials, bucket_name=paths["bucket_name"])
+    dl = DataLoaderS3(s3_credentials,
+                      bucket_name=paths['bucket_name'])
     file_path = paths["s3_video_names"] + "annotations.json"
     dl.save_json(data=selected_files, file_path=file_path)
