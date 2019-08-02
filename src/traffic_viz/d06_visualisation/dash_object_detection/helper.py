@@ -1,21 +1,18 @@
-from traffic_viz.d06_visualisation.dash_object_detection.server import server
-from traffic_analysis.d00_utils.load_confs import (
-    load_app_parameters,
-    load_parameters,
-    load_paths,
-    load_credentials,
-)
-from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
-import os
-import sys
-import pandas as pd
-from collections import OrderedDict
 from flask_caching import Cache
+from collections import OrderedDict
+import pandas as pd
+import sys
+import os
+from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
+from traffic_viz.d06_visualisation.dash_object_detection.server import server
+from traffic_analysis.d00_utils.load_confs import load_app_parameters, load_parameters, load_paths, load_credentials
+from traffic_analysis.d00_utils.get_project_directory import get_project_directory
 
-src_dir = os.path.join(os.getcwd(), "..", "src")
-data_dir = os.path.join(os.getcwd(), "..", "data")
+project_dir = get_project_directory()
+src_dir = f"{project_dir}/src"
 sys.path.append(src_dir)
 
+print(project_dir)
 
 TIMEOUT = 60
 cache = Cache(
