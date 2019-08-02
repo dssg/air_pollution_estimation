@@ -27,13 +27,11 @@ def update_frame_level_table(file_names: list,
     # Download the video file_names using the file list
     for file in file_names:
         try:
-            path_to_download_file_to = paths["temp_video"] + file.split("/")[
-                -1
-            ].replace(":", "-").replace(" ", "_")
-            dl.download_file(
-                path_of_file_to_download=file,
-                path_to_download_file_to=path_to_download_file_to,
-            )
+            path_to_download_file_to = (paths["temp_video"]
+                                        + file.split('/')[-1].replace(':', '-').replace(" ", "_")
+                                        )
+            dl.download_file(path_of_file_to_download=file,
+                             path_to_download_file_to=path_to_download_file_to)
         except:
             print("Could not download " + file)
 
