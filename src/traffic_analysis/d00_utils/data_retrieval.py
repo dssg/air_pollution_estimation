@@ -148,20 +148,3 @@ def describe_s3_bucket(paths):
     plt.close()
 
     return
-
-
-def append_to_csv(filename: str, df: pd.DataFrame, columns: list, dtype: dict):
-    if df.empty:
-        return
-    # check if filename exists
-    if not os.path.exists(filename):
-        # create directory
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-
-        # create a new dataframe with columns
-        df_main = pd.DataFrame(columns=columns)
-        df_main.to_csv(filename)
-    df_main = pd.read_csv(filename, dtype=dtype)
-    df_main = df_main.append(df)
-    df_main.drop_duplicates(inplace=True)
-    df_main.to_csv(filename, columns=columns, index=False)

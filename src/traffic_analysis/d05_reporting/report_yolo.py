@@ -24,7 +24,7 @@ def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date_time):
     )
     frame_df["frame_id"] = frame_ind
     frame_df["camera_id"] = camera_id
-    frame_df["datetime"] = date_time
+    frame_df["video_upload_datetime"] = date_time
 
     return frame_df
 
@@ -75,6 +75,7 @@ def yolo_output_df(yolo_dict):
 
         # yolo_df index is the index of an objected detected over a frame
         yolo_df.index.name = "obj_ind"
+<<<<<<< HEAD
         yolo_df = yolo_df[
             [
                 "camera_id",
@@ -86,17 +87,38 @@ def yolo_output_df(yolo_dict):
             ]
         ]
         yolo_df["video_id"] = video_num
+=======
+        yolo_df = yolo_df[["camera_id", "frame_id", "video_upload_datetime",
+                           "obj_bounds", "obj_classification", "confidence"]]
+>>>>>>> 9118cdaafd65d12bc7d7f0adb60d80bac4212dea
         df_list.append(yolo_df)
     df = pd.DataFrame()
     # Concatenate dataframes
     if df_list:
         df = pd.concat(df_list)
 
+    x, y, w, h = [], [], [], []
+    for vals in df['obj_bounds'].values:
+        x.append(vals[0])
+        y.append(vals[1])
+        w.append(vals[2])
+        h.append(vals[3])
+    df['box_x'] = x
+    df['box_y'] = y
+    df['box_w'] = w
+    df['box_h'] = h
+    df.drop('obj_bounds', axis=1, inplace=True)
+
     return df
 
 
+<<<<<<< HEAD
 def yolo_report_stats(yolo_df):
     """Report summary statistics for the output of YOLO on one video. 
+=======
+def yolo_report_stats(frame_level_df, params):
+    '''Report summary statistics for the output of YOLO on one video. 
+>>>>>>> 9118cdaafd65d12bc7d7f0adb60d80bac4212dea
 
     Keyword arguments: 
     yolo_df -- pandas df containing formatted output of YOLO for one video (takes the output of yolo_output_df())
@@ -106,6 +128,7 @@ def yolo_report_stats(yolo_df):
     video_summary: summary statistics over whole video 
 
 
+<<<<<<< HEAD
     """
     dfs = []
     if yolo_df.empty:
@@ -140,3 +163,40 @@ def yolo_report_stats(yolo_df):
 
     df = pd.concat(dfs).fillna(0)
     return df
+=======
+    '''
+
+    # get frame level object counts
+    frame_object_type = (frame_level_df
+                         .rename(columns={'datetime': 'video_upload_datetime'})
+                         .groupby(['camera_id', 'video_upload_datetime', "frame_id", "obj_classification"])
+                         .confidence
+                         .count()
+                         .reset_index()
+                         .rename(columns={'confidence': 'obj_count'}))
+
+    # get video level estimates
+    video_level_counts = (frame_object_type
+                          .groupby(['camera_id', 'video_upload_datetime', 'obj_classification'])
+                          .obj_count
+                          .mean()
+                          .reset_index())
+
+    # restrict to objects of interest and impute 0 for non-detected items
+    all_vehicle_types = pd.DataFrame({'obj_classification': params['selected_labels']})
+    all_video_dates = frame_object_type[['camera_id', 'video_upload_datetime']].drop_duplicates()
+
+    video_level_df = (pd.merge(left=all_vehicle_types.assign(foo=1),
+                               right=all_video_dates.assign(foo=1),
+                               on=['foo'],
+                               how='left')
+                      .drop(columns=['foo']))
+
+    video_level_df = pd.merge(left=video_level_df,
+                              right=video_level_counts,
+                              on=['camera_id', 'video_upload_datetime', 'obj_classification'],
+                              how='left')
+    video_level_df = video_level_df.fillna(0)
+
+    return video_level_df
+>>>>>>> 9118cdaafd65d12bc7d7f0adb60d80bac4212dea
