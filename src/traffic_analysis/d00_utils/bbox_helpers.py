@@ -109,7 +109,7 @@ def bbox_intersection_over_union(bbox_a, bbox_b) -> float:
 
     # compute the area of intersection rectangle
     inter_area = abs(max((x_lower_right - x_upper_left, 0)) 
-                     * max((y_lower_right - y_upper_left), 0))
+                   * max((y_lower_right - y_upper_left), 0))
     if inter_area == 0:
         return 0
     # compute the area of both the prediction and ground-truth
