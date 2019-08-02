@@ -34,11 +34,8 @@ def classify_objects(video_dict, params, paths, vid_time_length=10, make_videos=
             frame = video[i, :, :, :]
 
             # apply object detection
-            bbox, label, conf = cv.detect_common_objects(
-                frame,
-                confidence=params["detection_confidence_threshold"],
-                model=params["detection_model"],
-            )
+            bbox, label, conf = cv.detect_common_objects(frame, confidence=params['detection_confidence_threshold'],
+                                                         model=params['detection_model'])
             obj_bounds.append(bbox)
             obj_labels.append([l.replace("motorcycle", "motorbike") for l in label])
             obj_label_confidences.append(conf)
@@ -51,12 +48,8 @@ def classify_objects(video_dict, params, paths, vid_time_length=10, make_videos=
         # write video to local file
         if make_videos:
             cap_cvlib_npy = np.asarray(cap_cvlib)
-            local_mp4_path_out = paths["processed_video"] + name
-            imageio.mimwrite(
-                local_mp4_path_out,
-                cap_cvlib_npy,
-                fps=int(video.shape[0] / vid_time_length),
-            )
+            local_mp4_path_out = paths['processed_video'] + name
+            imageio.mimwrite(local_mp4_path_out, cap_cvlib_npy, fps=int(video.shape[0] / vid_time_length))
 
         yolo_dict[name]["bounds"] = obj_bounds
         yolo_dict[name]["labels"] = obj_labels
