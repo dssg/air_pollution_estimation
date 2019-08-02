@@ -41,7 +41,7 @@ def bboxcvlib_to_bboxcv2(bbox_cvlib, vectorized=False):
 
     else:  # handles np arrays
         xmin, ymin, xmin_plus_w, ymin_plus_h = bbox_cvlib[:, 0], bbox_cvlib[:, 1],\
-            bbox_cvlib[:, 2], bbox_cvlib[:, 3]
+                                                    bbox_cvlib[:, 2], bbox_cvlib[:, 3]
         bbox_cv2 = np.array([xmin, ymin,
                              xmin_plus_w - xmin,
                              ymin_plus_h - ymin]).transpose()
