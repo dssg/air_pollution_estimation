@@ -215,11 +215,20 @@ class TrackingAnalyser(TrafficAnalyserInterface):
               (time.time() - start_time))
         return fleet
 
-    def construct_frame_level_df(self) -> pd.DataFrame:
+    def construct_frame_level_df(self, video_dict) -> pd.DataFrame:
         """Construct frame level df for multiple videos 
         """
+
+        # Check that video doesn't come from in-use camera (some are)
+        for video_name in list(video_dict.keys()):
+            n_frames = video_dict[video_name].shape[0]
+            if n_frames < 75:
+                del video_dict[video_name]
+                print("Video ", video_name,
+                      " has been removed from processing because it may be invalid")
+
         frame_info_list = []
-        for video_name, video in self.video_dict.items():
+        for video_name, video in video_dict.items():
             fleet = self.detect_and_track_objects(video, video_name)
             single_frame_level_df = fleet.report_frame_level_info()
             frame_info_list.append(single_frame_level_df)
