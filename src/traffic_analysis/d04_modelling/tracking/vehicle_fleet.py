@@ -7,10 +7,9 @@ import pandas as pd
 import math
 import collections
 import matplotlib.pyplot as plt
-import datetime
 
 
-class VehicleFleet():
+class VehicleFleet:
     """
     The purpose of the vehicleFleet object is to store information about each vehicle detected/tracked in 
     a video. This information includes the bounding box location with each frame, the vehicle labels, 
@@ -57,9 +56,6 @@ class VehicleFleet():
             # extract bbox info into np array
             frame_level_df['bboxes'] = frame_level_df['bboxes'].apply(np.array)
             bboxes_np = np.array(frame_level_df[['frame_id', 'bboxes']].groupby('frame_id')['bboxes'].apply(np.vstack))
-            print(self.camera_id)
-            print(self.video_upload_datetime)
-            print(bboxes_np)
             num_vehicles, num_frames = bboxes_np[0].shape[0], bboxes_np.shape[0]
 
             # reshape array
@@ -126,12 +122,12 @@ class VehicleFleet():
             self.bboxes = self.bboxes[1:, :, :]
             self.confs = self.confs[1:]
             self.labels = self.labels[1:]
-        
+
         assert self.bboxes.shape[0] == bboxes_time_t.shape[0], "Error! " \
                                                                "Number of vehicles in multitracker " \
                                                                "and fleet do not match!"
 
-        self.bboxes = np.concatenate((self.bboxes, np.expand_dims(bboxes_time_t, axis=2)), 
+        self.bboxes = np.concatenate((self.bboxes, np.expand_dims(bboxes_time_t, axis=2)),
                                         axis=2)
         return
 
@@ -186,7 +182,7 @@ class VehicleFleet():
         default_settings = {"window_size": 25}
         for setting_name, setting_value in smoothing_settings.items():
             default_settings[setting_name] = setting_value
-        self.smoothed_iou_time_series = time_series_smoother(self.iou_time_series,
+        self.smoothed_iou_time_series = time_series_smoother(array=self.iou_time_series,
                                                              method=smoothing_method,
                                                              **default_settings)
         return
@@ -285,34 +281,43 @@ class VehicleFleet():
             if self.bboxes.shape[0] == 1: #only a fake head vehicle, no other vehicles in fleet 
                 return pd.DataFrame([[self.camera_id, self.video_upload_datetime, 
                                       math.nan, math.nan, math.nan, 
-                                      math.nan, math.nan]], columns = column_names)
+                                      math.nan, math.nan]], columns=column_names)
             else: 
-                self.bboxes = self.bboxes[1,:,:] # remove fake head vehicle 
-                self.labels = self.bboxes[1:]
-                self.confs = self.bboxes[1:]
+                self.bboxes = self.bboxes[1:,:,:] # remove fake head vehicle
+                self.labels = self.labels[1:]
+                self.confs = self.confs[1:]
+
                 self.fake_head_vehicle = False
 
         num_vehicles, _, num_frames = self.bboxes.shape
 
+        def add_vehicle_ids(bboxes, vehicle_ids):
+            return np.concatenate([bboxes,
+                                   np.tile(vehicle_ids, (num_frames, 1, 1)).transpose()],
+                                  axis=1)
+
+        def add_frame_id(single_frame, frame_id):
+            return np.concatenate([single_frame,
+                                   (np.ones(num_vehicles) * frame_id)[:, np.newaxis]],
+                                  axis=1)
+
         # add vehicle index for each frame to all frames at once
         vehicle_ids = np.arange(0, num_vehicles)
-        add_vehicle_ids = lambda all_frames, vehicle_ids: np.concatenate(
-                            [all_frames,np.tile(vehicle_ids, (num_frames, 1, 1)).transpose()],
-                            axis = 1)
 
         # add the frame id to each frame
-        frame_info_all = add_vehicle_ids(self.bboxes,vehicle_ids)
-        add_frame_id = lambda single_frame, frame_id: np.concatenate([single_frame, (np.ones(num_vehicles)*frame_id)[:,np.newaxis]], axis = 1)
-        # convert 3d array into 2d pd dataframe
-        frame_info_list = [add_frame_id(frame_info_all[:,:,frame_id],frame_id) for frame_id in range(num_frames)]
-        stacked = np.vstack(frame_info_list)
-        frame_level_info_df = pd.DataFrame(stacked)
+        frame_info_all = add_vehicle_ids(bboxes=self.bboxes,
+                                         vehicle_ids=vehicle_ids)
+        frame_info_list = [add_frame_id(single_frame=frame_info_all[:, :, frame_id],
+                                        frame_id=frame_id) for frame_id in range(num_frames)]
 
-        frame_level_info_df["bboxes"] = frame_level_info_df.iloc[:,:4].values.tolist()
+        # convert 3d array into 2d pd dataframe
+        frame_level_info_df = pd.DataFrame(np.vstack(frame_info_list))
+
+        frame_level_info_df["bboxes"] = frame_level_info_df.iloc[:, :4].values.tolist()
         # drop the numeric columns used above, rename the rest
-        frame_level_info_df = frame_level_info_df.drop(columns = [0,1,2,3]).rename({4:"vehicle_id",
-                                                                                    5:"frame_id"},
-                                                                                    axis = "columns")
+        frame_level_info_df = frame_level_info_df.drop(columns=[0, 1, 2, 3]).rename({4: "vehicle_id",
+                                                                                     5: "frame_id"},
+                                                                                    axis="columns")
         # column type conversions
         frame_level_info_df["vehicle_id"] = frame_level_info_df["vehicle_id"].astype('int')
         frame_level_info_df["frame_id"] = frame_level_info_df["frame_id"].astype('int')
@@ -331,8 +336,8 @@ class VehicleFleet():
         return frame_level_info_df
 
     def report_video_level_stats(self, vehicle_counts: dict,
-                               vehicle_stop_counts: dict,
-                               vehicle_start_counts: dict) -> pd.DataFrame:
+                                 vehicle_stop_counts: dict,
+                                 vehicle_start_counts: dict) -> pd.DataFrame:
         """ Combine the counting dictionaries of vehicle stops, starts, and counts into
         one nice pandas dataframe. 
 
@@ -346,7 +351,7 @@ class VehicleFleet():
                         'vehicle_type', 'counts', 'stops', 'starts']
 
         counts_df = pd.DataFrame.from_dict(vehicle_counts,
-                                          orient='index', columns=['counts'],)
+                                          orient='index', columns=['counts'])
         stops_df = pd.DataFrame.from_dict(vehicle_stop_counts,
                                           orient='index', columns=['stops'])
         starts_df = pd.DataFrame.from_dict(vehicle_start_counts,

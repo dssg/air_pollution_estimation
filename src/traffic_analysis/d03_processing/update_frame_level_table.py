@@ -1,7 +1,7 @@
-import pandas as pd
+import datetime
 
+from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 from traffic_analysis.d00_utils.data_retrieval import load_videos_into_np, delete_and_recreate_dir
-from traffic_analysis.d03_processing.add_to_table_sql import add_to_table_sql
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 
 
@@ -9,8 +9,7 @@ def update_frame_level_table(analyzer,
                              file_names: list,
                              paths: dict,
                              params: dict,
-                             creds: dict,
-                             s3_credentials: dict):
+                             creds: dict):
     """ Update the frame level table on s3 (pq) based on the videos in the files list
                 Args:
                     analyzer: analyzer object for doing traffic analysis
@@ -18,12 +17,11 @@ def update_frame_level_table(analyzer,
                     paths (dict): dictionary of paths from yml file
                     params (dict): dictionary of parameters from yml file
                     creds (dict): dictionary of credentials from yml file
-                    creds: generic credentials dictionary
-                    s3_credentials: S3 credentials
 
                 Returns:
 
     """
+    s3_credentials = creds[paths['s3_creds']]
     dl = DataLoaderS3(s3_credentials,
                       bucket_name=paths['bucket_name'])
 
@@ -58,10 +56,9 @@ def update_frame_level_table(analyzer,
     frame_level_df['bbox_w'] = w
     frame_level_df['bbox_h'] = h
     frame_level_df.drop('bboxes', axis=1, inplace=True)
-    print(frame_level_df.head(3))
-    add_to_table_sql(df=frame_level_df,
-                     table='frame_stats',
-                     creds=creds,
-                     paths=paths)
+    frame_level_df['creation_datetime'] = datetime.datetime.now()
 
-    return
+    db_obj = DataLoaderSQL(creds=creds, paths=paths)
+    db_obj.add_to_sql(df=frame_level_df, table_name=paths['db_frame_level'])
+
+    return frame_level_df

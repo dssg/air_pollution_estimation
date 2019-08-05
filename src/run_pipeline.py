@@ -33,8 +33,7 @@ selected_videos = load_video_names_from_s3(ref_file='tims_cameras_all',
 # select chunks of videos and classify objects
 chunk_size = params['chunk_size']
 while selected_videos:
-
-    update_frame_level_table(analyzer=analyzer,
+    frame_level_df = update_frame_level_table(analyzer=analyzer,
                              file_names=selected_videos[:chunk_size],
                              paths=paths,
                              params=params,
@@ -43,10 +42,12 @@ while selected_videos:
 
     # evaluate_frame_level_table
 
-    update_video_level_table(analyzer=analyzer,
+    update_video_level_table(frame_level_df=frame_level_df,
+                             analyzer=analyzer,
                              file_names=selected_videos[:chunk_size],
                              paths=paths,
-                             creds=creds)
+                             creds=creds,
+                             params=params)
 
     # evaluate_video_level_table
 

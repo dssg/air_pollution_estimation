@@ -22,7 +22,7 @@ def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date_time):
                             'obj_bounds', 'obj_classification', 'confidence'])
     frame_df["frame_id"] = frame_ind
     frame_df["camera_id"] = camera_id
-    frame_df["datetime"] = date_time
+    frame_df["video_upload_datetime"] = date_time
 
     return frame_df
 
@@ -52,11 +52,6 @@ def yolo_output_df(yolo_dict):
         assert obj_labels.shape[0] == num_frames
         assert obj_label_confidences.shape[0] == num_frames
 
-        filename = name.split("_")
-        time_obj = filename[1].replace("-", ":") if len(filename) > 2 else " "
-        datetimestring = "%s %s" % (filename[0], time_obj)
-        datetimestring = datetimestring.strip()
-        print(datetimestring)
         camera_id, date_time = parse_video_or_annotation_name(name)
 
         frame_df_list = []
@@ -71,15 +66,13 @@ def yolo_output_df(yolo_dict):
 
             frame_df = frame_info_to_df(
                 obj_info_aggregated, frame_ind, camera_id, date_time)
-            frame_df = frame_info_to_df(
-                obj_info_aggregated, frame_ind, camera_id, date_time)
             frame_df_list.append(frame_df)
 
         yolo_df = pd.concat(frame_df_list)
 
         # yolo_df index is the index of an objected detected over a frame
         yolo_df.index.name = "obj_ind"
-        yolo_df = yolo_df[["camera_id", "frame_id", "datetime",
+        yolo_df = yolo_df[["camera_id", "frame_id", "video_upload_datetime",
                            "obj_bounds", "obj_classification", "confidence"]]
         df_list.append(yolo_df)
     df = pd.DataFrame()
@@ -102,7 +95,7 @@ def yolo_output_df(yolo_dict):
     return df
 
 
-def yolo_report_stats(yolo_df):
+def yolo_report_stats(frame_level_df, params):
     '''Report summary statistics for the output of YOLO on one video. 
 
     Keyword arguments: 
@@ -114,28 +107,37 @@ def yolo_report_stats(yolo_df):
 
 
     '''
-    dfs = []
-    if yolo_df.empty:
-        return pd.DataFrame()
-    grouped = yolo_df.groupby(['camera_id', 'datetime'])
 
-    for name, group in grouped:
-        obj_counts_frame = group.groupby(
-            ["frame_id", "obj_classification"]).size().reset_index(name='obj_count')
+    # get frame level object counts
+    frame_object_type = (frame_level_df
+                         .rename(columns={'datetime': 'video_upload_datetime'})
+                         .groupby(['camera_id', 'video_upload_datetime', "frame_id", "obj_classification"])
+                         .confidence
+                         .count()
+                         .reset_index()
+                         .rename(columns={'confidence': 'obj_count'}))
 
-        for type in obj_counts_frame['obj_classification'].unique():
-            type_df = obj_counts_frame[obj_counts_frame['obj_classification'] == type]
-            count_df = pd.DataFrame(
-                [type_df['obj_count'].mean()], columns=['counts'])
-            count_df['vehicle_type'] = type
-            count_df['camera_id'] = group['camera_id'].iloc[0]
-            count_df['datetime'] = group['datetime'].iloc[0]
-            count_df['starts'] = 0
-            count_df['stops'] = 0
-            assert group['datetime'].nunique(
-            ) == 1, "Non-unique datetime..." + str(group['datetime'].unique())
-            assert group['camera_id'].nunique() == 1, "Non-unique camera_id"
-            dfs.append(count_df)
+    # get video level estimates
+    video_level_counts = (frame_object_type
+                          .groupby(['camera_id', 'video_upload_datetime', 'obj_classification'])
+                          .obj_count
+                          .mean()
+                          .reset_index())
 
-    df = pd.concat(dfs).fillna(0)
-    return df
+    # restrict to objects of interest and impute 0 for non-detected items
+    all_vehicle_types = pd.DataFrame({'obj_classification': params['selected_labels']})
+    all_video_dates = frame_object_type[['camera_id', 'video_upload_datetime']].drop_duplicates()
+
+    video_level_df = (pd.merge(left=all_vehicle_types.assign(foo=1),
+                               right=all_video_dates.assign(foo=1),
+                               on=['foo'],
+                               how='left')
+                      .drop(columns=['foo']))
+
+    video_level_df = pd.merge(left=video_level_df,
+                              right=video_level_counts,
+                              on=['camera_id', 'video_upload_datetime', 'obj_classification'],
+                              how='left')
+    video_level_df = video_level_df.fillna(0)
+
+    return video_level_df
