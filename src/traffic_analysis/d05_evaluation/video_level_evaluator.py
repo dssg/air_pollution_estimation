@@ -6,7 +6,7 @@ from traffic_analysis.d05_evaluation.parse_annotation import parse_annotation
 
 class VideoLevelEvaluator:
     """
-    Purpose of this class is to conduct video level evaluation for one video.
+    Purpose of this class is to conduct video level evaluation for multiple videos.
     """
     def __init__(self,
                  videos_to_eval: pd.DataFrame,
@@ -26,8 +26,9 @@ class VideoLevelEvaluator:
 
     def evaluate(self):
         """
-        Summary function to perform the evaluation
-        :return: Data frame summarising the performance
+        Function to perform the evaluation
+        :return: Data frame summarising the performance and data frame with raw differences of 
+        predictions vs ground truth
         """
         self.video_level_ground_truth = self.get_ground_truth()
         diff_df = self.compute_diffs()

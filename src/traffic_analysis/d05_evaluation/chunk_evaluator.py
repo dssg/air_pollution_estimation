@@ -50,7 +50,6 @@ class ChunkEvaluator:
             self.video_level_df = video_level_df
 
             self.video_level_column_order = params['video_level_column_order']
-            self.selected_labels = params['selected_labels']
 
         if frame_level_df is not None: 
             frame_level_videos_to_eval = frame_level_df[['camera_id', 'video_upload_datetime']].drop_duplicates()
@@ -64,13 +63,13 @@ class ChunkEvaluator:
 
             assert self.num_frame_level_videos > 0
             self.frame_level_df = frame_level_df
-            # self.video_level_column_order = params['video_level_column_order']
 
+        self.selected_labels = params['selected_labels']
         self.params = params
 
-    def evaluate_video_level(self)-> pd.DataFrame:
-        """This function evaluates a chunk of videos utilizing multiple SingleEvaluator
-           objects.
+
+    def evaluate_video_level(self) -> (pd.DataFrame, pd.DataFrame):
+        """This function evaluates a chunk of videos with the VideoLevelEvaluator object
         """
 
 
@@ -79,22 +78,19 @@ class ChunkEvaluator:
                                                     video_level_column_order=self.video_level_column_order,
                                                     selected_labels=self.selected_labels)
 
-        video_level_performance, video_level_diff_df = video_level_evaluator.evaluate()
-        return video_level_performance, video_level_diff_df
+        video_level_performance, video_level_diff = video_level_evaluator.evaluate()
+        return video_level_performance, video_level_diff
 
-    # # frame level evaluation
-    # def evaluate_frame_level(self):
-    #     frame_level_mAP_dfs = []
-    #     for i, xml_path in enumerate(self.annotation_xml_paths):
-    #         xml_name = re.split(r"\\|/", xml_path)[-1]
-    #         xml_root = ElementTree.parse(xml_path).getroot()
-    #         frame_level_evaluator = FrameLevelEvaluator(xml_root, xml_name,
-    #                                                     self.frame_level_dfs[i],
-    #                                                     self.params)
-    #         frame_level_mAP_dfs.append(frame_level_evaluator.evaluate_video())
-    #     frame_level_mAP_df = pd.concat(
-    #         frame_level_mAP_dfs, axis=0)  # concat dfs as new rows
-    #     return frame_level_mAP_df
+
+    def evaluate_frame_level(self) -> pd.DataFrame:
+        """This function evaluates mean average precision for a chunk of videos 
+        """
+        frame_level_evaluator = FrameLevelEvaluator(videos_to_eval=self.frame_level_videos_to_eval,
+                                                    frame_level_df=self.frame_level_df,
+                                                    selected_labels=self.selected_labels) 
+        frame_level_mAP = frame_level_evaluator.evaluate()
+        return frame_level_mAP
+
 
 if __name__ == '__main__':
     params = load_parameters()
@@ -105,15 +101,25 @@ if __name__ == '__main__':
                  os.path.join(annotations_dir, '15_2019-06-29_13-01-03.094068_00001.01252.xml')]
 
     video_level_df = pd.read_csv("../data/carolinetemp/video_level_df.csv",
-                        dtype={"camera_id": str},
-                        parse_dates=["video_upload_datetime"])
+                                 dtype={"camera_id": str},
+                                parse_dates=["video_upload_datetime"])
     del video_level_df['Unnamed: 0']
 
+    frame_level_df = pd.read_csv("../data/carolinetemp/frame_level_df.csv",
+                                 dtype={"camera_id": str},
+                                 converters={"bboxes": lambda x: [float(coord) for coord in x.strip("[]").split(", ")]}, 
+                                 parse_dates=["video_upload_datetime"])
+    del frame_level_df['Unnamed: 0']
 
     chunk_evaluator = ChunkEvaluator(annotation_xml_paths=xml_paths,
                                      params=params,
-                                     video_level_df=video_level_df)
-    video_level_performance, video_level_diff_df = chunk_evaluator.evaluate_video_level()
+                                     video_level_df=video_level_df,
+                                     frame_level_df=frame_level_df)
 
-    print(video_level_performance)
-    print(video_level_diff_df)
+    # video_level_performance, video_level_diff = chunk_evaluator.evaluate_video_level()
+
+    # print(video_level_performance)
+    # print(video_level_diff)
+
+    frame_level_mAP = chunk_evaluator.evaluate_frame_level()
+    print(frame_level_mAP)
