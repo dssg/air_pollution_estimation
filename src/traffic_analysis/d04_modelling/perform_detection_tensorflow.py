@@ -14,7 +14,7 @@ from traffic_analysis.d04_modelling.transfer_learning.convert_darknet_to_tensorf
 from traffic_analysis.d04_modelling.transfer_learning.generate_tensorflow_model import YoloV3
 
 
-def detect_objects_in_image(image_capture, params, paths):
+def detect_objects_in_image(image_capture, params, paths, s3_credentials):
     """ uses a tensorflow implementation of yolo to detect objects in a frame
         Args:
             image_capture (nparray): numpy array containing the captured image (width, height, rbg)
@@ -28,13 +28,17 @@ def detect_objects_in_image(image_capture, params, paths):
     """
 
     detection_model = params['detection_model']
-    local_filepath_model = os.path.join(paths['detection_model'], detection_model, 'yolov3.ckpt')
+    local_filepath_model = os.path.join(paths['local_detection_model'], detection_model, 'yolov3.ckpt')
 
     if detection_model == 'yolov3_tf':  # only use with yolov3_tf as detection model
         if not os.path.exists(local_filepath_model):  # create yolov3 tensorflow model on local if does not exist
-            yolov3_darknet_to_tensorflow(params, paths)
+            yolov3_darknet_to_tensorflow(params=params,
+                                         paths=paths,
+                                         s3_credentials=s3_credentials)
 
-        boxes, confs, labels = pass_image_through_nn(image_capture, paths, params)
+        boxes, confs, labels = pass_image_through_nn(image_capture=image_capture,
+                                                     paths=paths,
+                                                     params=params)
 
     return boxes, confs, labels
 
@@ -55,12 +59,12 @@ def pass_image_through_nn(image_capture, paths, params):
     conf_thresh = params['detection_confidence_threshold']
     iou_thresh = params['detection_iou_threshold']
     detection_model = params['detection_model']
-    local_filepath_model = os.path.join(paths['detection_model'], detection_model, 'yolov3.ckpt')
+    local_filepath_model = os.path.join(paths['local_detection_model'], detection_model, 'yolov3.ckpt')
 
     # prepare the inputs for model initialization
     image_array, formatting_params = format_image_for_yolo(image_capture)
     anchors = parse_anchors(paths)
-    class_name_path = os.path.join(paths['detection_model'], 'yolov3', 'coco.names')
+    class_name_path = os.path.join(paths['local_detection_model'], 'yolov3', 'coco.names')
     classes = read_class_names(class_name_path)
     n_classes = len(classes)
 
@@ -86,7 +90,7 @@ def pass_image_through_nn(image_capture, paths, params):
         # rescale the coordinates to the original image
         boxes_out = rescale_boxes(boxes_unscaled, formatting_params)
 
-    return boxes_out, scores_out, labels_out
+    return boxes_out, labels_out, scores_out
 
 
 def format_image_for_yolo(image_capture):
