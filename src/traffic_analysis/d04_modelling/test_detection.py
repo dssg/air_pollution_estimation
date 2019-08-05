@@ -38,5 +38,5 @@ def test_detection(image_path):
     print(delt_time)
     print(bbox, label, confidence)
 
-
-test_detection('/home/jack_hensley/air_pollution_estimation/data/frame_level/frame001.jpg')
+test_detection('C:/Users/joh3146/Documents/dssg/air_pollution_estimation/data/frame_level/frame001.jpg')
+# test_detection('/home/jack_hensley/air_pollution_estimation/data/frame_level/frame001.jpg')

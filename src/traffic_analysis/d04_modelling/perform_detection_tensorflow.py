@@ -73,7 +73,7 @@ def pass_image_through_nn(image_capture, paths, params):
         # initialize tensorflow yolov3 model
         init_data = tf.placeholder(tf.float32, [1, 416, 416, 3], name='init_data')
         yolo_model = YoloV3(n_classes, anchors)
-        with tf.variable_scope('yolov3'):
+        with tf.variable_scope('YoloV3'):
             feature_map = yolo_model.forward(init_data, False)
 
         pred_boxes, pred_confs, pred_probs = yolo_model.predict(feature_map)
