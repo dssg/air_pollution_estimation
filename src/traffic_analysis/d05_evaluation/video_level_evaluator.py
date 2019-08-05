@@ -51,9 +51,9 @@ class VideoLevelEvaluator:
 
         id_cols = ['camera_id', 'video_upload_datetime', 'vehicle_type']
         diff_df = pd.merge(left=video_level_ground_truth[id_cols + list(truth_rename_dict.values())],
-                         right=video_level_estimates[id_cols + list(pred_rename_dict.values())],
-                         on=id_cols,
-                         how='left').fillna(0)
+                           right=video_level_estimates[id_cols + list(pred_rename_dict.values())],
+                           on=id_cols,
+                           how='left').fillna(0)
         for stat in self.stats_to_evaluate:
             diff_df[stat + '_diff'] = diff_df[stat + '_pred'] - diff_df[stat + '_true']
         return diff_df
@@ -64,9 +64,9 @@ class VideoLevelEvaluator:
         id_cols = ['camera_id', 'video_upload_datetime', 'vehicle_type']
         diff_cols = [stat + '_diff' for stat in self.stats_to_evaluate]
         diff_melted = diff_df.melt(id_vars=id_cols,
-                                 value_vars=diff_cols,
-                                 value_name='stat_diff',
-                                 var_name='stat')
+                                   value_vars=diff_cols,
+                                   value_name='stat_diff',
+                                   var_name='stat')
         diff_melted['stat'] = diff_melted['stat'].str.replace("_diff", "")
 
         # summarise

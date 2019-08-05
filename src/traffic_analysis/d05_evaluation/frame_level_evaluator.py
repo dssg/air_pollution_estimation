@@ -39,8 +39,9 @@ class FrameLevelEvaluator:
         for (gt_camera_id, gt_video_upload_datetime), ground_truth_df in \
             self.frame_level_ground_truth.groupby(["camera_id", "video_upload_datetime"]):
             # get corresponding predictions for this video 
-            pred_df = self.frame_level_preds[(self.frame_level_preds["camera_id"] == gt_camera_id) & \
-                                             (self.frame_level_preds["video_upload_datetime"] == gt_video_upload_datetime)]
+            pred_df = self.frame_level_preds[(self.frame_level_preds["camera_id"] == gt_camera_id) &
+                                             (self.frame_level_preds["video_upload_datetime"] ==
+                                              gt_video_upload_datetime)]
 
             ground_truth_dict = self.reparse_bboxes_df(ground_truth_df, 
                                                        include_confidence=False)
@@ -78,8 +79,8 @@ class FrameLevelEvaluator:
             lambda x: all(True if bbox_entry == 0.0 else False for bbox_entry in x))
 
         frame_level_df_filt = (frame_level_df_filt[~zeros_mask]
-                                    .sort_values(by=["camera_id", "video_upload_datetime"])
-                                    .reset_index(drop=True))
+                               .sort_values(by=["camera_id", "video_upload_datetime"])
+                               .reset_index(drop=True))
         return frame_level_df_filt
 
     def get_ground_truth(self) -> pd.DataFrame:
@@ -125,8 +126,8 @@ class FrameLevelEvaluator:
 
         if bbox_format == "cv2":
             # convert to format cvlib
-            bboxes_cvlib = pd.Series(bboxcv2_to_bboxcvlib(bboxes_np,vectorized=True).tolist()).values
-            df.loc[:,"bboxes"] = bboxes_cvlib
+            bboxes_cvlib = pd.Series(bboxcv2_to_bboxcvlib(bboxes_np, vectorized=True).tolist()).values
+            df.loc[:, "bboxes"] = bboxes_cvlib
 
         # initialize dictionaries to correct shape
         if include_confidence:
@@ -145,12 +146,11 @@ class FrameLevelEvaluator:
             }
 
         for (vehicle_type, frame_id), vehicle_frame_df in df.groupby(
-            ["vehicle_type", "frame_id"]):
-            frame_id = int(frame_id)
-
+                ["vehicle_type", "frame_id"]):
             if vehicle_type not in self.selected_labels: 
-                continue 
+                continue
 
+            frame_id = int(frame_id)
             if include_confidence:
                 df_as_dict[vehicle_type]["frame" + str(frame_id)]["bboxes"] = \
                     vehicle_frame_df["bboxes"].tolist()
@@ -158,7 +158,7 @@ class FrameLevelEvaluator:
                     vehicle_frame_df["confidence"].tolist()
             else:
                 df_as_dict[vehicle_type]["frame" + str(frame_id)] = \
-                vehicle_frame_df["bboxes"].tolist()
+                    vehicle_frame_df["bboxes"].tolist()
 
         return df_as_dict
 

@@ -55,7 +55,7 @@ while selected_videos:
 
 
 """
-from d05_reporting.report_yolo import yolo_output_df, yolo_report_count_stats
+from d05_evaluation.report_yolo import yolo_output_df, yolo_report_count_stats
 from d04_modelling.evaluation import parse_annotations, report_count_differences
 # Load Annotations and Evaluate
 yolo_df = pd.read_csv(os.path.join(paths['processed_video'], 'JamCamYolo.csv'))

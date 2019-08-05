@@ -1,7 +1,7 @@
 import datetime
 from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
-from traffic_analysis.d05_reporting.report_yolo import yolo_report_stats
+from traffic_analysis.d05_evaluation.report_yolo import yolo_report_stats
 
 
 def update_video_level_table(frame_level_df=None, file_names=None, paths=None, creds=None, params=None):
