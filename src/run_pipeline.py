@@ -4,7 +4,7 @@ from traffic_analysis.d02_ref.load_video_names_from_s3 import load_video_names_f
 from traffic_analysis.d02_ref.retrieve_and_upload_video_names_to_s3 import retrieve_and_upload_video_names_to_s3
 from traffic_analysis.d03_processing.update_frame_level_table import update_frame_level_table
 from traffic_analysis.d03_processing.update_video_level_table import update_video_level_table
-from traffic_analysis.d04_modelling.trackinganalyser.trackinganalyser import TrackingAnalyser
+from traffic_analysis.d04_modelling.tracking.tracking_analyser import TrackingAnalyser
 
 params = load_parameters()
 paths = load_paths()
