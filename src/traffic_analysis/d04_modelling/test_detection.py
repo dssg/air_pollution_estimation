@@ -1,11 +1,14 @@
 import time
 import cv2
 import sys
-print(sys.path)
+import os
 
-from src.traffic_analysis.d00_utils.load_confs import load_parameters, load_paths, load_credentials
-from src.traffic_analysis.d04_modelling.perform_detection_tensorflow import detect_objects_in_image as tensorflow_detect
-from src.traffic_analysis.d04_modelling.perform_detection_opencv import detect_objects_in_image as opencv_detect
+ospath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..')
+sys.path.append(ospath)
+
+from traffic_analysis.d00_utils.load_confs import load_parameters, load_paths, load_credentials
+from traffic_analysis.d04_modelling.perform_detection_tensorflow import detect_objects_in_image as tensorflow_detect
+from traffic_analysis.d04_modelling.perform_detection_opencv import detect_objects_in_image as opencv_detect
 
 
 def test_detection(image_path):
