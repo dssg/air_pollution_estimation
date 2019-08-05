@@ -1,5 +1,7 @@
 import time
 import cv2
+import sys
+print(sys.path)
 
 from src.traffic_analysis.d00_utils.load_confs import load_parameters, load_paths, load_credentials
 from src.traffic_analysis.d04_modelling.perform_detection_tensorflow import detect_objects_in_image as tensorflow_detect
