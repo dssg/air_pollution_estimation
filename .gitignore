@@ -115,6 +115,7 @@ local_settings.py
 # Flask stuff:
 instance/
 .webassets-cache
+cache-directory/
 
 # Scrapy stuff:
 .scrapy

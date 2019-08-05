@@ -5,22 +5,22 @@ from traffic_analysis.d00_utils.get_project_directory import get_project_directo
 project_dir = get_project_directory()
 
 
-# TODO: do not collapse the hierarchy
+def collapse_dict_hierarchy(nested_dict: dict):
+    collapsed_dict = {}
+    for name, subdict in nested_dict.items():
+        collapsed_dict = {**collapsed_dict, **subdict}
+    return collapsed_dict
+
+
 def load_parameters():
     with open(project_dir + '/conf/base/parameters.yml') as f:
         params = yaml.safe_load(f)
-
-    merged_params = {}
-    for key, sub_dict in params.items():
-        merged_params = {**merged_params, **sub_dict}
-
-    return merged_params
+    return collapse_dict_hierarchy(params)
 
 
 def load_app_parameters():
     with open(project_dir + '/conf/base/app_parameters.yml') as f:
         params = yaml.safe_load(f)
-
     return {**params['visualization']}
 
 
@@ -43,5 +43,3 @@ def load_paths():
         local_paths[key] = project_dir + '/' + val
 
     return {**s3_paths, **local_paths, **db_paths}
-
-def 
