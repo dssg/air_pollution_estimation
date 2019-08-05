@@ -11,9 +11,6 @@ from traffic_analysis.d00_utils.get_project_directory import get_project_directo
 project_dir = get_project_directory()
 src_dir = f"{project_dir}/src"
 sys.path.append(src_dir)
-
-print(project_dir)
-
 TIMEOUT = 60
 cache = Cache(
     server, config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "cache-directory"}
@@ -51,16 +48,12 @@ def load_camera_statistics(camera_id):
     if DEBUG:
         filepath = os.path.join(paths["s3_video_level_stats"])
         if not os.path.exists(filepath):
-            print(filepath)
-
             return output
         df = pd.read_csv(filepath, dtype={"camera_id": "category"})
         df["video_upload_datetime"] = pd.to_datetime(df.video_upload_datetime)
         df.sort_values("video_upload_datetime", inplace=True)
         df.drop_duplicates(inplace=True)
         output = df[df.camera_id == camera_id]
-        print(output)
-
         return output
 
     dl = DataLoaderS3(s3_credentials, bucket_name=paths["bucket_name"])
@@ -82,5 +75,4 @@ def load_vehicle_type_statistics(df, vehicle_type, start_date, end_date):
     df_vehicle_type = df_vehicle_type[
         ((start_date <= df_vehicle_type.video_upload_datetime) & (df_vehicle_type.video_upload_datetime <= end_date))
     ]
-    print(df_vehicle_type)
     return df_vehicle_type
