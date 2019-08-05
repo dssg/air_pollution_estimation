@@ -8,7 +8,7 @@ from traffic_analysis.d05_reporting.report_yolo import yolo_report_stats
 from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
 
 
-def update_video_level_table(frame_level_df=None, analyzer, file_names=None, paths=None, creds=None, params=None):
+def update_video_level_table(frame_level_df=None, analyzer=None, file_names=None, paths=None, creds=None, params=None):
     """ Update the video level table on the database based on the videos in the files list
                 Args:
                     frame_level_df (dataframe): dataframe containing the frame level stats, if none then
