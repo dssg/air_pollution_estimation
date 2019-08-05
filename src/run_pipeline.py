@@ -30,6 +30,12 @@ selected_videos = load_video_names_from_s3(ref_file='tims_cameras_all',
                                            paths=paths,
                                            s3_credentials=s3_credentials)
 
+# load annotation file names from s3
+annotation_videos = load_video_names_from_s3(ref_file='annotation',
+                                           paths=paths,
+                                           s3_credentials=s3_credentials)
+selected_videos =  selected_videos + annotation_videos
+
 # select chunks of videos and classify objects
 chunk_size = params['chunk_size']
 while selected_videos:
