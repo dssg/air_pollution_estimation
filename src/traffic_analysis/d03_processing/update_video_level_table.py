@@ -46,7 +46,6 @@ def update_video_level_table(frame_level_df=None, analyzer=None, file_names=None
         frame_level_df.drop('bbox_y', axis=1, inplace=True)
         frame_level_df.drop('bbox_w', axis=1, inplace=True)
         frame_level_df.drop('bbox_h', axis=1, inplace=True)
-        print(frame_level_df.head(3))
 
     # Create video level table and add to database
     video_level_df = analyzer.construct_video_level_df(frame_level_df)
