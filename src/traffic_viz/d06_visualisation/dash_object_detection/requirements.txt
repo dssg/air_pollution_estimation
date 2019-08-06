@@ -7,9 +7,9 @@ dash-renderer==0.17.0
 gunicorn>=19.9.0, <20.0
 plotly>=3.6.0, <4.0
 pillow>=5.4.1, <6.0
-Flask>=1.0.1, <2.0
 scipy>=1.2.1, <2.0
 numpy>=1.16.1, <2.0
-pandas==0.24.1
 dash-player==0.0.1
-
+Flask-Caching>=1.7.2, <2.0
+Flask>=1.1.1, <2.0
+Flask-Compress>=1.4.0, <2.0
