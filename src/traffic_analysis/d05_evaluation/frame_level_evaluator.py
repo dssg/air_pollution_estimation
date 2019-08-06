@@ -106,7 +106,6 @@ class FrameLevelEvaluator(SingleEvaluator):
         # dict of dict of dicts, with outermost layer being the vehicle type
         bboxes_np = np.array(df["bboxes"].values.tolist())
         assert bboxes_np.shape[1] == 4
-
         if bbox_format == "cv2":
             # convert to format cvlib
             df["bboxes"] = pd.Series(

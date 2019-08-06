@@ -50,9 +50,9 @@ def plot_video_stats_diff_distribution(video_level_diff_df: pd.DataFrame,
         plt.savefig(path)
     plt.close()
     
-    
+
 def plot_video_level_summary_stats(video_level_stats_df: pd.DataFrame, 
-                                   metrics = {'mean_diff': "", 'mse':""},
+                                   metrics = {'bias':None, 'rmse':None, 'mae': None},
                                    show_plots = True): 
     """For each error metric specified, will plot a multi-bar bar chart with bars 
     for each vehicle type and stats type.
@@ -64,12 +64,30 @@ def plot_video_level_summary_stats(video_level_stats_df: pd.DataFrame,
     """
     n_videos = video_level_stats_df['n_videos'].iloc[0]
     
-    if 'mean_diff' in metrics: 
-        df = video_level_stats_df[video_level_stats_df["statistic"] != "mse"]
-        mean_df = df[df['statistic'] == 'mean_diff'][['counts','stops','starts','parked','vehicle_type']].set_index('vehicle_type')
-        sd_df = df[df['statistic'] == 'sd'][['counts','stops','starts','parked','vehicle_type']].set_index('vehicle_type').values.T
+    def style_show_save_plot(metric_type):
+        ax.set_facecolor('whitesmoke')
 
-        ax = mean_df.plot(kind='bar',
+        for side in ax.spines:
+            ax.spines[side].set_visible(False)
+
+        plt.title(f"Video level performance on {n_videos} videos")
+        plt.xticks(rotation=45)
+        plt.xlabel("Vehicle Type", labelpad=20)
+        plt.ylabel(metric_type)
+        if show_plots: 
+            plt.show()
+        if metrics[metric_type] is not None: 
+            plt.savefig(metrics[metric_type])
+        plt.close()
+    
+    if 'bias' in metrics: 
+        bias_df = (video_level_stats_df[['stat','vehicle_type', 'bias']]
+                    .pivot(index='vehicle_type', columns='stat', values='bias'))
+        sd_df = (video_level_stats_df[['stat','vehicle_type', 'sd']]
+                    .pivot(index='vehicle_type', columns='stat', values='sd')
+                    .values.T)
+
+        ax = bias_df.plot(kind='bar',
                             yerr=sd_df,
                             grid=False,
                             figsize=(10,8),
@@ -78,50 +96,39 @@ def plot_video_level_summary_stats(video_level_stats_df: pd.DataFrame,
                             error_kw=dict(ecolor='k',elinewidth=0.5),
                             width=1.0
                             )
-        # aesthetics 
-        ax.set_facecolor('whitesmoke')
-        for side in ax.spines:
-            ax.spines[side].set_visible(False)
-        plt.xticks(rotation=45)
-
-        # titles 
-        plt.title(f"Video level performance on {n_videos} videos")
-        plt.xlabel("Vehicle Type", labelpad=20)
-        plt.ylabel("Mean Difference")
-
-        if show_plots: 
-            plt.show()
-        if metrics["mean_diff"] is not None: 
-            plt.savefig(metrics["mean_diff"])
-        plt.close()
+        style_show_save_plot(metric_type = 'bias')
         
-    if 'mse' in metrics: 
-        df = video_level_stats_df[video_level_stats_df["statistic"] == "mse"]
-        mse_df = df[['counts','stops','starts','parked','vehicle_type']].set_index('vehicle_type')
-        ax = mse_df.plot(kind='bar',
+    if 'mae' in metrics: 
+        mae_df = (video_level_stats_df[['stat','vehicle_type', 'MAE']]
+                    .pivot(index='vehicle_type', columns='stat', values='MAE'))
+        sd_df = (video_level_stats_df[['stat','vehicle_type', 'sd']]
+                    .pivot(index='vehicle_type', columns='stat', values='sd')
+                    .values.T)
+        ax = mae_df.plot(kind='bar',
+                            yerr=sd_df,
+                            grid=False,
+                            figsize=(10,8),
+                            position=0.45,
+                            colormap = 'Paired',
+                            error_kw=dict(ecolor='k',elinewidth=0.5),
+                            width=1.0
+                            )
+
+        style_show_save_plot(metric_type = 'mae')
+        
+    if 'rmse' in metrics: 
+        rmse_df = (video_level_stats_df[['stat','vehicle_type', 'RMSE']]
+                    .pivot(index='vehicle_type', columns='stat', values='RMSE'))
+
+        ax = rmse_df.plot(kind='bar',
                             grid=False,
                             figsize=(10,8),
                             position=0.45,
                             colormap = 'Paired',
                             width=1.0
                             )
-        # aesthetics
-        plt.xticks(rotation=45)
-        ax.set_facecolor('whitesmoke')
-        for side in ax.spines:
-            ax.spines[side].set_visible(False)
-
-        # titling
-        plt.title(f"Video level performance on {n_videos} videos")
-        plt.xlabel("Vehicle Type", labelpad=20)
-        plt.ylabel("MSE")
-
-        if show_plots: 
-            plt.show()
-        if metrics["mse"] is not None: 
-            plt.savefig(metrics["mse"])
-        plt.close()
-
+        style_show_save_plot(metric_type='rmse')
+    
 
 def plot_mAP_over_time(frame_level_mAP_df: pd.DataFrame, 
                        show_plot: bool = True, 
