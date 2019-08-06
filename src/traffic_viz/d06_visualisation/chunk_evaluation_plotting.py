@@ -62,6 +62,8 @@ def plot_video_level_summary_stats(video_level_stats_df: pd.DataFrame,
         metrics: dictionary where the metric type is the key and the value is the desired save path
         show_plots: If true, will display the plots 
     """
+    assert set(metrics.keys()).issubset(set(['bias', 'rmse', 'mae'])), \
+        "Only the following metrics types are supported: bias, rmse, mae"
     n_videos = video_level_stats_df['n_videos'].iloc[0]
     
     def style_show_save_plot(metric_type):
