@@ -23,7 +23,7 @@ def plot_video_stats_diff_distribution(video_level_diff_df: pd.DataFrame,
         stat_list = []
         vehicle_types=[]
         for vehicle_type, vehicle_group_df in video_level_diff_df.groupby("vehicle_type"):
-            stat_list.append(vehicle_group_df[f"y_pred-y_{stat_type}"])
+            stat_list.append(vehicle_group_df[f"{stat_type}_diff"])
             vehicle_types.append(vehicle_type)
 
         # plot distribution of stat_type on one sub-plot
@@ -44,10 +44,10 @@ def plot_video_stats_diff_distribution(video_level_diff_df: pd.DataFrame,
                         right= 0.90,
                         bottom = 0.05
                        )
+    if save_path is not None: 
+        plt.savefig(save_path)
     if show_plot: 
         plt.show()
-    if save_path is not None: 
-        plt.savefig(path)
     plt.close()
     
 
@@ -76,10 +76,10 @@ def plot_video_level_summary_stats(video_level_stats_df: pd.DataFrame,
         plt.xticks(rotation=45)
         plt.xlabel("Vehicle Type", labelpad=20)
         plt.ylabel(metric_type)
-        if show_plots: 
-            plt.show()
         if metrics[metric_type] is not None: 
             plt.savefig(metrics[metric_type])
+        if show_plots: 
+            plt.show()
         plt.close()
     
     if 'bias' in metrics: 
@@ -165,9 +165,9 @@ def plot_mAP_over_time(frame_level_mAP_df: pd.DataFrame,
     plt.xlabel("Video Upload DateTime")
     plt.ylabel("Mean Average Precision")
     
+    if save_path is not None: 
+        plt.savefig(save_path)
     if show_plot: 
         plt.show()
-    if save_path is not None: 
-        plt.savefig(path)
         
     plt.close()
