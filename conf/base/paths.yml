@@ -2,7 +2,7 @@
 s3_paths:
   bucket_name: "air-pollution-uk" #s3 bucket name
   s3_video: "raw/videos/" #path to video data in s3 bucket
-  s3_annotations: "ref/annotations/"
+  s3_cvat_annotations: "ref/annotations/cvat/"
   s3_video_names: "ref/video_names/"
   s3_camera_details: "ref/camera_details/camera_details.json"
   s3_frame_level: "frame_level/"
