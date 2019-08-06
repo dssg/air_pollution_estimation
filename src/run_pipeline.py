@@ -11,15 +11,13 @@ paths = load_paths()
 creds = load_credentials()
 s3_credentials = creds[paths['s3_creds']]
 
-analyzer = TrackingAnalyser(params=params, paths=paths)
-
 # If running first time:
 # creates the test_seach_json. Change the camera list and output file name for full run
 
 retrieve_and_upload_video_names_to_s3(ouput_file_name='sam_test',
                                       paths=paths,
                                       from_date='2019-07-17', to_date='2019-07-17',
-                                      from_time= '13-00-00', to_time='14-00-00',
+                                      from_time='13-00-00', to_time='14-00-00',
                                       s3_credentials=s3_credentials,
                                       camera_list=['00001.03604', '00001.02262'])
 """
@@ -31,14 +29,15 @@ selected_videos = load_video_names_from_s3(ref_file='sam_test',
                                            paths=paths,
                                            s3_credentials=s3_credentials)
 
+analyzer = TrackingAnalyser(params=params, paths=paths)
+
 # select chunks of videos and classify objects
 chunk_size = params['chunk_size']
 while selected_videos:
     frame_level_df = update_frame_level_table(analyzer=analyzer,
-                             file_names=selected_videos[:chunk_size],
-                             paths=paths,
-                             params=params,
-                             creds=creds)
+                                              file_names=selected_videos[:chunk_size],
+                                              paths=paths,
+                                              creds=creds)
 
     # evaluate_frame_level_table
 
