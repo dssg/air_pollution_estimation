@@ -6,25 +6,23 @@ from traffic_analysis.d02_ref.upload_annotation_names_to_s3 import upload_annota
 from traffic_analysis.d03_processing.update_frame_level_table import update_frame_level_table
 from traffic_analysis.d03_processing.update_video_level_table import update_video_level_table
 from traffic_analysis.d04_modelling.trackinganalyser.trackinganalyser import TrackingAnalyser
-#############
-import sys
-#############
+
 params = load_parameters()
 paths = load_paths()
 creds = load_credentials()
 s3_credentials = creds[paths['s3_creds']]
 
-traffic_analyser = eval(params["traffic_analyser"])(params=params, paths=paths)
-
-print(params)
 # If running first time:
 # creates the test_seach_json. Change the camera list and output file name for full run
 
 retrieve_and_upload_video_names_to_s3(output_file_name= params['dataset_ref_name'],
                                       paths=paths,
-                                      from_date='2019-07-17', to_date='2019-07-17',
+                                      from_date='2019-06-30',
+                                      to_date='2019-06-30',
+                                      from_time='13-00-00',
+                                      to_time='13-05-00',                                      
                                       s3_credentials=s3_credentials,
-                                      camera_list=['00001.03604', '00001.02262'])
+                                      camera_list=params['tims_camera_list'][:2])
 """
 upload_annotation_names_to_s3(paths=paths,
                               s3_credentials=s3_credentials)
@@ -66,12 +64,3 @@ annotations_df = parse_annotations(paths['annotations'], bool_print_summary=Fals
 count_differences_df = report_count_differences(annotations_df, yolo_df)
 count_differences_df.to_csv(paths['processed_video'] + 'JamCamCountDifferences.csv')
 """
-
-
-
-
-
-
-
-
-

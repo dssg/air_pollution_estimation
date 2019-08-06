@@ -3,6 +3,7 @@ from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 
 
 def upload_annotation_names_to_s3(paths,
+                                  output_file_name,
                                   s3_credentials: dict):
     """ Get the list of xml files from s3 and save a json on s3 containing the corresponding video filepaths
                     Args:
@@ -36,5 +37,5 @@ def upload_annotation_names_to_s3(paths,
 
     dl = DataLoaderS3(s3_credentials,
                       bucket_name=paths['bucket_name'])
-    file_path = paths['s3_video_names'] + 'annotations.json'
+    file_path = paths['s3_video_names'] +  output_file_name +'.json'
     dl.save_json(data=selected_files, file_path=file_path)
