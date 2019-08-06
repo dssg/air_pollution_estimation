@@ -27,7 +27,6 @@ class YoloV3(object):
         # static_shape is slightly faster
         self.use_static_shape = use_static_shape
 
-
     def forward(self, inputs, is_training=False, reuse=False):
         # the input img_size, form: [height, weight]
         # it will be used later
@@ -141,7 +140,6 @@ class YoloV3(object):
         # conf_logits: [N, 13, 13, 3, 1]
         # prob_logits: [N, 13, 13, 3, class_num]
         return x_y_offset, boxes, conf_logits, prob_logits
-
 
     def predict(self, feature_maps):
         '''
