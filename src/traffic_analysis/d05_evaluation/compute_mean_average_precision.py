@@ -12,7 +12,7 @@ image Ids. Usage:
 Will display a plot of precision vs recall curves at 10 distinct IoU thresholds as well as output
 summary information regarding the average precision and mAP scores.
 NOTE: Requires the files `ground_truth_boxes.json` and `predicted_boxes.json` which can be
-downloaded fromt this gist.
+downloaded from this gist.
 """
 
 

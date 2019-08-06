@@ -1,25 +1,25 @@
-from traffic_analysis.d00_utils.data_retrieval import connect_to_bucket, load_videos_into_np, delete_and_recreate_dir
+import datetime
+from traffic_analysis.d00_utils.data_retrieval import load_videos_into_np, delete_and_recreate_dir
 from traffic_analysis.d04_modelling.classify_objects import classify_objects
-from traffic_analysis.d03_processing.add_to_frame_table_sql import add_to_frame_table_sql
+from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 
 
 def update_frame_level_table(file_names: list,
                              paths: dict,
                              params: dict,
-                             creds: dict,
-                             s3_credentials: dict):
+                             creds: dict):
     """ Update the frame level table on s3 (pq) based on the videos in the files list
                 Args:
                     file_names (list): list of s3 filepaths for the videos to be processed
                     paths (dict): dictionary of paths from yml file
                     params (dict): dictionary of parameters from yml file
-                    creds: generic credentials dictionary
-                    s3_credentials: S3 credentials
+                    creds (dict): dictionary of credentials from yml file
 
                 Returns:
 
     """
+    s3_credentials = creds[paths['s3_creds']]
     dl = DataLoaderS3(s3_credentials,
                       bucket_name=paths['bucket_name'])
 
@@ -44,7 +44,9 @@ def update_frame_level_table(file_names: list,
                                       vid_time_length=10,
                                       make_videos=False)
 
-    add_to_frame_table_sql(df=frame_level_df,
-                           table='frame_level',
-                           creds=creds,
-                           paths=paths)
+    frame_level_df['creation_datetime'] = datetime.datetime.now()
+
+    db_obj = DataLoaderSQL(creds=creds, paths=paths)
+    db_obj.add_to_sql(df=frame_level_df, table_name=paths['db_frame_level'])
+
+    return frame_level_df

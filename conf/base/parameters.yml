@@ -28,7 +28,7 @@ data_collection:
   tfl_camera_api: "https://api.tfl.gov.uk/Place/Type/jamcam"
   jamcam_url: "https://s3-eu-west-1.amazonaws.com/jamcams.tfl.gov.uk/"
   iterations: 0
-  delay: 0
+  delay: 3
 
 data_renaming:
   old_path: "raw/video_data_new"
@@ -55,8 +55,8 @@ modelling:
   stop_start_iou_threshold: 0.80
 
 reporting:
-  chunk_size: 2
+  chunk_size: 5
   dtype:
     camera_id: 'category'
-  video_level_column_order: ["camera_id", video_upload_datetime, "vehicle_type", "counts", "starts", "stops", "parked"]
+  video_level_column_order: ["camera_id", "video_upload_datetime", "vehicle_type", "counts", "starts", "stops", "parked"]
   video_level_stats: ['counts', 'stops','starts','parked']

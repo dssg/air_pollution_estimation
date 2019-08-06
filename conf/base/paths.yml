@@ -23,3 +23,7 @@ local_paths:
 db_paths:
   db_host: "dssg-london.ck0oseycrr7s.eu-west-2.rds.amazonaws.com"
   db_name: "airquality"
+  db_frame_level: 'frame_stats2'
+  db_video_level: 'video_stats2'
+  db_vehicle_types: 'vehicle_types2'
+  db_cameras: 'cameras2'

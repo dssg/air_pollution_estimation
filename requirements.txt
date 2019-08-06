@@ -16,4 +16,6 @@ matplotlib
 tensorflow>=1.14.0, <2.0
 awscli>=1.16.198, <2.0
 sqlalchemy
-pandas
+pandas==0.24.2
+psycopg2
+seaborn
