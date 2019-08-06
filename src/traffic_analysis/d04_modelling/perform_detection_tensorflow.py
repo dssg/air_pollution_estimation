@@ -28,7 +28,7 @@ def detect_objects_in_image(image_capture, params, paths, s3_credentials):
     """
 
     detection_model = params['detection_model']
-    local_filepath_model = os.path.join(paths['local_detection_model'], detection_model, 'yolov3.ckpt')
+    local_filepath_model = os.path.join(paths['local_detection_model'], detection_model, 'checkpoint')
 
     if detection_model == 'yolov3_tf':  # only use with yolov3_tf as detection model
         if not os.path.exists(local_filepath_model):  # create yolov3 tensorflow model on local if does not exist
