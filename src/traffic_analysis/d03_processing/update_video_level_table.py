@@ -4,8 +4,8 @@ from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_n
 from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 
 
-def update_video_level_table(frame_level_df=None,
-                             analyzer=None,
+def update_video_level_table(analyzer,
+                             frame_level_df=None,
                              file_names=None,
                              paths=None,
                              creds=None,
@@ -23,12 +23,6 @@ def update_video_level_table(frame_level_df=None,
 
     """
 
-    db_host = paths['db_host']
-    db_name = paths['db_name']
-    db_user = creds['postgres']['user']
-    db_pass = creds['postgres']['passphrase']
-    conn_string = "password=%s user=%s dbname=%s host=%s" % (
-        db_pass, db_user, db_name, db_host)
     db_obj = DataLoaderSQL(creds=creds, paths=paths)
 
     if frame_level_df is None:
