@@ -33,7 +33,7 @@ upload_annotation_names_to_s3(paths=paths,
 selected_videos = load_video_names_from_s3(ref_file= params['eval_ref_name'],
                                            paths=paths,
                                            s3_credentials=s3_credentials)
-
+print("Successfully loaded selected videos")
 # wipe and recreate eval tables 
 create_eval_sql_tables(creds=creds,
                        paths=paths, 
@@ -68,6 +68,8 @@ for tracker_type, traffic_analyser in traffic_analysers.items():
         # Move on to next chunk
         selected_videos = selected_videos[chunk_size:]
         delete_and_recreate_dir(paths["temp_video"])
+        print("Successfully processed chunk of videos.")
+    print("Successfully processed videos for one tracking type")
 
     # append to table 
     update_eval_tables(db_frame_level_name=db_frame_level_name, 
@@ -77,3 +79,4 @@ for tracker_type, traffic_analyser in traffic_analysers.items():
                        paths=paths,
                        analyser_type=tracker_type
                        )
+    print("Successfully evaluated videos for one tracking type")
