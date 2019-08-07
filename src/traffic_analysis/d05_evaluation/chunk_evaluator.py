@@ -1,9 +1,9 @@
+import pandas as pd
+import re
+
 from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
 from traffic_analysis.d05_evaluation.video_level_evaluator import VideoLevelEvaluator
 from traffic_analysis.d05_evaluation.frame_level_evaluator import FrameLevelEvaluator
-
-import pandas as pd
-import re
 
 
 class ChunkEvaluator:
@@ -80,5 +80,5 @@ class ChunkEvaluator:
         frame_level_evaluator = FrameLevelEvaluator(videos_to_eval=self.frame_level_videos_to_eval,
                                                     frame_level_df=self.frame_level_df,
                                                     selected_labels=self.selected_labels) 
-        frame_level_mAP = frame_level_evaluator.evaluate()
-        return frame_level_mAP
+        frame_level_map = frame_level_evaluator.evaluate()
+        return frame_level_map
