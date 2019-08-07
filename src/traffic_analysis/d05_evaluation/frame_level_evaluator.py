@@ -33,7 +33,7 @@ class FrameLevelEvaluator:
         """Compute mean average precision for each vehicle type on multiple videos 
         """
         self.frame_level_ground_truth = self.get_ground_truth()
-        self.frame_level_preds = self.get_preds()
+        self.frame_level_preds = self.filter_frame_level_df()
 
         frame_level_map_dfs = []
         for (gt_camera_id, gt_video_upload_datetime), ground_truth_df in \
@@ -41,7 +41,7 @@ class FrameLevelEvaluator:
             # get corresponding predictions for this video 
             pred_df = self.frame_level_preds[(self.frame_level_preds["camera_id"] == gt_camera_id) &
                                              (self.frame_level_preds["video_upload_datetime"] ==
-                                              gt_video_upload_datetime)]
+                                              gt_video_upload_datetime)].copy()
 
             ground_truth_dict = self.reparse_bboxes_df(ground_truth_df, 
                                                        include_confidence=False)
@@ -66,7 +66,7 @@ class FrameLevelEvaluator:
 
         return frame_level_map_df
 
-    def get_preds(self) -> pd.DataFrame: 
+    def filter_frame_level_df(self) -> pd.DataFrame:
         """
         Get preds for videos which are in videos_to_eval
         """

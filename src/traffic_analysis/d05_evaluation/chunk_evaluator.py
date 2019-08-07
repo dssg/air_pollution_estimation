@@ -14,9 +14,10 @@ class ChunkEvaluator:
     """
     def __init__(self,
                  annotation_xml_paths: list,
-                 params: dict,
+                 selected_labels: list,
                  video_level_df: pd.DataFrame = None,
-                 frame_level_df: pd.DataFrame = None):
+                 frame_level_df: pd.DataFrame = None,
+                 video_level_column_order: list = None):
 
         annotations_available = {}
         for xml_path in annotation_xml_paths:
@@ -36,16 +37,17 @@ class ChunkEvaluator:
 
             # evaluate only those videos for which we have annotations
             self.video_level_videos_to_eval = pd.merge(left=annotations_available,
-                                           right=video_level_videos_to_eval,
-                                           on=['camera_id', 'video_upload_datetime'],
-                                           how='inner')
+                                                       right=video_level_videos_to_eval,
+                                                       on=['camera_id', 'video_upload_datetime'],
+                                                       how='inner')
 
             self.num_video_level_videos = len(self.video_level_videos_to_eval)
 
             assert self.num_video_level_videos > 0
             self.video_level_df = video_level_df
 
-            self.video_level_column_order = params['video_level_column_order']
+            assert video_level_column_order is not None
+            self.video_level_column_order = video_level_column_order
 
         if frame_level_df is not None: 
             frame_level_videos_to_eval = frame_level_df[['camera_id', 'video_upload_datetime']].drop_duplicates()
@@ -60,8 +62,7 @@ class ChunkEvaluator:
             assert self.num_frame_level_videos > 0
             self.frame_level_df = frame_level_df
 
-        self.selected_labels = params['selected_labels']
-        self.params = params
+        self.selected_labels = selected_labels
 
     def evaluate_video_level(self) -> (pd.DataFrame, pd.DataFrame):
         """This function evaluates a chunk of videos with the VideoLevelEvaluator object
