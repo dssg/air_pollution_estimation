@@ -14,28 +14,13 @@ class TrafficAnalyserInterface(ABC):
         """ 
         Keyword arguments
 
-        video_dict -- dict with video names as keys and videos encoded as numpy arrays 
-                        for values
         params -- yaml with modelling parameters
         paths -- yaml with paths 
         """
+        super().__init__()
 
-        self.video_dict = None
         self.params = params
         self.paths = paths
-
-    def check_video_dict(self, video_dict: dict):
-        # Check that video doesn't come from in-use camera (some are)
-        for video_name in list(video_dict.keys()):
-            n_frames = video_dict[video_name].shape[0]
-            if n_frames < 75:
-                del video_dict[video_name]
-                print("Video ", video_name,
-                      " has been removed from processing because it may be invalid")
-
-        self.video_dict = video_dict
-
-        return
 
     @abstractmethod
     def construct_frame_level_df(self, video_dict) -> pd.DataFrame:

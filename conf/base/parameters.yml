@@ -35,7 +35,7 @@ data_renaming:
   new_path: "raw/videos"
   date_format: "%Y%m%d-%H%M%S"
 
-pipeline_settings: 
+pipeline_settings:
   dataset_ref_name: "tims_cameras_all"
 
 eval_pipeline_settings:
@@ -54,7 +54,7 @@ modelling:
 
   # tracking
   selected_labels: ["car", "truck", "bus", "motorbike"]
-  _tracker_type: "CSRT"
+  default_tracker_type: "CSRT"
   iou_threshold: 0.05 #controls how much two objects' bboxes must overlap to be considered the "same"
   detection_frequency: 25
 
@@ -64,7 +64,7 @@ modelling:
   stop_start_iou_threshold: 0.80
 
 reporting:
-  chunk_size: 2
+  chunk_size: 5
   dtype:
     camera_id: 'category'
   video_level_column_order: ["camera_id", "video_upload_datetime", "vehicle_type", "counts", "starts", "stops", "parked"]

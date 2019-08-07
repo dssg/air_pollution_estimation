@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 
 
+#TODO Remove this code as we no longer take a YOLO only approach
+
 def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date_time):
     """Parse the info corresponding to one frame into one pandas df
 
@@ -65,8 +67,7 @@ def yolo_output_df(yolo_dict):
             ).transpose()
 
             frame_df = frame_info_to_df(
-                obj_info_aggregated, frame_ind, camera_id, date_time
-            )
+                obj_info_aggregated, frame_ind, camera_id, date_time)
             frame_df_list.append(frame_df)
 
         yolo_df = pd.concat(frame_df_list)

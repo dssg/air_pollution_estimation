@@ -33,9 +33,10 @@ def create_sql_tables(db_frame_level_name: str,
         """
         CREATE TABLE {}(
             camera_id VARCHAR(20),
-            frame_id INTEGER,
             video_upload_datetime timestamp,
-            obj_classification VARCHAR(100),
+            frame_id INTEGER,
+            vehicle_id INTEGER,
+            vehicle_type VARCHAR(100),
             confidence FLOAT,
             box_x INTEGER,
             box_y INTEGER,
@@ -47,10 +48,12 @@ def create_sql_tables(db_frame_level_name: str,
 
         """
         CREATE TABLE {}(
-            vehicle_type VARCHAR(100),
             camera_id VARCHAR(20),
             video_upload_datetime timestamp,
+            vehicle_type VARCHAR(100),
             counts FLOAT,
+            stops FLOAT,
+            starts FLOAT,
             creation_datetime timestamp
         )
         """.format(db_video_level_name)
