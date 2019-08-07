@@ -253,7 +253,13 @@ def label_detections(label_idxs,
     """
 
     # import the list of labels
-    label_list = populate_labels(model_name=model_name,
+    if model_name == 'yolov3_tf':
+        model_origin = 'yolov3'
+
+    else:
+        model_origin = model_name
+
+    label_list = populate_labels(model_name=model_origin,
                                  paths=paths)
 
     # initialize the output list
