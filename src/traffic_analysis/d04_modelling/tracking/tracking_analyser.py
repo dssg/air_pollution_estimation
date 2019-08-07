@@ -142,7 +142,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         # initialize bboxes on first frame using a detection alg
         first_frame = video[0, :, :, :]
 
-        if self.detection_model == 'yolov3' or 'yolov3-tiny':
+        if self.detection_model == 'yolov3' or self.detection_model == 'yolov3-tiny':
             bboxes, labels, confs = detect_objects_cv(image_capture=first_frame,
                                                       params=self.params,
                                                       paths=self.paths,
@@ -195,7 +195,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             # every x frames, re-detect boxes
             if frame_ind % self.detection_frequency == 0:
                 # redetect bounding boxes
-                if self.detection_model == 'yolov3' or 'yolov3-tiny':
+                if self.detection_model == 'yolov3' or self.detection_model == 'yolov3-tiny':
                     bboxes_detected, labels_detected, confs_detected = detect_objects_cv(image_capture=first_frame,
                                                                                          params=self.params,
                                                                                          paths=self.paths,
