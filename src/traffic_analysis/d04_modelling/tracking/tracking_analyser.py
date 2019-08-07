@@ -5,11 +5,13 @@ from traffic_analysis.d00_utils.video_helpers import write_mp4
 from traffic_analysis.d04_modelling.tracking.vehicle_fleet import VehicleFleet
 from traffic_analysis.d04_modelling.perform_detection_opencv import detect_objects_in_image as detect_objects_cv
 from traffic_analysis.d04_modelling.perform_detection_tensorflow import detect_objects_in_image as detect_objects_tf
+from traffic_analysis.d04_modelling.perform_detection_tensorflow import initialize_tensorflow_model
 
 import numpy as np
 import pandas as pd
 import cv2
 import time
+import tensorflow as tf
 
 
 class TrackingAnalyser(TrafficAnalyserInterface):
@@ -145,10 +147,18 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         elif self.detection_model == 'yolov3_tf':
             detect_objects = detect_objects_tf
 
+        sess = tf.Session()
+        model_initializer, init_data, detection_model = initialize_tensorflow_model(params=self.params,
+                                                                                    paths=self.paths,
+                                                                                    s3_credentials=self.s3_credentials,
+                                                                                    sess=sess)
+
         bboxes, labels, confs = detect_objects_tf(image_capture=first_frame,
-                                                  params=self.params,
                                                   paths=self.paths,
-                                                  s3_credentials=self.s3_credentials,
+                                                  detection_model=detection_model,
+                                                  model_initializer=model_initializer,
+                                                  init_data=init_data,
+                                                  sess=sess,
                                                   selected_labels=self.selected_labels)
 
         # store info returned above in vehicleFleet object
@@ -184,9 +194,11 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             if frame_ind % self.detection_frequency == 0:
                 # redetect bounding boxes
                 bboxes_detected, labels_detected, confs_detected = detect_objects_tf(image_capture=frame,
-                                                                                     params=self.params,
                                                                                      paths=self.paths,
-                                                                                     s3_credentials=self.s3_credentials,
+                                                                                     detection_model=detection_model,
+                                                                                     model_initializer=model_initializer,
+                                                                                     init_data=init_data,
+                                                                                     sess=sess,
                                                                                      selected_labels=self.selected_labels)
 
                 # re-initialize MultiTracker
@@ -225,6 +237,9 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
         print('Run time of tracking analyser for one video is %s seconds' %
               (time.time() - start_time))
+
+        sess.close()
+
         return fleet
 
     def construct_frame_level_df(self, video_dict) -> pd.DataFrame:
