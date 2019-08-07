@@ -11,8 +11,8 @@ s3_credentials = creds[paths['s3_creds']]
 traffic_analysers = {}
 for tracker_type in params["eval_tracker_types"]:
     traffic_analysers[tracker_type] = eval(params["traffic_analyser"])(params=params, 
-                                                                         paths=paths, 
-                                                                         tracker_type = tracker_type)
+                                                                       paths=paths, 
+                                                                       tracker_type = tracker_type)
 
 # If running first time:
 # creates the test_seach_json. Change the camera list and output file name for full run
@@ -28,9 +28,11 @@ selected_videos = load_video_names_from_s3(ref_file= params['eval_ref_name'],
                                            s3_credentials=s3_credentials)
 
 for tracker_type, traffic_analyser in traffic_analysers.items():
-    #wipe and recreate eval tables for tracker types  
-    create_sql_tables(db_frame_level_name=f"{paths['eval_db_frame_level']}_{tracker_type}", 
-                      db_video_level_name=f"{paths['eval_db_video_level']}_{tracker_type}",
+    #wipe and recreate eval tables for tracker types
+    db_frame_level_name = f"{paths['eval_db_frame_level']}_{tracker_type}"
+    db_video_level_name = f"{paths['eval_db_video_level']}_{tracker_type}"
+    create_sql_tables(db_frame_level_name=, 
+                      db_video_level_name=,
                       drop=True)
 
     # select chunks of videos and classify objects
