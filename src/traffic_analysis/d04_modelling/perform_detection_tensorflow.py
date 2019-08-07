@@ -68,27 +68,31 @@ def pass_image_through_nn(image_capture, paths, params):
     classes = read_class_names(class_name_path)
     n_classes = len(classes)
 
-    with tf.Session() as sess:
+    sess = tf.Session()
 
-        # initialize tensorflow yolov3 model
-        init_data = tf.placeholder(tf.float32, [1, 416, 416, 3], name='init_data')
-        yolo_model = YoloV3(n_classes, anchors)
-        with tf.variable_scope('YoloV3'):
-            feature_map = yolo_model.forward(init_data, False)
+    # initialize tensorflow yolov3 model
+    init_data = tf.placeholder(tf.float32, [1, 416, 416, 3], name='init_data')
+    yolo_model = YoloV3(n_classes, anchors)
+    with tf.variable_scope('YoloV3'):
+        feature_map = yolo_model.forward(init_data, False)
 
-        pred_boxes, pred_confs, pred_probs = yolo_model.predict(feature_map)
-        pred_scores = pred_confs * pred_probs
+    pred_boxes, pred_confs, pred_probs = yolo_model.predict(feature_map)
+    pred_scores = pred_confs * pred_probs
 
-        boxes, scores, labels = remove_overlapping_boxes(pred_boxes, pred_scores, n_classes,
-                                                         max_boxes=200, score_thresh=conf_thresh,
-                                                         nms_thresh=iou_thresh)
+    boxes, scores, labels = remove_overlapping_boxes(pred_boxes, pred_scores, n_classes,
+                                                     max_boxes=200, score_thresh=conf_thresh,
+                                                     nms_thresh=iou_thresh)
 
-        saver = tf.train.Saver()
-        saver.restore(sess, local_filepath_model)
-        boxes_unscaled, scores_out, labels_out = sess.run([boxes, scores, labels], feed_dict={init_data: image_array})
+    saver = tf.train.Saver()
+    saver.restore(sess, local_filepath_model)
+    boxes_unscaled, scores_out, labels_out = sess.run([boxes, scores, labels], feed_dict={init_data: image_array})
 
-        # rescale the coordinates to the original image
-        boxes_out = rescale_boxes(boxes_unscaled, formatting_params)
+    # rescale the coordinates to the original image
+    boxes_out = rescale_boxes(boxes_unscaled, formatting_params)
+
+    sess.close()
+
+    print(labels_out)
 
     return boxes_out, labels_out, scores_out
 
