@@ -32,7 +32,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         smoothing_method -- method to smooth the IOU time series for each vehicle
         stop_start_iou_threshold -- threshold to binarize the IOU time series into 0 or 1,denoting "moving" or "stopped"
         """
-        super().__init__(params, paths)
+        super().__init__(params, paths, s3_credentials)
         self.detection_model = params['detection_model']
         self.detection_implementation = params['detection_implementation']
         self.tracker = self.create_tracker_by_name(tracker_type=params['opencv_tracker_type'])
