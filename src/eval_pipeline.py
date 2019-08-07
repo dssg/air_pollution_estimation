@@ -26,13 +26,14 @@ for tracker_type in params["eval_tracker_types"]:
 # creates the test_seach_json. Change the camera list and output file name for full run
 # get annotation xmls from s3 saves json on s3 containing to corresponding video filepaths
 upload_annotation_names_to_s3(paths=paths,
-							  output_file_name=params['eval_ref_name'],
-                              s3_credentials=s3_credentials)
+       		             output_file_name=params['eval_ref_name'],
+                             s3_credentials=s3_credentials)
 
 # Start from here if video names already specified
 selected_videos = load_video_names_from_s3(ref_file= params['eval_ref_name'],
                                            paths=paths,
                                            s3_credentials=s3_credentials)
+print(selected_videos)
 print("Successfully loaded selected videos")
 # wipe and recreate eval tables 
 create_eval_sql_tables(creds=creds,
@@ -57,7 +58,7 @@ for tracker_type, traffic_analyser in traffic_analysers.items():
                                                   paths=paths,
                                                   creds=creds)
 
-        video_level_df = update_video_level_table(analyser=analyser,
+        video_level_df = update_video_level_table(analyser=traffic_analyser,
                                  db_video_level_name=db_video_level_name,
                                  frame_level_df=frame_level_df,
                                  file_names=selected_videos[:chunk_size],

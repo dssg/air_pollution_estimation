@@ -33,7 +33,7 @@ def update_eval_tables(db_frame_level_name,
         sql=f"SELECT * FROM {db_frame_level_name}"
         )
     video_level_df = dl_sql.select_from_table(
-        sql=f"SELECT * FROM {db_video_level_nam}"
+        sql=f"SELECT * FROM {db_video_level_name}"
         )
 
     # run evaluation for analyser type 

@@ -8,7 +8,7 @@ def create_primary_sql_tables(db_frame_level_name: str,
                               db_cameras_name: str = None,
                               drop=False
                               ):
-
+    handle_vehicles_cameras_tables = False
     if (db_vehicle_types_name is not None) and (db_cameras_name is not None): 
         handle_vehicles_cameras_tables = True 
 
@@ -38,10 +38,10 @@ def create_primary_sql_tables(db_frame_level_name: str,
             vehicle_id INTEGER,
             vehicle_type VARCHAR(100),
             confidence FLOAT,
-            box_x INTEGER,
-            box_y INTEGER,
-            box_w INTEGER,
-            box_h INTEGER,
+            bbox_x INTEGER,
+            bbox_y INTEGER,
+            bbox_w INTEGER,
+            bbox_h INTEGER,
             creation_datetime timestamp
         )
         """.format(db_frame_level_name),

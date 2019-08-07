@@ -49,7 +49,9 @@ def update_frame_level_table(analyser,
     frame_level_sql_df = pd.DataFrame.copy(frame_level_df)
     x, y, w, h = [], [], [], []
     for vals in frame_level_sql_df['bboxes'].values:
-        if isinstance(vals, list) and len(vals) > 3:
+       if isinstance(vals, str):
+            vals = vals.strip("[]").split(",")
+       if isinstance(vals, list) and len(vals) > 3:
             x.append(int(vals[0]))
             y.append(int(vals[1]))
             w.append(int(vals[2]))
@@ -62,6 +64,6 @@ def update_frame_level_table(analyser,
     frame_level_sql_df['creation_datetime'] = datetime.datetime.now()
 
     db_obj = DataLoaderSQL(creds=creds, paths=paths)
-    db_obj.add_to_sql(df=frame_level_df, table_name=db_frame_level_name)
+    db_obj.add_to_sql(df=frame_level_sql_df, table_name=db_frame_level_name)
 
     return frame_level_df
