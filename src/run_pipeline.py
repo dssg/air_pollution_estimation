@@ -16,8 +16,8 @@ s3_credentials = creds[paths['s3_creds']]
 
 retrieve_and_upload_video_names_to_s3(ouput_file_name='Date_20190717_Cameras_03604_02262',
                                       paths=paths,
-                                      from_date='2019-07-17', to_date='2019-07-17',
-                                      from_time='13-00-00', to_time='14-00-00',
+                                      from_date='2019-07-15', to_date='2019-07-15',
+#                                      from_time='13-00-00', to_time='14-00-00',
                                       s3_credentials=s3_credentials,
                                       camera_list=['00001.03604', '00001.02262'])
 """
