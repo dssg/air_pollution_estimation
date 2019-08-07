@@ -56,4 +56,4 @@ def update_video_level_table(analyzer,
     db_obj.add_to_sql(df=video_level_df, table_name=paths['db_video_level'])
 
     if return_data:
-        return return_data
+        return video_level_df
