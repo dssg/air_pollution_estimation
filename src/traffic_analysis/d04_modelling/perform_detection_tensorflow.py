@@ -6,6 +6,7 @@ import tensorflow as tf
 import cv2
 import os
 import numpy as np
+import time
 
 from traffic_analysis.d04_modelling.transfer_learning.tensorflow_detection_utils import read_class_names, \
     remove_overlapping_boxes, letterbox_resize
@@ -55,7 +56,7 @@ def pass_image_through_nn(image_capture, paths, params):
             labels (list(str)): list of detection labels
             confs (list(float)): list of detection scores
     """
-
+    time_0 = time.time()
     conf_thresh = params['detection_confidence_threshold']
     iou_thresh = params['detection_iou_threshold']
     detection_model = params['detection_model']
@@ -67,29 +68,47 @@ def pass_image_through_nn(image_capture, paths, params):
     class_name_path = os.path.join(paths['local_detection_model'], 'yolov3', 'coco.names')
     classes = read_class_names(class_name_path)
     n_classes = len(classes)
+    time_1 = time.time()
 
     with tf.Session() as sess:
 
         # initialize tensorflow yolov3 model
+        time_2 = time.time()
         init_data = tf.placeholder(tf.float32, [1, 416, 416, 3], name='init_data')
         yolo_model = YoloV3(n_classes, anchors)
         with tf.variable_scope('YoloV3'):
             feature_map = yolo_model.forward(init_data, False)
 
+        time_3 = time.time()
         pred_boxes, pred_confs, pred_probs = yolo_model.predict(feature_map)
         pred_scores = pred_confs * pred_probs
 
+        time_4 = time.time()
         boxes, scores, labels = remove_overlapping_boxes(pred_boxes, pred_scores, n_classes,
                                                          max_boxes=200, score_thresh=conf_thresh,
                                                          nms_thresh=iou_thresh)
 
+        time_5 = time.time()
         saver = tf.train.Saver()
+        time_6 = time.time()
         saver.restore(sess, local_filepath_model)
+        time_7 = time.time()
         boxes_unscaled, scores_out, labels_out = sess.run([boxes, scores, labels], feed_dict={init_data: image_array})
 
+        time_8 = time.time()
         # rescale the coordinates to the original image
         boxes_out = rescale_boxes(boxes_unscaled, formatting_params)
+        time_9 = time.time()
 
+        print(time_1 - time_0)
+        print(time_2 - time_1)
+        print(time_3 - time_2)
+        print(time_4 - time_3)
+        print(time_5 - time_4)
+        print(time_6 - time_5)
+        print(time_7 - time_6)
+        print(time_8 - time_7)
+        print(time_9 - time_8)
     return boxes_out, labels_out, scores_out
 
 
