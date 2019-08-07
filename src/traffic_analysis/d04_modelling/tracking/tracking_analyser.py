@@ -1,9 +1,10 @@
 from traffic_analysis.d04_modelling.traffic_analyser_interface import TrafficAnalyserInterface
-from traffic_analysis.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame, color_bboxes, bbox_intersection_over_union
+from traffic_analysis.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame, color_bboxes, \
+    bbox_intersection_over_union
 from traffic_analysis.d00_utils.video_helpers import write_mp4
-from traffic_analysis.d04_modelling.object_detection import detect_bboxes
 from traffic_analysis.d04_modelling.tracking.vehicle_fleet import VehicleFleet
-from traffic_analysis.d04_modelling.perform_detection_opencv import detect_objects_in_image
+from traffic_analysis.d04_modelling.perform_detection_opencv import detect_objects_in_image as detect_objects_cv
+from traffic_analysis.d04_modelling.perform_detection_tensorflow import detect_objects_in_image as detect_objects_tf
 
 import numpy as np
 import pandas as pd
@@ -32,7 +33,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         smoothing_method -- method to smooth the IOU time series for each vehicle
         stop_start_iou_threshold -- threshold to binarize the IOU time series into 0 or 1,denoting "moving" or "stopped"
         """
-        super().__init__(params, paths, s3_credentials)
+        super().__init__(params, paths)
         self.detection_model = params['detection_model']
         self.detection_implementation = params['detection_implementation']
         self.tracker = self.create_tracker_by_name(tracker_type=params['opencv_tracker_type'])
@@ -45,6 +46,10 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         self.iou_convolution_window = params['iou_convolution_window']
         self.smoothing_method = params['smoothing_method']
         self.stop_start_iou_threshold = params['stop_start_iou_threshold']
+
+        self.params = params
+        self.paths = paths
+        self.s3_credentials = s3_credentials
 
     def create_tracker_by_name(self, tracker_type: str):
         """Create tracker based on tracker name"""
@@ -134,17 +139,18 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
         # initialize bboxes on first frame using a detection alg
         first_frame = video[0, :, :, :]
-        bboxes, labels, confs = detect_objects_in_image(image_capture=first_frame,
-                                                        params=params,
-                                                        paths=paths,
-                                                        s3_credentials=s3_credentials,
-                                                        selected_labels=self.selected_labels)
-        # bboxes, labels, confs = detect_bboxes(frame=first_frame,
-        #                                       model=self.detection_model,
-        #                                       implementation=self.detection_implementation,
-        #                                       detection_confidence_threshold=self.detection_confidence_threshold,
-        #                                       detection_nms_threshold=self.detection_nms_threshold,
-        #                                       selected_labels=self.selected_labels)
+
+        if self.detection_model == 'yolov3' or 'yolov3-tiny':
+            detect_objects = detect_objects_cv
+        elif self.detection_model == 'yolov3_tf':
+            detect_objects = detect_objects_tf
+
+        bboxes, labels, confs = detect_objects(image_capture=first_frame,
+                                               params=self.params,
+                                               paths=self.paths,
+                                               s3_credentials=self.s3_credentials,
+                                               selected_labels=self.selected_labels)
+
         # store info returned above in vehicleFleet object
         fleet = VehicleFleet(bboxes=np.array(bboxes),
                              labels=np.array(labels),
@@ -177,17 +183,12 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             # every x frames, re-detect boxes
             if frame_ind % self.detection_frequency == 0:
                 # redetect bounding boxes
-                bboxes_detected, labels_detected, confs_detected = detect_objects_in_image(image_capture=first_frame,
-                                                                                           params=params,
-                                                                                           paths=paths,
-                                                                                           s3_credentials=s3_credentials,
-                                                                                           selected_labels=self.selected_labels)
-                # bboxes_detected, labels_detected, confs_detected = detect_bboxes(frame=frame,
-                #                                                                  model=self.detection_model,
-                #                                                                  implementation=self.detection_implementation,
-                #                                                                  detection_confidence_threshold=self.detection_confidence_threshold,
-                #                                                                  detection_nms_threshold=self.detection_nms_threshold,
-                #                                                                  selected_labels=self.selected_labels)
+                bboxes_detected, labels_detected, confs_detected = detect_objects(image_capture=frame,
+                                                                                  params=self.params,
+                                                                                  paths=self.paths,
+                                                                                  s3_credentials=self.s3_credentials,
+                                                                                  selected_labels=self.selected_labels)
+
                 # re-initialize MultiTracker
                 new_bbox_inds = self.determine_new_bboxes(bboxes_tracked,
                                                           bboxes_detected)

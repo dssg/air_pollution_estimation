@@ -29,7 +29,7 @@ selected_videos = load_video_names_from_s3(ref_file='Date_20190717_Cameras_03604
                                            paths=paths,
                                            s3_credentials=s3_credentials)
 
-analyzer = TrackingAnalyser(params=params, paths=paths)
+analyzer = TrackingAnalyser(params=params, paths=paths, s3_credentials=s3_credentials)
 
 # select chunks of videos and classify objects
 chunk_size = params['chunk_size']
