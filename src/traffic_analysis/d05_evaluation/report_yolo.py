@@ -1,10 +1,11 @@
 import numpy as np
 import pandas as pd
 import dateutil.parser
-from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
 import numpy as np
 import pandas as pd
 
+from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
+# TODO Remove this code as we no longer take a YOLO only approach
 
 def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date_time):
     """Parse the info corresponding to one frame into one pandas df

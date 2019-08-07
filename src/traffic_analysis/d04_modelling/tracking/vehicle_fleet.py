@@ -117,7 +117,7 @@ class VehicleFleet:
         else: # check tracking format is correct 
             assert bboxes_time_t.shape[1] == 4
 
-        if(self.bboxes.shape[0] == 2 and self.fake_head_vehicle):
+        if(self.bboxes.shape[0] > 1 and self.fake_head_vehicle):
             self.fake_head_vehicle = False
             self.bboxes = self.bboxes[1:, :, :]
             self.confs = self.confs[1:]
@@ -127,7 +127,7 @@ class VehicleFleet:
                                                                "Number of vehicles in multitracker " \
                                                                "and fleet do not match!"
 
-        self.bboxes = np.concatenate((self.bboxes, np.expand_dims(bboxes_time_t, axis=2)), 
+        self.bboxes = np.concatenate((self.bboxes, np.expand_dims(bboxes_time_t, axis=2)),
                                         axis=2)
         return
 
@@ -283,7 +283,7 @@ class VehicleFleet:
                                       math.nan, math.nan, math.nan, 
                                       math.nan, math.nan]], columns=column_names)
             else: 
-                self.bboxes = self.bboxes[1:,:,:] # remove fake head vehicle 
+                self.bboxes = self.bboxes[1:,:,:] # remove fake head vehicle
                 self.labels = self.labels[1:]
                 self.confs = self.confs[1:]
 

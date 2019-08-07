@@ -21,7 +21,7 @@ data_collection:
       "00001.08926",
       "00001.07355",
       "00001.04336",
-      "00001.09560",
+      "00001.09560"
     ]
   tims_file_website: "https://s3-eu-west-1.amazonaws.com/roads.data.tfl.gov.uk"
   tims_download_website: "http://roads.data.tfl.gov.uk/TIMS/"
@@ -37,7 +37,7 @@ data_renaming:
 
 modelling:
   # obj detection
-  detection_model: "yolov3-tiny"
+  detection_model: "yolov3"
   detection_implementation: "cvlib"
   detection_iou_threshold: 0.05
   detection_confidence_threshold: 0.2
@@ -55,7 +55,7 @@ modelling:
   stop_start_iou_threshold: 0.80
 
 reporting:
-  chunk_size: 5
+  chunk_size: 10
   dtype:
     camera_id: 'category'
   video_level_column_order: ["camera_id", "video_upload_datetime", "vehicle_type", "counts", "starts", "stops", "parked"]
