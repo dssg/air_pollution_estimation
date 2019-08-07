@@ -17,8 +17,8 @@ class FrameLevelEvaluator:
     def __init__(self,
                  videos_to_eval: pd.DataFrame,
                  frame_level_df: pd.DataFrame,
-                 selected_labels: list
-                 ):
+                 selected_labels: list,
+                 data_loader_s3: None):
 
         # data frames to work with
         self.videos_to_eval = videos_to_eval
@@ -28,6 +28,11 @@ class FrameLevelEvaluator:
 
         # parameters
         self.selected_labels = selected_labels 
+        if data_loader_s3 is not None: 
+            self.from_s3_paths = True
+            self.dl_s3 = data_loader_s3
+        else: 
+            self.from_local_paths = True
 
     def evaluate(self) -> pd.DataFrame:
         """Compute mean average precision for each vehicle type on multiple videos 
@@ -89,9 +94,12 @@ class FrameLevelEvaluator:
         frame_level_ground_truth_dfs = []
         for idx, video in self.videos_to_eval.iterrows():
             # get frame level ground truth
-            xml_root = ElementTree.parse(video["xml_path"]).getroot()
-            frame_level_ground_truth = parse_annotation(xml_root)
+            if self.from_s3_paths:
+                xml_root = self.dl_s3.read_xml(video)
+            elif self.from_local_paths: # read from local  
+                xml_root = ElementTree.parse(video['xml_path']).getroot()
 
+            frame_level_ground_truth = parse_annotation(xml_root)
             frame_level_ground_truth["camera_id"] = video["camera_id"]
             frame_level_ground_truth["video_upload_datetime"] = video["video_upload_datetime"]
             frame_level_ground_truth_dfs.append(frame_level_ground_truth)

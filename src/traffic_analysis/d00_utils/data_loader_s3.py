@@ -1,5 +1,6 @@
 import boto3
 import json
+import xml.etree.ElementTree as ElementTree
 from botocore.exceptions import ClientError
 
 
@@ -30,6 +31,14 @@ class DataLoaderS3:
         self.client.put_object(Body=(bytes(json.dumps(data).encode('UTF-8'))),
                                Bucket=self.bucket_name,
                                Key=file_path)
+
+    def read_xml(self, file_path):
+        result = self.client.get_object(Bucket=self.bucket_name,
+                                        Key=file_path)
+        xml_as_str = result['Body'].read().decode()
+        xml_root = ElementTree.fromstring(xml_as_str)
+        return xml_root
+
 
     def file_exists(self, file_path):
 

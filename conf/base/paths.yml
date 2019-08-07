@@ -14,6 +14,7 @@ local_paths:
   temp_raw_video: "data/temp/raw_videos/"
   temp_frame_level: "data/temp/frame_level/"
   temp_video_level: "data/temp/video_level/"
+  temp_annotation_xmls: "data/temp/annotation_xmls/"
   video_names: "data/ref/video_names/"
   processed_video: "results/jamcams/"
   plots: "plots/"
@@ -28,5 +29,8 @@ db_paths:
   db_vehicle_types: 'vehicle_types2'
   db_cameras: 'cameras2'
 
-  eval_db_frame_level: 'frame_stats'
-  eval_db_video_level: 'video_stats'
+  eval_db_frame_level_prefix: 'frame_stats'
+  eval_db_video_level_prefix: 'video_stats'
+  eval_db_video_stats: "eval_video_performance"
+  eval_db_video_diffs: "eval_video_diffs"
+  eval_db_frame_stats: "eval_frame_stats"

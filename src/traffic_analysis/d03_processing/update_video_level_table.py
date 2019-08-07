@@ -4,9 +4,11 @@ from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_n
 from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 
 
-def update_video_level_table(analyzer,
+def update_video_level_table(analyser,
+                             db_video_level_name,
+                             db_frame_level_name=None,
                              frame_level_df=None,
-                             file_names=None,
+                             file_names=None, 
                              paths=None,
                              creds=None,
                              return_data=False):
@@ -26,6 +28,8 @@ def update_video_level_table(analyzer,
     db_obj = DataLoaderSQL(creds=creds, paths=paths)
 
     if frame_level_df is None:
+        assert db_frame_level_name is not None, \
+            "No frame level df or frame level database name specified"
         # Build the sql string
         filter_string = ''
 
@@ -35,7 +39,7 @@ def update_video_level_table(analyzer,
             filter_string += '(camera_id=\'' + camera_id + '\' AND video_upload_datetime=\'' + str(date_time) + '\') OR '
 
         filter_string = filter_string[:-4]
-        sql_string = "SELECT * FROM {} WHERE {};".format(paths['db_frame_level'], filter_string)
+        sql_string = "SELECT * FROM {} WHERE {};".format(db_frame_level_name, filter_string)
         frame_level_df = db_obj.select_from_table(sql=sql_string)
 
         bboxes = []
@@ -48,12 +52,12 @@ def update_video_level_table(analyzer,
         frame_level_df.drop('bbox_h', axis=1, inplace=True)
 
     # Create video level table and add to database
-    video_level_df = analyzer.construct_video_level_df(frame_level_df)
+    video_level_df = analyser.construct_video_level_df(frame_level_df)
     if video_level_df.empty:
         return
     video_level_df['creation_datetime'] = datetime.datetime.now()
 
-    db_obj.add_to_sql(df=video_level_df, table_name=paths['db_video_level'])
+    db_obj.add_to_sql(df=video_level_df, table_name=db_video_level_name)
 
     if return_data:
         return video_level_df

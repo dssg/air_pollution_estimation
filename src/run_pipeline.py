@@ -29,19 +29,22 @@ selected_videos = load_video_names_from_s3(ref_file='Date_20190717_Cameras_03604
                                            paths=paths,
                                            s3_credentials=s3_credentials)
 
-analyzer = TrackingAnalyser(params=params, paths=paths)
+analyser = TrackingAnalyser(params=params, paths=paths)
 
 # select chunks of videos and classify objects
 chunk_size = params['chunk_size']
 while selected_videos:
-    frame_level_df = update_frame_level_table(analyzer=analyzer,
+    frame_level_df = update_frame_level_table(analyser=analyser,
+                                              db_frame_level_name=paths['db_frame_level'],
                                               file_names=selected_videos[:chunk_size],
                                               paths=paths,
                                               creds=creds)
 
     # evaluate_frame_level_table
 
-    update_video_level_table(analyzer=analyzer,
+    update_video_level_table(analyser=analyser,
+                             db_video_level_name=paths['db_video_level'],
+                             db_frame_level_name=paths['db_frame_level'],
                              frame_level_df=frame_level_df,
                              file_names=selected_videos[:chunk_size],
                              paths=paths,
