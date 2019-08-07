@@ -143,23 +143,25 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         first_frame = video[0, :, :, :]
 
         if self.detection_model == 'yolov3' or 'yolov3-tiny':
-            detect_objects = detect_objects_tf
+            bboxes, labels, confs = detect_objects_cv(image_capture=first_frame,
+                                                      params=self.params,
+                                                      paths=self.paths,
+                                                      s3_credentials=self.s3_credentials,
+                                                      selected_labels=self.selected_labels)
         elif self.detection_model == 'yolov3_tf':
-            detect_objects = detect_objects_tf
+            sess = tf.Session()
+            model_initializer, init_data, detection_model = initialize_tensorflow_model(params=self.params,
+                                                                                        paths=self.paths,
+                                                                                        s3_credentials=self.s3_credentials,
+                                                                                        sess=sess)
 
-        sess = tf.Session()
-        model_initializer, init_data, detection_model = initialize_tensorflow_model(params=self.params,
-                                                                                    paths=self.paths,
-                                                                                    s3_credentials=self.s3_credentials,
-                                                                                    sess=sess)
-
-        bboxes, labels, confs = detect_objects_tf(image_capture=first_frame,
-                                                  paths=self.paths,
-                                                  detection_model=detection_model,
-                                                  model_initializer=model_initializer,
-                                                  init_data=init_data,
-                                                  sess=sess,
-                                                  selected_labels=self.selected_labels)
+            bboxes, labels, confs = detect_objects_tf(image_capture=first_frame,
+                                                      paths=self.paths,
+                                                      detection_model=detection_model,
+                                                      model_initializer=model_initializer,
+                                                      init_data=init_data,
+                                                      sess=sess,
+                                                      selected_labels=self.selected_labels)
 
         # store info returned above in vehicleFleet object
         fleet = VehicleFleet(bboxes=np.array(bboxes),
@@ -193,13 +195,20 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             # every x frames, re-detect boxes
             if frame_ind % self.detection_frequency == 0:
                 # redetect bounding boxes
-                bboxes_detected, labels_detected, confs_detected = detect_objects_tf(image_capture=frame,
-                                                                                     paths=self.paths,
-                                                                                     detection_model=detection_model,
-                                                                                     model_initializer=model_initializer,
-                                                                                     init_data=init_data,
-                                                                                     sess=sess,
-                                                                                     selected_labels=self.selected_labels)
+                if self.detection_model == 'yolov3' or 'yolov3-tiny':
+                    bboxes_detected, labels_detected, confs_detected = detect_objects_cv(image_capture=first_frame,
+                                                                                         params=self.params,
+                                                                                         paths=self.paths,
+                                                                                         s3_credentials=self.s3_credentials,
+                                                                                         selected_labels=self.selected_labels)
+                elif self.detection_model == 'yolov3_tf':
+                    bboxes_detected, labels_detected, confs_detected = detect_objects_tf(image_capture=frame,
+                                                                                         paths=self.paths,
+                                                                                         detection_model=detection_model,
+                                                                                         model_initializer=model_initializer,
+                                                                                         init_data=init_data,
+                                                                                         sess=sess,
+                                                                                         selected_labels=self.selected_labels)
 
                 # re-initialize MultiTracker
                 new_bbox_inds = self.determine_new_bboxes(bboxes_tracked,
@@ -238,7 +247,8 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         print('Run time of tracking analyser for one video is %s seconds' %
               (time.time() - start_time))
 
-        sess.close()
+        if self.detection_model == 'yolov3_tf':
+            sess.close()
 
         return fleet
 
