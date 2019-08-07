@@ -12,9 +12,11 @@ from traffic_analysis.d04_modelling.transfer_learning.tensorflow_detection_utils
 from traffic_analysis.d04_modelling.transfer_learning.convert_darknet_to_tensorflow import parse_anchors, \
     yolov3_darknet_to_tensorflow
 from traffic_analysis.d04_modelling.transfer_learning.generate_tensorflow_model import YoloV3
+from traffic_analysis.d04_modelling.perform_detection_opencv import populate_labels, label_detections, \
+    choose_objects_of_selected_labels
 
 
-def detect_objects_in_image(image_capture, params, paths, s3_credentials):
+def detect_objects_in_image(image_capture, params, paths, s3_credentials, selected_labels):
     """ uses a tensorflow implementation of yolo to detect objects in a frame
         Args:
             image_capture (nparray): numpy array containing the captured image (width, height, rbg)
@@ -36,11 +38,21 @@ def detect_objects_in_image(image_capture, params, paths, s3_credentials):
                                          paths=paths,
                                          s3_credentials=s3_credentials)
 
-        boxes, confs, labels = pass_image_through_nn(image_capture=image_capture,
-                                                     paths=paths,
-                                                     params=params)
+        boxes, confs, label_idxs = pass_image_through_nn(image_capture=image_capture,
+                                                         paths=paths,
+                                                         params=params)
 
-    return boxes, confs, labels
+        labels = label_detections(label_idxs=label_idxs,
+                                  model_name=detection_model,
+                                  paths=paths)
+
+        if selected_labels is not None:
+            boxes, labels, confs = choose_objects_of_selected_labels(bboxes_in=boxes,
+                                                                     labels_in=labels,
+                                                                     confs_in=confs,
+                                                                     selected_labels=selected_labels)
+
+    return boxes, labels, confs
 
 
 def pass_image_through_nn(image_capture, paths, params):
