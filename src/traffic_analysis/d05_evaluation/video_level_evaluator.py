@@ -19,8 +19,8 @@ class VideoLevelEvaluator:
         self.video_level_ground_truth = pd.DataFrame({})
 
         # parameters
-        self.video_level_column_order = 
-        self.selected_labels = selected_video_level_column_orderlabels
+        self.video_level_column_order = video_level_column_order
+        self.selected_labels = selected_labels
         self.stats_to_evaluate = ['counts', 'starts', 'stops']
         if data_loader_s3 is not None: 
             self.from_s3_paths = True

@@ -1,23 +1,17 @@
 from traffic_analysis.d00_utils.data_retrieval import delete_and_recreate_dir
 from traffic_analysis.d00_utils.load_confs import load_parameters, load_paths, load_credentials
-from traffic_analysis.d00_utils.create_dev_tables import create_sql_tables
-
+from traffic_analysis.d00_utils.create_sql_tables import create_primary_sql_tables, create_eval_sql_tables
 from traffic_analysis.d02_ref.load_video_names_from_s3 import load_video_names_from_s3
-
+from traffic_analysis.d02_ref.upload_annotation_names_to_s3 import upload_annotation_names_to_s3
 from traffic_analysis.d03_processing.update_frame_level_table import update_frame_level_table
 from traffic_analysis.d03_processing.update_video_level_table import update_video_level_table
-
 from traffic_analysis.d03_processing.update_eval_tables import update_eval_tables
-
-from traffic_analysis.d04_modelling.tracking.trackinganalyser import TrackingAnalyser
+from traffic_analysis.d04_modelling.tracking.tracking_analyser import TrackingAnalyser
 
 params = load_parameters()
 paths = load_paths()
 creds = load_credentials()
 s3_credentials = creds[paths['s3_creds']]
-
-print("Checking paths change works right")
-print(paths[temp_video], paths[temp_raw_video], paths[temp_frame_level])
 
 # initialize traffic analysers with various tracker types 
 traffic_analysers = {}
@@ -40,13 +34,17 @@ selected_videos = load_video_names_from_s3(ref_file= params['eval_ref_name'],
                                            paths=paths,
                                            s3_credentials=s3_credentials)
 
-# wipe and recreate eval tables for 
+# wipe and recreate eval tables 
+create_eval_sql_tables(creds=creds,
+                       paths=paths, 
+                       drop=False)
+
 for tracker_type, traffic_analyser in traffic_analysers.items():
     db_frame_level_name = f"{paths['eval_db_frame_level_prefix']}_{tracker_type}"
     db_video_level_name = f"{paths['eval_db_video_level_prefix']}_{tracker_type}"
 
-    #wipe and recreate eval tables for tracker types
-    create_sql_tables(db_frame_level_name=db_frame_level_name, 
+    #wipe and recreate stats tables for tracker types
+    create_primary_sql_tables(db_frame_level_name=db_frame_level_name, 
                       db_video_level_name=db_video_level_name,
                       drop=True)
 
@@ -58,8 +56,6 @@ for tracker_type, traffic_analyser in traffic_analysers.items():
                                                   db_frame_level_name = db_frame_level_name,
                                                   paths=paths,
                                                   creds=creds)
-
-        # evaluate_frame_level_table
 
         video_level_df = update_video_level_table(analyser=analyser,
                                  db_video_level_name=db_video_level_name,
@@ -81,6 +77,3 @@ for tracker_type, traffic_analyser in traffic_analysers.items():
                        paths=paths,
                        analyser_type=tracker_type
                        )
-
-    # evaluate on videos 
-
