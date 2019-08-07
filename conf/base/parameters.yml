@@ -41,6 +41,7 @@ pipeline_settings:
 eval_pipeline_settings:
   eval_ref_name: annotations
   traffic_analyser: "TrackingAnalyser"
+  eval_tracker_types: ['KCF', 'MOSSE', 'CSRT']
   eval_chunk_size: 2
 
 modelling:
@@ -53,7 +54,7 @@ modelling:
 
   # tracking
   selected_labels: ["car", "truck", "bus", "motorbike"]
-  opencv_tracker_type: "CSRT"
+  _tracker_type: "CSRT"
   iou_threshold: 0.05 #controls how much two objects' bboxes must overlap to be considered the "same"
   detection_frequency: 25
 

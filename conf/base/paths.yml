@@ -27,3 +27,6 @@ db_paths:
   db_video_level: 'video_stats2'
   db_vehicle_types: 'vehicle_types2'
   db_cameras: 'cameras2'
+
+  eval_db_frame_level: 'frame_stats'
+  eval_db_video_level: 'video_stats'
