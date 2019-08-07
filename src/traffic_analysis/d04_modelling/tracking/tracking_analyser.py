@@ -3,6 +3,7 @@ from traffic_analysis.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, displa
 from traffic_analysis.d00_utils.video_helpers import write_mp4
 from traffic_analysis.d04_modelling.object_detection import detect_bboxes
 from traffic_analysis.d04_modelling.tracking.vehicle_fleet import VehicleFleet
+from traffic_analysis.d04_modelling.perform_detection_opencv import detect_objects_in_image
 
 import numpy as np
 import pandas as pd
@@ -11,7 +12,7 @@ import time
 
 
 class TrackingAnalyser(TrafficAnalyserInterface):
-    def __init__(self, params, paths):
+    def __init__(self, params, paths, s3_credentials):
         """
         Model-specific parameters initialized below: 
 
@@ -133,12 +134,17 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
         # initialize bboxes on first frame using a detection alg
         first_frame = video[0, :, :, :]
-        bboxes, labels, confs = detect_bboxes(frame=first_frame,
-                                              model=self.detection_model,
-                                              implementation=self.detection_implementation,
-                                              detection_confidence_threshold=self.detection_confidence_threshold,
-                                              detection_nms_threshold=self.detection_nms_threshold,
-                                              selected_labels=self.selected_labels)
+        bboxes, labels, confs = detect_objects_in_image(image_capture=first_frame,
+                                                        params=params,
+                                                        paths=paths,
+                                                        s3_credentials=s3_credentials,
+                                                        selected_labels=self.selected_labels)
+        # bboxes, labels, confs = detect_bboxes(frame=first_frame,
+        #                                       model=self.detection_model,
+        #                                       implementation=self.detection_implementation,
+        #                                       detection_confidence_threshold=self.detection_confidence_threshold,
+        #                                       detection_nms_threshold=self.detection_nms_threshold,
+        #                                       selected_labels=self.selected_labels)
         # store info returned above in vehicleFleet object
         fleet = VehicleFleet(bboxes=np.array(bboxes),
                              labels=np.array(labels),
@@ -171,12 +177,17 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             # every x frames, re-detect boxes
             if frame_ind % self.detection_frequency == 0:
                 # redetect bounding boxes
-                bboxes_detected, labels_detected, confs_detected = detect_bboxes(frame=frame,
-                                                                                 model=self.detection_model,
-                                                                                 implementation=self.detection_implementation,
-                                                                                 detection_confidence_threshold=self.detection_confidence_threshold,
-                                                                                 detection_nms_threshold=self.detection_nms_threshold,
-                                                                                 selected_labels=self.selected_labels)
+                bboxes_detected, labels_detected, confs_detected = detect_objects_in_image(image_capture=first_frame,
+                                                                                           params=params,
+                                                                                           paths=paths,
+                                                                                           s3_credentials=s3_credentials,
+                                                                                           selected_labels=self.selected_labels)
+                # bboxes_detected, labels_detected, confs_detected = detect_bboxes(frame=frame,
+                #                                                                  model=self.detection_model,
+                #                                                                  implementation=self.detection_implementation,
+                #                                                                  detection_confidence_threshold=self.detection_confidence_threshold,
+                #                                                                  detection_nms_threshold=self.detection_nms_threshold,
+                #                                                                  selected_labels=self.selected_labels)
                 # re-initialize MultiTracker
                 new_bbox_inds = self.determine_new_bboxes(bboxes_tracked,
                                                           bboxes_detected)
