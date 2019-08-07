@@ -11,7 +11,7 @@ import time
 
 
 class TrackingAnalyser(TrafficAnalyserInterface):
-    def __init__(self, params, paths):
+    def __init__(self, params, paths, tracker_type = None):
         """
         Model-specific parameters initialized below: 
 
@@ -34,7 +34,10 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         super().__init__(params, paths)
         self.detection_model = params['detection_model']
         self.detection_implementation = params['detection_implementation']
-        self.tracker = self.create_tracker_by_name(tracker_type=params['opencv_tracker_type'])
+        if tracker_type is not None: 
+            self.tracker = self.create_tracker_by_name(tracker_type=tracker_type)
+        else: 
+            self.tracker = self.create_tracker_by_name(tracker_type=params['default_tracker_type'])
         self.iou_threshold = params['iou_threshold']
         self.detection_frequency = params['detection_frequency']
         self.detection_confidence_threshold = params['detection_confidence_threshold']

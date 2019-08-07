@@ -1,4 +1,5 @@
 import datetime
+import os 
 from traffic_analysis.d00_utils.data_retrieval import load_videos_into_np, delete_and_recreate_dir
 from traffic_analysis.d04_modelling.classify_objects import classify_objects
 from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
@@ -6,6 +7,7 @@ from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 
 
 def update_frame_level_table(file_names: list,
+                             db_frame_level_name: str,
                              paths: dict,
                              params: dict,
                              creds: dict):
@@ -19,24 +21,28 @@ def update_frame_level_table(file_names: list,
                 Returns:
 
     """
+    # make temp_download_dir unique in case multiple pipelines are running concurrently
+    temp_download_dir = os.path.join(paths["temp_video"], str(os.getpid()))
+    print(temp_download_dir)
+
     s3_credentials = creds[paths['s3_creds']]
     dl = DataLoaderS3(s3_credentials,
                       bucket_name=paths['bucket_name'])
 
-    delete_and_recreate_dir(paths["temp_video"])
+    delete_and_recreate_dir(temp_download_dir)
     # Download the video file_names using the file list
     for file in file_names:
         try:
-            path_to_download_file_to = (paths["temp_video"]
-                                        + file.split('/')[-1].replace(':', '-').replace(" ", "_")
+            path_to_download_file_to = (temp_download_dir + "/"
+                                        + file.split("/")[-1].replace(":", "-").replace(" ", "_")
                                         )
             dl.download_file(path_of_file_to_download=file,
                              path_to_download_file_to=path_to_download_file_to)
         except:
             print("Could not download " + file)
 
-    video_dict = load_videos_into_np(paths["temp_video"])
-    delete_and_recreate_dir(paths["temp_video"])
+    video_dict = load_videos_into_np(temp_download_dir)
+    delete_and_recreate_dir(temp_download_dir)
 
     frame_level_df = classify_objects(video_dict=video_dict,
                                       params=params,
@@ -47,6 +53,6 @@ def update_frame_level_table(file_names: list,
     frame_level_df['creation_datetime'] = datetime.datetime.now()
 
     db_obj = DataLoaderSQL(creds=creds, paths=paths)
-    db_obj.add_to_sql(df=frame_level_df, table_name=paths['db_frame_level'])
+    db_obj.add_to_sql(df=frame_level_df, table_name=db_frame_level_name)
 
     return frame_level_df

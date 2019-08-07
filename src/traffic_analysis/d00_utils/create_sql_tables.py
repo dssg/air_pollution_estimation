@@ -2,38 +2,34 @@ from traffic_analysis.d00_utils.load_confs import load_credentials, load_paths
 from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 
 
-def create_sql_tables(drop=False):
+def create_sql_tables(db_frame_level_name: str, 
+                      db_video_level_name: str,
+                      db_vehicle_types_name: str = None,
+                      db_cameras_name: str = None,
+                      drop=False
+                      ):
 
-    paths = load_paths()
+    if (db_vehicle_types_name is not None) and (db_cameras_name is not None): 
+        handle_vehicles_cameras_tables = True 
 
     # create queries
     drop_commands = None
     if drop:
         drop_commands = [
-            "DROP TABLE {}, {}, {}, {} CASCADE;".format(paths['db_vehicle_types'],
-                                                        paths['db_cameras'],
-                                                        paths['db_frame_level'],
-                                                        paths['db_video_level'])
+            "DROP TABLE {}, {} CASCADE;".format(db_frame_level_name,
+                                                db_video_level_name
+                                                )
         ]
 
+        if handle_vehicles_cameras_tables: 
+            drop_commands.append(
+            "DROP TABLE {}, {} CASCADE;".format(db_vehicle_types_name,
+                                                db_cameras_name
+                                                )
+            )
+
+
     commands = [
-        """
-        CREATE TABLE {}(
-            id SERIAL,
-            vehicle_type VARCHAR(100),
-            vehicle_type_id INTEGER PRIMARY KEY
-        )
-        """.format(paths['db_vehicle_types']),
-        """
-        CREATE TABLE {}(
-            id SERIAL,
-            latitude FLOAT, 
-            longitude FLOAT,
-            borough INTEGER,
-            tfl_camera_id INTEGER,
-            camera_name VARCHAR(100)
-        )
-        """.format(paths['db_cameras']),
         """
         CREATE TABLE {}(
             camera_id VARCHAR(20),
@@ -47,7 +43,7 @@ def create_sql_tables(drop=False):
             box_h INTEGER,
             creation_datetime timestamp
         )
-        """.format(paths['db_frame_level']),
+        """.format(db_frame_level_name),
 
         """
         CREATE TABLE {}(
@@ -57,11 +53,32 @@ def create_sql_tables(drop=False):
             counts FLOAT,
             creation_datetime timestamp
         )
-        """.format(paths['db_video_level'])
+        """.format(db_video_level_name)
     ]
 
+    if handle_vehicles_cameras_tables: 
+        commands += [
+            """
+            CREATE TABLE {}(
+                id SERIAL,
+                vehicle_type VARCHAR(100),
+                vehicle_type_id INTEGER PRIMARY KEY
+            )
+            """.format(db_vehicle_types_name),
+            """
+            CREATE TABLE {}(
+                id SERIAL,
+                latitude FLOAT, 
+                longitude FLOAT,
+                borough INTEGER,
+                tfl_camera_id INTEGER,
+                camera_name VARCHAR(100)
+            )
+            """.format(db_cameras_name),
+        ]
+
     # execute queries
-    dl = DataLoaderSQL(creds=load_credentials(), paths=paths)
+    dl = DataLoaderSQL(creds=load_credentials(), paths=load_paths())
 
     if drop_commands is not None:
         for command in drop_commands:
