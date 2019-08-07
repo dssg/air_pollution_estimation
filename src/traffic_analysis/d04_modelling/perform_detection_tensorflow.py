@@ -12,7 +12,7 @@ from traffic_analysis.d04_modelling.transfer_learning.tensorflow_detection_utils
 from traffic_analysis.d04_modelling.transfer_learning.convert_darknet_to_tensorflow import parse_anchors, \
     yolov3_darknet_to_tensorflow
 from traffic_analysis.d04_modelling.transfer_learning.generate_tensorflow_model import YoloV3
-from traffic_analysis.d04_modelling.perform_detection_opencv import populate_labels, label_detections, \
+from traffic_analysis.d04_modelling.perform_detection_opencv import label_detections, \
     choose_objects_of_selected_labels
 
 

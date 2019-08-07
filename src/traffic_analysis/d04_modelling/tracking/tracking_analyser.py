@@ -141,7 +141,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         first_frame = video[0, :, :, :]
 
         if self.detection_model == 'yolov3' or 'yolov3-tiny':
-            detect_objects = detect_objects_cv
+            detect_objects = detect_objects_tf
         elif self.detection_model == 'yolov3_tf':
             detect_objects = detect_objects_tf
 
