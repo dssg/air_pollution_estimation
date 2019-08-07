@@ -145,11 +145,11 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         elif self.detection_model == 'yolov3_tf':
             detect_objects = detect_objects_tf
 
-        bboxes, labels, confs = detect_objects(image_capture=first_frame,
-                                               params=self.params,
-                                               paths=self.paths,
-                                               s3_credentials=self.s3_credentials,
-                                               selected_labels=self.selected_labels)
+        bboxes, labels, confs = detect_objects_tf(image_capture=first_frame,
+                                                  params=self.params,
+                                                  paths=self.paths,
+                                                  s3_credentials=self.s3_credentials,
+                                                  selected_labels=self.selected_labels)
 
         # store info returned above in vehicleFleet object
         fleet = VehicleFleet(bboxes=np.array(bboxes),
@@ -183,11 +183,11 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             # every x frames, re-detect boxes
             if frame_ind % self.detection_frequency == 0:
                 # redetect bounding boxes
-                bboxes_detected, labels_detected, confs_detected = detect_objects(image_capture=frame,
-                                                                                  params=self.params,
-                                                                                  paths=self.paths,
-                                                                                  s3_credentials=self.s3_credentials,
-                                                                                  selected_labels=self.selected_labels)
+                bboxes_detected, labels_detected, confs_detected = detect_objects_tf(image_capture=frame,
+                                                                                     params=self.params,
+                                                                                     paths=self.paths,
+                                                                                     s3_credentials=self.s3_credentials,
+                                                                                     selected_labels=self.selected_labels)
 
                 # re-initialize MultiTracker
                 new_bbox_inds = self.determine_new_bboxes(bboxes_tracked,
