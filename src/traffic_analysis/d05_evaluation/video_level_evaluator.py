@@ -6,7 +6,7 @@ from traffic_analysis.d05_evaluation.parse_annotation import parse_annotation
 
 class VideoLevelEvaluator:
     """
-    Purpose of this class is to conduct video level evaluation for multiple videos.
+    Purpose of this class is to conduct video level evaluation for one video.
     """
     def __init__(self,
                  videos_to_eval: pd.DataFrame,
@@ -26,16 +26,15 @@ class VideoLevelEvaluator:
 
     def evaluate(self):
         """
-        Function to perform the evaluation
-        :return: Data frame summarising the performance and data frame with raw differences of 
-        predictions vs ground truth
+        Summary function to perform the evaluation
+        :return: Data frame summarising the performance
         """
         self.video_level_ground_truth = self.get_ground_truth()
-        diff_df = self.compute_diffs()
-        performance_df = self.summarise_performance(diff_df)
-        return performance_df, diff_df
+        performance_df = self.summarise_performance()
+        return performance_df
 
-    def compute_diffs(self):
+    def summarise_performance(self):
+
         # get data sets
         video_level_ground_truth = self.video_level_ground_truth
         video_level_estimates = pd.merge(left=self.videos_to_eval[['camera_id', 'video_upload_datetime']],
@@ -50,23 +49,19 @@ class VideoLevelEvaluator:
         video_level_estimates.rename(columns=pred_rename_dict, inplace=True)
 
         id_cols = ['camera_id', 'video_upload_datetime', 'vehicle_type']
-        diff_df = pd.merge(left=video_level_ground_truth[id_cols + list(truth_rename_dict.values())],
-                           right=video_level_estimates[id_cols + list(pred_rename_dict.values())],
-                           on=id_cols,
-                           how='left').fillna(0)
+        combi = pd.merge(left=video_level_ground_truth[id_cols + list(truth_rename_dict.values())],
+                         right=video_level_estimates[id_cols + list(pred_rename_dict.values())],
+                         on=id_cols,
+                         how='left').fillna(0)
         for stat in self.stats_to_evaluate:
-            diff_df[stat + '_diff'] = diff_df[stat + '_pred'] - diff_df[stat + '_true']
-        return diff_df
+            combi[stat + '_diff'] = combi[stat + '_pred'] - combi[stat + '_true']
 
-    def summarise_performance(self, 
-                              diff_df: pd.DataFrame):
         # reshape for convenient summarising
-        id_cols = ['camera_id', 'video_upload_datetime', 'vehicle_type']
         diff_cols = [stat + '_diff' for stat in self.stats_to_evaluate]
-        diff_melted = diff_df.melt(id_vars=id_cols,
-                                   value_vars=diff_cols,
-                                   value_name='stat_diff',
-                                   var_name='stat')
+        diff_melted = combi.melt(id_vars=id_cols,
+                                 value_vars=diff_cols,
+                                 value_name='stat_diff',
+                                 var_name='stat')
         diff_melted['stat'] = diff_melted['stat'].str.replace("_diff", "")
 
         # summarise

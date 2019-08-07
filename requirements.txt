@@ -18,4 +18,3 @@ awscli>=1.16.198, <2.0
 sqlalchemy
 pandas==0.24.2
 psycopg2
-seaborn>=0.9

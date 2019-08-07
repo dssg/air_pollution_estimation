@@ -3,7 +3,7 @@ from cvlib.object_detection import draw_bbox
 import cvlib as cv
 import imageio
 
-from traffic_analysis.d05_evaluation.report_yolo import yolo_output_df
+from traffic_analysis.d05_reporting.report_yolo import yolo_output_df
 
 
 def classify_objects(video_dict, params, paths, vid_time_length=10, make_videos=True):

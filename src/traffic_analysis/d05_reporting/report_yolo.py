@@ -1,11 +1,12 @@
 import numpy as np
 import pandas as pd
 import dateutil.parser
+from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
 import numpy as np
 import pandas as pd
 
-from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
-# TODO Remove this code as we no longer take a YOLO only approach
+
+#TODO Remove this code as we no longer take a YOLO only approach
 
 def frame_info_to_df(obj_info_aggregated, frame_ind, camera_id, date_time):
     """Parse the info corresponding to one frame into one pandas df
@@ -44,9 +45,9 @@ def yolo_output_df(yolo_dict):
     df_list = []
 
     for video_num, (name, values) in enumerate(yolo_dict.items()):
-        obj_bounds = np.array(values["bounds"])
-        obj_labels = np.array(values["labels"])
-        obj_label_confidences = np.array(values["confidences"])
+        obj_bounds = np.array(values['bounds'])
+        obj_labels = np.array(values['labels'])
+        obj_label_confidences = np.array(values['confidences'])
 
         # ensure all three lists have same number of frames (one entry in list corresp to one frame)
         num_frames = obj_bounds.shape[0]
@@ -59,15 +60,14 @@ def yolo_output_df(yolo_dict):
 
         # loop over frames
         for frame_ind in range(num_frames):
-            obj_bounds_np = [np.array(bound) for bound in obj_bounds[frame_ind]]
+            obj_bounds_np = [np.array(bound)
+                             for bound in obj_bounds[frame_ind]]
 
-            obj_info_aggregated = np.array(
-                [obj_bounds_np, obj_labels[frame_ind], obj_label_confidences[frame_ind]]
-            ).transpose()
+            obj_info_aggregated = np.array([obj_bounds_np, obj_labels[frame_ind],
+                                            obj_label_confidences[frame_ind]]).transpose()
 
             frame_df = frame_info_to_df(
-                obj_info_aggregated, frame_ind, camera_id, date_time
-            )
+                obj_info_aggregated, frame_ind, camera_id, date_time)
             frame_df_list.append(frame_df)
 
         yolo_df = pd.concat(frame_df_list)
