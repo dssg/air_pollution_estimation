@@ -102,6 +102,8 @@ def pass_image_through_nn(image_capture, paths, params):
 
     # rescale the coordinates to the original image
     boxes_out = rescale_boxes(boxes_unscaled, formatting_params)
+    boxes_out = [array.tolist() for array in boxes_out]
+    scores_out = scores_out.tolist()
 
     sess.close()
 
