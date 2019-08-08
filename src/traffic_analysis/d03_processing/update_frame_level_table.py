@@ -11,14 +11,12 @@ from traffic_analysis.d00_utils.data_retrieval import (delete_and_recreate_dir,
 def update_frame_level_table(analyzer,
                              file_names: list,
                              paths: dict,
-                             params: dict,
                              creds: dict):
     """ Update the frame level table on s3 (pq) based on the videos in the files list
                 Args:
                     analyzer: analyzer object for doing traffic analysis
                     file_names (list): list of s3 filepaths for the videos to be processed
                     paths (dict): dictionary of paths from yml file
-                    params (dict): dictionary of parameters from yml file
                     creds (dict): dictionary of credentials from yml file
 
                 Returns:
@@ -45,7 +43,9 @@ def update_frame_level_table(analyzer,
     frame_level_df = analyzer.construct_frame_level_df(video_dict)
     frame_level_df.dropna(how='any', inplace=True)
     frame_level_df = frame_level_df.astype(
-        {'frame_id': 'int64', 'vehicle_id': 'int64'})
+        {'frame_id': 'int64',
+         'vehicle_id': 'int64'})
+
     frame_level_sql_df = pd.DataFrame.copy(frame_level_df)
     x, y, w, h = [], [], [], []
     for vals in frame_level_sql_df['bboxes'].values:

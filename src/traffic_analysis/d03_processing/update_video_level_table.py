@@ -4,7 +4,12 @@ from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_n
 from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 
 
-def update_video_level_table(frame_level_df=None, analyzer=None, file_names=None, paths=None, creds=None, params=None):
+def update_video_level_table(analyzer,
+                             frame_level_df=None,
+                             file_names=None,
+                             paths=None,
+                             creds=None,
+                             return_data=False):
     """ Update the video level table on the database based on the videos in the files list
                 Args:
                     frame_level_df (dataframe): dataframe containing the frame level stats, if none then
@@ -12,6 +17,7 @@ def update_video_level_table(frame_level_df=None, analyzer=None, file_names=None
                     file_names (list): list of s3 filepaths for the videos to be processed
                     paths (dict): dictionary of paths from yml file
                     creds (dict): dictionary of credentials from yml file
+                    return_data: For debugging it might be useful to return the video level df
 
                 Returns:
 
@@ -48,3 +54,6 @@ def update_video_level_table(frame_level_df=None, analyzer=None, file_names=None
     video_level_df['creation_datetime'] = datetime.datetime.now()
 
     db_obj.add_to_sql(df=video_level_df, table_name=paths['db_video_level'])
+
+    if return_data:
+        return video_level_df

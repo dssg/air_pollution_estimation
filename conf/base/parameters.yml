@@ -28,7 +28,7 @@ data_collection:
   tfl_camera_api: "https://api.tfl.gov.uk/Place/Type/jamcam"
   jamcam_url: "https://s3-eu-west-1.amazonaws.com/jamcams.tfl.gov.uk/"
   iterations: 0
-  delay: 0
+  delay: 3
 
 data_renaming:
   old_path: "raw/video_data_new"
@@ -37,7 +37,7 @@ data_renaming:
 
 modelling:
   # obj detection
-  detection_model: "yolov3-tiny"
+  detection_model: "yolov3"
   detection_implementation: "cvlib"
   detection_iou_threshold: 0.05
   detection_confidence_threshold: 0.2
