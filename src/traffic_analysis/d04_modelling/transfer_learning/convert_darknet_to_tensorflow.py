@@ -7,7 +7,7 @@ import os
 import tensorflow as tf
 import numpy as np
 
-from traffic_analysis.d00_utils.generate_tensorflow_model import YoloV3
+from traffic_analysis.d04_modelling.transfer_learning.generate_tensorflow_model import YoloV3
 from traffic_analysis.d02_ref.download_detection_model_from_s3 import download_detection_model_from_s3
 
 
@@ -24,16 +24,17 @@ def yolov3_darknet_to_tensorflow(paths,
     model_file_path = paths['local_detection_model']
     detection_model = params['detection_model']
 
-    if not detection_model == 'yolov3':  # can only create tf model with yolov3 darknet weights
+    if not detection_model == 'yolov3_tf':  # can only create tf model with yolov3 darknet weights
         pass
 
     else:
-        if not os.path.exists(os.path.join(model_file_path, detection_model, 'coco.names')):
-            download_detection_model_from_s3(model_name=detection_model,
+        if not os.path.exists(os.path.join(model_file_path, 'yolov3')):
+            download_detection_model_from_s3(model_name='yolov3',
                                              paths=paths,
                                              s3_credentials=s3_credentials)
 
-        os.mkdir(os.path.join(model_file_path, 'yolov3_tf'))
+        if not os.path.exists(os.path.join(model_file_path, detection_model)):
+            os.mkdir(os.path.join(model_file_path, detection_model))
 
         num_class = 80
         img_size = 416
@@ -50,11 +51,11 @@ def yolov3_darknet_to_tensorflow(paths,
             # tf model initialization
             inputs = tf.placeholder(tf.float32, [1, img_size, img_size, 3])
 
-            with tf.variable_scope('yolov3'):  # i think this generates the model output nodes (= feature_map)?
+            with tf.variable_scope('YoloV3'):  # i think this generates the model output nodes (= feature_map)?
                 feature_map = model.forward(inputs)
 
-            saver = tf.train.Saver(var_list=tf.global_variables(scope='yolov3'))
-            load_ops = load_weights(tf.global_variables(scope='yolov3'), weight_path)
+            saver = tf.train.Saver(var_list=tf.global_variables(scope='YoloV3'))
+            load_ops = load_weights(tf.global_variables(scope='YoloV3'), weight_path)
             sess.run(load_ops)
             saver.save(sess, save_path=save_path)
 
@@ -133,4 +134,3 @@ def load_weights(var_list, yolov3_weights_file):
             i += 1
 
     return assign_ops
-

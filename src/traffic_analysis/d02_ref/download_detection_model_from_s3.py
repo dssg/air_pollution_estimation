@@ -11,12 +11,13 @@ def download_detection_model_from_s3(model_name: str,
             paths (dict): dictionary of paths from yml file
             s3_credentials: s3 credentials
     """
-    # only carry out if model_name has not been downloaded before
+
     local_folder_path_model = os.path.join(paths['local_detection_model'], model_name)
 
-    if not os.path.exists(local_folder_path_model + 'coco.names'):
+    if not os.path.exists(local_folder_path_model):
         os.makedirs(local_folder_path_model)
 
+    if not os.listdir(local_folder_path_model):
         dl = DataLoaderS3(s3_credentials,
                           bucket_name=paths['bucket_name'])
 
