@@ -7,6 +7,7 @@ from traffic_analysis.d03_processing.update_frame_level_table import update_fram
 from traffic_analysis.d03_processing.update_video_level_table import update_video_level_table
 from traffic_analysis.d03_processing.update_eval_tables import update_eval_tables
 from traffic_analysis.d04_modelling.tracking.tracking_analyser import TrackingAnalyser
+import numpy as np 
 
 params = load_parameters()
 paths = load_paths()
