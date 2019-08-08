@@ -9,8 +9,6 @@ slim = tf.contrib.slim
 
 
 class YoloV3(object):
-    """ creates a yolov3 model in tensorflow from darknet weights
-    """
 
     def __init__(self, class_num, anchors, use_label_smooth=False, use_focal_loss=False, batch_norm_decay=0.999,
                  weight_decay=5e-4, use_static_shape=True):
@@ -49,10 +47,10 @@ class YoloV3(object):
                                 biases_initializer=None,
                                 activation_fn=lambda x: tf.nn.leaky_relu(x, alpha=0.1),
                                 weights_regularizer=slim.l2_regularizer(self.weight_decay)):
-                with tf.variable_scope('darknet53_body'):
+                with tf.variable_scope('darknet53_body', reuse=tf.AUTO_REUSE):
                     route_1, route_2, route_3 = darknet53_body(inputs)
 
-                with tf.variable_scope('yolov3_head'):
+                with tf.variable_scope('yolov3_head', reuse=tf.AUTO_REUSE):
                     inter1, net = yolo_block(route_3, 512)
                     feature_map_1 = slim.conv2d(net, 3 * (5 + self.class_num), 1,
                                                 stride=1, normalizer_fn=None,
@@ -142,6 +140,58 @@ class YoloV3(object):
         # conf_logits: [N, 13, 13, 3, 1]
         # prob_logits: [N, 13, 13, 3, class_num]
         return x_y_offset, boxes, conf_logits, prob_logits
+
+    def predict(self, feature_maps):
+        '''
+        Receive the returned feature_maps from `forward` function,
+        the produce the output predictions at the test stage.
+        '''
+        feature_map_1, feature_map_2, feature_map_3 = feature_maps
+
+        feature_map_anchors = [(feature_map_1, self.anchors[6:9]),
+                               (feature_map_2, self.anchors[3:6]),
+                               (feature_map_3, self.anchors[0:3])]
+        reorg_results = [self.reorg_layer(feature_map, anchors) for (feature_map, anchors) in feature_map_anchors]
+
+        def _reshape(result):
+            x_y_offset, boxes, conf_logits, prob_logits = result
+            grid_size = x_y_offset.get_shape().as_list()[:2] if self.use_static_shape else tf.shape(x_y_offset)[:2]
+            boxes = tf.reshape(boxes, [-1, grid_size[0] * grid_size[1] * 3, 4])
+            conf_logits = tf.reshape(conf_logits, [-1, grid_size[0] * grid_size[1] * 3, 1])
+            prob_logits = tf.reshape(prob_logits, [-1, grid_size[0] * grid_size[1] * 3, self.class_num])
+            # shape: (take 416*416 input image and feature_map_1 for example)
+            # boxes: [N, 13*13*3, 4]
+            # conf_logits: [N, 13*13*3, 1]
+            # prob_logits: [N, 13*13*3, class_num]
+            return boxes, conf_logits, prob_logits
+
+        boxes_list, confs_list, probs_list = [], [], []
+        for result in reorg_results:
+            boxes, conf_logits, prob_logits = _reshape(result)
+            confs = tf.sigmoid(conf_logits)
+            probs = tf.sigmoid(prob_logits)
+            boxes_list.append(boxes)
+            confs_list.append(confs)
+            probs_list.append(probs)
+
+        # collect results on three scales
+        # take 416*416 input image for example:
+        # shape: [N, (13*13+26*26+52*52)*3, 4]
+        boxes = tf.concat(boxes_list, axis=1)
+        # shape: [N, (13*13+26*26+52*52)*3, 1]
+        confs = tf.concat(confs_list, axis=1)
+        # shape: [N, (13*13+26*26+52*52)*3, class_num]
+        probs = tf.concat(probs_list, axis=1)
+
+        center_x, center_y, width, height = tf.split(boxes, [1, 1, 1, 1], axis=-1)
+        x_min = center_x - width / 2
+        y_min = center_y - height / 2
+        x_max = center_x + width / 2
+        y_max = center_y + height / 2
+
+        boxes = tf.concat([x_min, y_min, x_max, y_max], axis=-1)
+
+        return boxes, confs, probs
 
 
 def conv2d(inputs, filters, kernel_size, strides=1):
