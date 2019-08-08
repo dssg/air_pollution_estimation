@@ -15,7 +15,7 @@ from traffic_analysis.d04_modelling.traffic_analyser_interface import \
 
 
 class TrackingAnalyser(TrafficAnalyserInterface):
-    def __init__(self, params, paths, tracker_type = None):
+    def __init__(self, params, paths, tracker_type = None, verbose=True):
         """
         Model-specific parameters initialized below:
 
@@ -53,6 +53,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         self.iou_convolution_window = params['iou_convolution_window']
         self.smoothing_method = params['smoothing_method']
         self.stop_start_iou_threshold = params['stop_start_iou_threshold']
+        self.verbose = verbose
 
     def add_tracker(self):
         tracker = self.create_tracker_by_name(
@@ -220,9 +221,9 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                       mp4_name=video_name + "_tracked.mp4",
                       video=np.array(processed_video),
                       fps=video_frames_per_sec)
-
-        print(
-            f'Run time of tracking analyser for one video is {time.time() - start_time} seconds. \nSkipped {frame_interval-1} frames.')
+        if self.verbose:
+            print(
+                f'Run time of tracking analyser for one video is {time.time() - start_time} seconds. \nSkipped {frame_interval-1} frames.')
         return fleet
 
     def construct_frame_level_df(self, video_dict) -> pd.DataFrame:

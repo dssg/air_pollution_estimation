@@ -12,36 +12,39 @@ params = load_parameters()
 paths = load_paths()
 creds = load_credentials()
 s3_credentials = creds[paths['s3_creds']]
-
+verbose = True
 # initialize traffic analysers with various tracker types 
 traffic_analysers = {}
 for tracker_type in params["eval_tracker_types"]:
-    analyser_name = params["traffic_analyser"].lower()
+    analyser_name = params["traffic_analyser"]
     traffic_analysers[ f"{analyser_name}_{tracker_type}"] = \
         eval(params["traffic_analyser"])(params=params, 
                                          paths=paths, 
-                                         tracker_type = tracker_type)
+                                         tracker_type=tracker_type,
+                                         verbose=verbose)
 
 # If running first time:
 # creates the test_seach_json. Change the camera list and output file name for full run
 # get annotation xmls from s3 saves json on s3 containing to corresponding video filepaths
 upload_annotation_names_to_s3(paths=paths,
-       		                  output_file_name=params['eval_ref_name'],
-                              s3_credentials=s3_credentials)
+       		                    output_file_name=params['eval_ref_name'],
+                              s3_credentials=s3_credentials,
+                              verbose=verbose)
 
 # Start from here if video names already specified
 selected_videos = load_video_names_from_s3(ref_file= params['eval_ref_name'],
                                            paths=paths,
                                            s3_credentials=s3_credentials)
-print("Successfully loaded selected videos")
+if verbose: print("Successfully loaded selected videos")
 # wipe and recreate eval tables 
 create_eval_sql_tables(creds=creds,
                        paths=paths, 
                        drop=True)
 
-for tracker_type, traffic_analyser in traffic_analysers.items():
-    db_frame_level_name = f"{paths['eval_db_frame_level_prefix']}_{tracker_type}"
-    db_video_level_name = f"{paths['eval_db_video_level_prefix']}_{tracker_type}"
+if verbose: print("Running evaluation for traffic analysers: ", traffic_analysers.keys())
+for analyser_name, traffic_analyser in traffic_analysers.items():
+    db_frame_level_name = f"{paths['eval_db_frame_level_prefix']}_{analyser_name}"
+    db_video_level_name = f"{paths['eval_db_video_level_prefix']}_{analyser_name}"
 
     #wipe and recreate stats tables for tracker types
     create_primary_sql_tables(db_frame_level_name=db_frame_level_name, 
@@ -50,6 +53,7 @@ for tracker_type, traffic_analyser in traffic_analysers.items():
 
     # select chunks of videos and classify objects
     chunk_size = params['eval_chunk_size']
+    chunk_counter = 0
     while selected_videos:
         success, frame_level_df = update_frame_level_table(analyser=traffic_analyser,
                                                            file_names=selected_videos[:chunk_size],
@@ -64,17 +68,18 @@ for tracker_type, traffic_analyser in traffic_analysers.items():
                                    paths=paths,
                                    creds=creds,
                                    return_data=True)
-            print("Successfully processed chunk of videos.")
+            if verbose: print(f"Successfully processed chunk {chunk_counter}")
 
         else: 
             print("Analysing current chunk failed. Continuing to next chunk.")
 
-
+        chunk_counter+=1
 
         # Move on to next chunk
         selected_videos = selected_videos[chunk_size:]
         delete_and_recreate_dir(paths["temp_video"])
-    print("Successfully processed videos for one tracking type")
+
+    if verbose: print(f"Successfully processed videos for traffic analyser: {analyser_name}")
 
     # append to table 
     update_eval_tables(db_frame_level_name=db_frame_level_name, 
@@ -82,6 +87,6 @@ for tracker_type, traffic_analyser in traffic_analysers.items():
                        params=params,
                        creds = creds,
                        paths=paths,
-                       analyser_type=tracker_type
+                       analyser_type=analyser_name
                        )
-    print("Successfully evaluated videos for one tracking type")
+    if verbose: print("Successfully evaluated videos for one tracking type")
