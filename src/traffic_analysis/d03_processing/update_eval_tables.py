@@ -25,7 +25,7 @@ def update_eval_tables(db_frame_level_name,
     # get xmls from s3
     dl_s3 = DataLoaderS3(s3_credentials=creds[paths['s3_creds']],
                         bucket_name =  paths['bucket_name'])
-    annotation_xmls = dl_s3.list_objects(prefix = 'ref/annotations/cvat/')
+    annotation_xmls = dl_s3.list_objects(prefix = paths['s3_cvat_annotations'])
 
     # get video_level_tables and frame_level_tables for analyser type from db 
     dl_sql = DataLoaderSQL(creds=creds, paths=paths)
@@ -35,6 +35,19 @@ def update_eval_tables(db_frame_level_name,
     video_level_df = dl_sql.select_from_table(
         sql=f"SELECT * FROM {db_video_level_name}"
         )
+
+    # stitch bbox columns back together for frame level
+    bboxes = []
+    for x, y, w, h in zip(frame_level_df['bbox_x'].values,
+                          frame_level_df['bbox_y'].values,
+                          frame_level_df['bbox_w'].values,
+                          frame_level_df['bbox_h'].values):
+        bboxes.append([x, y, w, h])
+    frame_level_df['bboxes'] = bboxes
+    frame_level_df.drop('bbox_x', axis=1, inplace=True)
+    frame_level_df.drop('bbox_y', axis=1, inplace=True)
+    frame_level_df.drop('bbox_w', axis=1, inplace=True)
+    frame_level_df.drop('bbox_h', axis=1, inplace=True)
 
     # run evaluation for analyser type 
     chunk_evaluator = ChunkEvaluator(annotation_xml_paths=annotation_xmls,

@@ -95,7 +95,7 @@ class FrameLevelEvaluator:
         for idx, video in self.videos_to_eval.iterrows():
             # get frame level ground truth
             if self.from_s3_paths:
-                xml_root = self.dl_s3.read_xml(video)
+                xml_root = self.dl_s3.read_xml(video['xml_path'])
             elif self.from_local_paths: # read from local  
                 xml_root = ElementTree.parse(video['xml_path']).getroot()
 

@@ -33,12 +33,11 @@ upload_annotation_names_to_s3(paths=paths,
 selected_videos = load_video_names_from_s3(ref_file= params['eval_ref_name'],
                                            paths=paths,
                                            s3_credentials=s3_credentials)
-print(selected_videos)
 print("Successfully loaded selected videos")
 # wipe and recreate eval tables 
 create_eval_sql_tables(creds=creds,
                        paths=paths, 
-                       drop=False)
+                       drop=True)
 
 for tracker_type, traffic_analyser in traffic_analysers.items():
     db_frame_level_name = f"{paths['eval_db_frame_level_prefix']}_{tracker_type}"
@@ -53,10 +52,10 @@ for tracker_type, traffic_analyser in traffic_analysers.items():
     chunk_size = params['eval_chunk_size']
     while selected_videos:
         success, frame_level_df = update_frame_level_table(analyser=traffic_analyser,
-                                                  file_names=selected_videos[:chunk_size],
-                                                  db_frame_level_name = db_frame_level_name,
-                                                  paths=paths,
-                                                  creds=creds)
+                                                           file_names=selected_videos[:chunk_size],
+                                                           db_frame_level_name = db_frame_level_name,
+                                                           paths=paths,
+                                                           creds=creds)
         if success: 
             video_level_df = update_video_level_table(analyser=traffic_analyser,
                                    db_video_level_name=db_video_level_name,

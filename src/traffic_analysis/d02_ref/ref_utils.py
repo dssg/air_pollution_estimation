@@ -79,7 +79,7 @@ def get_s3_video_path_from_xml_name(xml_file_name, s3_creds, paths):
     vals = xml_file_name.split('_')
     data_loader_s3 = DataLoaderS3(s3_credentials=s3_creds,
                                   bucket_name=paths['bucket_name'])
-
+    # cvat prefix id removed from xml name
     if (len(vals) >= 4):
         date = vals[1]
         file_names = [xml_file_name.split('_')[1:][0].replace('-', '') + '-' +
@@ -90,6 +90,7 @@ def get_s3_video_path_from_xml_name(xml_file_name, s3_creds, paths):
                       xml_file_name.split('_')[1:][2]]
     else:
         date = vals[0]
+        print("xml_file_name is: ", xml_file_name)
         file_names = [xml_file_name.split('_')[0].replace('-', '') + '-' +
                       xml_file_name.split('_')[1].replace('-', '')[:6] + '_' +
                       xml_file_name.split('_')[2],
@@ -101,15 +102,17 @@ def get_s3_video_path_from_xml_name(xml_file_name, s3_creds, paths):
                        file_names[0] + '.mp4'
 
     if(data_loader_s3.file_exists(file_to_download)):
+        print('Found ' + file_to_download)
         return file_to_download
 
     else:
-        file_to_download = paths['s3_video'] + \
+        file_to_download2 = paths['s3_video'] + \
                            date + '/' + \
                            file_names[1] + '.mp4'
 
-        if (data_loader_s3.file_exists(file_to_download)):
-            return file_to_download
+        if (data_loader_s3.file_exists(file_to_download2)):
+            print('Found ' + file_to_download2)
+            return file_to_download2
         else:
-            print('Could not download file: ' + xml_file_name)
+            print('Could not find file: ' + file_to_download + ' or ' + file_to_download2)
             return
