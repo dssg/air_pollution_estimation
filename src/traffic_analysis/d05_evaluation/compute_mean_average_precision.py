@@ -216,7 +216,6 @@ def get_avg_precision_at_iou(gt_bboxes: dict, pred_bboxes: dict, iou_thr: float 
         frame_ids = (
             gt_bboxes.keys() if thres_idx == 0 else model_scores_dict[model_score_thres]
         )
-        print("file compute_map frame_ids ", frame_ids)
 
         for frame_id in frame_ids:
             gt_bboxes_frame = gt_bboxes[frame_id]

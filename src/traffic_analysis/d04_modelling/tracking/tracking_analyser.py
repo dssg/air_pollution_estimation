@@ -160,7 +160,6 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         if make_video:
             processed_video = []
 
-        print(f"The number of frames is {n_frames}")
         frame_interval = self.skip_no_of_frames + 1
         previous_frame_index = 0
         # Process video and track objects
@@ -171,7 +170,6 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             # get updated location of objects in subsequent frames, update fleet obj
             success, bboxes_tracked = multi_tracker.update(
                 image=frame)
-            print(previous_frame_index, frame_ind - previous_frame_index)
             for _ in range(frame_ind - previous_frame_index):
                 fleet.update_vehicles(np.array(bboxes_tracked))
             previous_frame_index = frame_ind

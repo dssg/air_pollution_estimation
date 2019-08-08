@@ -2,7 +2,7 @@ from traffic_analysis.d05_evaluation.chunk_evaluator import ChunkEvaluator
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 import pandas as pd 
-
+import datetime
 from traffic_analysis.d00_utils.load_confs import load_parameters, load_credentials, load_paths
 
 params = load_parameters()
