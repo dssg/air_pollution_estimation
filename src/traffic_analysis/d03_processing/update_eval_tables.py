@@ -58,11 +58,18 @@ def update_eval_tables(db_frame_level_name,
                                      data_loader_s3 = dl_s3
                                      )
     video_level_performance, video_level_diff = chunk_evaluator.evaluate_video_level()
-    frame_level_map = chunk_evaluator.evaluate_frame_level()
-
     # prepare for insertion into db
+            df.dropna(how='any',inplace=True)
+        df['creation_datetime'] = datetime.datetime.now()
+        df['analyser'] = analyser_type
+
+    # video level performance 
     video_level_performance = video_level_performance.astype(
         {"n_videos": 'int64'})
+    video_level_performance.dropna(how='any',inplace=True)
+    video_level_performance['creation_datetime'] = datetime.datetime.now()
+    video_level_performance['analyser'] = analyser_type
+
     # TODO: put this in params
     video_level_performance = video_level_performance[["vehicle_type",
                                                       "stat",
@@ -70,13 +77,22 @@ def update_eval_tables(db_frame_level_name,
                                                       "MAE",
                                                       "RMSE",
                                                       "sd",
-                                                      "n_videos"]]
+                                                      "n_videos",
+                                                      "creation_datetime",
+                                                      "analyser"
+                                                      ]]
+    dl_sql.add_to_sql(df=video_level_performance, table_name="eval_video_performance")
+
+    # video level diff 
     video_level_diff = video_level_diff.astype(
          {"camera_id": "object",
           "counts_true": "int64",
           "starts_true": "int64",
           "stops_true": "int64",
           })
+    video_level_diff.dropna(how='any',inplace=True)
+    video_level_diff['creation_datetime'] = datetime.datetime.now()
+    video_level_diff['analyser'] = analyser_type
 
     video_level_diff = video_level_diff[["camera_id",
                                         "video_upload_datetime",
@@ -89,23 +105,26 @@ def update_eval_tables(db_frame_level_name,
                                         "stops_pred",
                                         "counts_diff",
                                         "starts_diff",
-                                        "stops_diff"]]
+                                        "stops_diff",
+                                        "creation_datetime",
+                                        "analyser"
+                                        ]]
+    dl_sql.add_to_sql(df=video_level_diff, table_name="eval_video_diffs")
+
+    # frame level eval
+    frame_level_map = chunk_evaluator.evaluate_frame_level()
+    frame_level_map.dropna(how='any',inplace=True)
+    frame_level_map['creation_datetime'] = datetime.datetime.now()
+    frame_level_map['analyser'] = analyser_type
 
     frame_level_map = frame_level_map[["camera_id",
                                       "video_upload_datetime",
                                       "vehicle_type",
-                                      "mean_avg_precision"]]
+                                      "mean_avg_precision",
+                                      "creation_datetime",
+                                      "analyser"
+                                      ]]
+    dl_sql.add_to_sql(df=frame_level_map, table_name="eval_frame_stats")
             
-    eval_dfs = {"eval_video_performance": video_level_performance, 
-                "eval_video_diffs": video_level_diff, 
-                "eval_frame_stats": frame_level_map}
-
-    for db_name, df in eval_dfs.items(): 
-        df.dropna(how='any',inplace=True)
-        df['creation_datetime'] = datetime.datetime.now()
-        df['analyser'] = analyser_type
-        # append to sql db
-        dl_sql.add_to_sql(df=df, table_name=db_name)
-
     if return_data: 
         return frame_level_map, video_level_performance, video_level_diff
