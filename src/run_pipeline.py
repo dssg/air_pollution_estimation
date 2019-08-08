@@ -53,13 +53,3 @@ while selected_videos:
     # Move on to next chunk
     selected_videos = selected_videos[chunk_size:]
     delete_and_recreate_dir(paths["temp_video"])
-
-"""
-from d05_evaluation.report_yolo import yolo_output_df, yolo_report_count_stats
-from d04_modelling.evaluation import parse_annotations, report_count_differences
-# Load Annotations and Evaluate
-yolo_df = pd.read_csv(os.path.join(paths['processed_video'], 'JamCamYolo.csv'))
-annotations_df = parse_annotations(paths['annotations'], bool_print_summary=False)
-count_differences_df = report_count_differences(annotations_df, yolo_df)
-count_differences_df.to_csv(paths['processed_video'] + 'JamCamCountDifferences.csv')
-"""

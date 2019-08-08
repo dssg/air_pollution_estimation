@@ -4,10 +4,7 @@ import xml.etree.ElementTree as ElementTree
 
 from traffic_analysis.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib
 from traffic_analysis.d05_evaluation.parse_annotation import parse_annotation
-from traffic_analysis.d05_evaluation.compute_mean_average_precision import (
-    get_avg_precision_at_iou,
-    plot_pr_curve,
-)
+from traffic_analysis.d05_evaluation.compute_mean_average_precision import get_avg_precision_at_iou
 
 
 class FrameLevelEvaluator:
