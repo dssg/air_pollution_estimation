@@ -64,13 +64,13 @@ def update_eval_tables(db_frame_level_name,
     video_level_performance = video_level_performance.astype(
         {"n_videos": 'int64'})
     # TODO: put this in params
-    video_level_performance = video_level_performance["vehicle_type",
+    video_level_performance = video_level_performance[["vehicle_type",
                                                       "stat",
                                                       "bias",
-                                                      "MAE", 
+                                                      "MAE",
                                                       "RMSE",
                                                       "sd",
-                                                      "n_videos"]
+                                                      "n_videos"]]
     video_level_diff = video_level_diff.astype(
          {"camera_id": "object",
           "counts_true": "int64",
@@ -78,7 +78,7 @@ def update_eval_tables(db_frame_level_name,
           "stops_true": "int64",
           })
 
-    video_level_diff = video_level_diff["camera_id",
+    video_level_diff = video_level_diff[["camera_id",
                                         "video_upload_datetime",
                                         "vehicle_type",
                                         "counts_true",
@@ -89,12 +89,12 @@ def update_eval_tables(db_frame_level_name,
                                         "stops_pred",
                                         "counts_diff",
                                         "starts_diff",
-                                        "stops_diff"]
+                                        "stops_diff"]]
 
-    frame_level_map = frame_level_map["camera_id",
+    frame_level_map = frame_level_map[["camera_id",
                                       "video_upload_datetime",
                                       "vehicle_type",
-                                      "mean_avg_precision"]
+                                      "mean_avg_precision"]]
             
     eval_dfs = {"eval_video_performance": video_level_performance, 
                 "eval_video_diffs": video_level_diff, 
