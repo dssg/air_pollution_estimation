@@ -14,7 +14,7 @@ def download_detection_model_from_s3(model_name: str,
 
     local_folder_path_model = os.path.join(paths['local_detection_model'], model_name)
 
-    if not os.path.exists(os.path.join(local_folder_path_model)):
+    if not os.path.exists(local_folder_path_model):
         os.makedirs(local_folder_path_model)
 
     if not os.listdir(local_folder_path_model):
