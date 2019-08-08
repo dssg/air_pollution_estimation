@@ -1,4 +1,4 @@
-import numpy as np 
+import numpy as np
 import cv2
 from random import randint
 
@@ -41,7 +41,7 @@ def bboxcvlib_to_bboxcv2(bbox_cvlib, vectorized=False):
 
     else:  # handles np arrays
         xmin, ymin, xmin_plus_w, ymin_plus_h = bbox_cvlib[:, 0], bbox_cvlib[:, 1],\
-                                               bbox_cvlib[:, 2], bbox_cvlib[:, 3]
+            bbox_cvlib[:, 2], bbox_cvlib[:, 3]
         bbox_cv2 = np.array([xmin, ymin,
                              xmin_plus_w - xmin,
                              ymin_plus_h - ymin]).transpose()
@@ -61,7 +61,8 @@ def bboxcv2_to_bboxcvlib(bbox_cv2,  vectorized=False):
         bbox_cvlib = [xmin, ymin, xmin+w, ymin+h]
 
     else:  # handles np arrays with multiple bboxes
-        xmin, ymin, w, h = bbox_cv2[:, 0], bbox_cv2[:,1], bbox_cv2[:, 2], bbox_cv2[:, 3]
+        xmin, ymin, w, h = bbox_cv2[:, 0], bbox_cv2[:,
+                                                    1], bbox_cv2[:, 2], bbox_cv2[:, 3]
         bbox_cvlib = np.array([xmin, ymin, xmin+w, ymin+h]).transpose()
 
     return bbox_cvlib
@@ -109,7 +110,7 @@ def bbox_intersection_over_union(bbox_a, bbox_b) -> float:
 
     # compute the area of intersection rectangle
     inter_area = abs(max((x_lower_right - x_upper_left, 0))
-                   * max((y_lower_right - y_upper_left), 0))
+                     * max((y_lower_right - y_upper_left), 0))
     if inter_area == 0:
         return 0
     # compute the area of both the prediction and ground-truth
@@ -126,7 +127,7 @@ def bbox_intersection_over_union(bbox_a, bbox_b) -> float:
     return iou
 
 
-def display_bboxes_on_frame(frame: np.ndarray, bboxes: list, colors: list, box_labels: list):
+def display_bboxes_on_frame(frame: np.ndarray, bboxes: list, colors: list, box_labels: list, display_text=True):
     """Draw bounding boxes on a frame using provided colors, and displays labels/confidences
 
     Keyword arguments
@@ -134,6 +135,7 @@ def display_bboxes_on_frame(frame: np.ndarray, bboxes: list, colors: list, box_l
     bboxes: provide in cv2 format (xmin,ymin, width, height)
     colors: list of RGB tuples
     box_labels: list of strings with which to label each box
+    display_text: display text
     """
     for i, box in enumerate(bboxes):
         pt_upper_left = (int(box[0]), int(box[1]))
@@ -145,11 +147,12 @@ def display_bboxes_on_frame(frame: np.ndarray, bboxes: list, colors: list, box_l
                       thickness=2,
                       lineType=1)
         # write labels, confs
-        cv2.putText(img=frame,
-                    text=box_labels[i],
-                    org=(pt_upper_left[0], pt_upper_left[1]-10),
-                    fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                    fontScale=0.5,
-                    color=colors[i],
-                    thickness=2)
+        if display_text:
+            cv2.putText(img=frame,
+                        text=box_labels[i],
+                        org=(pt_upper_left[0], pt_upper_left[1]-10),
+                        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                        fontScale=0.5,
+                        color=colors[i],
+                        thickness=2)
     return

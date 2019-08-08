@@ -1,9 +1,11 @@
 import datetime
+
 import pandas as pd
 
-from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
-from traffic_analysis.d00_utils.data_retrieval import load_videos_into_np, delete_and_recreate_dir
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
+from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
+from traffic_analysis.d00_utils.data_retrieval import (delete_and_recreate_dir,
+                                                       load_videos_into_np)
 
 
 def update_frame_level_table(analyzer,
@@ -30,9 +32,8 @@ def update_frame_level_table(analyzer,
     # Download the video file_names using the file list
     for filename in file_names:
         try:
-            path_to_download_file_to = (paths["temp_video"]
-                                        + filename.split('/')[-1].replace(':', '-').replace(" ", "_")
-                                        )
+            path_to_download_file_to = paths["temp_video"] + \
+                filename.split('/')[-1].replace(':', '-').replace(" ", "_")
             dl.download_file(path_of_file_to_download=filename,
                              path_to_download_file_to=path_to_download_file_to)
         except:
@@ -45,7 +46,6 @@ def update_frame_level_table(analyzer,
     frame_level_df.dropna(how='any', inplace=True)
     frame_level_df = frame_level_df.astype(
         {'frame_id': 'int64', 'vehicle_id': 'int64'})
-    
     frame_level_sql_df = pd.DataFrame.copy(frame_level_df)
     x, y, w, h = [], [], [], []
     for vals in frame_level_sql_df['bboxes'].values:
@@ -62,6 +62,7 @@ def update_frame_level_table(analyzer,
     frame_level_sql_df['creation_datetime'] = datetime.datetime.now()
 
     db_obj = DataLoaderSQL(creds=creds, paths=paths)
-    db_obj.add_to_sql(df=frame_level_sql_df, table_name=paths['db_frame_level'])
+    db_obj.add_to_sql(df=frame_level_sql_df,
+                      table_name=paths['db_frame_level'])
 
     return frame_level_df
