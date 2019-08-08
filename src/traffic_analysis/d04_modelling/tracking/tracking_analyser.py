@@ -1,22 +1,26 @@
-from traffic_analysis.d04_modelling.traffic_analyser_interface import TrafficAnalyserInterface
-from traffic_analysis.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame, color_bboxes, bbox_intersection_over_union
+import time
+
+import cv2
+import numpy as np
+import pandas as pd
+
+from traffic_analysis.d00_utils.bbox_helpers import (
+    bbox_intersection_over_union, bboxcv2_to_bboxcvlib, color_bboxes,
+    display_bboxes_on_frame)
 from traffic_analysis.d00_utils.video_helpers import write_mp4
 from traffic_analysis.d04_modelling.object_detection import detect_bboxes
 from traffic_analysis.d04_modelling.tracking.vehicle_fleet import VehicleFleet
-
-import numpy as np
-import pandas as pd
-import cv2
-import time
+from traffic_analysis.d04_modelling.traffic_analyser_interface import \
+    TrafficAnalyserInterface
 
 
 class TrackingAnalyser(TrafficAnalyserInterface):
     def __init__(self, params, paths):
         """
-        Model-specific parameters initialized below: 
+        Model-specific parameters initialized below:
 
         (Object detection arguments:)
-        detection_model -- specify the name of model you want to use for detection 
+        detection_model -- specify the name of model you want to use for detection
         detection_implementation -- specify model to use for detection
         detection_frequency -- each detection_frequency num of frames, run obj detection alg again to detect new objs
         tracking_model -- specify name of model you want to use for tracking (currently only supports OpenCV trackers)
@@ -26,63 +30,54 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         selected_labels -- labels which we wish to detect
 
         (Stop start arguments:)
-        iou_convolution_window -- frame window size to perform iou computation on (to get an IOU time 
-                                  series for each vehicle) 
+        iou_convolution_window -- frame window size to perform iou computation on (to get an IOU time
+                                  series for each vehicle)
         smoothing_method -- method to smooth the IOU time series for each vehicle
         stop_start_iou_threshold -- threshold to binarize the IOU time series into 0 or 1,denoting "moving" or "stopped"
         """
         super().__init__(params, paths)
         self.detection_model = params['detection_model']
         self.detection_implementation = params['detection_implementation']
-        self.tracker = self.create_tracker_by_name(tracker_type=params['opencv_tracker_type'])
         self.iou_threshold = params['iou_threshold']
         self.detection_frequency = params['detection_frequency']
         self.detection_confidence_threshold = params['detection_confidence_threshold']
         self.detection_nms_threshold = params['detection_nms_threshold']
         self.selected_labels = params['selected_labels']
-
+        self.tracker_type = params['opencv_tracker_type']
+        self.trackers = []
+        self.skip_no_of_frames = params['skip_no_of_frames']
         self.iou_convolution_window = params['iou_convolution_window']
         self.smoothing_method = params['smoothing_method']
         self.stop_start_iou_threshold = params['stop_start_iou_threshold']
 
-    def create_tracker_by_name(self, tracker_type: str):
-        """Create tracker based on tracker name"""
-        tracker_types = ['BOOSTING', 'MIL', 'KCF', 'TLD',
-                         'MEDIANFLOW', 'GOTURN', 'MOSSE', 'CSRT']
-
-        if tracker_type == tracker_types[0]:
-            tracker = cv2.TrackerBoosting_create()
-        elif tracker_type == tracker_types[1]:
-            tracker = cv2.TrackerMIL_create()
-        elif tracker_type == tracker_types[2]:
-            tracker = cv2.TrackerKCF_create()
-        elif tracker_type == tracker_types[3]:
-            tracker = cv2.TrackerTLD_create()
-        elif tracker_type == tracker_types[4]:
-            tracker = cv2.TrackerMedianFlow_create()
-        elif tracker_type == tracker_types[5]:
-            tracker = cv2.TrackerGOTURN_create()
-        elif tracker_type == tracker_types[6]:
-            tracker = cv2.TrackerMOSSE_create()
-        elif tracker_type == tracker_types[7]:
-            tracker = cv2.TrackerCSRT_create()
-        else:
-            tracker = None
-            print('Incorrect tracker name')
-            print('Available trackers are:')
-            for t in tracker_types:
-                print(t)
+    def add_tracker(self):
+        tracker = self.create_tracker_by_name(
+            tracker_type=self.tracker_type)
+        if tracker:
+            self.trackers.append(tracker)
         return tracker
 
-    def determine_new_bboxes(self, bboxes_tracked: list, bboxes_detected: list) -> list:
-        """Return the indices of "new" bboxes in bboxes_detected so that a new tracker can be added for that 
+    def create_tracker_by_name(self, tracker_type: str):
+        """Create tracker based on tracker name"""
+        tracker_types = {'BOOSTING': cv2.TrackerBoosting_create(), 'MIL': cv2.TrackerMIL_create(), 'KCF': cv2.TrackerKCF_create(), 'TLD': cv2.TrackerTLD_create(),
+                         'MEDIANFLOW': cv2.TrackerMedianFlow_create(), 'GOTURN': cv2.TrackerGOTURN_create(), 'MOSSE': cv2.TrackerMOSSE_create(), 'CSRT': cv2.TrackerCSRT_create()}
+        try:
+            return tracker_types[tracker_type]
+        except Exception as e:
+            print('Incorrect tracker name')
+            print('Available trackers are:')
+            print("\n".join(tracker_types.keys()))
+            return None
 
-        Keyword arguments: 
+    def determine_new_bboxes(self, bboxes_tracked: list, bboxes_detected: list) -> list:
+        """Return the indices of "new" bboxes in bboxes_detected so that a new tracker can be added for that
+
+        Keyword arguments:
 
         bboxes_tracked: bboxes which are currently tracked. bboxes should be passed in in format (xmin,ymin,w,h)
         bboxes_detected: bboxes which are newly detected. bboxes should be passed in in format (xmin,ymin,w,h)
-        iou_threshold: a detected bbox with iou below the iou_threshold (as compared to all existing, tracked bboxes) 
-                       will be considered new. 
+        iou_threshold: a detected bbox with iou below the iou_threshold (as compared to all existing, tracked bboxes)
+                       will be considered new.
         """
 
         new_bboxes_inds = set(range(len(bboxes_detected))
@@ -107,21 +102,21 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                                  make_video=False,
                                  local_mp4_dir: str = None) -> VehicleFleet:
         """Code to track
-        This function will initialize a specified tracking algorithm 
-        (currently only supports OpenCV's built in multitracker methods) with the specified object 
-        detection algorithm. Each detection_frequency frames, the object detection will be run again 
-        to detect any new objects which have entered the frame. A VehicleFleet object is used to track the 
-        initial detection confidence and label for each vehicle as it is detected, and the updated locations 
+        This function will initialize a specified tracking algorithm
+        (currently only supports OpenCV's built in multitracker methods) with the specified object
+        detection algorithm. Each detection_frequency frames, the object detection will be run again
+        to detect any new objects which have entered the frame. A VehicleFleet object is used to track the
+        initial detection confidence and label for each vehicle as it is detected, and the updated locations
         of the bounding boxes for each vehicle each frame. The VehicleFleet object also performs IOU computations
-        on the stored bounding box information to get counts and stop starts. 
+        on the stored bounding box information to get counts and stop starts.
 
         Keyword arguments:
 
         video -- np array in format (frame_count,frame_height,frame_width,3)
-        video_name -- name of video to run on (include .mp4 extension) 
-        video_time_length -- specify length of video 
+        video_name -- name of video to run on (include .mp4 extension)
+        video_time_length -- specify length of video
         make_video -- if true, will write video to local_mp4_dir with name local_mp4_name_tracked.mp4
-        local_mp4_dir -- path to directory to store video in 
+        local_mp4_dir -- path to directory to store video in
         """
 
         start_time = time.time()
@@ -139,6 +134,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                                               detection_confidence_threshold=self.detection_confidence_threshold,
                                               detection_nms_threshold=self.detection_nms_threshold,
                                               selected_labels=self.selected_labels)
+
         # store info returned above in vehicleFleet object
         fleet = VehicleFleet(bboxes=np.array(bboxes),
                              labels=np.array(labels),
@@ -148,19 +144,23 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         # Create MultiTracker object using bboxes, initialize multitracker
         multi_tracker = cv2.MultiTracker_create()
         for bbox in bboxes:
-            multi_tracker.add(newTracker=self.tracker,
+            multi_tracker.add(newTracker=self.add_tracker(),
                               image=first_frame,
                               boundingBox=tuple(bbox))
 
         if make_video:
             processed_video = []
 
+        print(f"The number of frames is {n_frames}")
+        frame_interval = self.skip_no_of_frames + 1
         # Process video and track objects
-        for frame_ind in range(1, n_frames):
+        for frame_ind in range(frame_interval, n_frames, frame_interval):
             frame = video[frame_ind, :, :, :]
             # get updated location of objects in subsequent frames, update fleet obj
-            success, bboxes_tracked = multi_tracker.update(image=frame)
-            fleet.update_vehicles(np.array(bboxes_tracked))
+            success, bboxes_tracked = multi_tracker.update(
+                image=frame)
+            for _ in range(frame_interval):
+                fleet.update_vehicles(np.array(bboxes_tracked))
 
             if make_video:
                 # draw tracked objects
@@ -192,8 +192,8 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                                        np.array(new_confs))
 
                     # iterate through new bboxes
-                    for i, new_bbox in enumerate(new_bboxes):
-                        multi_tracker.add(newTracker=self.tracker,
+                    for new_bbox in new_bboxes:
+                        multi_tracker.add(newTracker=self.add_tracker(),
                                           image=frame,
                                           boundingBox=tuple(new_bbox))
 
@@ -211,12 +211,12 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                       video=np.array(processed_video),
                       fps=video_frames_per_sec)
 
-        print('Run time of tracking analyser for one video is %s seconds' %
-              (time.time() - start_time))
+        print(
+            f'Run time of tracking analyser for one video is {time.time() - start_time} seconds. \nSkipped {frame_interval-1} frames.')
         return fleet
 
     def construct_frame_level_df(self, video_dict) -> pd.DataFrame:
-        """Construct frame level df for multiple videos 
+        """Construct frame level df for multiple videos
         """
 
         # Check that video doesn't come from in-use camera (some are)
@@ -232,12 +232,15 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             fleet = self.detect_and_track_objects(video, video_name)
             single_frame_level_df = fleet.report_frame_level_info()
             frame_info_list.append(single_frame_level_df)
+            break
+        else:
+            return pd.DataFrame()
         return pd.concat(frame_info_list)
 
     def construct_video_level_df(self, frame_level_df) -> pd.DataFrame:
-        """Construct video-level stats table using tracking techniques 
+        """Construct video-level stats table using tracking techniques
 
-        Keyword arguments: 
+        Keyword arguments:
 
         frame_level_df -- df returned by above function
         """
@@ -246,10 +249,12 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
         video_info_list = []
         for _, single_frame_level_df in frame_level_df.groupby(['camera_id', 'video_upload_datetime']):
-            fleet = VehicleFleet(frame_level_df=single_frame_level_df, load_from_pd=True)
+            fleet = VehicleFleet(
+                frame_level_df=single_frame_level_df, load_from_pd=True)
             # compute the convolved IOU time series for each vehicle and smooth
             fleet.compute_iou_time_series(interval=self.iou_convolution_window)
-            fleet.smooth_iou_time_series(smoothing_method=self.smoothing_method)
+            fleet.smooth_iou_time_series(
+                smoothing_method=self.smoothing_method)
             # sample plotting options
             # fleet.plot_iou_time_series(fig_dir="data", fig_name="param_tuning", smoothed=True)
             video_level_df = fleet.report_video_level_stats(fleet.compute_counts(),
