@@ -153,14 +153,18 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
         print(f"The number of frames is {n_frames}")
         frame_interval = self.skip_no_of_frames + 1
+        previous_frame_index = 0
         # Process video and track objects
-        for frame_ind in range(frame_interval, n_frames, frame_interval):
+        for frame_ind in range(1, n_frames):
+            if (frame_ind % frame_interval) and (frame_ind + frame_interval) <= n_frames:
+                continue
             frame = video[frame_ind, :, :, :]
             # get updated location of objects in subsequent frames, update fleet obj
             success, bboxes_tracked = multi_tracker.update(
                 image=frame)
-            for _ in range(frame_interval):
+            for _ in range(frame_ind - previous_frame_index):
                 fleet.update_vehicles(np.array(bboxes_tracked))
+            previous_frame_index = frame_ind
 
             if make_video:
                 # draw tracked objects
@@ -212,7 +216,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                       fps=video_frames_per_sec)
 
         print(
-            f'Run time of tracking analyser for one video is {time.time() - start_time} seconds. \nSkipped {frame_interval-1} frames.')
+            f'Run time of tracking analyser for one video is {time.time() - start_time} seconds. \nSkipped {frame_interval-1} frames.\nNumber of frames is {fleet.bboxes.shape[2]}.')
         return fleet
 
     def construct_frame_level_df(self, video_dict) -> pd.DataFrame:
@@ -228,13 +232,14 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                       " has been removed from processing because it may be invalid")
 
         frame_info_list = []
+
+        if not len(video_dict):
+            return None
+
         for video_name, video in video_dict.items():
             fleet = self.detect_and_track_objects(video, video_name)
             single_frame_level_df = fleet.report_frame_level_info()
             frame_info_list.append(single_frame_level_df)
-            break
-        else:
-            return pd.DataFrame()
         return pd.concat(frame_info_list)
 
     def construct_video_level_df(self, frame_level_df) -> pd.DataFrame:
