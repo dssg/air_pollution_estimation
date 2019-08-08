@@ -5,6 +5,7 @@ import numpy as np
 from traffic_analysis.d00_utils.load_confs import load_paths, load_credentials
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 from traffic_analysis.d00_utils.data_retrieval import delete_and_recreate_dir, mp4_to_npy
+from traffic_analysis.d02_ref.ref_utils import get_s3_video_path_from_xml_name
 
 
 from enum import Enum
@@ -30,13 +31,7 @@ class DataLoader(object):
 
     def get_train_and_test(self, train_fraction):
 
-        delete_and_recreate_dir(self.paths['temp_annotation'])
-        delete_and_recreate_dir(self.paths['temp_raw_images'])
-        delete_and_recreate_dir(self.paths['temp_raw_video'])
         x, y = self.load_data_from_s3()
-        delete_and_recreate_dir(self.paths['temp_annotation'])
-        delete_and_recreate_dir(self.paths['temp_raw_images'])
-        delete_and_recreate_dir(self.paths['temp_raw_video'])
 
         x_train = x[:int(len(x) * train_fraction)]
         y_train = y[:int(len(x) * train_fraction)]
@@ -48,6 +43,8 @@ class DataLoader(object):
 
     def load_data_from_s3(self):
 
+        self.clear_temp_folders()
+
         xs = []
         ys = []
         for dataset in self.datasets:
@@ -57,7 +54,14 @@ class DataLoader(object):
             xs += x
             ys += y
 
+        self.clear_temp_folders()
+
         return xs, ys
+
+    def clear_temp_folders(self):
+        delete_and_recreate_dir(self.paths['temp_annotation'])
+        delete_and_recreate_dir(self.paths['temp_raw_images'])
+        delete_and_recreate_dir(self.paths['temp_raw_video'])
 
     def load_detrac_data(self):
 
@@ -134,9 +138,9 @@ class DataLoader(object):
                 height = float(frame_obj.find('box').attrib['height'])
 
                 x_min = left
-                y_min = top - height
+                y_min = top
                 x_max = left + width
-                y_max = top
+                y_max = top + height
 
                 result += ' ' + str(vehicle_type) + \
                           ' ' + str(x_min) + \
@@ -180,49 +184,15 @@ class DataLoader(object):
 
         return x, y
 
-    def get_cvat_video(self, id):
-        vals = id.split('_')
-        if (len(vals) >= 4):
-            date = vals[1]
-            file_names = [id.split('_')[1:][0].replace('-', '') + '-' +
-                          id.split('_')[1:][1].replace('-', '')[:6] + '_' +
-                          id.split('_')[1:][2],
-                          id.split('_')[1:][0] + ' ' +
-                          id.split('_')[1:][1].replace('-', ':') + '_' +
-                          id.split('_')[1:][2]]
-        else:
-            date = vals[0]
-            file_names = [id.split('_')[0].replace('-', '') + '-' +
-                          id.split('_')[1].replace('-', '')[:6] + '_' +
-                          id.split('_')[2],
-                          id.split('_')[0] + ' ' +
-                          id.split('_')[1].replace('-', ':') + '_' +
-                          id.split('_')[2]]
-        file_to_download = paths['s3_video'] + \
-                           date + '/' + \
-                           file_names[0] + '.mp4'
-        download_file_to = paths['temp_raw_video'] + \
-                           file_names[0] + '.mp4'
-        try:
-            self.data_loader_s3.download_file(
-                path_of_file_to_download=file_to_download,
-                path_to_download_file_to=download_file_to)
+    def get_cvat_video(self, xml_file_name):
+
+        video_path = get_s3_video_path_from_xml_name(xml_file_name=xml_file_name, s3_creds=self.creds[paths['s3_creds']], paths=self.paths)
+        if(video_path):
+            download_file_to = paths['temp_raw_video'] + 'test' + '.mp4'
+            self.data_loader_s3.download_file(path_of_file_to_download=video_path, path_to_download_file_to=download_file_to)
             return mp4_to_npy(download_file_to)
-
-        except:
-            try:
-                file_to_download = paths['s3_video'] + \
-                                   date + '/' + \
-                                   file_names[1] + '.mp4'
-
-                self.data_loader_s3.download_file(
-                    path_of_file_to_download=file_to_download,
-                    path_to_download_file_to=download_file_to)
-                return mp4_to_npy(download_file_to)
-
-            except:
-                print('Could not download file: ' + id)
-                return
+        else:
+            return
 
     def parse_cvat_xml_file(self, xml_file):
 
@@ -235,9 +205,6 @@ class DataLoader(object):
             print("Could not download file " + xml_file)
 
         root = ET.parse(path).getroot()
-
-        results = []
-
         im_path = path.split('/')[-1][:-4]
         im_width = 250
         im_height = 250
@@ -257,9 +224,9 @@ class DataLoader(object):
 
                     vehicle_type = frame.findall('attribute')[2].text
                     x_min = float(frame.attrib['xtl'])
-                    y_min = float(frame.attrib['ybr'])
+                    y_min = float(frame.attrib['ytl'])
                     x_max = float(frame.attrib['xbr'])
-                    y_max = float(frame.attrib['ytl'])
+                    y_max = float(frame.attrib['ybr'])
 
                     frame_dict[frame_num] += ' ' + str(vehicle_type) + \
                                   ' ' + str(x_min) + \
@@ -279,7 +246,6 @@ class DataLoader(object):
 paths = load_paths()
 creds = load_credentials()
 
-dl = DataLoader(datasets=[TransferDataset.cvat], creds=creds, paths=paths)
+dl = DataLoader(datasets=[TransferDataset.cvat, TransferDataset.detrac], creds=creds, paths=paths)
 x_train, y_train, x_test, y_test = dl.get_train_and_test(.8)
-
-#TODO how should I actually interpret the dimensions?
+print('Done')
