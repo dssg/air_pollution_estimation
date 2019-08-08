@@ -162,7 +162,6 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             # get updated location of objects in subsequent frames, update fleet obj
             success, bboxes_tracked = multi_tracker.update(
                 image=frame)
-            print(previous_frame_index, frame_ind - previous_frame_index)
             for _ in range(frame_ind - previous_frame_index):
                 fleet.update_vehicles(np.array(bboxes_tracked))
             previous_frame_index = frame_ind
