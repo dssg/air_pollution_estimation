@@ -228,7 +228,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             f'Run time of tracking analyser for one video is {runtime} seconds. \nFrameskip {frame_interval-1}.')
         return runtime, fleet
 
-    def construct_frame_level_df(self, 
+    def construct_frame_level_df(self,
                                  video_dict) -> pd.DataFrame:
         """Construct frame level df for multiple videos
         """
@@ -242,14 +242,15 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
         frame_info_list = []
         runtime_list = []
+
+        if not len(video_dict):
+            return None
+
         for video_name, video in video_dict.items():
             runtime, fleet = self.detect_and_track_objects(video, video_name)
             single_frame_level_df = fleet.report_frame_level_info()
             frame_info_list.append(single_frame_level_df)
             runtime_list.append(runtime)
-            break
-        else:
-            return pd.DataFrame(), runtime_list
         return pd.concat(frame_info_list), runtime_list
 
     def construct_video_level_df(self, frame_level_df) -> pd.DataFrame:

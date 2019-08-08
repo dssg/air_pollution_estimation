@@ -32,9 +32,6 @@ def update_frame_level_table(analyser,
     # Download the video file_names using the file list
     for filename in file_names:
         try:
-            path_to_download_file_to = (paths["temp_video"]
-                                        + filename.split("/")[-1].replace(":", "-").replace(" ", "_")
-                                        )
             path_to_download_file_to = paths["temp_video"] + \
                 filename.split('/')[-1].replace(':', '-').replace(" ", "_")
             dl.download_file(path_of_file_to_download=filename,
@@ -50,6 +47,8 @@ def update_frame_level_table(analyser,
         return success, frame_level_df
 
     frame_level_df, runtime_list = analyser.construct_frame_level_df(video_dict)
+    if frame_level_df.empty:
+	    return None
     frame_level_df.dropna(how='any', inplace=True)
     frame_level_df = frame_level_df.astype(
         {'frame_id': 'int64',
