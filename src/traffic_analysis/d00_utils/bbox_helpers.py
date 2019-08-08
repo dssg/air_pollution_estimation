@@ -98,9 +98,9 @@ def bbox_intersection_over_union(bbox_a, bbox_b) -> float:
     bbox_b -- format is (xmin, ymin, xmin+width, ymin+height)
     """
     assert (bbox_a[0] <= bbox_a[2] and bbox_a[1] <= bbox_a[3]
-            ), "Please make sure arg bbox_a is in format (xmin,ymin,xmin+w,ymin+h)."
+            ), f"Please make sure arg bbox_a is in format (xmin,ymin,xmin+w,ymin+h): {bbox_a}"
     assert (bbox_b[0] <= bbox_b[2] and bbox_b[1] <= bbox_b[3]
-            ), "Please make sure arg bbox_b is in in format (xmin,ymin,xmin+w,ymin+h)."
+            ), f"Please make sure arg bbox_b is in in format (xmin,ymin,xmin+w,ymin+h): {bbox_b}"
 
     # determine the (x, y)-coordinates of the intersection rectangle
     x_upper_left = max(bbox_a[0], bbox_b[0])  # xcoords
