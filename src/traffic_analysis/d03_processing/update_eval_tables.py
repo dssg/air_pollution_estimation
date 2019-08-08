@@ -63,8 +63,14 @@ def update_eval_tables(db_frame_level_name,
     # prepare for insertion into db
     video_level_performance = video_level_performance.astype(
         {"n_videos": 'int64'})
-    video_level_performance
-
+    # TODO: put this in params
+    video_level_performance = video_level_performance["vehicle_type",
+                                                      "stat",
+                                                      "bias",
+                                                      "MAE", 
+                                                      "RMSE",
+                                                      "sd",
+                                                      "n_videos"]
     video_level_diff = video_level_diff.astype(
          {"camera_id": "object",
           "counts_true": "int64",
@@ -72,14 +78,32 @@ def update_eval_tables(db_frame_level_name,
           "stops_true": "int64",
           })
 
+    video_level_diff = video_level_diff["camera_id",
+                                        "video_upload_datetime",
+                                        "vehicle_type",
+                                        "counts_true",
+                                        "starts_true",
+                                        "stops_true",
+                                        "counts_pred",
+                                        "starts_pred",
+                                        "stops_pred",
+                                        "counts_diff",
+                                        "starts_diff",
+                                        "stops_diff"]
+
+    frame_level_map = frame_level_map["camera_id",
+                                      "video_upload_datetime",
+                                      "vehicle_type",
+                                      "mean_avg_precision"]
+            
     eval_dfs = {"eval_video_performance": video_level_performance, 
                 "eval_video_diffs": video_level_diff, 
                 "eval_frame_stats": frame_level_map}
 
     for db_name, df in eval_dfs.items(): 
         df.dropna(how='any',inplace=True)
-        df['analyser'] = analyser_type
         df['creation_datetime'] = datetime.datetime.now()
+        df['analyser'] = analyser_type
         # append to sql db
         dl_sql.add_to_sql(df=df, table_name=db_name)
 
