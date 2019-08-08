@@ -54,12 +54,14 @@ for analyser_name, traffic_analyser in traffic_analysers.items():
     # select chunks of videos and classify objects
     chunk_size = params['eval_chunk_size']
     chunk_counter = 0
+    analyser_runtime = []
     while selected_videos:
-        success, frame_level_df = update_frame_level_table(analyser=traffic_analyser,
+        success, frame_level_df, runtime_list = update_frame_level_table(analyser=traffic_analyser,
                                                            file_names=selected_videos[:chunk_size],
                                                            db_frame_level_name = db_frame_level_name,
                                                            paths=paths,
                                                            creds=creds)
+        analyser_runtime += runtime_list
         if success: 
             video_level_df = update_video_level_table(analyser=traffic_analyser,
                                    db_video_level_name=db_video_level_name,
@@ -82,7 +84,7 @@ for analyser_name, traffic_analyser in traffic_analysers.items():
             break
 
     if verbose: print(f"Successfully processed videos for traffic analyser: {analyser_name}")
-
+    print(f"Avg runtime of one video for tracking type {analyser_name}: {np.mean(np.array(analyser_runtime))}")
     # append to table 
     update_eval_tables(db_frame_level_name=db_frame_level_name, 
                        db_video_level_name=db_video_level_name,

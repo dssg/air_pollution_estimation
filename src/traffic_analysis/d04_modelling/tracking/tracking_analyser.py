@@ -223,10 +223,10 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                       mp4_name=video_name + "_tracked.mp4",
                       video=np.array(processed_video),
                       fps=video_frames_per_sec)
-
+        runtime = time.time() - start_time
         print(
-            f'Run time of tracking analyser for one video is {time.time() - start_time} seconds. \nFrameskip {frame_interval-1}.')
-        return fleet
+            f'Run time of tracking analyser for one video is {runtime} seconds. \nFrameskip {frame_interval-1}.')
+        return runtime, fleet
 
     def construct_frame_level_df(self, 
                                  video_dict) -> pd.DataFrame:
@@ -241,14 +241,16 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                       " has been removed from processing because it may be invalid")
 
         frame_info_list = []
+        runtime_list = []
         for video_name, video in video_dict.items():
-            fleet = self.detect_and_track_objects(video, video_name)
+            runtime, fleet = self.detect_and_track_objects(video, video_name)
             single_frame_level_df = fleet.report_frame_level_info()
             frame_info_list.append(single_frame_level_df)
+            runtime_list.append(runtime)
             break
         else:
-            return pd.DataFrame()
-        return pd.concat(frame_info_list)
+            return pd.DataFrame(), runtime_list
+        return pd.concat(frame_info_list), runtime_list
 
     def construct_video_level_df(self, frame_level_df) -> pd.DataFrame:
         """Construct video-level stats table using tracking techniques

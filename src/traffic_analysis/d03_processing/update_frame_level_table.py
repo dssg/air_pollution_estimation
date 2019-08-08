@@ -49,7 +49,7 @@ def update_frame_level_table(analyser,
     if not isfilled: # early stop
         return success, frame_level_df
 
-    frame_level_df = analyser.construct_frame_level_df(video_dict)
+    frame_level_df, runtime_list = analyser.construct_frame_level_df(video_dict)
     frame_level_df.dropna(how='any', inplace=True)
     frame_level_df = frame_level_df.astype(
         {'frame_id': 'int64',
@@ -76,4 +76,4 @@ def update_frame_level_table(analyser,
     db_obj.add_to_sql(df=frame_level_sql_df, table_name=db_frame_level_name)
     success = True
 
-    return success, frame_level_df
+    return success, frame_level_df, runtime_list
