@@ -45,6 +45,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         self.selected_labels = params['selected_labels']
         self.tracker_type = params['opencv_tracker_type']
         self.trackers = []
+        self.skip_no_of_frames = params['skip_no_of_frames']
         self.iou_convolution_window = params['iou_convolution_window']
         self.smoothing_method = params['smoothing_method']
         self.stop_start_iou_threshold = params['stop_start_iou_threshold']
@@ -54,7 +55,6 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             tracker_type=self.tracker_type)
         if tracker:
             self.trackers.append(tracker)
-
         return tracker
 
     def create_tracker_by_name(self, tracker_type: str):
@@ -152,14 +152,14 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             processed_video = []
 
         print(f"The number of frames is {n_frames}")
-        offset = 4
+        frame_interval = self.skip_no_of_frames + 1
         # Process video and track objects
-        for frame_ind in range(offset, n_frames, offset):
+        for frame_ind in range(frame_interval, n_frames, frame_interval):
             frame = video[frame_ind, :, :, :]
             # get updated location of objects in subsequent frames, update fleet obj
             success, bboxes_tracked = multi_tracker.update(
                 image=frame)
-            for _ in range(offset):
+            for _ in range(frame_interval):
                 fleet.update_vehicles(np.array(bboxes_tracked))
 
             if make_video:
@@ -212,7 +212,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                       fps=video_frames_per_sec)
 
         print(
-            f'Run time of tracking analyser for one video is {time.time() - start_time} seconds. \nSkipped {offset-1} frames.')
+            f'Run time of tracking analyser for one video is {time.time() - start_time} seconds. \nSkipped {frame_interval-1} frames.')
         return fleet
 
     def construct_frame_level_df(self, video_dict) -> pd.DataFrame:
