@@ -30,7 +30,7 @@ selected_videos = load_video_names_from_s3(ref_file='Date_20190717_Cameras_03604
                                            s3_credentials=s3_credentials)
 
 # load annotation file names from s3
-annotation_videos = load_video_names_from_s3(ref_file='annotation',
+annotation_videos = load_video_names_from_s3(ref_file='annotations',
                                              paths=paths,
                                              s3_credentials=s3_credentials)
 selected_videos = selected_videos + annotation_videos
