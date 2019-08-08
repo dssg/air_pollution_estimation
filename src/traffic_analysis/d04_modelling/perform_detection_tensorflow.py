@@ -1,5 +1,3 @@
-# coding: utf-8
-
 from __future__ import division, print_function
 
 import tensorflow as tf
@@ -27,6 +25,8 @@ def detect_objects_in_image(image_capture, params, paths, s3_credentials):
             confs (list(float)): list of detection scores
     """
 
+    conf_thresh = params['detection_confidence_threshold']
+    iou_thresh = params['detection_iou_threshold']
     detection_model = params['detection_model']
     local_filepath_model = os.path.join(paths['local_detection_model'], detection_model, 'yolov3.ckpt')
 
@@ -38,12 +38,14 @@ def detect_objects_in_image(image_capture, params, paths, s3_credentials):
 
         boxes, confs, labels = pass_image_through_nn(image_capture=image_capture,
                                                      paths=paths,
-                                                     params=params)
+                                                     detection_model=detection_model,
+                                                     conf_thresh=conf_thresh,
+                                                     iou_thresh=iou_thresh)
 
     return boxes, confs, labels
 
 
-def pass_image_through_nn(image_capture, paths, params):
+def pass_image_through_nn(image_capture, paths, detection_model, conf_thresh, iou_thresh):
     """ passes an image through a saved yolov3 neural network
         Args:
             image_capture (nparray): numpy array containing the captured image (width, height, rbg)
@@ -56,9 +58,6 @@ def pass_image_through_nn(image_capture, paths, params):
             confs (list(float)): list of detection scores
     """
 
-    conf_thresh = params['detection_confidence_threshold']
-    iou_thresh = params['detection_iou_threshold']
-    detection_model = params['detection_model']
     local_filepath_model = os.path.join(paths['local_detection_model'], detection_model, 'yolov3.ckpt')
 
     # prepare the inputs for model initialization
