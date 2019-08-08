@@ -42,7 +42,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             self.tracker_type = tracker_type
         else:
             self.tracker_type = params['default_tracker_type']
-		self.trackers = []
+        self.trackers = []
 
         self.iou_threshold = params['iou_threshold']
         self.detection_frequency = params['detection_frequency']
@@ -165,11 +165,14 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         #print(f"The number of frames is {n_frames}")
         frame_interval = self.skip_no_of_frames + 1
         # Process video and track objects
-        for frame_ind in range(frame_interval, n_frames, frame_interval):
+        for frame_ind in range(1, n_frames):
+            if (frame_ind%frame_interval) and (frame_ind + frame_interval) <= n_frames:
+                continue
             frame = video[frame_ind, :, :, :]
             # get updated location of objects in subsequent frames, update fleet obj
             success, bboxes_tracked = multi_tracker.update(
                 image=frame)
+
             for _ in range(frame_interval):
                 fleet.update_vehicles(np.array(bboxes_tracked))
 
@@ -216,6 +219,8 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 # # quit on ESC button
                 # if cv2.waitKey(1) & 0xFF == 27:  # Esc pressed
                 #   break
+
+        assert fleet.bboxes.shape[2] == n_frames, f"Total num frames is {n_frames} but only {fleet.bboxes.shape[2]} have been processed."
         if make_video:
             write_mp4(local_mp4_dir=local_mp4_dir,
                       mp4_name=video_name + "_tracked.mp4",

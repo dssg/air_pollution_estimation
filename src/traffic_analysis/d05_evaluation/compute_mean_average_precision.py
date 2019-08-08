@@ -187,6 +187,10 @@ def get_avg_precision_at_iou(gt_bboxes: dict, pred_bboxes: dict, iou_thr: float 
                 'models_thrs' (list of floats): model threshold value that
                     precision and recall were computed for.
     """
+    n_frames_gt = len(gt_bboxes.keys())
+    n_frames_pred = len(pred_bboxes.keys())
+    assert n_frames_gt == n_frames_pred, f"Total ground truth frames, {n_frames_gt}, does \
+           not match total pred frames, {n_frames_pred}."
     model_scores_dict = get_model_scores_dict(pred_bboxes)
     sorted_model_scores = sorted(model_scores_dict.keys())
 
@@ -212,6 +216,7 @@ def get_avg_precision_at_iou(gt_bboxes: dict, pred_bboxes: dict, iou_thr: float 
         frame_ids = (
             gt_bboxes.keys() if thres_idx == 0 else model_scores_dict[model_score_thres]
         )
+        print("file compute_map frame_ids ", frame_ids)
 
         for frame_id in frame_ids:
             gt_bboxes_frame = gt_bboxes[frame_id]

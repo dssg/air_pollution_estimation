@@ -16,7 +16,7 @@ verbose = True
 # initialize traffic analysers with various tracker types 
 traffic_analysers = {}
 for tracker_type in params["eval_tracker_types"]:
-    analyser_name = params["traffic_analyser"]
+    analyser_name = params["traffic_analyser"].lower()
     traffic_analysers[ f"{analyser_name}_{tracker_type}"] = \
         eval(params["traffic_analyser"])(params=params, 
                                          paths=paths, 

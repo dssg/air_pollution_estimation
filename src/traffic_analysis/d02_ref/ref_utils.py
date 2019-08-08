@@ -74,7 +74,7 @@ def get_names_of_folder_content_from_s3(bucket_name, prefix, s3_profile):
 
     return elapsed_time, files
 
-def get_s3_video_path_from_xml_name(xml_file_name, s3_creds, paths):
+def get_s3_video_path_from_xml_name(xml_file_name, s3_creds, paths, verbose=False):
 
     # Supports old and new naming conventions
     vals = xml_file_name.split('_')
@@ -91,7 +91,6 @@ def get_s3_video_path_from_xml_name(xml_file_name, s3_creds, paths):
                       xml_file_name.split('_')[1:][2]]
     else:
         date = vals[0]
-        print("xml_file_name is: ", xml_file_name)
         file_names = [xml_file_name.split('_')[0].replace('-', '') + '-' +
                       xml_file_name.split('_')[1].replace('-', '')[:6] + '_' +
                       xml_file_name.split('_')[2],
@@ -103,7 +102,7 @@ def get_s3_video_path_from_xml_name(xml_file_name, s3_creds, paths):
                        file_names[0] + '.mp4'
 
     if(data_loader_s3.file_exists(file_to_download)):
-        print('Found ' + file_to_download)
+        if verbose: print('Found ' + file_to_download)
         return file_to_download
 
     else:
@@ -112,7 +111,7 @@ def get_s3_video_path_from_xml_name(xml_file_name, s3_creds, paths):
                            file_names[1] + '.mp4'
 
         if (data_loader_s3.file_exists(file_to_download2)):
-            print('Found ' + file_to_download2)
+            if verbose: print('Found ' + file_to_download2)
             return file_to_download2
         else:
             print('Could not find file: ' + file_to_download + ' or ' + file_to_download2)

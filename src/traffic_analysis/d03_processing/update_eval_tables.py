@@ -24,7 +24,7 @@ def update_eval_tables(db_frame_level_name,
     """
     # get xmls from s3
     dl_s3 = DataLoaderS3(s3_credentials=creds[paths['s3_creds']],
-                        bucket_name =  paths['bucket_name'])
+                         bucket_name =  paths['bucket_name'])
     annotation_xmls = dl_s3.list_objects(prefix = paths['s3_cvat_annotations'])
 
     # get video_level_tables and frame_level_tables for analyser type from db 
@@ -53,7 +53,8 @@ def update_eval_tables(db_frame_level_name,
     chunk_evaluator = ChunkEvaluator(annotation_xml_paths=annotation_xmls,
                                      frame_level_df=frame_level_df,
                                      video_level_df=video_level_df,
-                                     params=params,
+                                     selected_labels=params["selected_labels"],
+                                     video_level_column_order=params["video_level_column_order"],
                                      data_loader_s3 = dl_s3
                                      )
     video_level_performance, video_level_diff = chunk_evaluator.evaluate_video_level()

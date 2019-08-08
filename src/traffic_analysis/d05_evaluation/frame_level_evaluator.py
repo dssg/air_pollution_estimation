@@ -125,7 +125,11 @@ class FrameLevelEvaluator:
         Raises: 
         """
         # dict of dict of dicts, with outermost layer being the vehicle type
-        n_frames = df["frame_id"].nunique()
+        frame_max = int(df["frame_id"].max()) 
+        frame_min = int(df["frame_id"].min())
+        if not(frame_min is 1 or frame_min is 0):
+            print("Warning: minimum frame id is ", frame_min)
+
         bboxes_np = np.array(df["bboxes"].values.tolist())
         assert bboxes_np.shape[1] == 4
 
@@ -139,14 +143,14 @@ class FrameLevelEvaluator:
             df_as_dict = {
                 vehicle_type: {
                     "frame" + str(i): {"bboxes": [], "scores": []}
-                    for i in range(n_frames)
+                    for i in range(frame_min, frame_max + 1)
                 }
                 for vehicle_type in self.selected_labels
             }
 
         else:
             df_as_dict = {
-                vehicle_type: {"frame" + str(i): [] for i in range(n_frames)}
+                vehicle_type: {"frame" + str(i): [] for i in range(frame_min, frame_max + 1)}
                 for vehicle_type in self.selected_labels
             }
 
@@ -154,8 +158,8 @@ class FrameLevelEvaluator:
                 ["vehicle_type", "frame_id"]):
             if vehicle_type not in self.selected_labels: 
                 continue
-
-            frame_id = int(frame_id)
+            if frame_id > frame_max:
+                print("Warning: more frames in vehice_frame_df than in n_frames")
             if include_confidence:
                 df_as_dict[vehicle_type]["frame" + str(frame_id)]["bboxes"] = \
                     vehicle_frame_df["bboxes"].tolist()
