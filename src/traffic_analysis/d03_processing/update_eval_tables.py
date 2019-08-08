@@ -59,9 +59,6 @@ def update_eval_tables(db_frame_level_name,
                                      )
     video_level_performance, video_level_diff = chunk_evaluator.evaluate_video_level()
     # prepare for insertion into db
-            df.dropna(how='any',inplace=True)
-        df['creation_datetime'] = datetime.datetime.now()
-        df['analyser'] = analyser_type
 
     # video level performance 
     video_level_performance = video_level_performance.astype(
