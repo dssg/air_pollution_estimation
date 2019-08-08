@@ -1,9 +1,10 @@
 from traffic_analysis.d02_ref.ref_utils import get_names_of_folder_content_from_s3
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
+from traffic_analysis.d02_ref.ref_utils import get_s3_video_path_from_xml_name
 
 
 def upload_annotation_names_to_s3(paths,
-                                  output_file_name,
+                                  output_file_name: str,
                                   s3_credentials: dict):
     """ Get the list of xml files from s3 and save a json on s3 containing the corresponding video filepaths
                     Args:
@@ -12,7 +13,7 @@ def upload_annotation_names_to_s3(paths,
 
                     Returns:
 
-        """
+    """
 
     bucket_name = paths['bucket_name']
     s3_profile = paths['s3_profile']
@@ -25,17 +26,13 @@ def upload_annotation_names_to_s3(paths,
 
     selected_files = []
     for file in files:
-        if file:
-            vals = file.split('_')
-            if len(vals) == 4:
-                vals = vals[1:]
-            date = vals[0]
-            time = vals[1].replace('-', ':')
-            name = date + ' ' + time + '_' + vals[2]
-            name = name.replace('.xml', '.mp4')
-            selected_files.append(paths['s3_video'] + date + '/' + name)
+        video_file = get_s3_video_path_from_xml_name(xml_file_name=file,
+                                                     s3_creds=s3_credentials,
+                                                     paths=paths)
+        if(video_file):
+            selected_files.append(video_file)
 
     dl = DataLoaderS3(s3_credentials,
                       bucket_name=paths['bucket_name'])
-    file_path = paths['s3_video_names'] +  output_file_name +'.json'
+    file_path = paths['s3_video_names'] + output_file_name
     dl.save_json(data=selected_files, file_path=file_path)

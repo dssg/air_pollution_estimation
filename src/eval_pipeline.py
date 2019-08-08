@@ -26,8 +26,8 @@ for tracker_type in params["eval_tracker_types"]:
 # creates the test_seach_json. Change the camera list and output file name for full run
 # get annotation xmls from s3 saves json on s3 containing to corresponding video filepaths
 upload_annotation_names_to_s3(paths=paths,
-       		             output_file_name=params['eval_ref_name'],
-                             s3_credentials=s3_credentials)
+       		                  output_file_name=params['eval_ref_name'],
+                              s3_credentials=s3_credentials)
 
 # Start from here if video names already specified
 selected_videos = load_video_names_from_s3(ref_file= params['eval_ref_name'],
@@ -52,24 +52,29 @@ for tracker_type, traffic_analyser in traffic_analysers.items():
     # select chunks of videos and classify objects
     chunk_size = params['eval_chunk_size']
     while selected_videos:
-        frame_level_df = update_frame_level_table(analyser=traffic_analyser,
+        success, frame_level_df = update_frame_level_table(analyser=traffic_analyser,
                                                   file_names=selected_videos[:chunk_size],
                                                   db_frame_level_name = db_frame_level_name,
                                                   paths=paths,
                                                   creds=creds)
+        if success: 
+            video_level_df = update_video_level_table(analyser=traffic_analyser,
+                                   db_video_level_name=db_video_level_name,
+                                   frame_level_df=frame_level_df,
+                                   file_names=selected_videos[:chunk_size],
+                                   paths=paths,
+                                   creds=creds,
+                                   return_data=True)
+            print("Successfully processed chunk of videos.")
 
-        video_level_df = update_video_level_table(analyser=traffic_analyser,
-                                 db_video_level_name=db_video_level_name,
-                                 frame_level_df=frame_level_df,
-                                 file_names=selected_videos[:chunk_size],
-                                 paths=paths,
-                                 creds=creds,
-                                 return_data=True)
+        else: 
+            print("Analysing current chunk failed. Continuing to next chunk.")
+
+
 
         # Move on to next chunk
         selected_videos = selected_videos[chunk_size:]
         delete_and_recreate_dir(paths["temp_video"])
-        print("Successfully processed chunk of videos.")
     print("Successfully processed videos for one tracking type")
 
     # append to table 

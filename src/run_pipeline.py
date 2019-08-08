@@ -34,24 +34,24 @@ analyser = TrackingAnalyser(params=params, paths=paths)
 # select chunks of videos and classify objects
 chunk_size = params['chunk_size']
 while selected_videos:
-    frame_level_df = update_frame_level_table(analyser=analyser,
+    success, frame_level_df = update_frame_level_table(analyser=analyser,
                                               db_frame_level_name=paths['db_frame_level'],
                                               file_names=selected_videos[:chunk_size],
                                               paths=paths,
                                               creds=creds)
 
-    # evaluate_frame_level_table
+    if success: 
+      update_video_level_table(analyser=analyser,
+                               db_video_level_name=paths['db_video_level'],
+                               db_frame_level_name=paths['db_frame_level'],
+                               frame_level_df=frame_level_df,
+                               file_names=selected_videos[:chunk_size],
+                               paths=paths,
+                               creds=creds,
+                               return_data=False)
 
-    update_video_level_table(analyser=analyser,
-                             db_video_level_name=paths['db_video_level'],
-                             db_frame_level_name=paths['db_frame_level'],
-                             frame_level_df=frame_level_df,
-                             file_names=selected_videos[:chunk_size],
-                             paths=paths,
-                             creds=creds,
-                             return_data=False)
-
-    # evaluate_video_level_table
+    else: 
+      print("Analysing current chunk failed. Continuing to next chunk.")
 
     # Move on to next chunk
     selected_videos = selected_videos[chunk_size:]

@@ -19,10 +19,11 @@ def load_video_names_from_s3(ref_file,
 
     files = dl.read_json(file_path=paths['s3_video_names'] + ref_file + '.json')
 
-    annotations_path = paths['s3_video_names'] + 'annotations.json'
-    if dl.file_exists(annotations_path):
-        annotation_video_names = dl.read_json(file_path=paths['s3_video_names'] + 'annotations.json')
-        files += annotation_video_names
+    # removed because evaluation is now in a separate pipeline
+    # annotations_path = paths['s3_video_names'] + 'annotations.json'
+    # if dl.file_exists(annotations_path):
+    #     annotation_video_names = dl.read_json(file_path=paths['s3_video_names'] + 'annotations.json')
+    #     files += annotation_video_names
 
     # avoid duplication
     files = list(set(files))
