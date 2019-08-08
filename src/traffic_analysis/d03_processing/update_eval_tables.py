@@ -63,6 +63,7 @@ def update_eval_tables(db_frame_level_name,
     # prepare for insertion into db
     video_level_performance = video_level_performance.astype(
         {"n_videos": 'int64'})
+    video_level_performance
 
     video_level_diff = video_level_diff.astype(
          {"camera_id": "object",
