@@ -4,10 +4,7 @@ import xml.etree.ElementTree as ElementTree
 
 from traffic_analysis.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib
 from traffic_analysis.d05_evaluation.parse_annotation import parse_annotation
-from traffic_analysis.d05_evaluation.compute_mean_average_precision import (
-    get_avg_precision_at_iou,
-    plot_pr_curve,
-)
+from traffic_analysis.d05_evaluation.compute_mean_average_precision import get_avg_precision_at_iou
 
 
 class FrameLevelEvaluator:
@@ -33,15 +30,15 @@ class FrameLevelEvaluator:
         """Compute mean average precision for each vehicle type on multiple videos 
         """
         self.frame_level_ground_truth = self.get_ground_truth()
-        self.frame_level_preds = self.get_preds()
+        self.frame_level_preds = self.filter_frame_level_df()
 
-        frame_level_mAP_dfs = []
+        frame_level_map_dfs = []
         for (gt_camera_id, gt_video_upload_datetime), ground_truth_df in \
             self.frame_level_ground_truth.groupby(["camera_id", "video_upload_datetime"]):
             # get corresponding predictions for this video 
             pred_df = self.frame_level_preds[(self.frame_level_preds["camera_id"] == gt_camera_id) &
                                              (self.frame_level_preds["video_upload_datetime"] ==
-                                              gt_video_upload_datetime)]
+                                              gt_video_upload_datetime)].copy()
 
             ground_truth_dict = self.reparse_bboxes_df(ground_truth_df, 
                                                        include_confidence=False)
@@ -49,24 +46,24 @@ class FrameLevelEvaluator:
                                                     include_confidence=True, 
                                                     bbox_format="cv2")
 
-            mAP_dict = self.compute_mAP_video(ground_truth_dict, predicted_dict)
-            mAP_df = pd.DataFrame.from_dict(mAP_dict, 
+            map_dict = self.compute_map_video(ground_truth_dict, predicted_dict)
+            map_df = pd.DataFrame.from_dict(map_dict, 
                                             orient="index", 
                                             columns=["mean_avg_precision"])
 
-            mAP_df["camera_id"] = gt_camera_id
-            mAP_df["video_upload_datetime"] = gt_video_upload_datetime
+            map_df["camera_id"] = gt_camera_id
+            map_df["video_upload_datetime"] = gt_video_upload_datetime
 
-            frame_level_mAP_dfs.append(mAP_df)
+            frame_level_map_dfs.append(map_df)
 
-        frame_level_mAP_df = pd.concat(frame_level_mAP_dfs, 
+        frame_level_map_df = pd.concat(frame_level_map_dfs, 
                                        axis=0)  
-        frame_level_mAP_df.index.name = "vehicle_type"
-        frame_level_mAP_df.reset_index(inplace=True)
+        frame_level_map_df.index.name = "vehicle_type"
+        frame_level_map_df.reset_index(inplace=True)
 
-        return frame_level_mAP_df
+        return frame_level_map_df
 
-    def get_preds(self) -> pd.DataFrame: 
+    def filter_frame_level_df(self) -> pd.DataFrame:
         """
         Get preds for videos which are in videos_to_eval
         """
@@ -162,16 +159,16 @@ class FrameLevelEvaluator:
 
         return df_as_dict
 
-    def compute_mAP_video(self, ground_truth_dict, predicted_dict) -> dict:
+    def compute_map_video(self, ground_truth_dict, predicted_dict) -> dict:
         """ Function computes the mean average precision for each vehicle type for a video
         Args: 
             ground_truth_dict: ground_truth_df reparsed by reparse_bboxes_df
             predicted_dict: frame_level_df reparsed by reparse_bboxes_df
         Returns: 
-            mAP_dict: dictionary with vehicle_types as keys and mAPs as values 
+            map_dict: dictionary with vehicle_types as keys and maps as values 
         Raises: 
         """
-        mAP_dict = {vehicle_type: -1.0 for vehicle_type in self.selected_labels}
+        map_dict = {vehicle_type: -1.0 for vehicle_type in self.selected_labels}
 
         for vehicle_type in self.selected_labels:
             vehicle_gt_dict = ground_truth_dict[vehicle_type]
@@ -189,14 +186,8 @@ class FrameLevelEvaluator:
                 avg_precs.append(data_dict["avg_prec"])
                 iou_thrs.append(iou_thr)
 
-                precisions = data_dict["precisions"]
-                recalls = data_dict["recalls"]
-
-            avg_precs = [float("{:.4f}".format(ap)) for ap in avg_precs]
-            iou_thrs = [float("{:.4f}".format(thr)) for thr in iou_thrs]
-
             # avg the avg precision for each IOU value
             mean_avg_precision = 100 * np.mean(avg_precs)
-            mAP_dict[vehicle_type] = mean_avg_precision
+            map_dict[vehicle_type] = mean_avg_precision
 
-        return mAP_dict
+        return map_dict

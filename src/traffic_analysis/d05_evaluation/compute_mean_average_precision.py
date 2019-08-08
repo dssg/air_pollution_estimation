@@ -6,13 +6,13 @@ author: Timothy C. Arlen
 date: 28 Feb 2018
 revised by: Sadjad Asghari Esfeden
 date: 10 Sep 2018
+url: https://gist.github.com/sadjadasghari/dc066e3fb2e70162fbb838d4acb93ffc
 Calculate Mean Average Precision (mAP) for a set of bounding boxes corresponding to specific
-image Ids. Usage:
+image Ids. 
+Usage:
 > python calculate_mean_ap.py
 Will display a plot of precision vs recall curves at 10 distinct IoU thresholds as well as output
 summary information regarding the average precision and mAP scores.
-NOTE: Requires the files `ground_truth_boxes.json` and `predicted_boxes.json` which can be
-downloaded from this gist.
 """
 
 

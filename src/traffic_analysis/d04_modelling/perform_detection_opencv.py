@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import cv2
-from traffic_analysis.d02_ref.download_detect_model_from_s3 import download_detect_model_from_s3
+from traffic_analysis.d02_ref.download_detection_model_from_s3 import download_detection_model_from_s3
 
 
 def detect_objects_in_image(image_capture,
@@ -25,9 +25,9 @@ def detect_objects_in_image(image_capture,
     detection_iou_threshold = params['detection_iou_threshold']
     model_name = params['detection_model']
 
-    download_detect_model_from_s3(model_name=model_name,
-                                  paths=paths,
-                                  s3_credentials=s3_credentials)
+    download_detection_model_from_s3(model_name=model_name,
+                                     paths=paths,
+                                     s3_credentials=s3_credentials)
     network_output = pass_image_through_nn(image_capture=image_capture,
                                            model_name=model_name,
                                            paths=paths)
@@ -56,7 +56,7 @@ def populate_labels(model_name: str, paths):
             labels (list(str)): list of object labels strings
     """
 
-    model_file_path = paths['local_detect_model']
+    model_file_path = paths['local_detection_model']
     labels_file_path = os.path.join(model_file_path, model_name, 'coco.names')
     f = open(labels_file_path, 'r')
     labels = [line.strip() for line in f.readlines()]
@@ -129,9 +129,12 @@ def pass_image_through_nn(image_capture: np.ndarray,
                                                 crop=False)
 
     # read model as deep neural network in opencv
-    config_file_path = os.path.join(paths['local_detect_model'], model_name, model_name + '.cfg')
-    weights_file_path = os.path.join(paths['local_detect_model'], model_name, model_name + '.weights')
-    net = cv2.dnn.readNet(weights_file_path, config_file_path)  # can use other net, see documentation
+    if model_name == 'yolov3-tiny':
+        config_file_path = os.path.join(paths['local_detection_model'], model_name, model_name + '.cfg')
+    else:
+        config_file_path = os.path.join(paths['local_detection_model'], model_name, model_name + '.config')
+    weights_file_path = os.path.join(paths['local_detection_model'], model_name, model_name + '.weights')
+    net = cv2.dnn.readNetFromDarknet(config_file_path, weights_file_path)  # can use other net, see documentation
 
     # input image to neural network
     net.setInput(pre_processed_image)
