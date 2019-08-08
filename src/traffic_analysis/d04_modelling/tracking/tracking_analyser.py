@@ -212,7 +212,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                       fps=video_frames_per_sec)
 
         print(
-            f'Run time of tracking analyser for one video is {time.time() - start_time} seconds. \nSkipped {offset-1} videos.')
+            f'Run time of tracking analyser for one video is {time.time() - start_time} seconds. \nSkipped {offset-1} frames.')
         return fleet
 
     def construct_frame_level_df(self, video_dict) -> pd.DataFrame:
