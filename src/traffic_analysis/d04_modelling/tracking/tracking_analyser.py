@@ -106,7 +106,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         new_bboxes_inds = list(new_bboxes_inds.difference(old_bboxes_inds))
         return new_bboxes_inds
 
-    def detect_and_track_objects(self,
+def detect_and_track_objects(self,
                                  video: np.ndarray,
                                  video_name: str,
                                  video_time_length=10,
@@ -120,23 +120,23 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         initial detection confidence and label for each vehicle as it is detected, and the updated locations
         of the bounding boxes for each vehicle each frame. The VehicleFleet object also performs IOU computations
         on the stored bounding box information to get counts and stop starts.
-
+​
         Keyword arguments:
-
+​
         video -- np array in format (frame_count,frame_height,frame_width,3)
         video_name -- name of video to run on (include .mp4 extension)
         video_time_length -- specify length of video
         make_video -- if true, will write video to local_mp4_dir with name local_mp4_name_tracked.mp4
         local_mp4_dir -- path to directory to store video in
         """
-
+​
         start_time = time.time()
         # Create a video capture object to read videos
         n_frames = video.shape[0]
-
+​
         # assumes vid_length in seconds
         video_frames_per_sec = int(n_frames / video_time_length)
-
+​
         # initialize bboxes on first frame using a detection alg
         first_frame = video[0, :, :, :]
         bboxes, labels, confs = detect_bboxes(frame=first_frame,
@@ -145,43 +145,45 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                                               detection_confidence_threshold=self.detection_confidence_threshold,
                                               detection_nms_threshold=self.detection_nms_threshold,
                                               selected_labels=self.selected_labels)
-
+​
         # store info returned above in vehicleFleet object
         fleet = VehicleFleet(bboxes=np.array(bboxes),
                              labels=np.array(labels),
                              confs=np.array(confs),
                              video_name=video_name.replace(".mp4", ""))
-
+​
         # Create MultiTracker object using bboxes, initialize multitracker
         multi_tracker = cv2.MultiTracker_create()
         for bbox in bboxes:
             multi_tracker.add(newTracker=self.add_tracker(),
                               image=first_frame,
                               boundingBox=tuple(bbox))
-
+​
         if make_video:
             processed_video = []
-
-        #print(f"The number of frames is {n_frames}")
+​
+        print(f"The number of frames is {n_frames}")
         frame_interval = self.skip_no_of_frames + 1
+        previous_frame_index = 0
         # Process video and track objects
         for frame_ind in range(1, n_frames):
-            if (frame_ind%frame_interval) and (frame_ind + frame_interval) <= n_frames:
+            if (frame_ind % frame_interval) and (frame_ind + frame_interval) <= n_frames:
                 continue
             frame = video[frame_ind, :, :, :]
             # get updated location of objects in subsequent frames, update fleet obj
             success, bboxes_tracked = multi_tracker.update(
                 image=frame)
-
-            for _ in range(frame_interval):
+            print(previous_frame_index, frame_ind - previous_frame_index)
+            for _ in range(frame_ind - previous_frame_index):
                 fleet.update_vehicles(np.array(bboxes_tracked))
-
+            previous_frame_index = frame_ind
+​
             if make_video:
                 # draw tracked objects
                 display_bboxes_on_frame(frame, bboxes_tracked,
                                         color_bboxes(fleet.labels),
                                         fleet.compute_label_confs())
-
+​
             # every x frames, re-detect boxes
             if frame_ind % self.detection_frequency == 0:
                 # redetect bounding boxes
@@ -194,41 +196,40 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 # re-initialize MultiTracker
                 new_bbox_inds = self.determine_new_bboxes(bboxes_tracked,
                                                           bboxes_detected)
-
+​
                 # update fleet object
                 if len(new_bbox_inds) > 0:
                     new_bboxes = [bboxes_detected[i] for i in new_bbox_inds]
                     new_labels = [labels_detected[i] for i in new_bbox_inds]
                     new_confs = [confs_detected[i] for i in new_bbox_inds]
-
+​
                     fleet.add_vehicles(np.array(new_bboxes),
                                        np.array(new_labels),
                                        np.array(new_confs))
-
+​
                     # iterate through new bboxes
                     for new_bbox in new_bboxes:
                         multi_tracker.add(newTracker=self.add_tracker(),
                                           image=frame,
                                           boundingBox=tuple(new_bbox))
-
+​
             if make_video:
                 processed_video.append(frame)
-
+​
                 # code to display video frame by frame while it is being processed
                 # cv2.imshow('MultiTracker', frame)
                 # # quit on ESC button
                 # if cv2.waitKey(1) & 0xFF == 27:  # Esc pressed
                 #   break
-
         assert fleet.bboxes.shape[2] == n_frames, f"Total num frames is {n_frames} but only {fleet.bboxes.shape[2]} have been processed."
         if make_video:
             write_mp4(local_mp4_dir=local_mp4_dir,
                       mp4_name=video_name + "_tracked.mp4",
                       video=np.array(processed_video),
                       fps=video_frames_per_sec)
-        if self.verbose:
-            print(
-                f'Run time of tracking analyser for one video is {time.time() - start_time} seconds. \nSkipped {frame_interval-1} frames.')
+​
+        print(
+            f'Run time of tracking analyser for one video is {time.time() - start_time} seconds. \nFrameskip {frame_interval-1}.')
         return fleet
 
     def construct_frame_level_df(self, video_dict) -> pd.DataFrame:
