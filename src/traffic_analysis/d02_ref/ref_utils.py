@@ -25,7 +25,8 @@ def upload_json_to_s3(paths, save_name, selected_files):
     try:
         res = subprocess.call(["aws", "s3", 'cp',
                                filepath,
-                               's3://air-pollution-uk/' + paths['s3_video_names'],
+                               's3://air-pollution-uk/' +
+                               paths['s3_video_names'],
                                '--profile',
                                'dssg'])
     except:

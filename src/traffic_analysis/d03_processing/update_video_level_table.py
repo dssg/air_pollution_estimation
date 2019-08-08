@@ -8,7 +8,7 @@ def update_video_level_table(analyser,
                              db_video_level_name,
                              db_frame_level_name=None,
                              frame_level_df=None,
-                             file_names=None, 
+                             file_names=None,
                              paths=None,
                              creds=None,
                              return_data=False):
@@ -24,7 +24,6 @@ def update_video_level_table(analyser,
                 Returns:
 
     """
-
     db_obj = DataLoaderSQL(creds=creds, paths=paths)
 
     if frame_level_df is None:
@@ -36,10 +35,11 @@ def update_video_level_table(analyser,
         for filename in file_names:
             name = filename.split('/')[-1]
             camera_id, date_time = parse_video_or_annotation_name(name)
-            filter_string += '(camera_id=\'' + camera_id + '\' AND video_upload_datetime=\'' + str(date_time) + '\') OR '
+            filter_string += f"(camera_id='{camera_id}' AND video_upload_datetime='{str(date_time)}') OR "
 
         filter_string = filter_string[:-4]
-        sql_string = "SELECT * FROM {} WHERE {};".format(db_frame_level_name, filter_string)
+        sql_string = "SELECT * FROM {} WHERE {};".format(
+	        db_frame_level_name, filter_string)
         frame_level_df = db_obj.select_from_table(sql=sql_string)
 
         bboxes = []

@@ -25,8 +25,8 @@ def load_videos_into_np(folder):
         try:
             video_name = re.split(r"\\|/", filename)[-1]
             video_dict[video_name] = mp4_to_npy(filename)
-        except:
-            print("Could not convert " + filename + " to numpy array")
+        except Exception as e:
+            print(f"Could not convert {filename}  to numpy array due to {e}")
 
     return video_dict
 

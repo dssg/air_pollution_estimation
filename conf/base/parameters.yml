@@ -56,7 +56,8 @@ modelling:
   selected_labels: ["car", "truck", "bus", "motorbike"]
   default_tracker_type: "csrt"
   iou_threshold: 0.05 #controls how much two objects' bboxes must overlap to be considered the "same"
-  detection_frequency: 25
+  detection_frequency: 4
+  skip_no_of_frames: 3
 
   #stop starts
   iou_convolution_window: 15
