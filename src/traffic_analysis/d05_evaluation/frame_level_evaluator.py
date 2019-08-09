@@ -44,14 +44,21 @@ class FrameLevelEvaluator:
             pred_df = self.frame_level_preds[(self.frame_level_preds["camera_id"] == gt_camera_id) &
                                              (self.frame_level_preds["video_upload_datetime"] ==
                                               gt_video_upload_datetime)].copy()
+            pred_frame_max = int(pred_df["frame_id"].max()) 
+            pred_frame_min = int(pred_df["frame_id"].min())
 
+            ground_truth_frame_max = int(ground_truth_df["frame_id"].max()) 
+            ground_truth_frame_min = int(ground_truth_df["frame_id"].min())
+
+            print(f"pred frame min is {pred_frame_min}, gt frame min is {ground_truth_frame_min}\n \
+                    pred frame max is {pred_frame_max}, gt frame max is {ground_truth_frame_max}")
+            
             ground_truth_dict = self.reparse_bboxes_df(ground_truth_df, 
                                                        include_confidence=False)
             predicted_dict = self.reparse_bboxes_df(pred_df,
                                                     include_confidence=True, 
                                                     bbox_format="cv2")
-            print("Ground truth df: ", ground_truth_dict)
-            print("Predicted df: ", predicted_dict)
+
             map_dict = self.compute_map_video(ground_truth_dict, predicted_dict)
             map_df = pd.DataFrame.from_dict(map_dict, 
                                             orient="index", 
