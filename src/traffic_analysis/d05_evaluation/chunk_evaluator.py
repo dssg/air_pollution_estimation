@@ -20,12 +20,15 @@ class ChunkEvaluator:
                  video_level_df: pd.DataFrame = None,
                  frame_level_df: pd.DataFrame = None,
                  data_loader_s3=None,
-                 video_level_column_order: list=None):
+                 video_level_column_order: list=None,
+                 date_format: str):
 
         annotations_available = {}
         for xml_path in annotation_xml_paths:
             xml_name = re.split(r"\\|/", xml_path)[-1]
-            camera_id, video_upload_datetime = parse_video_or_annotation_name(xml_name)
+            # TODO make video_upload_datetime format a parameter across pipeline
+            camera_id, video_upload_datetime = parse_video_or_annotation_name(xml_name, 
+                                                                              video_upload_datetime_format=date_format)
             try:
                 corresp_video_path = annotations_videos_name_mapper[xml_path]
             except:
@@ -45,13 +48,14 @@ class ChunkEvaluator:
             # evaluate only those videos for which we have annotations
             print("number annotations available: ", len(annotations_available))
             print("number videos available: ", len(video_level_videos_to_eval))
-            print(annotations_available)
-            print(annotations_available[["camera_id", "video_upload_datetime"]])
-            print(video_level_videos_to_eval)
+            # print(annotations_available)
+            # print(annotations_available[["camera_id", "video_upload_datetime"]])
+            # print(video_level_videos_to_eval)
             self.video_level_videos_to_eval = pd.merge(left=annotations_available,
                                                        right=video_level_videos_to_eval,
                                                        on=['camera_id', 'video_upload_datetime'],
                                                        how='inner')
+            print("number matched videos/annotations available: ", len(self.video_level_videos_to_eval))
 
             self.num_video_level_videos = len(self.video_level_videos_to_eval)
 

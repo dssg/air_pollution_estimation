@@ -43,6 +43,7 @@ eval_pipeline_settings:
   traffic_analyser: "TrackingAnalyser"
   eval_tracker_types: ['kcf','csrt']
   eval_chunk_size: 10
+  video_upload_datetime_format: "%Y%m%d-%H%M%S"
 
 modelling:
   # obj detection
