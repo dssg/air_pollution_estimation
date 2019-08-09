@@ -37,13 +37,13 @@ data_renaming:
 
 pipeline_settings:
   dataset_ref_name: "tims_cameras_all"
+  video_upload_datetime_format: "%Y%m%d-%H%M%S"
 
 eval_pipeline_settings:
   eval_ref_name: "annotated_videos"
   traffic_analyser: "TrackingAnalyser"
   eval_tracker_types: ['kcf','csrt']
   eval_chunk_size: 10
-  video_upload_datetime_format: "%Y%m%d-%H%M%S"
 
 modelling:
   # obj detection
