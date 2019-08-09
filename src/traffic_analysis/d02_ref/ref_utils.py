@@ -23,7 +23,8 @@ def upload_json_to_s3(paths, save_name, selected_files):
     try:
         res = subprocess.call(["aws", "s3", 'cp',
                                filepath,
-                               's3://air-pollution-uk/' + paths['s3_video_names'],
+                               's3://air-pollution-uk/' +
+                               paths['s3_video_names'],
                                '--profile',
                                'dssg'])
     except:
@@ -67,7 +68,4 @@ def get_names_of_folder_content_from_s3(bucket_name, prefix, s3_profile):
     end = Time.time()
     elapsed_time = end-start
 
-    assert ((len(files) == 0) or (files[0] != '')), 'set your aws credentials'
-
     return elapsed_time, files
-
