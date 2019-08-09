@@ -121,7 +121,6 @@ def detect_objects_in_image(image_capture, paths, detection_model, model_initial
 
     # rescale the coordinates to the original image
     boxes = rescale_boxes(boxes_unscaled, formatting_params)
-    boxes = [array.tolist() for array in boxes]
     confs = confs.tolist()
 
     labels = label_detections(label_idxs=label_idxs,
@@ -172,6 +171,6 @@ def rescale_boxes(boxes, formatting_params):
 
     boxes[:, [0, 2]] = (boxes[:, [0, 2]] - dw) / resize_ratio
     boxes[:, [1, 3]] = (boxes[:, [1, 3]] - dh) / resize_ratio
-    boxes_resized = boxes
+    boxes_resized = [[int(np.floor(i)) for i in nested] for nested in boxes]
 
     return boxes_resized

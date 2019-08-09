@@ -34,7 +34,7 @@ def test_detection(image_path):
         bbox, label, confidence = tensorflow_detect(imcap, paths=paths, params=params, s3_credentials=s3_credentials,
                                                     selected_labels=None)
         end_time = time.time()
-        print(label)
+        print(bbox)
 
     delt_time = end_time - start_time
 
