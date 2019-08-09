@@ -171,6 +171,6 @@ def rescale_boxes(boxes, formatting_params):
 
     boxes[:, [0, 2]] = (boxes[:, [0, 2]] - dw) / resize_ratio
     boxes[:, [1, 3]] = (boxes[:, [1, 3]] - dh) / resize_ratio
-    boxes_resized = [[int(np.floor(i)) for i in nested] for nested in boxes]
+    boxes_resized = [[int(np.round(i)) for i in nested] for nested in boxes]
 
     return boxes_resized
