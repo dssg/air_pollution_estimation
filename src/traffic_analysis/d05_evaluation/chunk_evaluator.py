@@ -26,7 +26,10 @@ class ChunkEvaluator:
         for xml_path in annotation_xml_paths:
             xml_name = re.split(r"\\|/", xml_path)[-1]
             camera_id, video_upload_datetime = parse_video_or_annotation_name(xml_name)
-            corresp_video_path = annotations_videos_name_mapper[xml_path]
+            try:
+                corresp_video_path = annotations_videos_name_mapper[xml_path]
+            except:
+                corresp_video_path = None
             annotations_available[xml_path] = [camera_id, video_upload_datetime, corresp_video_path]
 
         annotations_available = (pd.DataFrame
@@ -41,8 +44,9 @@ class ChunkEvaluator:
 
             # evaluate only those videos for which we have annotations
             print("number annotations available: ", len(annotations_available))
-            print("number videos available: ", len(video_level_videos_to_eval
+            print("number videos available: ", len(video_level_videos_to_eval))
             print(annotations_available)
+            print(annotations_available[["camera_id", "video_upload_datetime"]])
             print(video_level_videos_to_eval)
             self.video_level_videos_to_eval = pd.merge(left=annotations_available,
                                                        right=video_level_videos_to_eval,
