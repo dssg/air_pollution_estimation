@@ -17,7 +17,7 @@ def plot_video_stats_diff_distribution(video_level_diff_df: pd.DataFrame,
         desired filename)
     """
     plt.style.use('seaborn-deep')
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2, figsize=(25,20))
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2, figsize=(30,25))
     
     for i,stat_type in enumerate(video_stat_types):
         stat_list = []
@@ -28,21 +28,21 @@ def plot_video_stats_diff_distribution(video_level_diff_df: pd.DataFrame,
 
         # plot distribution of stat_type on one sub-plot
         ax = eval(f"ax{i+1}")
-        ax.set_title(stat_type)
+        ax.set_title(stat_type, fontsize = 40)
         ax.hist(x=stat_list, 
                 label=vehicle_types,
                 alpha=0.8)
         ax.legend(loc="upper right")
 
-    fig.suptitle("Distribution of Differences for Traffic Statistics", size=24)
-    fig.text(0, 0.5,"Frequency", ha='center', va='center', rotation='vertical', size=24) #y label
-    fig.text(0.5, 0, "Model Prediction", ha='center', va='center', size=24) # x label
+    fig.suptitle("Distribution of Differences for Traffic Statistics", size=32)
+    fig.text(0, 0.5,"Frequency", ha='center', va='center', rotation='vertical', size=32) #y label
+    fig.text(0.5, 0, "Model Prediction", ha='center', va='center', size=32) # x label
 
     fig.tight_layout()
     fig.subplots_adjust(top=0.90, 
-                        left = 0.05,
-                        right= 0.90,
-                        bottom = 0.05
+                        left = 0.07,
+                        right= 0.85,
+                        bottom = 0.07
                        )
     if save_path is not None: 
         plt.savefig(save_path)
@@ -76,6 +76,9 @@ def plot_video_level_summary_stats(video_level_stats_df: pd.DataFrame,
         plt.xticks(rotation=45)
         plt.xlabel("Vehicle Type", labelpad=20)
         plt.ylabel(metric_type)
+        plt.ylim(ymax = 25, ymin = 0)
+        plt.subplots_adjust(bottom=0.25)
+
         if metrics[metric_type] is not None: 
             plt.savefig(metrics[metric_type])
         if show_plots: 
@@ -92,7 +95,7 @@ def plot_video_level_summary_stats(video_level_stats_df: pd.DataFrame,
         ax = bias_df.plot(kind='bar',
                             yerr=sd_df,
                             grid=False,
-                            figsize=(10,8),
+                            figsize=(12,10),
                             position=0.45,
                             colormap = 'Paired',
                             error_kw=dict(ecolor='k',elinewidth=0.5),
@@ -101,15 +104,15 @@ def plot_video_level_summary_stats(video_level_stats_df: pd.DataFrame,
         style_show_save_plot(metric_type = 'bias')
         
     if 'mae' in metrics: 
-        mae_df = (video_level_stats_df[['stat','vehicle_type', 'MAE']]
-                    .pivot(index='vehicle_type', columns='stat', values='MAE'))
+        mae_df = (video_level_stats_df[['stat','vehicle_type', 'mae']]
+                    .pivot(index='vehicle_type', columns='stat', values='mae'))
         sd_df = (video_level_stats_df[['stat','vehicle_type', 'sd']]
                     .pivot(index='vehicle_type', columns='stat', values='sd')
                     .values.T)
         ax = mae_df.plot(kind='bar',
                             yerr=sd_df,
                             grid=False,
-                            figsize=(10,8),
+                            figsize=(12,10),
                             position=0.45,
                             colormap = 'Paired',
                             error_kw=dict(ecolor='k',elinewidth=0.5),
@@ -119,12 +122,12 @@ def plot_video_level_summary_stats(video_level_stats_df: pd.DataFrame,
         style_show_save_plot(metric_type = 'mae')
         
     if 'rmse' in metrics: 
-        rmse_df = (video_level_stats_df[['stat','vehicle_type', 'RMSE']]
-                    .pivot(index='vehicle_type', columns='stat', values='RMSE'))
+        rmse_df = (video_level_stats_df[['stat','vehicle_type', 'rmse']]
+                    .pivot(index='vehicle_type', columns='stat', values='rmse'))
 
         ax = rmse_df.plot(kind='bar',
                             grid=False,
-                            figsize=(10,8),
+                            figsize=(12,10),
                             position=0.45,
                             colormap = 'Paired',
                             width=1.0
@@ -146,7 +149,7 @@ def plot_mAP_over_time(frame_level_mAP_df: pd.DataFrame,
     """
     frame_level_mAP_df = frame_level_mAP_df.sort_values(by='video_upload_datetime',ascending=True)
 
-    fig = plt.figure(figsize = (10,7))
+    fig = plt.figure(figsize = (12,10))
     ax = fig.add_subplot(1, 1, 1) # nrows, ncols, index
 
     for vehicle_type, vehicle_group_df in frame_level_mAP_df.groupby("vehicle_type"):
@@ -164,7 +167,8 @@ def plot_mAP_over_time(frame_level_mAP_df: pd.DataFrame,
     plt.title("Mean Average Precision Over Time")
     plt.xlabel("Video Upload DateTime")
     plt.ylabel("Mean Average Precision")
-    
+    plt.subplots_adjust(bottom=0.25)
+
     if save_path is not None: 
         plt.savefig(save_path)
     if show_plot: 
