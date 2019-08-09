@@ -18,6 +18,7 @@ def update_eval_tables(db_frame_level_name,
                        params: dict,
                        creds: dict, 
                        paths: dict,
+                       annotations_videos_name_mapper: dict,
                        analyser_type: str,
                        return_data=False): 
     """
@@ -51,6 +52,7 @@ def update_eval_tables(db_frame_level_name,
 
     # run evaluation for analyser type 
     chunk_evaluator = ChunkEvaluator(annotation_xml_paths=annotation_xmls,
+                                      annotations_videos_name_mapper=annotations_videos_name_mapper,
                                      frame_level_df=frame_level_df,
                                      video_level_df=video_level_df,
                                      selected_labels=params["selected_labels"],

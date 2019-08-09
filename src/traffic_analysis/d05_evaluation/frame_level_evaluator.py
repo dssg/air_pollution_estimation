@@ -50,9 +50,10 @@ class FrameLevelEvaluator:
             ground_truth_frame_max = int(ground_truth_df["frame_id"].max()) 
             ground_truth_frame_min = int(ground_truth_df["frame_id"].min())
 
+            print("camera id and video_upload_datetime is ", gt_camera_id, gt_video_upload_datetime)
             print(f"pred frame min is {pred_frame_min}, gt frame min is {ground_truth_frame_min}\n \
                     pred frame max is {pred_frame_max}, gt frame max is {ground_truth_frame_max}")
-            
+
             ground_truth_dict = self.reparse_bboxes_df(ground_truth_df, 
                                                        include_confidence=False)
             predicted_dict = self.reparse_bboxes_df(pred_df,
