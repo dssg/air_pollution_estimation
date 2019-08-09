@@ -19,16 +19,16 @@ class FrameLevelEvaluator:
 
         # data frames to work with
         self.videos_to_eval = videos_to_eval
-        self.frame_level_df = frame_level_df        
+        self.frame_level_df = frame_level_df
         self.frame_level_ground_truth = pd.DataFrame({})
         self.frame_level_preds = pd.DataFrame({})
 
         # parameters
-        self.selected_labels = selected_labels 
+        self.selected_labels = selected_labels
         if data_loader_s3 is not None: 
             self.from_s3_paths = True
             self.dl_s3 = data_loader_s3
-        else: 
+        else:
             self.from_local_paths = True
 
     def evaluate(self) -> pd.DataFrame:
@@ -47,10 +47,11 @@ class FrameLevelEvaluator:
 
             ground_truth_dict = self.reparse_bboxes_df(ground_truth_df, 
                                                        include_confidence=False)
-            predicted_dict = self.reparse_bboxes_df(pred_df, 
+            predicted_dict = self.reparse_bboxes_df(pred_df,
                                                     include_confidence=True, 
                                                     bbox_format="cv2")
-
+            print("Ground truth df: ", ground_truth_dict)
+            print("Predicted df: ", predicted_dict)
             map_dict = self.compute_map_video(ground_truth_dict, predicted_dict)
             map_df = pd.DataFrame.from_dict(map_dict, 
                                             orient="index", 

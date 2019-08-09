@@ -40,7 +40,7 @@ if verbose: print("Successfully loaded selected videos")
 # wipe and recreate eval tables 
 create_eval_sql_tables(creds=creds,
                        paths=paths, 
-                       drop=True)
+                       drop=False)
 
 if verbose: print("Running evaluation for traffic analysers: ", traffic_analysers.keys())
 for analyser_name, traffic_analyser in traffic_analysers.items():
@@ -63,7 +63,7 @@ for analyser_name, traffic_analyser in traffic_analysers.items():
                                                            paths=paths,
                                                            creds=creds)
         analyser_runtime += runtime_list
-        if success: 
+        if success:
             video_level_df = update_video_level_table(analyser=traffic_analyser,
                                    db_video_level_name=db_video_level_name,
                                    frame_level_df=frame_level_df,
@@ -73,11 +73,12 @@ for analyser_name, traffic_analyser in traffic_analysers.items():
                                    return_data=True)
             if verbose: print(f"Successfully processed chunk {chunk_counter}")
 
-        else: 
+        else:
             print("Analysing current chunk failed. Continuing to next chunk.")
 
         chunk_counter+=1
-        
+        if chunk_counter == 1:
+            break
         # Move on to next chunk
         selected_videos = selected_videos[chunk_size:]
         delete_and_recreate_dir(paths["temp_video"])
