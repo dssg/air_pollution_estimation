@@ -38,11 +38,14 @@ def test_detection(image_path):
 
     for box in bbox:
         color = [random.randint(0, 255) for _ in range(3)]
-        c1 = (box[2], box[3])
+        c1 = (box[0], box[1])
         c2 = (box[2]+box[0], box[1]+box[3])
         cv2.rectangle(imcap, c1, c2, color)
 
     cv2.imwrite(image_path[:-4] + 'out' + image_path[-4:], imcap)
+
+    print(bbox)
+    print(imcap.shape)
 
 
 test_detection('C:/Users/joh3146/Documents/dssg/air_pollution_estimation/data/frame_level/frame001.jpg')

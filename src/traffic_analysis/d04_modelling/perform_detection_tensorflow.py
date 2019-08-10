@@ -163,7 +163,7 @@ def reformat_boxes(boxes_opp_coords, formatting_params):
             boxes(list(list(int))): list of bottom-left and top-right coordinates of detection boxes
             formatting_params(dict): dictionary of parameters returned by letterbox_resize function
         Returns:
-            boxes_resized(list(list(int))): list of width, height, and bottom-left coordinates of detection boxes
+            boxes_resized(list(list(int))): list of bottom-left, width, height coordinates of detection boxes
     """
     dw = formatting_params['dw']
     dh = formatting_params['dh']
@@ -176,9 +176,9 @@ def reformat_boxes(boxes_opp_coords, formatting_params):
     boxes_width = boxes_opp_coords[:, 2] - boxes_opp_coords[:, 0]
     boxes_height = boxes_opp_coords[:, 3] - boxes_opp_coords[:, 1]
 
-    boxes_reformatted = [[boxes_width[i], boxes_height[i], boxes_opp_coords[i][0], boxes_opp_coords[i][1]]
+    boxes_reformatted = [[boxes_opp_coords[i][0], boxes_opp_coords[i][1], boxes_width[i], boxes_height[i]]
                          for i in range(number_of_boxes)]
 
-    boxes_reformatted = [[int(np.round(i)) for i in nested] for nested in boxes_reformatted]
+    boxes_reformatted = [[int(i) for i in nested] for nested in boxes_reformatted]
 
     return boxes_reformatted
