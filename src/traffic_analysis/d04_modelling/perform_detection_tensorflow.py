@@ -120,7 +120,7 @@ def detect_objects_in_image(image_capture, paths, detection_model, model_initial
     boxes_unscaled, confs, label_idxs = sess.run(model_initializer, feed_dict={init_data: image_array})
 
     # rescale the coordinates to the original image
-    boxes = rescale_boxes(boxes_unscaled, formatting_params)
+    boxes = reformat_boxes(boxes_unscaled, formatting_params)
     confs = confs.tolist()
 
     labels = label_detections(label_idxs=label_idxs,
@@ -157,10 +157,10 @@ def format_image_for_yolo(image_capture):
     return image_capture_formatted, formatting_params
 
 
-def rescale_boxes(boxes, formatting_params):
+def reformat_boxes(boxes_opp_coords, formatting_params):
     """ rescales bounding boxes to original size of the image
         Args:
-            boxes(list(list(int))): list of width, height, and bottom-left coordinates of detection boxes
+            boxes(list(list(int))): list of bottom-left and top-right coordinates of detection boxes
             formatting_params(dict): dictionary of parameters returned by letterbox_resize function
         Returns:
             boxes_resized(list(list(int))): list of width, height, and bottom-left coordinates of detection boxes
@@ -169,8 +169,16 @@ def rescale_boxes(boxes, formatting_params):
     dh = formatting_params['dh']
     resize_ratio = formatting_params['resize_ratio']
 
-    boxes[:, [0, 2]] = (boxes[:, [0, 2]] - dw) / resize_ratio
-    boxes[:, [1, 3]] = (boxes[:, [1, 3]] - dh) / resize_ratio
-    boxes_resized = [[int(np.round(i)) for i in nested] for nested in boxes]
+    boxes_opp_coords[:, [0, 2]] = (boxes_opp_coords[:, [0, 2]] - dw) / resize_ratio
+    boxes_opp_coords[:, [1, 3]] = (boxes_opp_coords[:, [1, 3]] - dh) / resize_ratio
 
-    return boxes_resized
+    number_of_boxes = len(boxes_opp_coords)
+    boxes_width = boxes_opp_coords[:, 2] - boxes_opp_coords[:, 0]
+    boxes_height = boxes_opp_coords[:, 3] - boxes_opp_coords[:, 1]
+
+    boxes_reformatted = [[boxes_width[i], boxes_height[i], boxes_opp_coords[i][0], boxes_opp_coords[i][1]]
+                         for i in range(number_of_boxes)]
+
+    boxes_reformatted = [[int(np.round(i)) for i in nested] for nested in boxes_reformatted]
+
+    return boxes_reformatted
