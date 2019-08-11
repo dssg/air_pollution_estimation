@@ -14,12 +14,12 @@ def parse_annotation(xml_root) -> pd.DataFrame:
                         'start_frame': 0,
                         'stop_frame': 0}
 
-    for task in root.iter('task'):
+    for task in xml_root.iter('task'):
         for task_info in task.iter():
             if task_info.tag == 'start_frame': 
-                annotated_result['start_frame'] = task_info.text
+                annotated_result['start_frame'] = int(task_info.text)
             if task_info.tag == 'stop_frame':
-                annotated_result['stop_frame'] = task_info.text
+                annotated_result['stop_frame'] = int(task_info.text)
             
 
     for track in xml_root.iter('track'):
@@ -36,3 +36,7 @@ def parse_annotation(xml_root) -> pd.DataFrame:
                     # Else just use the name for indexing
                     else:
                         annotated_result[attr.attrib['name']].append(attr.text)
+
+    ground_truth_df = pd.DataFrame.from_dict(annotated_result)
+    return ground_truth_df
+
