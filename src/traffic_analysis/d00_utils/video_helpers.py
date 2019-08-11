@@ -19,8 +19,7 @@ def write_mp4(local_mp4_dir: str, mp4_name: str, video: np.ndarray, fps: int):
     imageio.mimwrite(local_mp4_path_out, video, fps=fps)
 
 
-def parse_video_or_annotation_name(video_name: str,
-                                   video_upload_datetime_format: str = "%Y%m%d-%H%M%S") -> (str, datetime.datetime):
+def parse_video_or_annotation_name(video_name: str) -> (str, datetime.datetime):
     """Helper function to parse the jamcam video/annotation names into camera_id and
        upload datetime, in the types we need them in
 
@@ -43,5 +42,4 @@ def parse_video_or_annotation_name(video_name: str,
     video_upload_datetime = "%s %s" % (date_str, time_str.replace("-", ":"))
     video_upload_datetime = dateutil.parser.parse(
         video_upload_datetime.strip())
-    video_upload_datetime = video_upload_datetime.strftime(video_upload_datetime_format)
     return camera_id, video_upload_datetime
