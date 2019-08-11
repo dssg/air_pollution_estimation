@@ -14,20 +14,21 @@ from traffic_analysis.d04_modelling.transfer_learning.tensorflow_training_utils 
     evaluate_on_gpu, get_preds_gpu, voc_eval, parse_gt_rec, gpu_nms
 from traffic_analysis.d04_modelling.transfer_learning.tensorflow_model_loader import YoloV3
 from traffic_analysis.d00_utils.load_confs import load_parameters, load_paths, load_training_parameters
-from traffic_analysis.d04_modelling.perform_detection_tensorflow import parse_anchors, read_class_names
+from traffic_analysis.d04_modelling.transfer_learning.convert_darknet_to_tensorflow import parse_anchors
+from traffic_analysis.d04_modelling.transfer_learning.tensorflow_detection_utils import read_class_names
 
 
 params = load_parameters()
 train_params = load_training_parameters()
 paths = load_paths()
-train_dir_path = paths['training']
+truth_dir_path = paths['temp_annotation']
 class_name_path = os.path.join(paths['local_detection_model'], 'yolov3', 'coco.names')  # CHANGE THIS
 classes = read_class_names(class_name_path)
 anchors = parse_anchors(paths)
 number_classes = len(classes)
 
-train_data_path = os.path.join(train_dir_path, 'training_data.txt')
-test_data_path = os.path.join(train_dir_path, 'test_data.txt')
+train_data_path = os.path.join(truth_dir_path, 'train.txt')
+test_data_path = os.path.join(truth_dir_path, 'test.txt')
 train_img_cnt = len(open(train_data_path, 'r').readlines())
 val_img_cnt = len(open(test_data_path, 'r').readlines())
 train_batch_num = int(math.ceil(float(train_img_cnt) / train_params['batch_size']))
@@ -37,7 +38,7 @@ lr_decay_freq = int(train_batch_num * train_params['lr_decay_epoch'])
 if train_params['lr_type'] == 'piecewise':
     pw_boundaries = [float(i) * train_batch_num + train_params['global_step'] for i in train_params['pw_boundaries']]
 
-logging_file_path = os.path.join(train_dir_path, 'progress.log')
+logging_file_path = os.path.join(truth_dir_path, 'progress.log')
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s',
                     datefmt='%a, %d %b %Y %H:%M:%S', filename=logging_file_path, filemode='w')
 
@@ -48,7 +49,7 @@ pred_scores_flag = tf.placeholder(tf.float32, [1, None, None])
 gpu_nms_op = gpu_nms(pred_boxes_flag, pred_scores_flag, number_classes, train_params['nms_topk'], 
                      train_params['score_threshold'], train_params['nms_threshold'])
 
-train_dataset = tf.data.TextLineDataset(train_dir_path)
+train_dataset = tf.data.TextLineDataset(train_data_path)
 train_dataset = train_dataset.shuffle(train_img_cnt)
 train_dataset = train_dataset.batch(train_params['batch_size'])
 train_dataset = train_dataset.map(
@@ -136,7 +137,7 @@ if train_params['save_optimizer']:
     saver_to_save = tf.train.Saver()
     saver_best = tf.train.Saver()
 
-tensorboard_log_path = os.path.join(train_dir_path, 'tensorboard_logs')
+tensorboard_log_path = os.path.join(truth_dir_path, 'tensorboard_logs')
 yolov3_tensorflow_path = os.path.join(paths['local_detection_model'], params['detection_model'], 'yolov3.ckpt')
 with tf.Session() as sess:
     sess.run([tf.global_variables_initializer(), tf.local_variables_initializer()])

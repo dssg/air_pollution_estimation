@@ -1,3 +1,4 @@
+import os
 import xml.etree.ElementTree as ET
 from PIL import Image
 import numpy as np
@@ -7,6 +8,8 @@ from traffic_analysis.d00_utils.load_confs import load_paths, load_credentials
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 from traffic_analysis.d00_utils.data_retrieval import delete_and_recreate_dir, mp4_to_npy
 from traffic_analysis.d02_ref.ref_utils import get_s3_video_path_from_xml_name
+from traffic_analysis.d00_utils.get_project_directory import get_project_directory
+from traffic_analysis.d04_modelling.transfer_learning.tensorflow_detection_utils import read_class_names
 
 
 class TransferDataset(Enum):
@@ -77,16 +80,16 @@ class DataLoader(object):
         x = []
         for labels in y:
             image_num = labels.split(' ')[0].zfill(5)
-            folder = labels.split(' ')[1]
+            impath = labels.split(' ')[1]
+            folder = impath.split('/')[-1][:9]
+
             file_to_download = paths['s3_detrac_images'] + \
                                folder + '/' + \
                                'img' + image_num + '.jpg'
-            print(file_to_download)
+
             download_file_to = paths['temp_raw_images'] + \
                                folder + '_' + \
                                image_num + '.jpg'
-
-            print(download_file_to)
 
             self.data_loader_s3.download_file(
                 path_of_file_to_download=file_to_download,
@@ -100,15 +103,20 @@ class DataLoader(object):
 
     def parse_detrac_xml_file(self, xml_file):
 
-        path = self.paths['temp_annotation'] + xml_file.split('/')[-1]
+        project_dir = get_project_directory()
+        image_dir = os.path.join(project_dir, self.paths['temp_raw_images'])
+        xml_path = self.paths['temp_annotation'] + xml_file.split('/')[-1]
+
+        class_names_path = os.path.join(paths['local_detection_model'], 'yolov3', 'coco.names')
+        classes = read_class_names(class_names_path)
 
         try:
             self.data_loader_s3.download_file(path_of_file_to_download=xml_file,
-                                              path_to_download_file_to=path)
+                                              path_to_download_file_to=xml_path)
         except:
             print("Could not download file " + xml_file)
 
-        root = ET.parse(path).getroot()
+        root = ET.parse(xml_path).getroot()
 
         results = []
         # [image_index
@@ -121,12 +129,12 @@ class DataLoader(object):
         # x_max,
         # y_max]
 
-        im_path = path.split('/')[-1][:-4]
-        im_width = 250
-        im_height = 250
+        im_width = 960
+        im_height = 540
 
         for track in root.iter('frame'):
-
+            frame_str = str(track.attrib['num']).zfill(5)
+            im_path = os.path.join(image_dir, xml_path[:-4] + '_' + frame_str + '.jpg')
             result = str(track.attrib['num']) + \
                      ' ' + str(im_path) + \
                      ' ' + str(im_width) + \
@@ -134,6 +142,12 @@ class DataLoader(object):
 
             for frame_obj in track.iter('target'):
                 vehicle_type = frame_obj.find('attribute').attrib['vehicle_type']
+                if vehicle_type == 'van':
+                    vehicle_type_idx = 2  # say vans are cars because we don't distinguish
+                else:
+                    for tick in range(len(classes)):
+                        if classes[tick] == vehicle_type:
+                            vehicle_type_idx = tick
 
                 left = float(frame_obj.find('box').attrib['left'])
                 top = float(frame_obj.find('box').attrib['top'])
@@ -145,13 +159,14 @@ class DataLoader(object):
                 x_max = left + width
                 y_max = top + height
 
-                result += ' ' + str(vehicle_type) + \
+                result += ' ' + str(vehicle_type_idx) + \
                           ' ' + str(x_min) + \
                           ' ' + str(y_min) + \
                           ' ' + str(x_max) + \
                           ' ' + str(y_max)
 
             results.append(result)
+            print(result)
 
         if len(results) > 1:
             return results
