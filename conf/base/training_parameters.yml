@@ -1,0 +1,34 @@
+training:
+  batch_size : 6
+  img_size : [416, 416]  # Images will be resized to `img_size` and fed to the network, size format: [width, height]
+  letterbox_resize : True  # Whether to use the letterbox resize, i.e., keep the original aspect ratio in the resized image.
+  total_epoches : 100
+  train_evaluation_step : 100  # Evaluate on the training batch after some steps.
+  val_evaluation_epoch : 2  # Evaluate on the whole validation dataset after some epochs. Set to None to evaluate every epoch.
+  save_epoch : 10  # Save the model after some epochs.
+  batch_norm_decay : 0.99  # decay in bn ops
+  weight_decay : 5e-4  # l2 weight decay
+  global_step : 0  # used when resuming training
+  warm_up_epoch : 3 # set to larger value if gradient explodes
+  num_threads : 10  # Number of threads for image processing used in tf.data pipeline.
+  prefetech_buffer : 5  # Prefetech_buffer used in tf.data pipeline.
+
+learning:
+  optimizer_name : 'momentum'  # Chosen from [sgd, momentum, adam, rmsprop]
+  save_optimizer : True  # Whether to save the optimizer parameters into the checkpoint file.
+  learning_rate_init : 1e-4
+  lr_type : 'piecewise'  # Chosen from [fixed, exponential, cosine_decay, cosine_decay_restart, piecewise]
+  lr_decay_epoch : 5  # Epochs after which learning rate decays. Int or float. Used when chosen `exponential` and `cosine_decay_restart` lr_type.
+  lr_decay_factor : 0.96  # The learning rate decay factor. Used when chosen `exponential` lr_type.
+  lr_lower_bound : 1e-6  # The minimum learning rate.
+  pw_boundaries : [30, 50]  # epoch based boundaries
+  pw_values : [learning_rate_init, 3e-5, 1e-5]
+
+validation:
+  # nms
+  nms_threshold : 0.45  # iou threshold in nms operation
+  score_threshold : 0.01  # threshold of the probability of the classes in nms operation, i.e. score = pred_confs * pred_probs. set lower for higher recall.
+  nms_topk : 150  # keep at most nms_topk outputs after nms
+
+  # mAP eval
+  eval_threshold : 0.5  # the iou threshold applied in mAP evaluation
