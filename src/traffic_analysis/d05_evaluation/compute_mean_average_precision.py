@@ -200,7 +200,6 @@ def get_avg_precision_at_iou(gt_bboxes: dict, pred_bboxes: dict, iou_thr: float 
     except: 
         print("GT: ", gt_bboxes.keys())
         print("PRED: ", pred_bboxes.keys())
-        sys.exit(0)
         
     model_scores_dict = get_model_scores_dict(pred_bboxes)
     sorted_model_scores = sorted(model_scores_dict.keys())
