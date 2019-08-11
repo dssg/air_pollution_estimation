@@ -65,7 +65,7 @@ class FrameLevelEvaluator:
             except: 
                 print("Assertion failed: camera id and video_upload_datetime is ", gt_camera_id, gt_video_upload_datetime)
 
-            max_frame_ind = ground_truth_df["stop_frame"]
+            max_frame_ind = ground_truth_df["stop_frame"].iloc[0]
             ground_truth_dict = self.reparse_bboxes_df(ground_truth_df, 
                                                        max_frame_ind = max_frame_ind,
                                                        include_confidence=False)
@@ -183,8 +183,8 @@ class FrameLevelEvaluator:
                 ["vehicle_type", "frame_id"]):
             if vehicle_type not in self.selected_labels: 
                 continue
-            if frame_id > frame_max:
-                print("Warning: more frames in vehice_frame_df than in n_frames")
+            if frame_id > max_frame_ind:
+                print("Warning: more frames in vehice_frame_df than max_frame_id")
             if include_confidence:
                 df_as_dict[vehicle_type]["frame" + str(frame_id)]["bboxes"] = \
                     vehicle_frame_df["bboxes"].tolist()
