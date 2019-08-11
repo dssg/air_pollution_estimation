@@ -1,67 +1,71 @@
 # coding: utf-8
 
 from __future__ import division, print_function
-
+import os
+import math
 import tensorflow as tf
 import numpy as np
 import logging
 from tqdm import trange
 import random
 
-import args
-
 from traffic_analysis.d04_modelling.transfer_learning.tensorflow_training_utils import get_batch_data, \
     shuffle_and_overwrite, make_summary, config_learning_rate, config_optimizer, AverageMeter, \
     evaluate_on_gpu, get_preds_gpu, voc_eval, parse_gt_rec, gpu_nms
 from traffic_analysis.d04_modelling.transfer_learning.tensorflow_model_loader import YoloV3
+from traffic_analysis.d00_utils.load_confs import load_parameters, load_paths, load_training_parameters
+from traffic_analysis.d04_modelling.perform_detection_tensorflow import parse_anchors, read_class_names
 
-### parse some params
-anchors = parse_anchors(anchor_path)
+
+params = load_parameters()
+train_params = load_training_parameters()
+paths = load_paths()
+train_dir_path = paths['training']
+class_name_path = os.path.join(paths['local_detection_model'], 'yolov3', 'coco.names')  # CHANGE THIS
 classes = read_class_names(class_name_path)
-class_num = len(classes)
-train_img_cnt = len(open(train_file, 'r').readlines())
-val_img_cnt = len(open(val_file, 'r').readlines())
-train_batch_num = int(math.ceil(float(train_img_cnt) / batch_size))
+anchors = parse_anchors(paths)
+number_classes = len(classes)
 
-lr_decay_freq = int(train_batch_num * lr_decay_epoch)
-pw_boundaries = [float(i) * train_batch_num + global_step for i in pw_boundaries]
+train_data_path = os.path.join(train_dir_path, 'training_data.txt')
+val_data_path = os.path.join(train_dir_path, 'val_data.txt')
+train_img_cnt = len(open(train_data_path, 'r').readlines())
+val_img_cnt = len(open(val_data_path, 'r').readlines())
+train_batch_num = int(math.ceil(float(train_img_cnt) / train_params['batch_size']))
 
+lr_decay_freq = int(train_batch_num * train_params['lr_decay_epoch'])
 
-# setting loggers
+if train_params['lr_type'] == 'piecewise':
+    pw_boundaries = [float(i) * train_batch_num + train_params['global_step'] for i in train_params['pw_boundaries']]
+
+logging_file_path = os.path.join(train_dir_path, 'progress.log')
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s',
-                    datefmt='%a, %d %b %Y %H:%M:%S', filename=args.progress_log_path, filemode='w')
+                    datefmt='%a, %d %b %Y %H:%M:%S', filename=logging_file_path, filemode='w')
 
-# setting placeholders
 is_training = tf.placeholder(tf.bool, name="phase_train")
 handle_flag = tf.placeholder(tf.string, [], name='iterator_handle_flag')
-# register the gpu nms operation here for the following evaluation scheme
 pred_boxes_flag = tf.placeholder(tf.float32, [1, None, None])
 pred_scores_flag = tf.placeholder(tf.float32, [1, None, None])
-gpu_nms_op = gpu_nms(pred_boxes_flag, pred_scores_flag, args.class_num, args.nms_topk, args.score_threshold, args.nms_threshold)
+gpu_nms_op = gpu_nms(pred_boxes_flag, pred_scores_flag, number_classes, train_params['nms_topk'], 
+                     train_params['score_threshold'], train_params['nms_threshold'])
 
-##################
-# tf.data pipeline
-##################
-train_dataset = tf.data.TextLineDataset(args.train_file)
-train_dataset = train_dataset.shuffle(args.train_img_cnt)
-train_dataset = train_dataset.batch(args.batch_size)
+train_dataset = tf.data.TextLineDataset(train_dir_path)
+train_dataset = train_dataset.shuffle(train_img_cnt)
+train_dataset = train_dataset.batch(train_params['batch_size'])
 train_dataset = train_dataset.map(
     lambda x: tf.py_func(get_batch_data,
-                         inp=[x, args.class_num, args.img_size, args.anchors, 'train', args.multi_scale_train, args.use_mix_up, args.letterbox_resize],
+                         inp=[x, number_classes, [416, 416], anchors, 'train', True, True, True],
                          Tout=[tf.int64, tf.float32, tf.float32, tf.float32, tf.float32]),
-    num_parallel_calls=args.num_threads
-)
-train_dataset = train_dataset.prefetch(args.prefetech_buffer)
+    num_parallel_calls=train_params['num_threads'])
+train_dataset = train_dataset.prefetch(train_params['prefetech_buffer'])
 
-val_dataset = tf.data.TextLineDataset(args.val_file)
+val_dataset = tf.data.TextLineDataset(val_data_path)
 val_dataset = val_dataset.batch(1)
 val_dataset = val_dataset.map(
     lambda x: tf.py_func(get_batch_data,
-                         inp=[x, args.class_num, args.img_size, args.anchors, 'val', False, False, args.letterbox_resize],
+                         inp=[x, number_classes, [416, 416], anchors, 'val', False, False, True],
                          Tout=[tf.int64, tf.float32, tf.float32, tf.float32, tf.float32]),
-    num_parallel_calls=args.num_threads
-)
-val_dataset.prefetch(args.prefetech_buffer)
+    num_parallel_calls=train_params['num_threads'])
+val_dataset.prefetch(train_params['prefetech_buffer'])
 
 iterator = tf.data.Iterator.from_structure(train_dataset.output_types, train_dataset.output_shapes)
 train_init_op = iterator.make_initializer(train_dataset)
@@ -77,10 +81,11 @@ image.set_shape([None, None, None, 3])
 for y in y_true:
     y.set_shape([None, None, None, None, None])
 
-##################
-# Model definition
-##################
-yolo_model = YoloV3(args.class_num, args.anchors, args.use_label_smooth, args.use_focal_loss, args.batch_norm_decay, args.weight_decay, use_static_shape=False)
+# define model
+yolo_model = YoloV3(number_classes, anchors, use_label_smooth=True, use_focal_loss=True,
+                    batch_norm_decay=train_params['batch_norm_decay'], weight_decay=train_params['weight_decay'],
+                    use_static_shape=False)
+
 with tf.variable_scope('yolov3'):
     pred_feature_maps = yolo_model.forward(image, is_training=is_training)
 loss = yolo_model.compute_loss(pred_feature_maps, y_true)
@@ -89,8 +94,8 @@ y_pred = yolo_model.predict(pred_feature_maps)
 l2_loss = tf.losses.get_regularization_loss()
 
 # setting restore parts and vars to update
-saver_to_restore = tf.train.Saver(var_list=tf.contrib.framework.get_variables_to_restore(include=args.restore_include, exclude=args.restore_exclude))
-update_vars = tf.contrib.framework.get_variables_to_restore(include=args.update_part)
+saver_to_restore = tf.train.Saver(var_list=tf.contrib.framework.get_variables_to_restore(include=None, exclude=None))
+update_vars = tf.contrib.framework.get_variables_to_restore(include=['yolov3/yolov3_head'])
 
 tf.summary.scalar('train_batch_statistics/total_loss', loss[0])
 tf.summary.scalar('train_batch_statistics/loss_xy', loss[1])
@@ -100,20 +105,21 @@ tf.summary.scalar('train_batch_statistics/loss_class', loss[4])
 tf.summary.scalar('train_batch_statistics/loss_l2', l2_loss)
 tf.summary.scalar('train_batch_statistics/loss_ratio', l2_loss / loss[0])
 
-global_step = tf.Variable(float(args.global_step), trainable=False, collections=[tf.GraphKeys.LOCAL_VARIABLES])
-if args.use_warm_up:
-    learning_rate = tf.cond(tf.less(global_step, args.train_batch_num * args.warm_up_epoch),
-                            lambda: args.learning_rate_init * global_step / (args.train_batch_num * args.warm_up_epoch),
-                            lambda: config_learning_rate(args, global_step - args.train_batch_num * args.warm_up_epoch))
-else:
-    learning_rate = config_learning_rate(args, global_step)
+global_step = tf.Variable(float(train_params['global_step']),
+                          trainable=False, collections=[tf.GraphKeys.LOCAL_VARIABLES])
+
+learning_rate = tf.cond(tf.less(global_step, train_params['train_batch_num'] * train_params['warm_up_epoch']),
+                        lambda: train_params['learning_rate_init'] *
+                                global_step / (train_params['train_batch_num'] * train_params['warm_up_epoch']),
+                        lambda: config_learning_rate(global_step -
+                                                     train_params['train_batch_num'] * train_params['warm_up_epoch']))
 tf.summary.scalar('learning_rate', learning_rate)
 
-if not args.save_optimizer:
+if not train_params['save_optimizer']:
     saver_to_save = tf.train.Saver()
     saver_best = tf.train.Saver()
 
-optimizer = config_optimizer(args.optimizer_name, learning_rate)
+optimizer = config_optimizer(train_params['optimizer_name'], learning_rate)
 
 # set dependencies for BN ops
 update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
@@ -125,27 +131,30 @@ with tf.control_dependencies(update_ops):
           tf.clip_by_norm(gv[0], 100.), gv[1]] for gv in gvs]
     train_op = optimizer.apply_gradients(clip_grad_var, global_step=global_step)
 
-if args.save_optimizer:
+if train_params['save_optimizer']:
     print('Saving optimizer parameters to checkpoint! Remember to restore the global_step in the fine-tuning afterwards.')
     saver_to_save = tf.train.Saver()
     saver_best = tf.train.Saver()
 
+tensorboard_log_path = os.path.join(train_dir_path, 'tensorboard_logs')
+yolov3_tensorflow_path = os.path.join(paths['local_detection_model'], params['detection_model'], 'yolov3.ckpt')
 with tf.Session() as sess:
     sess.run([tf.global_variables_initializer(), tf.local_variables_initializer()])
-    saver_to_restore.restore(sess, args.restore_path)
+    saver_to_restore.restore(sess, yolov3_tensorflow_path)
     merged = tf.summary.merge_all()
-    writer = tf.summary.FileWriter(args.log_dir, sess.graph)
+    writer = tf.summary.FileWriter(tensorboard_log_path, sess.graph)
 
     print('\n----------- start to train -----------\n')
 
     best_mAP = -np.Inf
 
-    for epoch in range(args.total_epoches):
+    for epoch in range(train_params['total_epoches']):
 
         sess.run(train_init_op)
-        loss_total, loss_xy, loss_wh, loss_conf, loss_class = AverageMeter(), AverageMeter(), AverageMeter(), AverageMeter(), AverageMeter()
+        loss_total, loss_xy, loss_wh, loss_conf, loss_class = AverageMeter(), AverageMeter(), AverageMeter(), \
+                                                              AverageMeter(), AverageMeter()
 
-        for i in trange(args.train_batch_num):
+        for i in trange(train_params['train_batch_num']):
             _, summary, __y_pred, __y_true, __loss, __global_step, __lr = sess.run(
                 [train_op, merged, y_pred, y_true, loss, global_step, learning_rate],
                 feed_dict={is_training: True})
@@ -158,11 +167,13 @@ with tf.Session() as sess:
             loss_conf.update(__loss[3], len(__y_pred[0]))
             loss_class.update(__loss[4], len(__y_pred[0]))
 
-            if __global_step % args.train_evaluation_step == 0 and __global_step > 0:
-                # recall, precision = evaluate_on_cpu(__y_pred, __y_true, args.class_num, args.nms_topk, args.score_threshold, args.nms_threshold)
-                recall, precision = evaluate_on_gpu(sess, gpu_nms_op, pred_boxes_flag, pred_scores_flag, __y_pred, __y_true, args.class_num, args.nms_threshold)
+            if __global_step % train_params['train_evaluation_step'] == 0 and __global_step > 0:
+                # recall, precision = evaluate_on_cpu(__y_pred, __y_true, args.number_classes, args.nms_topk, args.score_threshold, args.nms_threshold)
+                recall, precision = evaluate_on_gpu(sess, gpu_nms_op, pred_boxes_flag, pred_scores_flag,
+                                                    __y_pred, __y_true, number_classes, train_params['nms_threshold'])
 
-                info = "Epoch: {}, global_step: {} | loss: total: {:.2f}, xy: {:.2f}, wh: {:.2f}, conf: {:.2f}, class: {:.2f} | ".format(
+                info = "Epoch: {}, global_step: {} | loss: total: {:.2f}, xy: {:.2f}, " \
+                       "wh: {:.2f}, conf: {:.2f}, class: {:.2f} | ".format(
                         epoch, int(__global_step), loss_total.average, loss_xy.average, loss_wh.average, loss_conf.average, loss_class.average)
                 info += 'Last batch: rec: {:.3f}, prec: {:.3f} | lr: {:.5g}'.format(recall, precision, __lr)
                 print(info)
@@ -177,12 +188,13 @@ with tf.Session() as sess:
                         'Gradient exploded! Please train again and you may need modify some parameters.')
 
         # NOTE: this is just demo. You can set the conditions when to save the weights.
-        if epoch % args.save_epoch == 0 and epoch > 0:
+        if epoch % train_params['save_epoch == 0'] and epoch > 0:
             if loss_total.average <= 2.:
-                saver_to_save.save(sess, args.save_dir + 'model-epoch_{}_step_{}_loss_{:.4f}_lr_{:.5g}'.format(epoch, int(__global_step), loss_total.average, __lr))
+                saver_to_save.save(sess, os.path.join(train_params['trained_model_name'],
+                                                      'model-epoch_{}_step_{}_loss_{:.4f}_lr_{:.5g}'.format(epoch, int(__global_step), loss_total.average, __lr)))
 
         # switch to validation dataset for evaluation
-        if epoch % args.val_evaluation_epoch == 0 and epoch >= args.warm_up_epoch:
+        if epoch % train_params['val_evaluation_epoch'] == 0 and epoch >= train_params['warm_up_epoch']:
             sess.run(val_init_op)
 
             val_loss_total, val_loss_xy, val_loss_wh, val_loss_conf, val_loss_class = \
@@ -190,7 +202,7 @@ with tf.Session() as sess:
 
             val_preds = []
 
-            for j in trange(args.val_img_cnt):
+            for j in trange(val_img_cnt):
                 __image_ids, __y_pred, __loss = sess.run([image_ids, y_pred, loss],
                                                          feed_dict={is_training: False})
                 pred_content = get_preds_gpu(sess, gpu_nms_op, pred_boxes_flag, pred_scores_flag, __image_ids, __y_pred)
@@ -203,12 +215,13 @@ with tf.Session() as sess:
 
             # calc mAP
             rec_total, prec_total, ap_total = AverageMeter(), AverageMeter(), AverageMeter()
-            gt_dict = parse_gt_rec(args.val_file, args.img_size, args.letterbox_resize)
+            gt_dict = parse_gt_rec(val_data_path, [416, 416], letterbox_resize=True)
 
             info = '======> Epoch: {}, global_step: {}, lr: {:.6g} <======\n'.format(epoch, __global_step, __lr)
 
-            for ii in range(args.class_num):
-                npos, nd, rec, prec, ap = voc_eval(gt_dict, val_preds, ii, iou_thres=args.eval_threshold, use_07_metric=args.use_voc_07_metric)
+            for ii in range(number_classes):
+                npos, nd, rec, prec, ap = voc_eval(gt_dict, val_preds, ii, iou_thres=train_params['eval_threshold'],
+                                                   use_07_metric=False)
                 info += 'EVAL: Class {}: Recall: {:.4f}, Precision: {:.4f}, AP: {:.4f}\n'.format(ii, rec, prec, ap)
                 rec_total.update(rec, npos)
                 prec_total.update(prec, nd)
@@ -223,8 +236,8 @@ with tf.Session() as sess:
 
             if mAP > best_mAP:
                 best_mAP = mAP
-                saver_best.save(sess, args.save_dir + 'best_model_Epoch_{}_step_{}_mAP_{:.4f}_loss_{:.4f}_lr_{:.7g}'.format(
-                                   epoch, int(__global_step), best_mAP, val_loss_total.average, __lr))
+                saver_best.save(sess, os.path.join(train_params['trained_model_name'],
+                                                   'best_model_Epoch_{}_step_{}_mAP_{:.4f}_loss_{:.4f}_lr_{:.7g}'.format(epoch, int(__global_step), best_mAP, val_loss_total.average, __lr)))_
 
             writer.add_summary(make_summary('evaluation/val_mAP', mAP), global_step=epoch)
             writer.add_summary(make_summary('evaluation/val_recall', rec_total.average), global_step=epoch)
@@ -234,27 +247,3 @@ with tf.Session() as sess:
             writer.add_summary(make_summary('validation_statistics/loss_wh', val_loss_wh.average), global_step=epoch)
             writer.add_summary(make_summary('validation_statistics/loss_conf', val_loss_conf.average), global_step=epoch)
             writer.add_summary(make_summary('validation_statistics/loss_class', val_loss_class.average), global_step=epoch)
-
-
-### Load and finetune
-# Choose the parts you want to restore the weights. List form.
-# restore_include: None, restore_exclude: None  => restore the whole model
-# restore_include: None, restore_exclude: scope  => restore the whole model except `scope`
-# restore_include: scope1, restore_exclude: scope2  => if scope1 contains scope2, restore scope1 and not restore scope2 (scope1 - scope2)
-# choise 1: only restore the darknet body
-# restore_include = ['yolov3/darknet53_body']
-# restore_exclude = None
-# choise 2: restore all layers except the last 3 conv2d layers in 3 scale
-  restore_include = None
-  restore_exclude = ['yolov3/yolov3_head/Conv_14', 'yolov3/yolov3_head/Conv_6', 'yolov3/yolov3_head/Conv_22']
-# Choose the parts you want to finetune. List form.
-# Set to None to train the whole model.
-  update_part = ['yolov3/yolov3_head']
-
-### other training strategies
-  multi_scale_train = True  # Whether to apply multi-scale training strategy. Image size varies from [320, 320] to [640, 640] by default.
-  use_label_smooth = True # Whether to use class label smoothing strategy.
-  use_focal_loss = True  # Whether to apply focal loss on the conf loss.
-  use_mix_up = True  # Whether to use mix up data augmentation strategy.
-  use_warm_up = True  # whether to use warm up strategy to prevent from gradient exploding.
-  warm_up_epoch = 3  # Warm up training epoches. Set to a larger value if gradient explodes.
