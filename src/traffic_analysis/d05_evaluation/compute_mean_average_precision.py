@@ -1,6 +1,10 @@
 from __future__ import absolute_import, division, print_function
 from traffic_analysis.d00_utils.bbox_helpers import bbox_intersection_over_union
 
+########## DEBUG
+
+import sys
+#########
 """
 author: Timothy C. Arlen
 date: 28 Feb 2018
@@ -189,9 +193,15 @@ def get_avg_precision_at_iou(gt_bboxes: dict, pred_bboxes: dict, iou_thr: float 
     """
     n_frames_gt = len(gt_bboxes.keys())
     n_frames_pred = len(pred_bboxes.keys())
-    assert n_frames_gt == n_frames_pred, f"Total ground truth frames, {n_frames_gt}, does \
+    try:
+        assert n_frames_gt == n_frames_pred, \
+           f"Total ground truth frames, {n_frames_gt}, does \
            not match total pred frames, {n_frames_pred}."
-           
+    except: 
+        print("GT: ", gt_bboxes.keys())
+        print("PRED: ", pred_bboxes.keys())
+        sys.exit(0)
+        
     model_scores_dict = get_model_scores_dict(pred_bboxes)
     sorted_model_scores = sorted(model_scores_dict.keys())
 
