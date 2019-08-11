@@ -65,10 +65,12 @@ class FrameLevelEvaluator:
             except: 
                 print("Assertion failed: camera id and video_upload_datetime is ", gt_camera_id, gt_video_upload_datetime)
 
-
+            max_frame_ind = ground_truth_df["stop_frame"]
             ground_truth_dict = self.reparse_bboxes_df(ground_truth_df, 
+                                                       max_frame_ind = max_frame_ind,
                                                        include_confidence=False)
             predicted_dict = self.reparse_bboxes_df(pred_df,
+                                                    max_frame_ind = max_frame_ind,
                                                     include_confidence=True, 
                                                     bbox_format="cv2")
 
@@ -108,6 +110,7 @@ class FrameLevelEvaluator:
 
     def get_ground_truth(self) -> pd.DataFrame:
         """Read in annotation xmls from paths stored in self.videos_to_eval
+        Frames are 0-indexed. 
         """
         frame_level_ground_truth_dfs = []
         for idx, video in self.videos_to_eval.iterrows():
@@ -128,15 +131,21 @@ class FrameLevelEvaluator:
 
     def reparse_bboxes_df(self, 
                           df: pd.DataFrame, 
+                          max_frame_ind: int,
                           include_confidence: bool, 
                           bbox_format: str = "cvlib") -> dict:
         """Restructures dfs containing bboxes for each frame (i.e. frame level df, 
         ground truth df) to a dictionary of dictionaries. This format is what 
         compute_mean_average_precision.py functions take as input. 
 
+        This function also ensures that every frame in the video has a corresponding 
+        dict entry (even if the input df had no prediction for that frame)
+
         Args: 
             df: frame_level_df which contains bboxes corresponding to each frame of
                 a video. 
+            max_frame_ind: index of the last frame. We assume that frames are 0 indexed, so the 
+                           total num frames in the video should be max_frame_ind + 1
             include_confidence: If this df contains the confidence corresponding to 
                                 the bbox predictions, this should be specified (the 
                                 reparser will construct a sub-dict for this case)
@@ -146,11 +155,6 @@ class FrameLevelEvaluator:
         Raises: 
         """
         # dict of dict of dicts, with outermost layer being the vehicle type
-        frame_max = int(df["frame_id"].max()) 
-        frame_min = int(df["frame_id"].min())
-        if not(frame_min is 1 or frame_min is 0):
-            print("Warning: minimum frame id is ", frame_min)
-
         bboxes_np = np.array(df["bboxes"].values.tolist())
         assert bboxes_np.shape[1] == 4
 
@@ -164,14 +168,14 @@ class FrameLevelEvaluator:
             df_as_dict = {
                 vehicle_type: {
                     "frame" + str(i): {"bboxes": [], "scores": []}
-                    for i in range(frame_min, frame_max + 1)
+                    for i in range(max_frame_ind + 1)
                 }
                 for vehicle_type in self.selected_labels
             }
 
         else:
             df_as_dict = {
-                vehicle_type: {"frame" + str(i): [] for i in range(frame_min, frame_max + 1)}
+                vehicle_type: {"frame" + str(i): [] for i in range(max_frame_ind + 1)}
                 for vehicle_type in self.selected_labels
             }
 
