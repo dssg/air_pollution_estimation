@@ -48,7 +48,6 @@ while selected_videos:
                                file_names=selected_videos[:chunk_size],
                                paths=paths,
                                creds=creds,
-                               params=params,
                                return_data=False)
 
     else: 

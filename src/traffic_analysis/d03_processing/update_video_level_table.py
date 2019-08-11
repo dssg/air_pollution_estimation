@@ -36,7 +36,7 @@ def update_video_level_table(analyser,
         for filename in file_names:
             name = filename.split('/')[-1]
             camera_id, date_time = parse_video_or_annotation_name(name,
-                                                                  video_upload_datetime_format=params["video_upload_datetime_format"])
+                                                                  video_upload_datetime_format=params["date_format"])
             filter_string += f"(camera_id='{camera_id}' AND video_upload_datetime='{str(date_time)}') OR "
 
         filter_string = filter_string[:-4]

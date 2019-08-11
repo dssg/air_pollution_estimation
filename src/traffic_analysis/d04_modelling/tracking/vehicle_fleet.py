@@ -24,8 +24,7 @@ class VehicleFleet:
                        confs: np.ndarray = None,
                        video_name: str = None,
                        frame_level_df: pd.DataFrame = None,
-                       load_from_pd = False,
-                       video_upload_datetime_format="%Y%m%d-%H%M%S"):
+                       load_from_pd = False):
         """Initialize the vehicleFleet object, either from a saved dataframe, or from the info returned by
         running object detection algs on the first frame of a video.
 
@@ -78,8 +77,7 @@ class VehicleFleet:
             self.bboxes = np.expand_dims(bboxes, axis=2)
             self.labels = labels
             self.confs = confs
-            self.camera_id, self.video_upload_datetime = parse_video_or_annotation_name(video_name,
-                                                                                        video_upload_datetime_format=video_upload_datetime_format)
+            self.camera_id, self.video_upload_datetime = parse_video_or_annotation_name(video_name)
 
     def add_vehicles(self, new_bboxes: np.ndarray, new_labels: np.ndarray, new_confs: np.ndarray):
         """Adds new vehicles to the vehicleFleet, creating appropriate bbox location "history" for the 

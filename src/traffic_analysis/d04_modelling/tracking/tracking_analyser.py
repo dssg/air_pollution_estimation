@@ -53,9 +53,6 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         self.iou_convolution_window = params['iou_convolution_window']
         self.smoothing_method = params['smoothing_method']
         self.stop_start_iou_threshold = params['stop_start_iou_threshold']
-
-        # other settings 
-        self.video_upload_datetime_format = params["video_upload_datetime_format"]
         self.verbose = verbose
 
     def add_tracker(self):
@@ -151,8 +148,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         fleet = VehicleFleet(bboxes=np.array(bboxes),
                              labels=np.array(labels),
                              confs=np.array(confs),
-                             video_name=video_name.replace(".mp4", ""),
-                             video_upload_datetime_format=self.video_upload_datetime_format)
+                             video_name=video_name.replace(".mp4", ""))
 
         # Create MultiTracker object using bboxes, initialize multitracker
         multi_tracker = cv2.MultiTracker_create()
