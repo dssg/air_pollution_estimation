@@ -52,7 +52,7 @@ class ChunkEvaluator:
                                                        right=video_level_videos_to_eval,
                                                        on=['camera_id', 'video_upload_datetime'],
                                                        how='inner')
-
+            
             self.num_video_level_videos = len(self.video_level_videos_to_eval)
 
             assert self.num_video_level_videos > 0

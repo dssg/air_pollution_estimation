@@ -54,6 +54,18 @@ class FrameLevelEvaluator:
             print(f"pred frame min is {pred_frame_min}, gt frame min is {ground_truth_frame_min}\n \
                     pred frame max is {pred_frame_max}, gt frame max is {ground_truth_frame_max}")
 
+            num_gt_frames = ground_truth_df["frame_id"].nunique()
+            num_pred_frames = pred_df["frame_id"].nunique()
+
+            try: 
+                assert num_gt_frames == num_pred_frames, \
+                    f"Number of unique frames in predicted df is {num_pred_frames}, \
+                    number of unique frames in ground truth df is {num_gt_frames}."
+
+            except: 
+                print("Assertion failed: camera id and video_upload_datetime is ", gt_camera_id, gt_video_upload_datetime)
+
+
             ground_truth_dict = self.reparse_bboxes_df(ground_truth_df, 
                                                        include_confidence=False)
             predicted_dict = self.reparse_bboxes_df(pred_df,
