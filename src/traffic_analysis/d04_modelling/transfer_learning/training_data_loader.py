@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 from PIL import Image
 import numpy as np
+from enum import Enum
 
 from traffic_analysis.d00_utils.load_confs import load_paths, load_credentials
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
@@ -8,7 +9,6 @@ from traffic_analysis.d00_utils.data_retrieval import delete_and_recreate_dir, m
 from traffic_analysis.d02_ref.ref_utils import get_s3_video_path_from_xml_name
 
 
-from enum import Enum
 class TransferDataset(Enum):
     detrac = 1
     cvat = 2
@@ -246,6 +246,6 @@ class DataLoader(object):
 paths = load_paths()
 creds = load_credentials()
 
-dl = DataLoader(datasets=[TransferDataset.cvat, TransferDataset.detrac], creds=creds, paths=paths)
+dl = DataLoader(datasets=[TransferDataset.detrac], creds=creds, paths=paths)
 x_train, y_train, x_test, y_test = dl.get_train_and_test(.8)
 print('Done')
