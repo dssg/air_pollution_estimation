@@ -39,14 +39,10 @@ def parse_video_or_annotation_name(video_name: str) -> (str, datetime.datetime):
     date_str, time_str, camera_id = (video_name[-3], video_name[-2], video_name[-1]) if len(
         video_name) > 2 else (video_name[-2], " ", video_name[-1])
 
-    # strip milliseconds from time if present
-    time_str = time_str.replace("-", ":").split(":")
-    if len(time_str) > 3: 
-        time_str = time_str[:3] # only return hours, mins, secs
-
-    time_str = ":".join(time_str)
-
-    video_upload_datetime = "%s %s" % (date_str, time_str.replace("-", ":"))
+    # standardize formatting; remove milliseconds if present 
+    time_str = time_str.replace("-", ":").split(".")[0]
+    
+    video_upload_datetime = "%s %s" % (date_str, time_str)
     video_upload_datetime = dateutil.parser.parse(
         video_upload_datetime.strip())
 

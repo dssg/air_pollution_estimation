@@ -45,8 +45,8 @@ class ChunkEvaluator:
             # evaluate only those videos for which we have annotations
             print("number annotations available: ", len(annotations_available))
             print("number videos available: ", len(video_level_videos_to_eval))
-            print(annotations_available)
-            print(annotations_available[["camera_id", "video_upload_datetime"]])
+            print("annotations: ", annotations_available)
+            print("annotation datetimes:",annotations_available[["camera_id", "video_upload_datetime"]])
             print(video_level_videos_to_eval)
             self.video_level_videos_to_eval = pd.merge(left=annotations_available,
                                                        right=video_level_videos_to_eval,
