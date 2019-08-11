@@ -44,7 +44,6 @@ def detect_objects_in_image(image_capture,
     labels = label_detections(model_name=model_name,
                               paths=paths,
                               label_idxs=label_idxs)
-
     if selected_labels is not None:
         boxes, labels, confs = choose_objects_of_selected_labels(bboxes_in=boxes,
                                                                  labels_in=labels,
@@ -255,10 +254,8 @@ def label_detections(label_idxs,
     # import the list of labels
     if model_name == 'yolov3_tf':
         model_origin = 'yolov3'
-
     else:
         model_origin = model_name
-
     label_list = populate_labels(model_name=model_origin,
                                  paths=paths)
 
