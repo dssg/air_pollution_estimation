@@ -105,6 +105,8 @@ class DataLoader(object):
 
         project_dir = get_project_directory()
         image_dir = os.path.join(project_dir, self.paths['temp_raw_images'])
+
+        xml_file_name = xml_file.split('/')[-1]
         xml_path = self.paths['temp_annotation'] + xml_file.split('/')[-1]
 
         class_names_path = os.path.join(paths['local_detection_model'], 'yolov3', 'coco.names')
@@ -134,7 +136,7 @@ class DataLoader(object):
 
         for track in root.iter('frame'):
             frame_str = str(track.attrib['num']).zfill(5)
-            im_path = os.path.join(image_dir, xml_path[:-4] + '_' + frame_str + '.jpg')
+            im_path = os.path.join(image_dir, xml_file_name[:-4] + '_' + frame_str + '.jpg')
             result = str(track.attrib['num']) + \
                      ' ' + str(im_path) + \
                      ' ' + str(im_width) + \
@@ -166,7 +168,6 @@ class DataLoader(object):
                           ' ' + str(y_max)
 
             results.append(result)
-            print(result)
 
         if len(results) > 1:
             return results

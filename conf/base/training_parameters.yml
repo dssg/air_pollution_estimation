@@ -6,7 +6,7 @@ training:
   val_evaluation_epoch : 2  # Evaluate on the whole validation dataset after some epochs. Set to None to evaluate every epoch.
   save_epoch : 10  # Save the model after some epochs.
   batch_norm_decay : 0.99  # decay in bn ops
-  weight_decay : 5e-4  # l2 weight decay
+  weight_decay : 0.0005  # l2 weight decay
   global_step : 0  # used when resuming training
   warm_up_epoch : 3 # set to larger value if gradient explodes
   num_threads : 10  # Number of threads for image processing used in tf.data pipeline.
@@ -15,13 +15,13 @@ training:
 learning:
   optimizer_name : 'momentum'  # Chosen from [sgd, momentum, adam, rmsprop]
   save_optimizer : True  # Whether to save the optimizer parameters into the checkpoint file.
-  learning_rate_init : 1e-4
+  learning_rate_init : 0.0001
   lr_type : 'piecewise'  # Chosen from [fixed, exponential, cosine_decay, cosine_decay_restart, piecewise]
   lr_decay_epoch : 5  # Epochs after which learning rate decays. Int or float. Used when chosen `exponential` and `cosine_decay_restart` lr_type.
   lr_decay_factor : 0.96  # The learning rate decay factor. Used when chosen `exponential` lr_type.
-  lr_lower_bound : 1e-6  # The minimum learning rate.
+  lr_lower_bound : 0.000001  # The minimum learning rate.
   pw_boundaries : [30, 50]  # epoch based boundaries
-  pw_values : [learning_rate_init, 3e-5, 1e-5]
+  pw_values : [0.0001, 0.00003, 0.00001] # FIRST VALUE MUST BE LEARNING_RATE_INIT
 
 validation:
   # nms

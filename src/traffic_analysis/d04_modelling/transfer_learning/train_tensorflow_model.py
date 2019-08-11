@@ -87,7 +87,7 @@ yolo_model = YoloV3(number_classes, anchors, use_label_smooth=True, use_focal_lo
                     batch_norm_decay=train_params['batch_norm_decay'], weight_decay=train_params['weight_decay'],
                     use_static_shape=False)
 
-with tf.variable_scope('yolov3'):
+with tf.variable_scope('YoloV3'):
     pred_feature_maps = yolo_model.forward(image, is_training=is_training)
 loss = yolo_model.compute_loss(pred_feature_maps, y_true)
 y_pred = yolo_model.predict(pred_feature_maps)
@@ -95,8 +95,11 @@ y_pred = yolo_model.predict(pred_feature_maps)
 l2_loss = tf.losses.get_regularization_loss()
 
 # setting restore parts and vars to update
-saver_to_restore = tf.train.Saver(var_list=tf.contrib.framework.get_variables_to_restore(include=None, exclude=None))
-update_vars = tf.contrib.framework.get_variables_to_restore(include=['yolov3/yolov3_head'])
+saver_to_restore = tf.train.Saver(
+    var_list=tf.contrib.framework.get_variables_to_restore(
+        include=None,
+        exclude=['YoloV3/yolov3_head/Conv_14', 'YoloV3/yolov3_head/Conv_6', 'YoloV3/yolov3_head/Conv_22']))
+update_vars = tf.contrib.framework.get_variables_to_restore(include=['YoloV3/yolov3_head'])
 
 tf.summary.scalar('train_batch_statistics/total_loss', loss[0])
 tf.summary.scalar('train_batch_statistics/loss_xy', loss[1])
@@ -109,11 +112,11 @@ tf.summary.scalar('train_batch_statistics/loss_ratio', l2_loss / loss[0])
 global_step = tf.Variable(float(train_params['global_step']),
                           trainable=False, collections=[tf.GraphKeys.LOCAL_VARIABLES])
 
-learning_rate = tf.cond(tf.less(global_step, train_params['train_batch_num'] * train_params['warm_up_epoch']),
+learning_rate = tf.cond(tf.less(global_step, train_batch_num * train_params['warm_up_epoch']),
                         lambda: train_params['learning_rate_init'] *
-                                global_step / (train_params['train_batch_num'] * train_params['warm_up_epoch']),
-                        lambda: config_learning_rate(global_step -
-                                                     train_params['train_batch_num'] * train_params['warm_up_epoch']))
+                                global_step / (train_batch_num * train_params['warm_up_epoch']),
+                        lambda: config_learning_rate(lr_decay_freq=lr_decay_freq, global_step=global_step -
+                                                     train_batch_num * train_params['warm_up_epoch']))
 tf.summary.scalar('learning_rate', learning_rate)
 
 if not train_params['save_optimizer']:
@@ -155,7 +158,7 @@ with tf.Session() as sess:
         loss_total, loss_xy, loss_wh, loss_conf, loss_class = AverageMeter(), AverageMeter(), AverageMeter(), \
                                                               AverageMeter(), AverageMeter()
 
-        for i in trange(train_params['train_batch_num']):
+        for i in trange(train_batch_num):
             _, summary, __y_pred, __y_true, __loss, __global_step, __lr = sess.run(
                 [train_op, merged, y_pred, y_true, loss, global_step, learning_rate],
                 feed_dict={is_training: True})
@@ -238,7 +241,7 @@ with tf.Session() as sess:
             if mAP > best_mAP:
                 best_mAP = mAP
                 saver_best.save(sess, os.path.join(train_params['trained_model_name'],
-                                                   'best_model_Epoch_{}_step_{}_mAP_{:.4f}_loss_{:.4f}_lr_{:.7g}'.format(epoch, int(__global_step), best_mAP, val_loss_total.average, __lr)))_
+                                                   'best_model_Epoch_{}_step_{}_mAP_{:.4f}_loss_{:.4f}_lr_{:.7g}'.format(epoch, int(__global_step), best_mAP, val_loss_total.average, __lr)))
 
             writer.add_summary(make_summary('evaluation/val_mAP', mAP), global_step=epoch)
             writer.add_summary(make_summary('evaluation/val_recall', rec_total.average), global_step=epoch)

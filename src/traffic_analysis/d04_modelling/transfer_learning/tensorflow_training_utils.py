@@ -8,6 +8,8 @@ import tensorflow as tf
 from tensorflow.core.framework import summary_pb2
 from collections import Counter
 
+from traffic_analysis.d00_utils.load_confs import load_training_parameters
+
 PY_VERSION = sys.version_info[0]
 iter_cnt = 0
 
@@ -600,23 +602,26 @@ def make_summary(name, val):
     return summary_pb2.Summary(value=[summary_pb2.Summary.Value(tag=name, simple_value=val)])
 
 
-def config_learning_rate(args, global_step):
-    if args.lr_type == 'exponential':
-        lr_tmp = tf.train.exponential_decay(args.learning_rate_init, global_step, args.lr_decay_freq,
-                                            args.lr_decay_factor, staircase=True, name='exponential_learning_rate')
-        return tf.maximum(lr_tmp, args.lr_lower_bound)
-    elif args.lr_type == 'cosine_decay':
-        train_steps = (args.total_epoches - float(args.use_warm_up) * args.warm_up_epoch) * args.train_batch_num
-        return args.lr_lower_bound + 0.5 * (args.learning_rate_init - args.lr_lower_bound) * \
-            (1 + tf.cos(global_step / train_steps * np.pi))
-    elif args.lr_type == 'cosine_decay_restart':
-        return tf.train.cosine_decay_restarts(args.learning_rate_init, global_step,
-                                              args.lr_decay_freq, t_mul=2.0, m_mul=1.0,
-                                              name='cosine_decay_learning_rate_restart')
-    elif args.lr_type == 'fixed':
-        return tf.convert_to_tensor(args.learning_rate_init, name='fixed_learning_rate')
-    elif args.lr_type == 'piecewise':
-        return tf.train.piecewise_constant(global_step, boundaries=args.pw_boundaries, values=args.pw_values,
+def config_learning_rate(lr_decay_freq, global_step):
+    train_params = load_training_parameters()
+    if train_params['lr_type'] == 'exponential':
+        lr_tmp = tf.train.exponential_decay(train_params['learning_rate_init'], global_step, lr_decay_freq,
+                                            train_params['lr_decay_factor'], staircase=True,
+                                            name='exponential_learning_rate')
+        return tf.maximum(lr_tmp, train_params['lr_lower_bound'])
+    # elif train_params['lr_type'] == 'cosine_decay':
+    #     train_steps = (train_params['total_epoches'] - float(args.use_warm_up) * args.warm_up_epoch) * args.train_batch_num
+    #     return args.lr_lower_bound + 0.5 * (args.learning_rate_init - args.lr_lower_bound) * \
+    #         (1 + tf.cos(global_step / train_steps * np.pi))
+    # elif args.lr_type == 'cosine_decay_restart':
+    #     return tf.train.cosine_decay_restarts(args.learning_rate_init, global_step,
+    #                                           args.lr_decay_freq, t_mul=2.0, m_mul=1.0,
+    #                                           name='cosine_decay_learning_rate_restart')
+    # elif args.lr_type == 'fixed':
+    #     return tf.convert_to_tensor(args.learning_rate_init, name='fixed_learning_rate')
+    elif train_params['lr_type'] == 'piecewise':
+        return tf.train.piecewise_constant(global_step, boundaries=[float(i) for i in train_params['pw_boundaries']],
+                                           values=train_params['pw_values'],
                                            name='piecewise_learning_rate')
     else:
         raise ValueError('Unsupported learning rate type!')
