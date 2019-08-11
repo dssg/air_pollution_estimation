@@ -181,10 +181,15 @@ class FrameLevelEvaluator:
 
         for (vehicle_type, frame_id), vehicle_frame_df in df.groupby(
                 ["vehicle_type", "frame_id"]):
+
+            frame_id = int(frame_id)
+
             if vehicle_type not in self.selected_labels: 
                 continue
             if frame_id > max_frame_ind:
                 print("Warning: more frames in vehice_frame_df than max_frame_id")
+
+            # fill dictionary
             if include_confidence:
                 df_as_dict[vehicle_type]["frame" + str(frame_id)]["bboxes"] = \
                     vehicle_frame_df["bboxes"].tolist()
