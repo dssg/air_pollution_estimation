@@ -54,7 +54,7 @@ class DataLoader(object):
             xs += x
             ys += y
 
-        self.clear_temp_folders()
+        # self.clear_temp_folders()
 
         return xs, ys
 
@@ -81,9 +81,12 @@ class DataLoader(object):
             file_to_download = paths['s3_detrac_images'] + \
                                folder + '/' + \
                                'img' + image_num + '.jpg'
+            print(file_to_download)
             download_file_to = paths['temp_raw_images'] + \
                                folder + '_' + \
                                image_num + '.jpg'
+
+            print(download_file_to)
 
             self.data_loader_s3.download_file(
                 path_of_file_to_download=file_to_download,
@@ -243,9 +246,18 @@ class DataLoader(object):
         else:
             return None
 
+
 paths = load_paths()
 creds = load_credentials()
 
 dl = DataLoader(datasets=[TransferDataset.detrac], creds=creds, paths=paths)
 x_train, y_train, x_test, y_test = dl.get_train_and_test(.8)
-print('Done')
+
+saved_text_files_dir = paths['temp_annotation']
+with open(saved_text_files_dir + 'train.txt', 'w') as f:
+    for item in y_train:
+        f.write("%s\n" % item)
+
+with open(saved_text_files_dir + 'test.txt', 'w') as f:
+    for item in y_test:
+        f.write("%s\n" % item)
