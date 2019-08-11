@@ -27,9 +27,9 @@ anchors = parse_anchors(paths)
 number_classes = len(classes)
 
 train_data_path = os.path.join(train_dir_path, 'training_data.txt')
-val_data_path = os.path.join(train_dir_path, 'val_data.txt')
+test_data_path = os.path.join(train_dir_path, 'test_data.txt')
 train_img_cnt = len(open(train_data_path, 'r').readlines())
-val_img_cnt = len(open(val_data_path, 'r').readlines())
+val_img_cnt = len(open(test_data_path, 'r').readlines())
 train_batch_num = int(math.ceil(float(train_img_cnt) / train_params['batch_size']))
 
 lr_decay_freq = int(train_batch_num * train_params['lr_decay_epoch'])
@@ -58,18 +58,18 @@ train_dataset = train_dataset.map(
     num_parallel_calls=train_params['num_threads'])
 train_dataset = train_dataset.prefetch(train_params['prefetech_buffer'])
 
-val_dataset = tf.data.TextLineDataset(val_data_path)
-val_dataset = val_dataset.batch(1)
-val_dataset = val_dataset.map(
+test_dataset = tf.data.TextLineDataset(test_data_path)
+test_dataset = test_dataset.batch(1)
+test_dataset = test_dataset.map(
     lambda x: tf.py_func(get_batch_data,
                          inp=[x, number_classes, [416, 416], anchors, 'val', False, False, True],
                          Tout=[tf.int64, tf.float32, tf.float32, tf.float32, tf.float32]),
     num_parallel_calls=train_params['num_threads'])
-val_dataset.prefetch(train_params['prefetech_buffer'])
+test_dataset.prefetch(train_params['prefetech_buffer'])
 
 iterator = tf.data.Iterator.from_structure(train_dataset.output_types, train_dataset.output_shapes)
 train_init_op = iterator.make_initializer(train_dataset)
-val_init_op = iterator.make_initializer(val_dataset)
+val_init_op = iterator.make_initializer(test_dataset)
 
 # get an element from the chosen dataset iterator
 image_ids, image, y_true_13, y_true_26, y_true_52 = iterator.get_next()
@@ -148,7 +148,7 @@ with tf.Session() as sess:
 
     best_mAP = -np.Inf
 
-    for epoch in range(train_params['total_epoches']):
+    for epoch in range(train_params['total_epochs']):
 
         sess.run(train_init_op)
         loss_total, loss_xy, loss_wh, loss_conf, loss_class = AverageMeter(), AverageMeter(), AverageMeter(), \
@@ -215,7 +215,7 @@ with tf.Session() as sess:
 
             # calc mAP
             rec_total, prec_total, ap_total = AverageMeter(), AverageMeter(), AverageMeter()
-            gt_dict = parse_gt_rec(val_data_path, [416, 416], letterbox_resize=True)
+            gt_dict = parse_gt_rec(test_data_path, [416, 416], letterbox_resize=True)
 
             info = '======> Epoch: {}, global_step: {}, lr: {:.6g} <======\n'.format(epoch, __global_step, __lr)
 
