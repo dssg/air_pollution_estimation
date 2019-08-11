@@ -21,7 +21,7 @@ class ChunkEvaluator:
                  frame_level_df: pd.DataFrame = None,
                  data_loader_s3=None,
                  video_level_column_order: list=None,
-                 date_format: str):
+                 date_format: str="%Y%m%d-%H%M%S"):
 
         annotations_available = {}
         for xml_path in annotation_xml_paths:
