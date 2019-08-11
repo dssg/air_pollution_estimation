@@ -18,7 +18,7 @@ def detect_objects_in_image(image_capture,
             selected_labels (list): list of labels if supplied that returns only bboxes with these labels
 
         Returns:
-            bboxes(list(list(int))): list of width, height, and bottom-left coordinates of detection bboxes
+            bboxes(list(list(int))): list of bottom-left coordinates, width, height of detection bboxes
             labels (list(str)): list of detection labels
             confs (list(float)): list of detection scores
     """
@@ -79,7 +79,7 @@ def make_bbox_around_object(image_capture: np.ndarray, unscaled_bbox) -> list:
             image_capture (nparray): numpy array containing the captured image (width, height, rbg)
 
         Returns:
-            scaled_bbox (list(int)): width, height, and bottom-left coordinates of bounding box
+            scaled_bbox (list(int)): bottom-left coordinates, width, height of bounding box
     """
 
     image_capture_height, image_capture_width = image_capture.shape[:2]
@@ -231,8 +231,8 @@ def reduce_overlapping_detections(bboxes_in,
     for i in idx_boxes_nms:
         i = i[0]
         bbox = bboxes_in[i]
-        w, h, x, y = bbox[:4]
-        bboxes_out.append([round(x), round(y), round(x + w), round(y + h)])
+        x, y, w, h = bbox[:4]
+        bboxes_out.append([round(x), round(y), round(w), round(h)])
         label_idxs_out.append(label_idxs_in[i])
         confs_out.append(confs_in[i])
 
