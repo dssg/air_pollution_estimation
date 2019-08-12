@@ -85,14 +85,14 @@ for analyser_name, traffic_analyser in traffic_analysers.items():
             print("Analysing current chunk failed. Continuing to next chunk.")
 
         chunk_counter += 1
-        if chunk_counter == 3:
-            break
         selected_videos = selected_videos[chunk_size:]
         delete_and_recreate_dir(paths["temp_video"])
 
+    avg_runtime = np.mean(np.array(analyser_runtime))
+    
     if verbose:
         print(f"Successfully processed videos for traffic analyser: {analyser_name}")
-        print(f"Avg runtime of one video for tracking type {analyser_name}: {np.mean(np.array(analyser_runtime))}")
+        print(f"Avg runtime of one video for tracking type {analyser_name}: {avg_runtime}")
 
     # append to table
     update_eval_tables(db_frame_level_name=db_frame_level_name,
@@ -100,6 +100,7 @@ for analyser_name, traffic_analyser in traffic_analysers.items():
                        params=params,
                        creds=creds,
                        paths=paths,
+                       avg_runtime=avg_runtime,
                        analyser_type=analyser_name)
 
     if verbose:

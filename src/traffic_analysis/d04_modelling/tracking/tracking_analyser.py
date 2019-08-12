@@ -217,15 +217,15 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 # # quit on ESC button
                 # if cv2.waitKey(1) & 0xFF == 27:  # Esc pressed
                 #   break
-        assert fleet.bboxes.shape[2] == n_frames, f"Total num frames is {n_frames} but only {fleet.bboxes.shape[2]} have been processed."
+        assert fleet.bboxes.shape[2] == n_frames, \
+            f"Total num frames is {n_frames} but only {fleet.bboxes.shape[2]} have been processed."
         if make_video:
             write_mp4(local_mp4_dir=local_mp4_dir,
                       mp4_name=video_name + "_tracked.mp4",
                       video=np.array(processed_video),
                       fps=video_frames_per_sec)
         runtime = time.time() - start_time
-        print(
-            f'Run time of tracking analyser for one video is {runtime} seconds. \nFrameskip {frame_interval-1}.')
+        print(f'Run time of tracking analyser for one video is {runtime} seconds. \n Frameskip {frame_interval-1}.')
         return runtime, fleet
 
     def construct_frame_level_df(self,

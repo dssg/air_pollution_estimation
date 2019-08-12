@@ -99,9 +99,9 @@ def create_eval_sql_tables(creds: dict,
     if drop:
         drop_commands = [
             "DROP TABLE {}, {}, {} CASCADE;".format(paths["eval_db_video_stats"],
-                                                paths["eval_db_video_diffs"],
-                                                paths["eval_db_frame_stats"]
-                                                )
+                                                    paths["eval_db_video_diffs"],
+                                                    paths["eval_db_frame_stats"]
+                                                    )
         ]
 
     commands = [
@@ -115,7 +115,8 @@ def create_eval_sql_tables(creds: dict,
             sd FLOAT, 
             n_videos INT,
             creation_datetime timestamp,
-            analyser_type VARCHAR(50)
+            analyser_type VARCHAR(50),
+            avg_analyser_runtime FLOAT
         )
         """,
 
