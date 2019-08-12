@@ -2,19 +2,19 @@ from traffic_analysis.d04_modelling.tracking.tracking_analyser import TrackingAn
 
 
 def create_traffic_analysers(params: dict,
-						     paths: dict,
-						     verbose=True):
-	"""Create various traffic analysers with various tracker types
-	for evaluation 
-	"""
+                             paths: dict,
+                             verbose=True):
+    """Create various traffic analysers with various tracker types
+    for evaluation 
+    """
 
-	traffic_analysers = {}
-	for tracker_type in params["eval_tracker_types"]:
-	    analyser_name = params["traffic_analyser"].lower()
-	    traffic_analysers[ f"{analyser_name}_{tracker_type}"] = \
-	        eval(params["traffic_analyser"])(params=params, 
-	                                         paths=paths, 
-	                                         tracker_type=tracker_type,
-	                                         verbose=verbose)
+    traffic_analysers = {}
+    for tracker_type in params["eval_tracker_types"]:
+        analyser_name = params["traffic_analyser"].lower()
+        traffic_analysers[ f"{analyser_name}_{tracker_type}"] = \
+            eval(params["traffic_analyser"])(params=params, 
+                                             paths=paths, 
+                                             tracker_type=tracker_type,
+                                             verbose=verbose)
 
-	return traffic_analysers
+    return traffic_analysers

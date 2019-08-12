@@ -30,7 +30,7 @@ class ChunkEvaluator:
         annotations_available = (pd.DataFrame
                                  .from_dict(annotations_available,
                                             orient='index',
-                                            columns=['camera_id', 'video_upload_datetime', 'video_path'])
+                                            columns=['camera_id', 'video_upload_datetime'])
                                  .reset_index()
                                  .rename(columns={'index': 'xml_path'}))
 
@@ -68,7 +68,6 @@ class ChunkEvaluator:
 
         if data_loader_s3 is not None:
             self.data_loader_s3 = data_loader_s3
-
 
     def evaluate_video_level(self) -> (pd.DataFrame, pd.DataFrame):
         """This function evaluates a chunk of videos with the VideoLevelEvaluator object

@@ -13,15 +13,18 @@ def update_video_level_table(analyser,
                              creds=None,
                              return_data=False):
     """ Update the video level table on the database based on the videos in the files list
-                Args:
-                    frame_level_df (dataframe): dataframe containing the frame level stats, if none then
-                    this is loaded from the database using the file names
-                    file_names (list): list of s3 filepaths for the videos to be processed
-                    paths (dict): dictionary of paths from yml file
-                    creds (dict): dictionary of credentials from yml file
-                    return_data: For debugging it might be useful to return the video level df
+        Args:
+            analyser: TrafficAnalyser object 
+            db_video_level_name: name of database table to read from 
+            db_frame_level_name: name of database table to read from 
+            frame_level_df (dataframe): dataframe containing the frame level stats, if none then
+            this is loaded from the database using the file names
+            file_names (list): list of s3 filepaths for the videos to be processed
+            paths (dict): dictionary of paths from yml file
+            creds (dict): dictionary of credentials from yml file
+            return_data: For debugging it might be useful to return the video level df
 
-                Returns:
+        Returns:
 
     """
     db_obj = DataLoaderSQL(creds=creds, paths=paths)
@@ -39,12 +42,16 @@ def update_video_level_table(analyser,
 
         filter_string = filter_string[:-4]
         sql_string = "SELECT * FROM {} WHERE {};".format(
-	        db_frame_level_name, filter_string)
+            db_frame_level_name, filter_string)
         frame_level_df = db_obj.select_from_table(sql=sql_string)
 
         bboxes = []
-        for x, y, w, h in zip(frame_level_df['bbox_x'].values, frame_level_df['bbox_y'].values, frame_level_df['bbox_w'].values, frame_level_df['bbox_h'].values):
+        for x, y, w, h in zip(frame_level_df['bbox_x'].values,
+                              frame_level_df['bbox_y'].values,
+                              frame_level_df['bbox_w'].values,
+                              frame_level_df['bbox_h'].values):
             bboxes.append([x, y, w, h])
+
         frame_level_df['bboxes'] = bboxes
         frame_level_df.drop('bbox_x', axis=1, inplace=True)
         frame_level_df.drop('bbox_y', axis=1, inplace=True)

@@ -68,11 +68,11 @@ class FrameLevelEvaluator:
             max_frame_ind = ground_truth_df["stop_frame"].iloc[0]
             # print("PARSING GT DF: ")
             ground_truth_dict = self.reparse_bboxes_df(ground_truth_df, 
-                                                       max_frame_ind = max_frame_ind,
+                                                       max_frame_ind=max_frame_ind,
                                                        include_confidence=False)
             # print("PARSING PRED DF: ")
             predicted_dict = self.reparse_bboxes_df(pred_df,
-                                                    max_frame_ind = max_frame_ind,
+                                                    max_frame_ind=max_frame_ind,
                                                     include_confidence=True, 
                                                     bbox_format="cv2")
 

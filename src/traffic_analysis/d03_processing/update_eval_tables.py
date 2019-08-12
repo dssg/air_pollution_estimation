@@ -1,9 +1,8 @@
+import datetime
+
 from traffic_analysis.d05_evaluation.chunk_evaluator import ChunkEvaluator
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
-import pandas as pd 
-import datetime
-from traffic_analysis.d00_utils.load_confs import load_parameters, load_credentials, load_paths
 
 
 def update_eval_tables(db_frame_level_name: str, 
@@ -66,7 +65,7 @@ def update_eval_tables(db_frame_level_name: str,
                                      video_level_df=video_level_df,
                                      selected_labels=params["selected_labels"],
                                      video_level_column_order=params["video_level_column_order"],
-                                     data_loader_s3 = dl_s3
+                                     data_loader_s3=dl_s3
                                      )
     video_level_performance, video_level_diff = chunk_evaluator.evaluate_video_level()
     # prepare for insertion into db
@@ -74,21 +73,21 @@ def update_eval_tables(db_frame_level_name: str,
     # video level performance 
     video_level_performance = video_level_performance.astype(
         {"n_videos": 'int64'})
-    video_level_performance.dropna(how='any',inplace=True)
+    video_level_performance.dropna(how='any', inplace=True)
     video_level_performance['creation_datetime'] = datetime.datetime.now()
     video_level_performance['analyser'] = analyser_type
 
     # TODO: put this in params
     video_level_performance = video_level_performance[["vehicle_type",
-                                                      "stat",
-                                                      "bias",
-                                                      "MAE",
-                                                      "RMSE",
-                                                      "sd",
-                                                      "n_videos",
-                                                      "creation_datetime",
-                                                      "analyser"
-                                                      ]]
+                                                       "stat",
+                                                       "bias",
+                                                       "MAE",
+                                                       "RMSE",
+                                                       "sd",
+                                                       "n_videos",
+                                                       "creation_datetime",
+                                                       "analyser"
+                                                       ]]
     dl_sql.add_to_sql(df=video_level_performance, table_name="eval_video_performance")
 
     # video level diff 
@@ -105,20 +104,20 @@ def update_eval_tables(db_frame_level_name: str,
     print("VIDEO LEVEL DIFF FOR TRACKER TYPE ", analyser_type)
     print(video_level_diff)
     video_level_diff = video_level_diff[["camera_id",
-                                        "video_upload_datetime",
-                                        "vehicle_type",
-                                        "counts_true",
-                                        "starts_true",
-                                        "stops_true",
-                                        "counts_pred",
-                                        "starts_pred",
-                                        "stops_pred",
-                                        "counts_diff",
-                                        "starts_diff",
-                                        "stops_diff",
-                                        "creation_datetime",
-                                        "analyser"
-                                        ]]
+                                         "video_upload_datetime",
+                                         "vehicle_type",
+                                         "counts_true",
+                                         "starts_true",
+                                         "stops_true",
+                                         "counts_pred",
+                                         "starts_pred",
+                                         "stops_pred",
+                                         "counts_diff",
+                                         "starts_diff",
+                                         "stops_diff",
+                                         "creation_datetime",
+                                         "analyser"
+                                         ]]
     dl_sql.add_to_sql(df=video_level_diff, table_name="eval_video_diffs")
 
     # frame level eval
@@ -128,12 +127,12 @@ def update_eval_tables(db_frame_level_name: str,
     frame_level_map['analyser'] = analyser_type
 
     frame_level_map = frame_level_map[["camera_id",
-                                      "video_upload_datetime",
-                                      "vehicle_type",
-                                      "mean_avg_precision",
-                                      "creation_datetime",
-                                      "analyser"
-                                      ]]
+                                       "video_upload_datetime",
+                                       "vehicle_type",
+                                       "mean_avg_precision",
+                                       "creation_datetime",
+                                       "analyser"
+                                       ]]
     print("FRAME LEVEL MAP FOR TRACKER TYPE ", analyser_type)
     print(frame_level_map)
 

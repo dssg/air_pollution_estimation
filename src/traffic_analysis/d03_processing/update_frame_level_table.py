@@ -9,7 +9,7 @@ from traffic_analysis.d00_utils.data_retrieval import (delete_and_recreate_dir,
 
 
 def update_frame_level_table(analyser,
-		                     file_names: list,
+                             file_names: list,
                              db_frame_level_name: str,
                              paths: dict,
                              creds: dict):
@@ -43,12 +43,12 @@ def update_frame_level_table(analyser,
     delete_and_recreate_dir(paths["temp_video"])
 
     isfilled = bool(video_dict)
-    if not isfilled: # early stop
+    if not isfilled:  # early stop
         return success, frame_level_df
 
     frame_level_df, runtime_list = analyser.construct_frame_level_df(video_dict)
     if frame_level_df.empty:
-	    return None
+        return None
     frame_level_df.dropna(how='any', inplace=True)
     frame_level_df = frame_level_df.astype(
         {'frame_id': 'int64',
@@ -57,9 +57,9 @@ def update_frame_level_table(analyser,
     frame_level_sql_df = pd.DataFrame.copy(frame_level_df)
     x, y, w, h = [], [], [], []
     for vals in frame_level_sql_df['bboxes'].values:
-       if isinstance(vals, str):
+        if isinstance(vals, str):
             vals = vals.strip("[]").split(",")
-       if isinstance(vals, list) and len(vals) > 3:
+        if isinstance(vals, list) and len(vals) > 3:
             x.append(int(vals[0]))
             y.append(int(vals[1]))
             w.append(int(vals[2]))
@@ -67,7 +67,7 @@ def update_frame_level_table(analyser,
     frame_level_sql_df['bbox_x'] = x
     frame_level_sql_df['bbox_y'] = y
     frame_level_sql_df['bbox_w'] = w
-    frame_level_sql_df['bbox_h'] = h
+    frame_level_sql_df['bbox_h'] =
     frame_level_sql_df.drop('bboxes', axis=1, inplace=True)
     frame_level_sql_df['creation_datetime'] = datetime.datetime.now()
 
