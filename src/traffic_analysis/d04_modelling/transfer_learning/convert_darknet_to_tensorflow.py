@@ -7,7 +7,7 @@ import os
 import tensorflow as tf
 import numpy as np
 
-from traffic_analysis.d04_modelling.transfer_learning.generate_tensorflow_model import YoloV3
+from traffic_analysis.d04_modelling.transfer_learning.tensorflow_model_loader import YoloV3
 from traffic_analysis.d02_ref.download_detection_model_from_s3 import download_detection_model_from_s3
 
 
