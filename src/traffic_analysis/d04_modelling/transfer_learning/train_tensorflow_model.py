@@ -2,12 +2,16 @@
 
 from __future__ import division, print_function
 import os
+import sys
 import math
 import tensorflow as tf
 import numpy as np
 import logging
 from tqdm import trange
 import random
+
+ospath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..')
+sys.path.append(ospath)
 
 from traffic_analysis.d04_modelling.transfer_learning.tensorflow_training_utils import get_batch_data, \
     shuffle_and_overwrite, make_summary, config_learning_rate, config_optimizer, AverageMeter, \
