@@ -42,11 +42,12 @@ eval_pipeline_settings:
   eval_ref_name: "annotated_videos"
   traffic_analyser: "TrackingAnalyser"
   eval_tracker_types: ['kcf', 'mosse', 'csrt']
+  eval_detection_models: ['yolov3', 'yolov3-tiny']
   eval_chunk_size: 10
 
 modelling:
   # obj detection
-  detection_model: "yolov3_tf"
+  default_detection_model: "yolov3_tf"
   detection_implementation: "cvlib"
   detection_iou_threshold: 0.05
   detection_confidence_threshold: 0.2

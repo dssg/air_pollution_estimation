@@ -10,13 +10,17 @@ def create_traffic_analysers(params: dict,
     """
 
     traffic_analysers = {}
+    analyser_name = params["traffic_analyser"].lower()
+
     for tracker_type in params["eval_tracker_types"]:
-        analyser_name = params["traffic_analyser"].lower()
-        traffic_analysers[ f"{analyser_name}_{tracker_type}"] = \
-            eval(params["traffic_analyser"])(params=params,
-                                             paths=paths,
-                                             s3_credentials=s3_credentials,
-                                             tracker_type=tracker_type,
-                                             verbose=verbose)
+        for detection_model in params["eval_detection_models"]:
+            
+            traffic_analysers[ f"{analyser_name}_{detection_model}_{tracker_type}"] = \
+                eval(params["traffic_analyser"])(params=params,
+                                                 paths=paths,
+                                                 s3_credentials=s3_credentials,
+                                                 detection_model=detection_model,
+                                                 tracker_type=tracker_type,
+                                                 verbose=verbose)
 
     return traffic_analysers

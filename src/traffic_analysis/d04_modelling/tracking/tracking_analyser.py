@@ -20,13 +20,12 @@ from traffic_analysis.d04_modelling.traffic_analyser_interface import \
 
 
 class TrackingAnalyser(TrafficAnalyserInterface):
-    def __init__(self, params, paths, s3_credentials, tracker_type=None, verbose=True):
+    def __init__(self, params, paths, s3_credentials, detection_model=None, tracker_type=None, verbose=True):
         """
         Model-specific parameters initialized below:
 
         (Object detection arguments:)
         detection_model -- specify the name of model you want to use for detection
-        detection_implementation -- specify model to use for detection
         detection_frequency -- each detection_frequency num of frames, run obj detection alg again to detect new objs
         tracking_model -- specify name of model you want to use for tracking (currently only supports OpenCV trackers)
         iou_threshold -- specify threshold to use to decide whether two detected objs should be considered the same
@@ -41,27 +40,18 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         stop_start_iou_threshold -- threshold to binarize the IOU time series into 0 or 1,denoting "moving" or "stopped"
         """
         super().__init__(params, paths)
-        self.detection_model = params['detection_model']
-        self.detection_implementation = params['detection_implementation']
-        if tracker_type is not None:
-            self.tracker_type = tracker_type
-        else:
-            self.tracker_type = params['default_tracker_type']
-        self.trackers = []
-
-        self.iou_threshold = params['iou_threshold']
-        self.detection_frequency = params['detection_frequency']
-        self.detection_confidence_threshold = params['detection_confidence_threshold']
-        self.detection_nms_threshold = params['detection_nms_threshold']
-        self.selected_labels = params['selected_labels']
-        self.skip_no_of_frames = params['skip_no_of_frames']
-        self.iou_convolution_window = params['iou_convolution_window']
-        self.smoothing_method = params['smoothing_method']
-        self.stop_start_iou_threshold = params['stop_start_iou_threshold']
+        # general settings
         self.verbose = verbose
         self.params = params
         self.paths = paths
         self.s3_credentials = s3_credentials
+        self.selected_labels = params['selected_labels']
+
+        # detection settings
+        if detection_model is not None: 
+            self.detection_model = detection_model
+        else:
+            self.detection_model = params['default_detection_model']
 
         if self.detection_model == 'yolov3_tf':
             self.sess = tf.Session()
@@ -70,6 +60,26 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 paths=self.paths,
                 s3_credentials=self.s3_credentials,
                 sess=self.sess)
+        self.detection_confidence_threshold = params['detection_confidence_threshold']
+        self.detection_nms_threshold = params['detection_nms_threshold']
+
+        # tracking settings
+        if tracker_type is not None:
+            self.tracker_type = tracker_type
+        else:
+            self.tracker_type = params['default_tracker_type']
+        self.trackers = []
+        self.iou_threshold = params['iou_threshold']
+
+        # speed-ups
+        self.detection_frequency = params['detection_frequency']
+        self.skip_no_of_frames = params['skip_no_of_frames']
+
+        # stop-start processing settings 
+        self.iou_convolution_window = params['iou_convolution_window']
+        self.smoothing_method = params['smoothing_method']
+        self.stop_start_iou_threshold = params['stop_start_iou_threshold']
+
 
     def add_tracker(self):
         tracker = self.create_tracker_by_name(

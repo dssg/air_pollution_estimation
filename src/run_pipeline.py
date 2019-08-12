@@ -35,10 +35,10 @@ analyser = TrackingAnalyser(params=params, paths=paths, s3_credentials=s3_creden
 chunk_size = params['chunk_size']
 while selected_videos:
     success, frame_level_df, _ = update_frame_level_table(analyser=analyser,
-                                              db_frame_level_name=paths['db_frame_level'],
-                                              file_names=selected_videos[:chunk_size],
-                                              paths=paths,
-                                              creds=creds)
+                                                          db_frame_level_name=paths['db_frame_level'],
+                                                          file_names=selected_videos[:chunk_size],
+                                                          paths=paths,
+                                                          creds=creds)
 
     if success:
       update_video_level_table(analyser=analyser,
