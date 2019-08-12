@@ -31,7 +31,7 @@ def transfer_learn(paths, params, train_params, train_file, test_file):
     test_data_path = os.path.join(truth_dir_path, test_file)
     train_img_cnt = len(open(train_data_path, 'r').readlines())
     val_img_cnt = len(open(test_data_path, 'r').readlines())
-    train_batch_num = int(math.ceil(float(train_img_cnt) / train_params['batch_size']))
+    train_batch_num = int(math.ceil(float(train_img_cnt) / train_params['num_batches']))
     
     lr_decay_freq = int(train_batch_num * train_params['lr_decay_epoch'])
     
@@ -48,7 +48,7 @@ def transfer_learn(paths, params, train_params, train_file, test_file):
     
     train_dataset = tf.data.TextLineDataset(train_data_path)
     train_dataset = train_dataset.shuffle(train_img_cnt)
-    train_dataset = train_dataset.batch(train_params['batch_size'])
+    train_dataset = train_dataset.batch(train_params['num_batches'])
     train_dataset = train_dataset.map(
         lambda x: tf.py_func(get_batch_data,
                              inp=[x, number_classes, [416, 416], anchors, 'train', True, True, True],
