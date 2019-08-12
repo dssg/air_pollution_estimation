@@ -227,6 +227,7 @@ def transfer_learn(paths, params, train_params, train_file, test_file, selected_
                 info = '======> Epoch: {}, global_step: {}, lr: {:.6g} <======\n'.format(epoch, __global_step, __lr)
 
                 for class_idx in range(number_classes):
+                    print(class_idx)
                     if class_idx in selected_label_idxs:
                         print(class_idx)
                         npos, nd, rec, prec, ap = voc_eval(gt_dict, val_preds, class_idx,
@@ -234,6 +235,10 @@ def transfer_learn(paths, params, train_params, train_file, test_file, selected_
                                                            use_07_metric=True)
                         info += 'EVAL: Class {}: Recall: {:.4f}, Precision: {:.4f}, AP: {:.4f}\n'.format(class_idx,
                                                                                                          rec, prec, ap)
+
+                        print(prec)
+                        print(rec)
+                        print(ap)
 
                         if math.isnan(rec) or math.isnan(prec) or math.isnan(ap):
                             pass
