@@ -8,7 +8,7 @@ from traffic_analysis.d02_ref.upload_annotation_names_to_s3 import upload_annota
 from traffic_analysis.d03_processing.update_frame_level_table import update_frame_level_table
 from traffic_analysis.d03_processing.update_video_level_table import update_video_level_table
 from traffic_analysis.d03_processing.update_eval_tables import update_eval_tables
-from traffic.analysis.d03_processing.create_traffic_analysers import create_traffic_analysers
+from traffic_analysis.d03_processing.create_traffic_analysers import create_traffic_analysers
 
 params = load_parameters()
 paths = load_paths()

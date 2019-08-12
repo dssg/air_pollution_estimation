@@ -2,7 +2,8 @@ from traffic_analysis.d04_modelling.tracking.tracking_analyser import TrackingAn
 
 
 def create_traffic_analysers(params: dict,
-						     paths: dict):
+			     paths: dict,
+                             verbose=True):
 	"""Create various traffic analysers with various tracker types
 	for evaluation 
 	"""

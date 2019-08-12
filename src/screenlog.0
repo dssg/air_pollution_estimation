@@ -1,19 +1,0 @@
-[K[01;32mcaroline_wang@ip-10-1-2-183[00m:[01;34m~/air_pollution_estimation/src[00m$ ls
-__init__.py           data_collection_pipeline.py  run_pipeline.py  [0m[01;34mtraffic_analysis[0m
-create_dev_tables.py  eval_pipeline.py             screenlog.0      [01;34mtraffic_viz[0m
-[01;32mcaroline_wang@ip-10-1-2-183[00m:[01;34m~/air_pollution_estimation/src[00m$ cd ..
-[01;32mcaroline_wang@ip-10-1-2-183[00m:[01;34m~/air_pollution_estimation[00m$ cd src
-[01;32mcaroline_wang@ip-10-1-2-183[00m:[01;34m~/air_pollution_estimation/src[00m$ screen -r [K[K[K-r[K[K[K-lis[K[K[K[K -list
-There are screens on:
-	31192.pts-3.ip-10-1-2-183	(08/11/19 21:48:48)	(Attached)
-	809.pts-0.ip-10-1-2-183	(08/11/19 15:15:24)	(Attached)
-2 Sockets in /run/screen/S-caroline_wang.
-[01;32mcaroline_wang@ip-10-1-2-183[00m:[01;34m~/air_pollution_estimation/src[00m$ screen -r 809
-There is a screen on:
-	809.pts-0.ip-10-1-2-183	(08/11/19 15:15:24)	(Attached)
-There is no screen to be resumed matching 809.
-[01;32mcaroline_wang@ip-10-1-2-183[00m:[01;34m~/air_pollution_estimation/src[00m$ screen -r 9[K8[K[K[K[K[K[K[K[K[K[K[K[K[01;32mcaroline_wang@ip-10-1-2-183[00m:[01;34m~/air_pollution_estimation/src[00m$ screen -list
-There is a screen on:
-	809.pts-0.ip-10-1-2-183	(08/11/19 15:15:24)	(Attached)
-1 Socket in /run/screen/S-caroline_wang.
-[01;32mcaroline_wang@ip-10-1-2-183[00m:[01;34m~/air_pollution_estimation/src[00m$ 
