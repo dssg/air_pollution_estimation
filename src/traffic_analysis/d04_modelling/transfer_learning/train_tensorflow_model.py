@@ -17,13 +17,18 @@ from traffic_analysis.d04_modelling.transfer_learning.convert_darknet_to_tensorf
 from traffic_analysis.d04_modelling.transfer_learning.tensorflow_detection_utils import read_class_names
 
 
-def transfer_learn(paths, params, train_params, train_file, test_file):
+def transfer_learn(paths, params, train_params, train_file, test_file, selected_labels):
     """ trains last three layers of yolov3 network on custom dataset
     """
 
     truth_dir_path = paths['temp_annotation']
     class_name_path = os.path.join(paths['local_detection_model'], 'yolov3', 'coco.names')  # CHANGE THIS
     classes = read_class_names(class_name_path)
+
+    selected_label_idxs = []
+    for selected_label in selected_labels:
+        selected_label_idx = classes.index(selected_label)
+        selected_label_idxs.append(selected_label_idx)
     anchors = parse_anchors(paths)
     number_classes = len(classes)
     
@@ -208,7 +213,9 @@ def transfer_learn(paths, params, train_params, train_file, test_file):
                     __image_ids, __y_pred, __loss = sess.run([image_ids, y_pred, loss],
                                                              feed_dict={is_training: False})
                     pred_content = get_preds_gpu(sess, gpu_nms_op, pred_boxes_flag, pred_scores_flag, __image_ids, __y_pred)
+                    print(pred_content)
                     val_preds.extend(pred_content)
+                    print(val_preds)
                     val_loss_total.update(__loss[0])
                     val_loss_xy.update(__loss[1])
                     val_loss_wh.update(__loss[2])
@@ -218,16 +225,20 @@ def transfer_learn(paths, params, train_params, train_file, test_file):
                 # calc mAP
                 rec_total, prec_total, ap_total = AverageMeter(), AverageMeter(), AverageMeter()
                 gt_dict = parse_gt_rec(test_data_path, [416, 416], letterbox_resize=True)
+                print(gt_dict)
     
                 info = '======> Epoch: {}, global_step: {}, lr: {:.6g} <======\n'.format(epoch, __global_step, __lr)
 
-                for ii in range(number_classes):
-                    npos, nd, rec, prec, ap = voc_eval(gt_dict, val_preds, ii, iou_thres=train_params['eval_threshold'],
-                                                       use_07_metric=False)
-                    info += 'EVAL: Class {}: Recall: {:.4f}, Precision: {:.4f}, AP: {:.4f}\n'.format(ii, rec, prec, ap)
-                    rec_total.update(rec, npos)
-                    prec_total.update(prec, nd)
-                    ap_total.update(ap, 1)
+                for class_idx in range(number_classes):
+                    if class_idx in selected_label_idxs:
+                        npos, nd, rec, prec, ap = voc_eval(gt_dict, val_preds, class_idx,
+                                                           iou_thres=train_params['eval_threshold'],
+                                                           use_07_metric=True)
+                        info += 'EVAL: Class {}: Recall: {:.4f}, Precision: {:.4f}, AP: {:.4f}\n'.format(class_idx,
+                                                                                                         rec, prec, ap)
+                        rec_total.update(rec, npos)
+                        prec_total.update(prec, nd)
+                        ap_total.update(ap, 1)
 
                 mAP = ap_total.average
                 info += 'EVAL: Recall: {:.4f}, Precison: {:.4f}, mAP: {:.4f}\n'.format(rec_total.average, prec_total.average, mAP)
