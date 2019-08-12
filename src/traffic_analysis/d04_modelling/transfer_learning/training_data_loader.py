@@ -1,8 +1,12 @@
 import os
+import sys
 import xml.etree.ElementTree as ET
 from PIL import Image
 import numpy as np
 from enum import Enum
+
+ospath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..')
+sys.path.append(ospath)
 
 from traffic_analysis.d00_utils.load_confs import load_paths, load_credentials
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
