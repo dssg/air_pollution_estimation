@@ -13,8 +13,8 @@ s3_credentials = creds[paths['s3_creds']]
 
 # If running first time:
 # creates the test_seach_json. Change the camera list and output file name for full run
-
-retrieve_and_upload_video_names_to_s3(ouput_file_name='Date_20190717_Cameras_03604_02262',
+output_file_name = 'Date_20190717_Cameras_03604_02262'
+retrieve_and_upload_video_names_to_s3(output_file_name=output_file_name,
                                       paths=paths,
                                       from_date='2019-07-17', to_date='2019-07-17',
                                       from_time='13-00-00', to_time='14-00-00',
@@ -25,7 +25,7 @@ upload_annotation_names_to_s3(paths=paths,
                               s3_credentials=s3_credentials)
 """
 # Start from here if video names already specified
-selected_videos = load_video_names_from_s3(ref_file='Date_20190717_Cameras_03604_02262',
+selected_videos = load_video_names_from_s3(ref_file=output_file_name,
                                            paths=paths,
                                            s3_credentials=s3_credentials)
 
@@ -34,7 +34,8 @@ annotation_videos = load_video_names_from_s3(ref_file='annotations',
                                              paths=paths,
                                              s3_credentials=s3_credentials)
 selected_videos = selected_videos + annotation_videos
-analyzer = TrackingAnalyser(params=params, paths=paths, s3_credentials=s3_credentials)
+analyzer = TrackingAnalyser(
+    params=params, paths=paths, s3_credentials=s3_credentials)
 
 # select chunks of videos and classify objects
 chunk_size = params['chunk_size']
