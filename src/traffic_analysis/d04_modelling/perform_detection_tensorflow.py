@@ -35,13 +35,13 @@ def perform_detections_in_single_image(image_capture, params, paths, s3_credenti
                                                                                 paths=paths,
                                                                                 s3_credentials=s3_credentials,
                                                                                 sess=sess)
-    boxes, labels, confs = detect_objects_in_image(image_capture=image_capture,
-                                                   paths=paths,
-                                                   detection_model=detection_model,
-                                                   model_initializer=model_initializer,
-                                                   init_data=init_data,
-                                                   sess=sess,
-                                                   selected_labels=selected_labels)
+    boxes, labels, confs = detect_objects_in_images(image_capture=image_capture,
+                                                    paths=paths,
+                                                    detection_model=detection_model,
+                                                    model_initializer=model_initializer,
+                                                    init_data=init_data,
+                                                    sess=sess,
+                                                    selected_labels=selected_labels)
     sess.close()
 
     return boxes, labels, confs
@@ -98,8 +98,8 @@ def initialize_tensorflow_model(params, paths, s3_credentials, sess):
     return model_initializer, init_data, detection_model
 
 
-def detect_objects_in_image(image_capture, paths, detection_model, model_initializer, init_data, sess,
-                            selected_labels=None):
+def detect_objects_in_images(images, paths, detection_model, model_initializer, init_data, sess,
+                             selected_labels=None):
     """ uses a tensorflow implementation of yolo to detect objects in a frame
         Args:
             image_capture (nparray): numpy array containing the captured image (width, height, rbg)
@@ -115,9 +115,15 @@ def detect_objects_in_image(image_capture, paths, detection_model, model_initial
             labels (list(str)): list of detection labels
             confs (list(float)): list of detection scores
     """
+    formatted_images = []
+    formatting_params = []
 
-    image_array, formatting_params = format_image_for_yolo(image_capture)
-    boxes_unscaled, confs, label_idxs = sess.run(model_initializer, feed_dict={init_data: image_array})
+    for image in images:
+        image_array, params = format_image_for_yolo(image)
+        formatted_images.append(image_array)
+        formatting_params.append(params)
+
+    boxes_unscaled, confs, label_idxs = sess.run(model_initializer, feed_dict={init_data: np.array(formatted_images)})
 
     # rescale the coordinates to the original image
     boxes = reformat_boxes(boxes_unscaled, formatting_params)

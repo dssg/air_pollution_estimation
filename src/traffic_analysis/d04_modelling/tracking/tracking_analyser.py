@@ -14,7 +14,7 @@ from traffic_analysis.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, displa
 from traffic_analysis.d00_utils.video_helpers import write_mp4
 from traffic_analysis.d04_modelling.tracking.vehicle_fleet import VehicleFleet
 from traffic_analysis.d04_modelling.perform_detection_opencv import detect_objects_in_image as detect_objects_cv
-from traffic_analysis.d04_modelling.perform_detection_tensorflow import detect_objects_in_image as detect_objects_tf
+from traffic_analysis.d04_modelling.perform_detection_tensorflow import detect_objects_in_images as detect_objects_tf
 from traffic_analysis.d04_modelling.perform_detection_tensorflow import initialize_tensorflow_model
 from traffic_analysis.d04_modelling.traffic_analyser_interface import \
     TrafficAnalyserInterface
