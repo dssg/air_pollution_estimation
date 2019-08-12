@@ -190,7 +190,7 @@ def transfer_learn(paths, params, train_params, train_file, test_file):
                             'Gradient exploded! Please train again and you may need modify some parameters.')
     
             # NOTE: this is just demo. You can set the conditions when to save the weights.
-            if epoch % train_params['save_epoch == 0'] and epoch > 0:
+            if epoch % train_params['save_epoch'] == 0 and epoch > 0:
                 if loss_total.average <= 2.:
                     saver_to_save.save(sess, os.path.join(train_params['trained_model_name'],
                                                           'model-epoch_{}_step_{}_loss_{:.4f}_lr_{:.5g}'.format(epoch, int(__global_step), loss_total.average, __lr)))
