@@ -7,16 +7,18 @@ from traffic_analysis.d02_ref.download_detection_model_from_s3 import download_d
 def detect_objects_in_image(image_capture,
                             params,
                             paths,
-                            s3_credentials: dict):
+                            s3_credentials: dict,
+                            selected_labels: list = None) -> (list, list, list):
     """ unifying function that defines the detected objects in an image
         Args:
             image_capture (nparray): numpy array containing the captured image (width, height, rbg)
             params (dict): dictionary of parameters from yml file
             paths (dict): dictionary of paths from yml file
-            s3_credentials: s3 credentials
+            s3_credentials (dict): s3 credentials
+            selected_labels (list): list of labels if supplied that returns only bboxes with these labels
 
         Returns:
-            bboxes(list(list(int))): list of width, height, and bottom-left coordinates of detection bboxes
+            bboxes(list(list(int))): list of bottom-left coordinates, width, height of detection bboxes
             labels (list(str)): list of detection labels
             confs (list(float)): list of detection scores
     """
@@ -42,6 +44,11 @@ def detect_objects_in_image(image_capture,
     labels = label_detections(model_name=model_name,
                               paths=paths,
                               label_idxs=label_idxs)
+    if selected_labels is not None:
+        boxes, labels, confs = choose_objects_of_selected_labels(bboxes_in=boxes,
+                                                                 labels_in=labels,
+                                                                 confs_in=confs,
+                                                                 selected_labels=selected_labels)
 
     return boxes, labels, confs
 
@@ -71,7 +78,7 @@ def make_bbox_around_object(image_capture: np.ndarray, unscaled_bbox) -> list:
             image_capture (nparray): numpy array containing the captured image (width, height, rbg)
 
         Returns:
-            scaled_bbox (list(int)): width, height, and bottom-left coordinates of bounding box
+            scaled_bbox (list(int)): bottom-left coordinates, width, height of bounding box
     """
 
     image_capture_height, image_capture_width = image_capture.shape[:2]
@@ -223,8 +230,8 @@ def reduce_overlapping_detections(bboxes_in,
     for i in idx_boxes_nms:
         i = i[0]
         bbox = bboxes_in[i]
-        w, h, x, y = bbox[:4]
-        bboxes_out.append([round(x), round(y), round(x + w), round(y + h)])
+        x, y, w, h = bbox[:4]
+        bboxes_out.append([round(x), round(y), round(w), round(h)])
         label_idxs_out.append(label_idxs_in[i])
         confs_out.append(confs_in[i])
 
@@ -245,7 +252,11 @@ def label_detections(label_idxs,
     """
 
     # import the list of labels
-    label_list = populate_labels(model_name=model_name,
+    if model_name == 'yolov3_tf':
+        model_origin = 'yolov3'
+    else:
+        model_origin = model_name
+    label_list = populate_labels(model_name=model_origin,
                                  paths=paths)
 
     # initialize the output list
@@ -256,3 +267,35 @@ def label_detections(label_idxs,
         labels.append(str(label_list[tick]))
 
     return labels
+
+
+def choose_objects_of_selected_labels(bboxes_in, labels_in, confs_in, selected_labels):
+    """ Removes detections that correspond to labels outside of selected ones, if specified
+        Args:
+            bboxes_in (list(list(int))): list of width, height, and bottom-left coordinates of detection bboxes
+            labels_in (list(int)): list of indices corresponding to the detection labels
+            confs_in (list(float)): list of detection scores
+            selected_labels (list(str)): list of labels if supplied that returns only bboxes with these labels
+        Returns:
+            bboxes_out (list(list(int))): list of width, height, and bottom-left coordinates of detection bboxes
+            label_idxs_out (list(int)): list of indices corresponding to the detection labels
+            confs_out (list(float)): list of detection scores
+    """
+
+    del_idxs = []
+    if selected_labels is not None:
+        for i, detected_label in enumerate(labels_in):
+            # specify object types to ignore
+            if detected_label not in selected_labels:
+                del_idxs.append(i)
+
+        bboxes_out = bboxes_in
+        labels_out = labels_in
+        confs_out = confs_in
+        # delete items from lists in reverse to avoid index shifting issue
+        for i in sorted(del_idxs, reverse=True):
+            del bboxes_out[i]
+            del labels_out[i]
+            del confs_out[i]
+
+    return bboxes_out, labels_out, confs_out
