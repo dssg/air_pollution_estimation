@@ -1162,7 +1162,7 @@ def get_preds_gpu(sess, gpu_nms_op, pred_boxes_flag, pred_scores_flag, image_ids
     return pred_content
 
 
-def voc_ap(rec, prec, use_07_metric=False):
+def voc_ap(rec, prec, use_07_metric=True):
     """Compute VOC AP given precision and recall. If use_07_metric is true, uses
     the VOC 07 11-point method (default:False).
     """

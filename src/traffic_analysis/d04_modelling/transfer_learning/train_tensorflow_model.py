@@ -11,7 +11,7 @@ import random
 
 from traffic_analysis.d04_modelling.transfer_learning.tensorflow_training_utils import get_batch_data, \
     shuffle_and_overwrite, make_summary, config_learning_rate, config_optimizer, AverageMeter, \
-    evaluate_on_gpu, get_preds_gpu, voc_eval, parse_gt_rec, gpu_nms
+    evaluate_on_gpu, get_preds_gpu, voc_ap, parse_gt_rec, gpu_nms
 from traffic_analysis.d04_modelling.transfer_learning.tensorflow_model_loader import YoloV3
 from traffic_analysis.d04_modelling.transfer_learning.convert_darknet_to_tensorflow import parse_anchors
 from traffic_analysis.d04_modelling.transfer_learning.tensorflow_detection_utils import read_class_names
@@ -222,17 +222,21 @@ def transfer_learn(paths, params, train_params, train_file, test_file):
                 info = '======> Epoch: {}, global_step: {}, lr: {:.6g} <======\n'.format(epoch, __global_step, __lr)
     
                 for ii in range(number_classes):
-                    npos, nd, rec, prec, ap = voc_eval(gt_dict, val_preds, ii, iou_thres=train_params['eval_threshold'],
-                                                       use_07_metric=False)
-                    info += 'EVAL: Class {}: Recall: {:.4f}, Precision: {:.4f}, AP: {:.4f}\n'.format(ii, rec, prec, ap)
-                    rec_total.update(rec, npos)
-                    prec_total.update(prec, nd)
-                    ap_total.update(ap, 1)
-    
+                    recall, precision = evaluate_on_gpu(sess, gpu_nms_op, pred_boxes_flag, pred_scores_flag,
+                                                        __y_pred, __y_true, number_classes, train_params['nms_threshold'])
+                    average_precision = voc_ap(recall, precision, use_07_metric=True)
+                    info += 'EVAL: Class {}: Recall: {:.4f}, Precision: {:.4f}, AP: {:.4f}\n'.format(ii, recall,
+                                                                                                     precision,
+                                                                                                     average_precision)
+                    rec_total.update(recall)
+                    prec_total.update(precision)
+
                 mAP = ap_total.average
+
                 info += 'EVAL: Recall: {:.4f}, Precison: {:.4f}, mAP: {:.4f}\n'.format(rec_total.average, prec_total.average, mAP)
                 info += 'EVAL: loss: total: {:.2f}, xy: {:.2f}, wh: {:.2f}, conf: {:.2f}, class: {:.2f}\n'.format(
                     val_loss_total.average, val_loss_xy.average, val_loss_wh.average, val_loss_conf.average, val_loss_class.average)
+
                 print(info)
                 logging.info(info)
     
