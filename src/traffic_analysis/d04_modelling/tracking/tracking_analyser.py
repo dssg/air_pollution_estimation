@@ -143,6 +143,26 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         # assumes vid_length in seconds
         video_frames_per_sec = int(n_frames / video_time_length)
 
+        #frame_interval = self.skip_no_of_frames + 1
+        frame_inds = np.arange(0, n_frames, self.skip_no_of_frames)
+
+        self.detect_objects_in_frames(frame_inds, video)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         # initialize bboxes on first frame using a detection alg
         first_frame = video[0, :, :, :]
 
@@ -178,7 +198,6 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             processed_video = []
 
         print(f"The number of frames is {n_frames}")
-        frame_interval = self.skip_no_of_frames + 1
         previous_frame_index = 0
         # Process video and track objects
         for frame_ind in range(1, n_frames):
@@ -261,6 +280,13 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         """
 
         return fleet
+
+    def detect_objects_in_frames(self, frame_inds, video):
+
+
+
+
+        return
 
     def construct_frame_level_df(self, video_dict) -> pd.DataFrame:
         """Construct frame level df for multiple videos
