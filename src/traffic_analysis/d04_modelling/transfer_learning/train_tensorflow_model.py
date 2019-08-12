@@ -234,12 +234,14 @@ def transfer_learn(paths, params, train_params, train_file, test_file, selected_
                                                            use_07_metric=True)
                         info += 'EVAL: Class {}: Recall: {:.4f}, Precision: {:.4f}, AP: {:.4f}\n'.format(class_idx,
                                                                                                          rec, prec, ap)
-                        rec_total.update(rec, npos)
-                        prec_total.update(prec, nd)
-                        ap_total.update(ap, 1)
 
-                print(ap_total)
-                print(type(ap_total))
+                        if math.isnan(rec) or math.isnan(prec) or math.isnan(ap):
+                            pass
+                        else:
+                            rec_total.update(rec, npos)
+                            prec_total.update(prec, nd)
+                            ap_total.update(ap, 1)
+
                 mAP = ap_total.average
                 info += 'EVAL: Recall: {:.4f}, Precison: {:.4f}, mAP: {:.4f}\n'.format(rec_total.average, prec_total.average, mAP)
                 info += 'EVAL: loss: total: {:.2f}, xy: {:.2f}, wh: {:.2f}, conf: {:.2f}, class: {:.2f}\n'.format(
