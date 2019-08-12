@@ -10,7 +10,7 @@ import logging
 from tqdm import trange
 import random
 
-ospath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..')
+ospath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../..')
 sys.path.append(ospath)
 
 from traffic_analysis.d04_modelling.transfer_learning.tensorflow_training_utils import get_batch_data, \
