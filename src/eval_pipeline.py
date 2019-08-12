@@ -39,7 +39,7 @@ if verbose:
 # create eval tables if they don't exist
 create_eval_sql_tables(creds=creds,
                        paths=paths,
-                       drop=True)
+                       drop=False)
 
 if verbose:
     print("Running evaluation for traffic analysers: ", traffic_analysers.keys())
