@@ -228,6 +228,7 @@ def transfer_learn(paths, params, train_params, train_file, test_file, selected_
 
                 for class_idx in range(number_classes):
                     if class_idx in selected_label_idxs:
+                        print(class_idx)
                         npos, nd, rec, prec, ap = voc_eval(gt_dict, val_preds, class_idx,
                                                            iou_thres=train_params['eval_threshold'],
                                                            use_07_metric=True)
@@ -237,6 +238,8 @@ def transfer_learn(paths, params, train_params, train_file, test_file, selected_
                         prec_total.update(prec, nd)
                         ap_total.update(ap, 1)
 
+                print(ap_total)
+                print(type(ap_total))
                 mAP = ap_total.average
                 info += 'EVAL: Recall: {:.4f}, Precison: {:.4f}, mAP: {:.4f}\n'.format(rec_total.average, prec_total.average, mAP)
                 info += 'EVAL: loss: total: {:.2f}, xy: {:.2f}, wh: {:.2f}, conf: {:.2f}, class: {:.2f}\n'.format(

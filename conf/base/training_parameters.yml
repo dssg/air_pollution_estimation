@@ -11,6 +11,7 @@ training:
   warm_up_epoch : 3 # set to larger value if gradient explodes
   num_threads : 10  # Number of threads for image processing used in tf.data pipeline.
   prefetech_buffer : 5  # Prefetech_buffer used in tf.data pipeline.
+  trained_model_name : '20190812_yolov3_trained_test'
 
 learning:
   optimizer_name : 'momentum'  # Chosen from [sgd, momentum, adam, rmsprop]
