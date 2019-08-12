@@ -42,6 +42,7 @@ create_eval_sql_tables(creds=creds,
                        paths=paths, 
                        drop=False)
 
+selected_videos_master = selected_videos.copy()
 if verbose: print("Running evaluation for traffic analysers: ", traffic_analysers.keys())
 for analyser_name, traffic_analyser in traffic_analysers.items():
     db_frame_level_name = f"{paths['eval_db_frame_level_prefix']}_{analyser_name}"
@@ -56,6 +57,9 @@ for analyser_name, traffic_analyser in traffic_analysers.items():
     chunk_size = params['eval_chunk_size']
     chunk_counter = 0
     analyser_runtime = []
+
+    # regenerate selected videos 
+    selected_videos = selected_videos_master
     while selected_videos:
         success, frame_level_df, runtime_list = update_frame_level_table(analyser=traffic_analyser,
                                                            file_names=selected_videos[:chunk_size],

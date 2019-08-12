@@ -66,11 +66,11 @@ class FrameLevelEvaluator:
             #     print("Assertion failed: camera id and video_upload_datetime is ", gt_camera_id, gt_video_upload_datetime)
 
             max_frame_ind = ground_truth_df["stop_frame"].iloc[0]
-            print("PARSING GT DF: ")
+            # print("PARSING GT DF: ")
             ground_truth_dict = self.reparse_bboxes_df(ground_truth_df, 
                                                        max_frame_ind = max_frame_ind,
                                                        include_confidence=False)
-            print("PARSING PRED DF: ")
+            # print("PARSING PRED DF: ")
             predicted_dict = self.reparse_bboxes_df(pred_df,
                                                     max_frame_ind = max_frame_ind,
                                                     include_confidence=True, 
@@ -181,7 +181,7 @@ class FrameLevelEvaluator:
                 for vehicle_type in self.selected_labels
             }
 
-        print("DF AS DICT: ", df_as_dict)
+        # print("DF AS DICT: ", df_as_dict)
         for (vehicle_type, frame_id), vehicle_frame_df in df.groupby(
                 ["vehicle_type", "frame_id"]):
 
