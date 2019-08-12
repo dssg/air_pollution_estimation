@@ -188,7 +188,8 @@ class FrameLevelEvaluator:
             frame_id = int(frame_id)
 
             if vehicle_type not in self.selected_labels: 
-                print("Warning: ")
+                print(f"Warning: detected vehicle type {vehicle_type} not in params[selected_labels] \
+                       and will be ignored.")
                 continue
             if frame_id > max_frame_ind:
                 print("Warning: more frames in vehice_frame_df than max_frame_id")
