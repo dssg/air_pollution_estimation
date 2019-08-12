@@ -7,6 +7,7 @@ from traffic_analysis.d02_ref.download_detection_model_from_s3 import download_d
 def detect_objects_in_image(image_capture,
                             params,
                             paths,
+                            detection_model: str,
                             s3_credentials: dict,
                             selected_labels: list = None) -> (list, list, list):
     """ unifying function that defines the detected objects in an image
@@ -25,7 +26,7 @@ def detect_objects_in_image(image_capture,
 
     conf_thresh = params['detection_confidence_threshold']
     detection_iou_threshold = params['detection_iou_threshold']
-    model_name = params['detection_model']
+    model_name = detection_model
 
     download_detection_model_from_s3(model_name=model_name,
                                      paths=paths,

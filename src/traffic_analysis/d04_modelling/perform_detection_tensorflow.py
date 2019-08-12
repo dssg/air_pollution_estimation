@@ -46,8 +46,7 @@ def perform_detections_in_single_image(image_capture, params, paths, s3_credenti
 
     return boxes, labels, confs
 
-
-def initialize_tensorflow_model(params, paths, s3_credentials, sess):
+def initialize_tensorflow_model(params, paths, s3_credentials, sess, detection_model='yolov3_tf'):
     """ uses pre-existing tensorflow ckpt (or creates one, if it does not yet exist) to initialize variables before
     passing images through neural net for detection
         Args:
@@ -62,17 +61,16 @@ def initialize_tensorflow_model(params, paths, s3_credentials, sess):
             detection_model (str): detection model used in the neural network
     """
 
-    detection_model = params['detection_model']
     local_filepath_model = os.path.join(paths['local_detection_model'], detection_model, 'yolov3.ckpt')
 
     if not os.path.exists(local_filepath_model):
         yolov3_darknet_to_tensorflow(params=params,
                                      paths=paths,
+                                     detection_model=detection_model,
                                      s3_credentials=s3_credentials)
 
     conf_thresh = params['detection_confidence_threshold']
     iou_thresh = params['detection_iou_threshold']
-    detection_model = params['detection_model']
     local_filepath_model = os.path.join(paths['local_detection_model'], detection_model, 'yolov3.ckpt')
 
     anchors = parse_anchors(paths)

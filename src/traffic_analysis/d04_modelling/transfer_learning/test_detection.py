@@ -16,7 +16,7 @@ def test_detection(image_path):
     paths = load_paths()
     params = load_parameters()
     s3_credentials = load_credentials()
-    detection_method = params['detection_model']
+    detection_method = params['default_detection_model']
 
     imcap = cv2.imread(image_path)
 

@@ -55,7 +55,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
         if self.detection_model == 'yolov3_tf':
             self.sess = tf.Session()
-            self.model_initializer, self.init_data, self.detection_model = initialize_tensorflow_model(
+            self.model_initializer, self.init_data, _ = initialize_tensorflow_model(
                 params=self.params,
                 paths=self.paths,
                 s3_credentials=self.s3_credentials,
@@ -169,6 +169,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             bboxes, labels, confs = detect_objects_cv(image_capture=first_frame,
                                                       params=self.params,
                                                       paths=self.paths,
+                                                      detection_model=self.detection_model,
                                                       s3_credentials=self.s3_credentials,
                                                       selected_labels=self.selected_labels)
         elif self.detection_model == 'yolov3_tf':
