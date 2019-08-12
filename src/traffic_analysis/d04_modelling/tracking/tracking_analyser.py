@@ -191,6 +191,8 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             # every x frames, re-detect boxes
             if frame_ind in frame_detection_inds.tolist():
                 ind = int(np.squeeze(np.where(frame_detection_inds == frame_ind)))
+                if(ind >= all_bboxes.__len__()):
+                    ind = -1
                 bboxes_detected = all_bboxes[ind]
                 labels_detected = all_labels[ind]
                 confs_detected = all_confs[ind]
