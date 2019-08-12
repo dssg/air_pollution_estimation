@@ -1,4 +1,4 @@
-import pandas as pd 
+import pandas as pd
 import numpy as np
 import xml.etree.ElementTree as ElementTree
 
@@ -25,14 +25,14 @@ class FrameLevelEvaluator:
 
         # parameters
         self.selected_labels = selected_labels
-        if data_loader_s3 is not None: 
+        if data_loader_s3 is not None:
             self.from_s3_paths = True
             self.dl_s3 = data_loader_s3
         else:
             self.from_local_paths = True
 
     def evaluate(self) -> pd.DataFrame:
-        """Compute mean average precision for each vehicle type on multiple videos 
+        """Compute mean average precision for each vehicle type on multiple videos
         """
         self.frame_level_ground_truth = self.get_ground_truth()
         self.frame_level_preds = self.filter_frame_level_df()
@@ -40,11 +40,11 @@ class FrameLevelEvaluator:
         frame_level_map_dfs = []
         for (gt_camera_id, gt_video_upload_datetime), ground_truth_df in \
             self.frame_level_ground_truth.groupby(["camera_id", "video_upload_datetime"]):
-            # get corresponding predictions for this video 
+            # get corresponding predictions for this video
             pred_df = self.frame_level_preds[(self.frame_level_preds["camera_id"] == gt_camera_id) &
                                              (self.frame_level_preds["video_upload_datetime"] ==
                                               gt_video_upload_datetime)].copy()
-            pred_frame_max = int(pred_df["frame_id"].max()) 
+            pred_frame_max = int(pred_df["frame_id"].max())
             pred_frame_min = int(pred_df["frame_id"].min())
 
             ground_truth_frame_max = int(ground_truth_df["frame_id"].max()) 
@@ -141,18 +141,18 @@ class FrameLevelEvaluator:
         This function also ensures that every frame in the video has a corresponding 
         dict entry (even if the input df had no prediction for that frame)
 
-        Args: 
+        Args:
             df: frame_level_df which contains bboxes corresponding to each frame of
-                a video. 
-            max_frame_ind: index of the last frame. We assume that frames are 0 indexed, so the 
+                a video.
+            max_frame_ind: index of the last frame. We assume that frames are 0 indexed, so the
                            total num frames in the video should be max_frame_ind + 1
-            include_confidence: If this df contains the confidence corresponding to 
-                                the bbox predictions, this should be specified (the 
+            include_confidence: If this df contains the confidence corresponding to
+                                the bbox predictions, this should be specified (the
                                 reparser will construct a sub-dict for this case)
-            bbox_format: cvlib is cvlib (xmin,ymin, xmin+width, ymin+height), 
+            bbox_format: cvlib is cvlib (xmin,ymin, xmin+width, ymin+height),
                          cv2 is (xmin,ymin,width,height)
-        Returns: df as a nested dictionary  
-        Raises: 
+        Returns: df as a nested dictionary
+        Raises:
         """
         # dict of dict of dicts, with outermost layer being the vehicle type
         bboxes_np = np.array(df["bboxes"].values.tolist())
@@ -167,7 +167,7 @@ class FrameLevelEvaluator:
         if include_confidence:
             df_as_dict = {
                 vehicle_type: {
-                    "frame" + str(i): {"bboxes": [], "scores": []}
+                    "frame" + str(int(i)): {"bboxes": [], "scores": []}
                     for i in range(max_frame_ind + 1)
                 }
                 for vehicle_type in self.selected_labels
@@ -175,7 +175,7 @@ class FrameLevelEvaluator:
 
         else:
             df_as_dict = {
-                vehicle_type: {"frame" + str(i): [] for i in range(max_frame_ind + 1)}
+                vehicle_type: {"frame" + str(int(i)): [] for i in range(max_frame_ind + 1)}
                 for vehicle_type in self.selected_labels
             }
 

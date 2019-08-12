@@ -77,8 +77,8 @@ for analyser_name, traffic_analyser in traffic_analysers.items():
             print("Analysing current chunk failed. Continuing to next chunk.")
 
         chunk_counter+=1
-        if chunk_counter == 1:
-            break
+#        if chunk_counter == 3:
+#            break
         # Move on to next chunk
         selected_videos = selected_videos[chunk_size:]
         delete_and_recreate_dir(paths["temp_video"])
