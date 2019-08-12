@@ -31,6 +31,7 @@ def transfer_learn(paths, params, train_params, train_file, test_file, selected_
             selected_label_idxs.append(idx)
     anchors = parse_anchors(paths)
     number_classes = len(classes)
+    print(selected_label_idxs)
     
     train_data_path = os.path.join(truth_dir_path, train_file)
     test_data_path = os.path.join(truth_dir_path, test_file)
