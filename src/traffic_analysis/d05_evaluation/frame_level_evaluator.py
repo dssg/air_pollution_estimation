@@ -44,33 +44,11 @@ class FrameLevelEvaluator:
             pred_df = self.frame_level_preds[(self.frame_level_preds["camera_id"] == gt_camera_id) &
                                              (self.frame_level_preds["video_upload_datetime"] ==
                                               gt_video_upload_datetime)].copy()
-            # pred_frame_max = int(pred_df["frame_id"].max())
-            # pred_frame_min = int(pred_df["frame_id"].min())
-
-            # ground_truth_frame_max = int(ground_truth_df["frame_id"].max()) 
-            # ground_truth_frame_min = int(ground_truth_df["frame_id"].min())
-
-            # print("camera id and video_upload_datetime is ", gt_camera_id, gt_video_upload_datetime)
-            # print(f"pred frame min is {pred_frame_min}, gt frame min is {ground_truth_frame_min}\n \
-            #         pred frame max is {pred_frame_max}, gt frame max is {ground_truth_frame_max}")
-
-            # num_gt_frames = ground_truth_df["frame_id"].nunique()
-            # num_pred_frames = pred_df["frame_id"].nunique()
-
-            # try: 
-            #     assert num_gt_frames == num_pred_frames, \
-            #         f"Number of unique frames in predicted df is {num_pred_frames}, \
-            #         number of unique frames in ground truth df is {num_gt_frames}."
-
-            # except: 
-            #     print("Assertion failed: camera id and video_upload_datetime is ", gt_camera_id, gt_video_upload_datetime)
 
             max_frame_ind = ground_truth_df["stop_frame"].iloc[0]
-            # print("PARSING GT DF: ")
             ground_truth_dict = self.reparse_bboxes_df(ground_truth_df, 
                                                        max_frame_ind=max_frame_ind,
                                                        include_confidence=False)
-            # print("PARSING PRED DF: ")
             predicted_dict = self.reparse_bboxes_df(pred_df,
                                                     max_frame_ind=max_frame_ind,
                                                     include_confidence=True, 
@@ -181,7 +159,6 @@ class FrameLevelEvaluator:
                 for vehicle_type in self.selected_labels
             }
 
-        # print("DF AS DICT: ", df_as_dict)
         for (vehicle_type, frame_id), vehicle_frame_df in df.groupby(
                 ["vehicle_type", "frame_id"]):
 
