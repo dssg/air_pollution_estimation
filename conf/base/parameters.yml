@@ -42,6 +42,7 @@ modelling:
   detection_iou_threshold: 0.05
   detection_confidence_threshold: 0.2
   detection_nms_threshold: 0.2
+  GPU_number: 0
 
   # tracking
   selected_labels: ["car", "truck", "bus", "motorbike"]
