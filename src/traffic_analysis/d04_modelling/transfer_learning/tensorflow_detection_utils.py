@@ -10,7 +10,6 @@ def read_class_names(class_name_path):
     with open(class_name_path, 'r') as data:
         for ID, name in enumerate(data):
             names[ID] = name.strip('\n')
-    print(names)
     return names
 
 

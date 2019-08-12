@@ -213,9 +213,7 @@ def transfer_learn(paths, params, train_params, train_file, test_file, selected_
                     __image_ids, __y_pred, __loss = sess.run([image_ids, y_pred, loss],
                                                              feed_dict={is_training: False})
                     pred_content = get_preds_gpu(sess, gpu_nms_op, pred_boxes_flag, pred_scores_flag, __image_ids, __y_pred)
-                    print(pred_content)
                     val_preds.extend(pred_content)
-                    print(val_preds)
                     val_loss_total.update(__loss[0])
                     val_loss_xy.update(__loss[1])
                     val_loss_wh.update(__loss[2])
@@ -225,7 +223,6 @@ def transfer_learn(paths, params, train_params, train_file, test_file, selected_
                 # calc mAP
                 rec_total, prec_total, ap_total = AverageMeter(), AverageMeter(), AverageMeter()
                 gt_dict = parse_gt_rec(test_data_path, [416, 416], letterbox_resize=True)
-                print(gt_dict)
     
                 info = '======> Epoch: {}, global_step: {}, lr: {:.6g} <======\n'.format(epoch, __global_step, __lr)
 
