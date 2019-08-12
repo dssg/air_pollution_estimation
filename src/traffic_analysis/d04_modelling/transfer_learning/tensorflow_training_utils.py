@@ -602,7 +602,7 @@ def make_summary(name, val):
     return summary_pb2.Summary(value=[summary_pb2.Summary.Value(tag=name, simple_value=val)])
 
 
-def config_learning_rate(lr_decay_freq, global_step):
+def config_learning_rate(lr_decay_freq, train_batch_num, global_step):
     train_params = load_training_parameters()
     if train_params['lr_type'] == 'exponential':
         lr_tmp = tf.train.exponential_decay(train_params['learning_rate_init'], global_step, lr_decay_freq,
@@ -620,6 +620,8 @@ def config_learning_rate(lr_decay_freq, global_step):
     # elif args.lr_type == 'fixed':
     #     return tf.convert_to_tensor(args.learning_rate_init, name='fixed_learning_rate')
     elif train_params['lr_type'] == 'piecewise':
+        train_params['pw_boundaries'] = [float(i) * train_batch_num +
+                                         train_params['global_step'] for i in train_params['pw_boundaries']]
         return tf.train.piecewise_constant(global_step, boundaries=[float(i) for i in train_params['pw_boundaries']],
                                            values=train_params['pw_values'],
                                            name='piecewise_learning_rate')
