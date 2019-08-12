@@ -25,4 +25,5 @@ transfer_learn(paths=paths,
                params=params,
                train_params=train_params,
                train_file='train.txt',
-               test_file='test.txt')
+               test_file='test.txt',
+               selected_labels=params['selected_labels'])
