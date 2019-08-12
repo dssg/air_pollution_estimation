@@ -26,9 +26,9 @@ def transfer_learn(paths, params, train_params, train_file, test_file, selected_
     classes = read_class_names(class_name_path)
 
     selected_label_idxs = []
-    for selected_label in selected_labels:
-        selected_label_idx = classes.index(selected_label)
-        selected_label_idxs.append(selected_label_idx)
+    for idx, label in classes.items():
+        if idx in selected_labels:
+            selected_label_idxs.append(idx)
     anchors = parse_anchors(paths)
     number_classes = len(classes)
     
