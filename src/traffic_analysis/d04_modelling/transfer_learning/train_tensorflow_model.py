@@ -11,7 +11,7 @@ import random
 
 from traffic_analysis.d04_modelling.transfer_learning.tensorflow_training_utils import get_batch_data, \
     shuffle_and_overwrite, make_summary, config_learning_rate, config_optimizer, AverageMeter, \
-    evaluate_on_gpu, get_preds_gpu, voc_ap, parse_gt_rec, gpu_nms
+    evaluate_on_gpu, get_preds_gpu, voc_eval, parse_gt_rec, gpu_nms
 from traffic_analysis.d04_modelling.transfer_learning.tensorflow_model_loader import YoloV3
 from traffic_analysis.d04_modelling.transfer_learning.convert_darknet_to_tensorflow import parse_anchors
 from traffic_analysis.d04_modelling.transfer_learning.tensorflow_detection_utils import read_class_names
@@ -32,20 +32,20 @@ def transfer_learn(paths, params, train_params, train_file, test_file):
     train_img_cnt = len(open(train_data_path, 'r').readlines())
     val_img_cnt = len(open(test_data_path, 'r').readlines())
     train_batch_num = int(math.ceil(float(train_img_cnt) / train_params['num_batches']))
-    
+
     lr_decay_freq = int(train_batch_num * train_params['lr_decay_epoch'])
-    
+
     logging_file_path = os.path.join(truth_dir_path, 'progress.log')
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s',
                         datefmt='%a, %d %b %Y %H:%M:%S', filename=logging_file_path, filemode='w')
-    
+
     is_training = tf.placeholder(tf.bool, name="phase_train")
     handle_flag = tf.placeholder(tf.string, [], name='iterator_handle_flag')
     pred_boxes_flag = tf.placeholder(tf.float32, [1, None, None])
     pred_scores_flag = tf.placeholder(tf.float32, [1, None, None])
-    gpu_nms_op = gpu_nms(pred_boxes_flag, pred_scores_flag, number_classes, train_params['nms_topk'], 
+    gpu_nms_op = gpu_nms(pred_boxes_flag, pred_scores_flag, number_classes, train_params['nms_topk'],
                          train_params['score_threshold'], train_params['nms_threshold'])
-    
+
     train_dataset = tf.data.TextLineDataset(train_data_path)
     train_dataset = train_dataset.shuffle(train_img_cnt)
     train_dataset = train_dataset.batch(train_params['num_batches'])
@@ -220,23 +220,19 @@ def transfer_learn(paths, params, train_params, train_file, test_file):
                 gt_dict = parse_gt_rec(test_data_path, [416, 416], letterbox_resize=True)
     
                 info = '======> Epoch: {}, global_step: {}, lr: {:.6g} <======\n'.format(epoch, __global_step, __lr)
-    
+
                 for ii in range(number_classes):
-                    recall, precision = evaluate_on_gpu(sess, gpu_nms_op, pred_boxes_flag, pred_scores_flag,
-                                                        __y_pred, __y_true, number_classes, train_params['nms_threshold'])
-                    average_precision = voc_ap(recall, precision, use_07_metric=True)
-                    info += 'EVAL: Class {}: Recall: {:.4f}, Precision: {:.4f}, AP: {:.4f}\n'.format(ii, recall,
-                                                                                                     precision,
-                                                                                                     average_precision)
-                    rec_total.update(recall)
-                    prec_total.update(precision)
+                    npos, nd, rec, prec, ap = voc_eval(gt_dict, val_preds, ii, iou_thres=train_params['eval_threshold'],
+                                                       use_07_metric=False)
+                    info += 'EVAL: Class {}: Recall: {:.4f}, Precision: {:.4f}, AP: {:.4f}\n'.format(ii, rec, prec, ap)
+                    rec_total.update(rec, npos)
+                    prec_total.update(prec, nd)
+                    ap_total.update(ap, 1)
 
                 mAP = ap_total.average
-
                 info += 'EVAL: Recall: {:.4f}, Precison: {:.4f}, mAP: {:.4f}\n'.format(rec_total.average, prec_total.average, mAP)
                 info += 'EVAL: loss: total: {:.2f}, xy: {:.2f}, wh: {:.2f}, conf: {:.2f}, class: {:.2f}\n'.format(
                     val_loss_total.average, val_loss_xy.average, val_loss_wh.average, val_loss_conf.average, val_loss_class.average)
-
                 print(info)
                 logging.info(info)
     
