@@ -45,17 +45,6 @@ def get_cams():
 
 def load_camera_statistics(camera_id):
     output = pd.DataFrame()
-
-    if DEBUG:
-        filepath = os.path.join(paths["s3_video_level_stats"])
-        if not os.path.exists(filepath):
-            return output
-        df = pd.read_csv(filepath, dtype={"camera_id": "category"})
-        df["video_upload_datetime"] = pd.to_datetime(df.video_upload_datetime)
-        df.sort_values("video_upload_datetime", inplace=True)
-        df.drop_duplicates(inplace=True)
-        output = df[df.camera_id == camera_id]
-        return output
     dl = DataLoaderSQL(creds, paths)
     sql = f"select * from {paths['db_video_level']} where camera_id = '{camera_id}';"
     df = dl.select_from_table(sql)
