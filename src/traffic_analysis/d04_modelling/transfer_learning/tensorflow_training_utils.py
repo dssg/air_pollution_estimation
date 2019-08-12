@@ -1033,6 +1033,9 @@ def voc_eval(gt_dict, val_preds, classidx, iou_thres=0.5, use_07_metric=False):
     # compute precision recall
     fp = np.cumsum(fp)
     tp = np.cumsum(tp)
+    print(tp)
+    print(float(nd))
+    print(npos)
     rec = tp / float(npos)
     # avoid divide by zero in case the first detection matches a difficult
     # ground truth
