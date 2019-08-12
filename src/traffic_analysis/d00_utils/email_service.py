@@ -1,23 +1,18 @@
 import smtplib
 import ssl
-import configparser
-import os
-import ast
+
+from traffic_analysis.d00_utils.load_confs import load_credentials
+
+creds = load_credentials()
 
 
 def send_email_warning(msg: str = 'The script responsible for downloading the traffic camera data has been stopped. Please check EC2 instance.',
-                       subj: str = 'ERROR - Data Download Failed'):
-    setup_dir = os.path.join(os.path.dirname(
-        os.path.abspath(__file__)), '..', '..')
-    config = configparser.ConfigParser()
-    config.read(os.path.join(setup_dir, 'conf', 'local', 'credentials.yml'))
-
-    sender_email = config.get('EMAIL', 'address')
-    password = config.get('EMAIL', 'password')
-    recipients = ast.literal_eval(config.get('EMAIL', 'recipients'))
-
-    port = 465  # For SSL
-    smtp_server = "smtp.gmail.com"
+                       subj: str = 'ERROR - Data Download Failed',
+                       port=465,
+                       smtp_server="smtp.gmail.com"):
+    sender_email = creds['email']['address']
+    password = creds['email']['password']
+    recipients = creds['email']['recipients']
     subject = subj
     text = msg
     message = 'Subject: {}\n\n{}'.format(subject, text)
