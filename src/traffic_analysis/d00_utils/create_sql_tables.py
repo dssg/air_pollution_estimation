@@ -149,7 +149,7 @@ def create_eval_sql_tables(creds: dict,
             analyser_type VARCHAR(50)
 
         )
-        """        
+        """
     ]
 
     # execute queries

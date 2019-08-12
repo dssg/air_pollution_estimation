@@ -75,7 +75,7 @@ def update_eval_tables(db_frame_level_name: str,
         {"n_videos": 'int64'})
     video_level_performance.dropna(how='any', inplace=True)
     video_level_performance['creation_datetime'] = datetime.datetime.now()
-    video_level_performance['analyser'] = analyser_type
+    video_level_performance['analyser_type'] = analyser_type
 
     # TODO: put this in params
     video_level_performance = video_level_performance[["vehicle_type",
@@ -86,7 +86,7 @@ def update_eval_tables(db_frame_level_name: str,
                                                        "sd",
                                                        "n_videos",
                                                        "creation_datetime",
-                                                       "analyser"
+                                                       "analyser_type"
                                                        ]]
     dl_sql.add_to_sql(df=video_level_performance, table_name="eval_video_performance")
 
@@ -99,7 +99,7 @@ def update_eval_tables(db_frame_level_name: str,
           })
     video_level_diff.dropna(how='any',inplace=True)
     video_level_diff['creation_datetime'] = datetime.datetime.now()
-    video_level_diff['analyser'] = analyser_type
+    video_level_diff['analyser_type'] = analyser_type
 
     print("VIDEO LEVEL DIFF FOR TRACKER TYPE ", analyser_type)
     print(video_level_diff)
@@ -116,7 +116,7 @@ def update_eval_tables(db_frame_level_name: str,
                                          "starts_diff",
                                          "stops_diff",
                                          "creation_datetime",
-                                         "analyser"
+                                         "analyser_type"
                                          ]]
     dl_sql.add_to_sql(df=video_level_diff, table_name="eval_video_diffs")
 
@@ -124,19 +124,20 @@ def update_eval_tables(db_frame_level_name: str,
     frame_level_map = chunk_evaluator.evaluate_frame_level()
     frame_level_map.dropna(how='any',inplace=True)
     frame_level_map['creation_datetime'] = datetime.datetime.now()
-    frame_level_map['analyser'] = analyser_type
+    frame_level_map['analyser_type'] = analyser_type
 
     frame_level_map = frame_level_map[["camera_id",
                                        "video_upload_datetime",
                                        "vehicle_type",
                                        "mean_avg_precision",
                                        "creation_datetime",
-                                       "analyser"
+                                       "analyser_type"
                                        ]]
     print("FRAME LEVEL MAP FOR TRACKER TYPE ", analyser_type)
+    print(frame_level_map.columns)
     print(frame_level_map)
 
     dl_sql.add_to_sql(df=frame_level_map, table_name="eval_frame_stats")
-            
-    if return_data: 
+
+    if return_data:
         return frame_level_map, video_level_performance, video_level_diff
