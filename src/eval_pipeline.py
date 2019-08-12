@@ -21,6 +21,7 @@ verbose = True
 # pipeline start
 traffic_analysers = create_traffic_analysers(params=params,
                                              paths=paths,
+                                             s3_credentials=s3_credentials,
                                              verbose=verbose)
 # If running first time:
 # get annotation xmls from s3 saves json on s3 containing to corresponding video filepaths
