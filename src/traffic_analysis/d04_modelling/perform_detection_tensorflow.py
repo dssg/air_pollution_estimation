@@ -80,7 +80,7 @@ def initialize_tensorflow_model(params, paths, s3_credentials, sess):
     classes = read_class_names(class_name_path)
     n_classes = len(classes)
 
-    init_data = tf.placeholder(tf.float32, [1, 416, 416, 3], name='init_data')
+    init_data = tf.placeholder(tf.float32, [None, 416, 416, 3], name='init_data')
     yolo_model = YoloV3(n_classes, anchors)
     with tf.variable_scope('YoloV3'):
         feature_map = yolo_model.forward(init_data, False)
@@ -123,23 +123,34 @@ def detect_objects_in_images(images, paths, detection_model, model_initializer, 
         formatted_images.append(image_array)
         formatting_params.append(params)
 
-    boxes_unscaled, confs, label_idxs = sess.run(model_initializer, feed_dict={init_data: np.array(formatted_images)})
+    boxes_unscaled, confs, label_idxs = sess.run(model_initializer, feed_dict={init_data: np.squeeze(np.array(formatted_images))})
 
-    # rescale the coordinates to the original image
-    boxes = reformat_boxes(boxes_unscaled, formatting_params)
-    confs = confs.tolist()
+    all_boxes = []
+    all_labels = []
+    all_confs = []
 
-    labels = label_detections(label_idxs=label_idxs,
-                              model_name=detection_model,
-                              paths=paths)
+    for boxes, params, con, labels in zip(boxes_unscaled, formatting_params, confs, label_idxs):
+        # rescale the coordinates to the original image
+        boxes = np.expand_dims(boxes, axis=0)
+        labels = np.expand_dims(labels, axis=0)
+        con = np.expand_dims(con, axis=0)
+        boxes = reformat_boxes(boxes, params)
+        con = con.tolist()
+        
+        labels = label_detections(label_idxs=labels,
+                                  model_name=detection_model,
+                                  paths=paths)
 
-    if selected_labels is not None:
-        boxes, labels, confs = choose_objects_of_selected_labels(bboxes_in=boxes,
-                                                                 labels_in=labels,
-                                                                 confs_in=confs,
-                                                                 selected_labels=selected_labels)
+        if selected_labels is not None:
+            boxes, labels, con = choose_objects_of_selected_labels(bboxes_in=boxes,
+                                                                     labels_in=labels,
+                                                                     confs_in=con,
+                                                                     selected_labels=selected_labels)
+        all_boxes.append(boxes)
+        all_labels.append(labels)
+        all_confs.append(confs)
 
-    return boxes, labels, confs
+    return all_boxes, all_labels, all_confs
 
 
 def format_image_for_yolo(image_capture):
