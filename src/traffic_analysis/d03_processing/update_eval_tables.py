@@ -6,8 +6,8 @@ import datetime
 from traffic_analysis.d00_utils.load_confs import load_parameters, load_credentials, load_paths
 
 
-def update_eval_tables(db_frame_level_name, 
-                       db_video_level_name,
+def update_eval_tables(db_frame_level_name: str, 
+                       db_video_level_name: str,
                        params: dict,
                        creds: dict, 
                        paths: dict,
@@ -16,6 +16,22 @@ def update_eval_tables(db_frame_level_name,
     """Pulls frame level and video level info from specified db names, 
     and writes video level/frame level evaluation results to corresponding 
     video level/frame level PSQL evaluation tables
+
+    Args: 
+      db_frame_level_name: name of frame level table (corresponding to analyser_type)
+                           to evaluate
+      db_video_level_name: name of video level table (corresponding to analyser_type)
+                           to evaluate
+      params: specified by params.yml 
+      creds: specified by creds.yml
+      paths: specified by paths.yml
+      analyser_type: name of the traffic analyser being evaluated
+      return_data: if true, will return the eval tables
+    Raises
+    Returns: 
+      frame_level_map: pandas DataFrame of frame level statistics (mean average precision)
+      video_level_performance: pandas DataFrame of video level summary statistics
+      video_level_diff: pandas DataFrame of video level statistics (non-summarize)
     """
     # get xmls from s3
     dl_s3 = DataLoaderS3(s3_credentials=creds[paths['s3_creds']],
@@ -86,6 +102,8 @@ def update_eval_tables(db_frame_level_name,
     video_level_diff['creation_datetime'] = datetime.datetime.now()
     video_level_diff['analyser'] = analyser_type
 
+    print("VIDEO LEVEL DIFF FOR TRACKER TYPE ", analyser_type)
+    print(video_level_diff)
     video_level_diff = video_level_diff[["camera_id",
                                         "video_upload_datetime",
                                         "vehicle_type",
@@ -116,6 +134,9 @@ def update_eval_tables(db_frame_level_name,
                                       "creation_datetime",
                                       "analyser"
                                       ]]
+    print("FRAME LEVEL MAP FOR TRACKER TYPE ", analyser_type)
+    print(frame_level_map)
+
     dl_sql.add_to_sql(df=frame_level_map, table_name="eval_frame_stats")
             
     if return_data: 
