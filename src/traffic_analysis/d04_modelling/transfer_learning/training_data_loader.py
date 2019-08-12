@@ -5,9 +5,6 @@ from PIL import Image
 import numpy as np
 from enum import Enum
 
-ospath = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../..')
-sys.path.append(ospath)
-
 from traffic_analysis.d00_utils.load_confs import load_paths, load_credentials
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 from traffic_analysis.d00_utils.data_retrieval import delete_and_recreate_dir, mp4_to_npy
@@ -87,11 +84,11 @@ class DataLoader(object):
             impath = labels.split(' ')[1]
             folder = impath.split('/')[-1][:9]
 
-            file_to_download = paths['s3_detrac_images'] + \
+            file_to_download = self.paths['s3_detrac_images'] + \
                                folder + '/' + \
                                'img' + image_num + '.jpg'
 
-            download_file_to = paths['temp_raw_images'] + \
+            download_file_to = self.paths['temp_raw_images'] + \
                                folder + '_' + \
                                image_num + '.jpg'
 
@@ -113,7 +110,7 @@ class DataLoader(object):
         xml_file_name = xml_file.split('/')[-1]
         xml_path = self.paths['temp_annotation'] + xml_file.split('/')[-1]
 
-        class_names_path = os.path.join(paths['local_detection_model'], 'yolov3', 'coco.names')
+        class_names_path = os.path.join(self.paths['local_detection_model'], 'yolov3', 'coco.names')
         classes = read_class_names(class_names_path)
 
         try:
@@ -209,10 +206,13 @@ class DataLoader(object):
 
     def get_cvat_video(self, xml_file_name):
 
-        video_path = get_s3_video_path_from_xml_name(xml_file_name=xml_file_name, s3_creds=self.creds[paths['s3_creds']], paths=self.paths)
+        video_path = get_s3_video_path_from_xml_name(xml_file_name=xml_file_name,
+                                                     s3_creds=self.creds[self.paths['s3_creds']],
+                                                     paths=self.paths)
         if(video_path):
-            download_file_to = paths['temp_raw_video'] + 'test' + '.mp4'
-            self.data_loader_s3.download_file(path_of_file_to_download=video_path, path_to_download_file_to=download_file_to)
+            download_file_to = self.paths['temp_raw_video'] + 'test' + '.mp4'
+            self.data_loader_s3.download_file(path_of_file_to_download=video_path,
+                                              path_to_download_file_to=download_file_to)
             return mp4_to_npy(download_file_to)
         else:
             return
@@ -265,19 +265,3 @@ class DataLoader(object):
             return results
         else:
             return None
-
-
-paths = load_paths()
-creds = load_credentials()
-
-dl = DataLoader(datasets=[TransferDataset.detrac], creds=creds, paths=paths)
-x_train, y_train, x_test, y_test = dl.get_train_and_test(.8)
-
-saved_text_files_dir = paths['temp_annotation']
-with open(saved_text_files_dir + 'train.txt', 'w') as f:
-    for item in y_train:
-        f.write("%s\n" % item)
-
-with open(saved_text_files_dir + 'test.txt', 'w') as f:
-    for item in y_test:
-        f.write("%s\n" % item)
