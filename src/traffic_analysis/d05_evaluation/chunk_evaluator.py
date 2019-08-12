@@ -15,7 +15,6 @@ class ChunkEvaluator:
     """
     def __init__(self,
                  annotation_xml_paths: list,
-                 annotations_videos_name_mapper: dict,
                  selected_labels: list,
                  video_level_df: pd.DataFrame = None,
                  frame_level_df: pd.DataFrame = None,
@@ -26,11 +25,7 @@ class ChunkEvaluator:
         for xml_path in annotation_xml_paths:
             xml_name = re.split(r"\\|/", xml_path)[-1]
             camera_id, video_upload_datetime = parse_video_or_annotation_name(xml_name)
-            try:
-                corresp_video_path = annotations_videos_name_mapper[xml_path]
-            except:
-                corresp_video_path = None
-            annotations_available[xml_path] = [camera_id, video_upload_datetime, corresp_video_path]
+            annotations_available[xml_path] = [camera_id, video_upload_datetime]
 
         annotations_available = (pd.DataFrame
                                  .from_dict(annotations_available,

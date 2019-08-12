@@ -5,23 +5,17 @@ import pandas as pd
 import datetime
 from traffic_analysis.d00_utils.load_confs import load_parameters, load_credentials, load_paths
 
-params = load_parameters()
-creds = load_credentials()
-paths = load_paths()
-
-s3_credentials = creds[paths['s3_creds']]
-bucket_name = paths['bucket_name']
-
 
 def update_eval_tables(db_frame_level_name, 
                        db_video_level_name,
                        params: dict,
                        creds: dict, 
                        paths: dict,
-                       annotations_videos_name_mapper: dict,
                        analyser_type: str,
                        return_data=False): 
-    """
+    """Pulls frame level and video level info from specified db names, 
+    and writes video level/frame level evaluation results to corresponding 
+    video level/frame level PSQL evaluation tables
     """
     # get xmls from s3
     dl_s3 = DataLoaderS3(s3_credentials=creds[paths['s3_creds']],
@@ -52,7 +46,6 @@ def update_eval_tables(db_frame_level_name,
 
     # run evaluation for analyser type 
     chunk_evaluator = ChunkEvaluator(annotation_xml_paths=annotation_xmls,
-                                      annotations_videos_name_mapper=annotations_videos_name_mapper,
                                      frame_level_df=frame_level_df,
                                      video_level_df=video_level_df,
                                      selected_labels=params["selected_labels"],
