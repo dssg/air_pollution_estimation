@@ -48,7 +48,6 @@ def load_camera_statistics(camera_id):
     dl = DataLoaderSQL(creds, paths)
     sql = f"select * from {paths['db_video_level']} where camera_id = '{camera_id}';"
     df = dl.select_from_table(sql)
-    print(df)
     if df is None:
         return output
 
