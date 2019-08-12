@@ -216,8 +216,8 @@ def get_avg_precision_at_iou(gt_bboxes: dict, pred_bboxes: dict, iou_thr: float 
 
     precisions = []
     recalls = []
-    model_thrs = [
-]    frame_results = {}
+    model_thrs = []
+    frame_results = {}
     # Loop over model score thresholds and calculate precision, recall
     for thres_idx, model_score_thres in enumerate(sorted_model_scores[:-1]):
         # for each model_score_thres, prune pred_bboxes dictionary so that it only contains
