@@ -238,6 +238,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                     bboxes_detected, labels_detected, confs_detected = detect_objects_cv(image_capture=first_frame,
                                                                                          params=self.params,
                                                                                          paths=self.paths,
+                                                                                         detection_model=self.detection_model,
                                                                                          s3_credentials=self.s3_credentials,
                                                                                          selected_labels=self.selected_labels)
                 elif self.detection_model == 'yolov3_tf':
