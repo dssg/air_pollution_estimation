@@ -89,8 +89,6 @@ for i, (analyser_name, (traffic_analyser, param_set)) in enumerate(traffic_analy
             print("Analysing current chunk failed. Continuing to next chunk.")
 
         chunk_counter += 1
-        if chunk_counter == 1:
-            break
         selected_videos = selected_videos[chunk_size:]
         delete_and_recreate_dir(paths["temp_video"])
 
