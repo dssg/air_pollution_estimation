@@ -47,17 +47,17 @@ def yolov3_darknet_to_tensorflow(paths,
 
         # save model locally as tensorflow .ckpt
         with tf.Session() as sess:
-            with tf.device('/device:GPU:' + params['modelling']['GPU_number']):
+            with tf.device('/device:GPU:' + str(params['GPU_number'])):
                 # tf model initialization
                 inputs = tf.placeholder(tf.float32, [1, img_size, img_size, 3])
 
                 with tf.variable_scope('YoloV3'):  # i think this generates the model output nodes (= feature_map)?
                     feature_map = model.forward(inputs)
 
-                saver = tf.train.Saver(var_list=tf.global_variables(scope='YoloV3'))
-                load_ops = load_weights(tf.global_variables(scope='YoloV3'), weight_path)
-                sess.run(load_ops)
-                saver.save(sess, save_path=save_path)
+            saver = tf.train.Saver(var_list=tf.global_variables(scope='YoloV3'))
+            load_ops = load_weights(tf.global_variables(scope='YoloV3'), weight_path)
+            sess.run(load_ops)
+            saver.save(sess, save_path=save_path)
 
 
 def parse_anchors(paths):
