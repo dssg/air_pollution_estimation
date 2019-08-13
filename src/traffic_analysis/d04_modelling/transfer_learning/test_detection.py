@@ -30,7 +30,7 @@ def test_detection(image_path):
         bbox, label, confidence = opencv_detect(imcap, paths=paths, params=params, s3_credentials=s3_credentials)
         end_time = time.time()
 
-    elif detection_method == 'yolov3_tf':
+    elif detection_method == '20190812_yolov3_trained_test':
         start_time = time.time()
         bbox, label, confidence = tensorflow_detect(imcap, paths=paths, params=params, s3_credentials=s3_credentials,
                                                     selected_labels=None)
@@ -44,9 +44,10 @@ def test_detection(image_path):
 
     cv2.imwrite(image_path[:-4] + 'out' + image_path[-4:], imcap)
 
+    print(label)
     print(bbox)
     print(imcap.shape)
 
 
-test_detection('C:/Users/joh3146/Documents/dssg/air_pollution_estimation/data/frame_level/frame001.jpg')
-# test_detection('/home/jack_hensley/air_pollution_estimation/data/frame_level/frame001.jpg')
+# test_detection('C:/Users/joh3146/Documents/dssg/air_pollution_estimation/data/frame_level/frame001.jpg')
+test_detection('/home/jack_hensley/air_pollution_estimation/data/frame_level/frame001.jpg')
