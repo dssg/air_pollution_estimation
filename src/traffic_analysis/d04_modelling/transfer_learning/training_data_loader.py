@@ -77,6 +77,9 @@ class DataLoader(object):
             if (result):
                 y += result
 
+            if len(y) == 10:
+                break
+
         print('Loading detrac images...')
         x = []
         for labels in y:
