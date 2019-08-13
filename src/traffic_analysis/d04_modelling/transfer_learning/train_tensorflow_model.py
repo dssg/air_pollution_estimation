@@ -21,6 +21,10 @@ def transfer_learn(paths, params, train_params, train_file, test_file, selected_
     """ trains last three layers of yolov3 network on custom dataset
     """
 
+    transfer_learn_model_dir = os.path.join(paths['local_detection_model'], train_params['trained_model_name'])
+    if not os.path.exists(transfer_learn_model_dir):
+        os.makedirs(transfer_learn_model_dir)
+
     truth_dir_path = paths['temp_annotation']
     class_name_path = os.path.join(paths['local_detection_model'], 'yolov3', 'coco.names')  # CHANGE THIS
     classes = read_class_names(class_name_path)
@@ -250,7 +254,7 @@ def transfer_learn(paths, params, train_params, train_file, test_file, selected_
     
                 if mAP > best_mAP:
                     best_mAP = mAP
-                    saver_best.save(sess, os.path.join(train_params['trained_model_name'],
+                    saver_best.save(sess, os.path.join(transfer_learn_model_dir,
                                                        'best_model_Epoch_{}_step_{}_mAP_{:.4f}_loss_{:.4f}_lr_{:.7g}'.format(epoch, int(__global_step), best_mAP, val_loss_total.average, __lr)))
     
                 writer.add_summary(make_summary('evaluation/val_mAP', mAP), global_step=epoch)
