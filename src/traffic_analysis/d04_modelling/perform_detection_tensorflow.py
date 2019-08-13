@@ -187,9 +187,5 @@ def reformat_boxes(boxes_opp_coords, formatting_params):
         height = int(boxes_height[i] if boxes_height[i] <= formatting_params['ori_height'] else formatting_params['ori_height'])
 
         boxes_reformatted[i] = [xmin, ymin, width, height]
-    # boxes_reformatted = [[boxes_opp_coords[i][0], boxes_opp_coords[i][1], boxes_width[i], boxes_height[i]]
-                         # for i in range(number_of_boxes)]
-
-    # boxes_reformatted = [[int(i) for i in nested] for nested in boxes_reformatted]
 
     return boxes_reformatted
