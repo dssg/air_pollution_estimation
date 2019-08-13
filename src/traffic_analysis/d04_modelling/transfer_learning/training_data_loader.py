@@ -89,7 +89,6 @@ class DataLoader(object):
             image_num = labels.split(' ')[0].zfill(5)
             impath = labels.split(' ')[1]
             folder = impath.split('/')[-1][:9]
-            print('---- downloading images from %s ----' % folder)
 
             file_to_download = self.paths['s3_detrac_images'] + \
                                folder + '/' + \
@@ -194,8 +193,6 @@ class DataLoader(object):
                 y += result
                 vid_names.append(vid_name)
 
-        print(len(y))
-        print(vid_names)
 
         print('Loading cvat videos...')
 
@@ -220,7 +217,6 @@ class DataLoader(object):
                     im_path = os.path.join(self.paths['temp_raw_images'], video_name + '_' + image_num + '.jpg')
                     if im_path in image_path_in_y:
                         x.append(np.asarray(image, dtype="int32"))
-                        print(np.asarray(image).shape)
                         cv2.imwrite(im_path, image)
                     count += 1
                 else:
@@ -244,7 +240,6 @@ class DataLoader(object):
     def parse_cvat_xml_file(self, xml_file):
 
         path = self.paths['temp_annotation'] + xml_file.split('/')[-1]
-        print(path)
 
         try:
             self.data_loader_s3.download_file(path_of_file_to_download=xml_file,
