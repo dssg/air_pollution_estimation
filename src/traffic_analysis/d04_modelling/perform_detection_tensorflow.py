@@ -119,6 +119,7 @@ def detect_objects_in_image(image_capture, paths, detection_model, model_initial
 
     # rescale the coordinates to the original image
     boxes = reformat_boxes(boxes_unscaled, formatting_params)
+
     confs = confs.tolist()
 
     labels = label_detections(label_idxs=label_idxs,
@@ -148,9 +149,13 @@ def format_image_for_yolo(image_capture):
     image_capture_rgb_np = np.asarray(image_capture_rgb, np.float32)
     image_capture_formatted = image_capture_rgb_np[np.newaxis, :] / 255.
 
+    ori_height, ori_width = image_capture.shape[:2]
+
     formatting_params = {'resize_ratio': resize_ratio,
                          'dw': dw,
-                         'dh': dh}
+                         'dh': dh,
+                         'ori_height': ori_height,
+                         'ori_width': ori_width}
 
     return image_capture_formatted, formatting_params
 
@@ -174,9 +179,17 @@ def reformat_boxes(boxes_opp_coords, formatting_params):
     boxes_width = boxes_opp_coords[:, 2] - boxes_opp_coords[:, 0]
     boxes_height = boxes_opp_coords[:, 3] - boxes_opp_coords[:, 1]
 
-    boxes_reformatted = [[boxes_opp_coords[i][0], boxes_opp_coords[i][1], boxes_width[i], boxes_height[i]]
-                         for i in range(number_of_boxes)]
+    boxes_reformatted = [[] for i in range(number_of_boxes)]
+    for i in range(number_of_boxes):
+        xmin = int(boxes_opp_coords[i][0] if boxes_opp_coords[i][0] >=0 else 0) 
+        ymin = int(boxes_opp_coords[i][1] if boxes_opp_coords[i][1] >=0 else 0) 
+        width = int(boxes_width[i] if boxes_width[i] <= formatting_params['ori_width'] else formatting_params['ori_width'])
+        height = int(boxes_height[i] if boxes_height[i] <= formatting_params['ori_height'] else formatting_params['ori_height'])
 
-    boxes_reformatted = [[int(i) for i in nested] for nested in boxes_reformatted]
+        boxes_reformatted[i] = [xmin, ymin, width, height]
+    # boxes_reformatted = [[boxes_opp_coords[i][0], boxes_opp_coords[i][1], boxes_width[i], boxes_height[i]]
+                         # for i in range(number_of_boxes)]
+
+    # boxes_reformatted = [[int(i) for i in nested] for nested in boxes_reformatted]
 
     return boxes_reformatted
