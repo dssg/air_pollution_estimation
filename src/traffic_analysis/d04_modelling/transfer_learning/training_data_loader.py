@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 from PIL import Image
 import numpy as np
 from enum import Enum
+import cv2
 
 from traffic_analysis.d00_utils.load_confs import load_paths, load_credentials
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
@@ -185,29 +186,46 @@ class DataLoader(object):
 
         print('Parsing cvat xmls...')
         y = []
-        xml_files = self.data_loader_s3.list_objects(prefix=self.paths['s3_cvat_annotations'])
+        xml_files = self.data_loader_s3.list_objects(prefix=self.paths['s3_cvat_training_annotations'])
+        vid_names = []
         for xml_file in xml_files:
-            result = self.parse_cvat_xml_file(xml_file)
+            result, vid_name = self.parse_cvat_xml_file(xml_file)
             if(result):
                 y += result
+                vid_names.append(vid_name)
+
+        print(len(y))
+        print(vid_names)
 
         print('Loading cvat videos...')
+
         # Build a list of the videos needed
         video_set = set()
+        image_path_in_y = []
         for labels in y:
-            video_set.add(labels.split(' ')[1])
+            video_set.add(labels.split(' ')[1].split('/')[-1][:-10])
+            image_path_in_y.append(labels.split(' ')[1])
 
         x = []
-
         for id in video_set:
-            video = self.get_cvat_video(id)
+            video, video_path = self.get_cvat_video(id)
+            video_name = video_path.split('/')[-1][:-4]
+            vidcap = cv2.VideoCapture(video_path)
 
-            if(video is not None):
-                for labels in y:
-                    if(labels.split(' ')[1] == id):
-                        image_num = labels.split(' ')[0]
-                        x.append(video[int(image_num), :, :, :])
-
+            count = 0
+            while vidcap.isOpened():
+                success, image = vidcap.read()
+                if success:
+                    image_num = str(count).zfill(5)
+                    im_path = os.path.join(self.paths['temp_raw_images'], video_name + '_' + image_num + '.jpg')
+                    if im_path in image_path_in_y:
+                        x.append(np.asarray(image, dtype="int32"))
+                        print(np.asarray(image).shape)
+                        cv2.imwrite(im_path, image)
+                    count += 1
+                else:
+                    break
+            vidcap.release()
         return x, y
 
     def get_cvat_video(self, xml_file_name):
@@ -216,16 +234,17 @@ class DataLoader(object):
                                                      s3_creds=self.creds[self.paths['s3_creds']],
                                                      paths=self.paths)
         if(video_path):
-            download_file_to = self.paths['temp_raw_video'] + 'test' + '.mp4'
+            download_file_to = os.path.join(self.paths['temp_raw_video'], xml_file_name + '.mp4')
             self.data_loader_s3.download_file(path_of_file_to_download=video_path,
                                               path_to_download_file_to=download_file_to)
-            return mp4_to_npy(download_file_to)
+            return mp4_to_npy(download_file_to), download_file_to
         else:
             return
 
     def parse_cvat_xml_file(self, xml_file):
 
         path = self.paths['temp_annotation'] + xml_file.split('/')[-1]
+        print(path)
 
         try:
             self.data_loader_s3.download_file(path_of_file_to_download=xml_file,
@@ -234,30 +253,43 @@ class DataLoader(object):
             print("Could not download file " + xml_file)
 
         root = ET.parse(path).getroot()
-        im_path = path.split('/')[-1][:-4]
-        im_width = 250
-        im_height = 250
+        vid_name = path.split('/')[-1][:-4]
+        im_dir = self.paths['temp_raw_images']
+
+        im_width = 352
+        im_height = 288
+
+        class_names_path = os.path.join(self.paths['local_detection_model'], 'yolov3', 'coco.names')
+        classes = read_class_names(class_names_path)
 
         frame_dict = {}
 
         for track in root.iter('track'):
-            if track.attrib['label'] == 'vehicle':
-                for frame in track.iter('box'):
-                    frame_num = frame.attrib['frame']
+            for frame in track.iter('box'):
+                frame_num = frame.attrib['frame']
 
-                    if(frame_num not in frame_dict):
-                        frame_dict[frame_num] = str(frame_num) + ' ' + \
-                                                str(im_path) + ' ' + \
-                                                str(im_width) + ' ' + \
-                                                str(im_height)
-
+                if(frame_num not in frame_dict):
+                    frame_name = str(frame_num).zfill(5)
+                    im_path = os.path.join(im_dir, vid_name + '_' + frame_name + '.jpg')
+                    frame_dict[frame_num] = str(frame_num) + ' ' + \
+                                            str(im_path) + ' ' + \
+                                            str(im_width) + ' ' + \
+                                            str(im_height)
+                if track.attrib['label'] == 'vehicle':
                     vehicle_type = frame.findall('attribute')[2].text
+                    if vehicle_type == 'van':
+                        vehicle_type_idx = 2  # say vans are cars because we don't distinguish
+                    else:
+                        for tick in range(len(classes)):
+                            if classes[tick] == vehicle_type:
+                                vehicle_type_idx = tick
+
                     x_min = float(frame.attrib['xtl'])
                     y_min = float(frame.attrib['ytl'])
                     x_max = float(frame.attrib['xbr'])
                     y_max = float(frame.attrib['ybr'])
 
-                    frame_dict[frame_num] += ' ' + str(vehicle_type) + \
+                    frame_dict[frame_num] += ' ' + str(vehicle_type_idx) + \
                                   ' ' + str(x_min) + \
                                   ' ' + str(y_min) + \
                                   ' ' + str(x_max) + \
@@ -268,6 +300,6 @@ class DataLoader(object):
             results.append(frame_dict[key])
 
         if len(results) > 1:
-            return results
+            return results, vid_name
         else:
             return None
