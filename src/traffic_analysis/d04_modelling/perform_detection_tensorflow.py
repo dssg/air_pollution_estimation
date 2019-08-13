@@ -65,8 +65,8 @@ def initialize_tensorflow_model(params, paths, s3_credentials, sess):
     return model_initializer, init_data, detection_model
 
 
-def detect_objects_in_images(images, paths, detection_model, model_initializer, init_data, sess,
-                             selected_labels=None):
+def detect_objects_tf(images, paths, detection_model, model_initializer, init_data, sess,
+                      selected_labels=None):
     """ uses a tensorflow implementation of yolo to detect objects in a frame
         Args:
             image_capture (nparray): numpy array containing the captured image (width, height, rbg)
