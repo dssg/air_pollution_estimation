@@ -77,12 +77,16 @@ class DataLoader(object):
             if (result):
                 y += result
 
+            if len(y) == 10:
+                break
+
         print('Loading detrac images...')
         x = []
         for labels in y:
             image_num = labels.split(' ')[0].zfill(5)
             impath = labels.split(' ')[1]
             folder = impath.split('/')[-1][:9]
+            print('---- downloading images from %s ----' % folder)
 
             file_to_download = self.paths['s3_detrac_images'] + \
                                folder + '/' + \

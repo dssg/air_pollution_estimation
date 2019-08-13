@@ -64,7 +64,7 @@ def populate_labels(model_name: str, paths):
     """
 
     model_file_path = paths['local_detection_model']
-    labels_file_path = os.path.join(model_file_path, model_name, 'coco.names')
+    labels_file_path = os.path.join(model_file_path, 'yolov3', 'coco.names')
     f = open(labels_file_path, 'r')
     labels = [line.strip() for line in f.readlines()]
 
