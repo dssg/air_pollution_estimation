@@ -47,8 +47,8 @@ if verbose:
 
 selected_videos_master = selected_videos.copy()
 for analyser_name, traffic_analyser in traffic_analysers.items():
-    db_frame_level_name = f"{paths['eval_db_frame_level_prefix']}_{analyser_name}"
-    db_video_level_name = f"{paths['eval_db_video_level_prefix']}_{analyser_name}"
+    db_frame_level_name = f"{paths['eval_db_frame_level_prefix']}_{analyser_name}".replace("-", "_")
+    db_video_level_name = f"{paths['eval_db_video_level_prefix']}_{analyser_name}".replace("-", "_")
 
     # wipe and recreate stats tables for tracker types
     create_primary_sql_tables(db_frame_level_name=db_frame_level_name,
