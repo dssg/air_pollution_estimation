@@ -40,7 +40,7 @@ pipeline_settings:
 
 eval_pipeline_settings:
   eval_ref_name: "annotated_videos"
-  eval_chunk_size: 10
+  eval_chunk_size: 3
   eval_params_order: ['tracker_type', 'detection_model', "detection_frequency", "detection_iou_threshold", "stop_start_iou_threshold"]
   eval_tracker_types: ['kcf', 'mosse', 'csrt']
   eval_detection_models: ['yolov3-tiny','yolov3_tf','yolov3']
