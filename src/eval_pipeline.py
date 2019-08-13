@@ -46,9 +46,12 @@ if verbose:
     print("Running evaluation for traffic analysers: ", traffic_analysers.keys())
 
 selected_videos_master = selected_videos.copy()
-for analyser_name, traffic_analyser in traffic_analysers.items():
-    db_frame_level_name = f"{paths['eval_db_frame_level_prefix']}_{analyser_name}".replace("-", "_")
-    db_video_level_name = f"{paths['eval_db_video_level_prefix']}_{analyser_name}".replace("-", "_")
+for i, (analyser_name, (traffic_analyser, param_set)) in enumerate(traffic_analysers.items()):
+    if verbose: 
+        print(f"Now evaluating {analyser_name} with param set: {param_set}")
+    
+    db_frame_level_name = f"{paths['eval_db_frame_level_prefix']}_{analyser_name}_{i}"
+    db_video_level_name = f"{paths['eval_db_video_level_prefix']}_{analyser_name}_{i}"
 
     # wipe and recreate stats tables for tracker types
     create_primary_sql_tables(db_frame_level_name=db_frame_level_name,
@@ -104,7 +107,8 @@ for analyser_name, traffic_analyser in traffic_analysers.items():
                        creds=creds,
                        paths=paths,
                        avg_runtime=avg_runtime,
-                       analyser_type=analyser_name)
+                       evaluated_params=param_set
+                       )
 
     if verbose:
         print("Successfully evaluated videos for one tracking type")

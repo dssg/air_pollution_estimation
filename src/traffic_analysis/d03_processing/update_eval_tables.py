@@ -11,7 +11,8 @@ def update_eval_tables(db_frame_level_name: str,
                        creds: dict,
                        paths: dict,
                        avg_runtime: float,
-                       analyser_type: str,
+                       evaluated_params: dict,
+                       # analyser_type: str,
                        return_data=False):
     """Pulls frame level and video level info from specified db names, 
     and writes video level/frame level evaluation results to corresponding 
@@ -25,7 +26,7 @@ def update_eval_tables(db_frame_level_name: str,
       params: specified by params.yml 
       creds: specified by creds.yml
       paths: specified by paths.yml
-      analyser_type: name of the traffic analyser being evaluated
+      evaluated_params: dictionary of the parameters which have been altered
       return_data: if true, will return the eval tables
     Raises
     Returns: 
@@ -74,10 +75,11 @@ def update_eval_tables(db_frame_level_name: str,
     # video level performance
     video_level_performance = video_level_performance.astype(
         {"n_videos": 'int64'})
-    video_level_performance.dropna(how='any', inplace=True)
-    video_level_performance['creation_datetime'] = datetime.datetime.now()
-    video_level_performance['analyser_type'] = analyser_type
+    video_level_performance = format_and_add_static_info(video_level_performance, 
+                                                         evaluated_params=evaluated_params)
+
     video_level_performance['avg_analyser_runtime'] = avg_runtime
+
     # TODO: put this in params
     video_level_performance = video_level_performance[["vehicle_type",
                                                        "stat",
@@ -87,9 +89,10 @@ def update_eval_tables(db_frame_level_name: str,
                                                        "sd",
                                                        "n_videos",
                                                        "creation_datetime",
-                                                       "analyser_type",
                                                        "avg_analyser_runtime"
-                                                       ]]
+                                                       ] + 
+                                                       params["eval_params_order"]
+                                                       ]
     dl_sql.add_to_sql(df=video_level_performance,
                       table_name=paths["eval_db_video_stats"])
 
@@ -100,9 +103,8 @@ def update_eval_tables(db_frame_level_name: str,
          "starts_true": "int64",
          "stops_true": "int64",
          })
-    video_level_diff.dropna(how='any', inplace=True)
-    video_level_diff['creation_datetime'] = datetime.datetime.now()
-    video_level_diff['analyser_type'] = analyser_type
+    video_level_diff = format_and_add_static_info(video_level_diff, 
+                                                  evaluated_params=evaluated_params)
 
     video_level_diff = video_level_diff[["camera_id",
                                          "video_upload_datetime",
@@ -116,28 +118,44 @@ def update_eval_tables(db_frame_level_name: str,
                                          "counts_diff",
                                          "starts_diff",
                                          "stops_diff",
-                                         "creation_datetime",
-                                         "analyser_type"
-                                         ]]
+                                         "creation_datetime"
+                                         ] + 
+                                          params["eval_params_order"]
+                                         ]
+
     dl_sql.add_to_sql(df=video_level_diff,
                       table_name=paths["eval_db_video_diffs"])
 
     # frame level eval
     frame_level_map = chunk_evaluator.evaluate_frame_level()
-    frame_level_map.dropna(how='any', inplace=True)
-    frame_level_map['creation_datetime'] = datetime.datetime.now()
-    frame_level_map['analyser_type'] = analyser_type
+
+    frame_level_map = format_and_add_static_info(frame_level_map, 
+                                                  evaluated_params=evaluated_params)
 
     frame_level_map = frame_level_map[["camera_id",
                                        "video_upload_datetime",
                                        "vehicle_type",
                                        "mean_avg_precision",
                                        "creation_datetime",
-                                       "analyser_type"
-                                       ]]
+                                       ] + 
+                                        params["eval_params_order"]
+                                       ]
 
     dl_sql.add_to_sql(df=frame_level_map,
                       table_name=paths["eval_db_frame_stats"])
 
     if return_data:
         return frame_level_map, video_level_performance, video_level_diff
+
+
+def format_and_add_static_info(eval_df: pd.DataFrame, 
+                               evaluated_params: dict):
+    """Creates columns in common to all three eval tables
+    """
+    eval_df = eval_df.dropna(how='any')
+    eval_df['creation_datetime'] = datetime.datetime.now()
+
+    for param_name, param_value in evaluated_params.items():
+        eval_df[param_name] = param_value
+
+    return eval_df

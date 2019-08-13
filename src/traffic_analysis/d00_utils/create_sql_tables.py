@@ -116,8 +116,12 @@ def create_eval_sql_tables(creds: dict,
             sd FLOAT, 
             n_videos INT,
             creation_datetime timestamp,
-            analyser_type VARCHAR(50),
-            avg_analyser_runtime FLOAT
+            avg_analyser_runtime FLOAT,
+            tracker_type VARCHAR(20),
+            detection_model VARCHAR(20),
+            detection_frequency INT,
+            detection_iou_threshold FLOAT,
+            stop_start_iou_threshold FLOAT
         )
         """,
 
@@ -136,8 +140,11 @@ def create_eval_sql_tables(creds: dict,
             starts_diff FLOAT,
             stops_diff FLOAT,
             creation_datetime timestamp,
-            analyser_type VARCHAR(50)
-
+            tracker_type VARCHAR(20),
+            detection_model VARCHAR(20),
+            detection_frequency INT,
+            detection_iou_threshold FLOAT,
+            stop_start_iou_threshold FLOAT
         )
         """,
 
@@ -148,8 +155,11 @@ def create_eval_sql_tables(creds: dict,
             vehicle_type VARCHAR(100),
             mean_avg_precision FLOAT,
             creation_datetime timestamp,
-            analyser_type VARCHAR(50)
-
+            tracker_type VARCHAR(20),
+            detection_model VARCHAR(20),
+            detection_frequency INT,
+            detection_iou_threshold FLOAT,
+            stop_start_iou_threshold FLOAT
         )
         """
     ]
