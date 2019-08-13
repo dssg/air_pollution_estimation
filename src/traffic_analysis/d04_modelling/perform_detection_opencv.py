@@ -4,11 +4,11 @@ import cv2
 from traffic_analysis.d02_ref.download_detection_model_from_s3 import download_detection_model_from_s3
 
 
-def detect_objects_in_image(image_capture,
-                            params,
-                            paths,
-                            s3_credentials: dict,
-                            selected_labels: list = None) -> (list, list, list):
+def detect_objects_cv(image_capture,
+                      params,
+                      paths,
+                      s3_credentials: dict,
+                      selected_labels: list = None) -> (list, list, list):
     """ unifying function that defines the detected objects in an image
         Args:
             image_capture (nparray): numpy array containing the captured image (width, height, rbg)
