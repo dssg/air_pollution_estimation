@@ -66,7 +66,7 @@ Stored in this directory are the following config files:
 * `parameters.yml` defines various hyperparameters for detection and tracking. It also contains configuration options for reporting.
 
 We recommend that credentials be stored in a git-ignored `YAML` file in `air_pollution_estimation/conf/local/credentials.yml`
-* `credentials.yml` should contain credentials necessary for accessing the PostgreSQL database, Amazon AWS services.
+* `credentials.yml` should contain credentials necessary for accessing the PostgreSQL database, Amazon AWS services, and email notification service.
 
 ## Repo Structure 
 <p float="left">
