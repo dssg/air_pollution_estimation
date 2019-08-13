@@ -8,10 +8,10 @@ creds = load_credentials()
 params = load_parameters()
 train_params = load_training_parameters()
 
-dl = DataLoader(datasets=[TransferDataset.detrac], creds=creds, paths=paths)
+dl = DataLoader(datasets=[TransferDataset.cvat, TransferDataset.detrac], creds=creds, paths=paths)
 x_train, y_train, x_test, y_test = dl.get_train_and_test(.8)
 
-print('---- parsing xml files and downloading to temp ----')
+
 saved_text_files_dir = paths['temp_annotation']
 with open(saved_text_files_dir + 'train.txt', 'w') as f:
     for item in y_train:
