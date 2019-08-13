@@ -40,7 +40,7 @@ if verbose:
 # create eval tables if they don't exist
 create_eval_sql_tables(creds=creds,
                        paths=paths,
-                       drop=False)
+                       drop=True)
 
 if verbose:
     print("Running evaluation for traffic analysers: ", traffic_analysers.keys())
@@ -86,6 +86,8 @@ for analyser_name, traffic_analyser in traffic_analysers.items():
             print("Analysing current chunk failed. Continuing to next chunk.")
 
         chunk_counter += 1
+        if chunk_counter == 1:
+            break
         selected_videos = selected_videos[chunk_size:]
         delete_and_recreate_dir(paths["temp_video"])
 
