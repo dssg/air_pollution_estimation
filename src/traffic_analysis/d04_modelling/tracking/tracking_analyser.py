@@ -150,7 +150,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 print("Retrying with bbox format conversion...")
 
             if (bbox[0] <= bbox[2]) and (bbox[1] <= bbox[3]):
-                bbox = bbox_cvlib_to_bboxcv2(bbox)
+                bbox = bboxcvlib_to_bboxcv2(bbox)
                 multi_tracker.add(newTracker=self.add_tracker(),
                                   image=frame,
                                   boundingBox=tuple(bbox))
