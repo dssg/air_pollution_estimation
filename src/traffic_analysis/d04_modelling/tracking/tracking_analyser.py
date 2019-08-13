@@ -5,9 +5,6 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-from traffic_analysis.d00_utils.bbox_helpers import (
-    bbox_intersection_over_union, bboxcv2_to_bboxcvlib, color_bboxes,
-    display_bboxes_on_frame)
 from traffic_analysis.d04_modelling.traffic_analyser_interface import TrafficAnalyserInterface
 from traffic_analysis.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame, color_bboxes, \
     bbox_intersection_over_union
@@ -16,8 +13,6 @@ from traffic_analysis.d04_modelling.tracking.vehicle_fleet import VehicleFleet
 from traffic_analysis.d04_modelling.perform_detection_opencv import detect_objects_in_image as detect_objects_cv
 from traffic_analysis.d04_modelling.perform_detection_tensorflow import detect_objects_in_images as detect_objects_tf
 from traffic_analysis.d04_modelling.perform_detection_tensorflow import initialize_tensorflow_model
-from traffic_analysis.d04_modelling.traffic_analyser_interface import \
-    TrafficAnalyserInterface
 
 
 class TrackingAnalyser(TrafficAnalyserInterface):
@@ -251,7 +246,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
         if self.detection_model == 'yolov3' or self.detection_model == 'yolov3-tiny':
             for frame in frames:
-                bboxes, labels, confs = detect_objects_cv(images=frame,
+                bboxes, labels, confs = detect_objects_cv(image_capture=frame,
                                                           params=self.params,
                                                           paths=self.paths,
                                                           s3_credentials=self.s3_credentials,
