@@ -14,13 +14,14 @@ s3_credentials = creds[paths['s3_creds']]
 # If running first time:
 # creates the test_seach_json. Change the camera list and output file name for full run
 output_file_name = 'Date_20190717_Cameras_03604_02262'
+"""
 retrieve_and_upload_video_names_to_s3(output_file_name=output_file_name,
                                       paths=paths,
                                       from_date='2019-07-17', to_date='2019-07-17',
                                       from_time='13-00-00', to_time='14-00-00',
                                       s3_credentials=s3_credentials,
                                       camera_list=['00001.03604', '00001.02262'])
-"""
+
 upload_annotation_names_to_s3(paths=paths,
                               s3_credentials=s3_credentials)
 """
