@@ -132,6 +132,30 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         new_bboxes_inds = list(new_bboxes_inds.difference(old_bboxes_inds))
         return new_bboxes_inds
 
+    def add_to_multi_tracker(self,
+                             multi_tracker: cv2.MultiTracker,
+                             frame: np.ndarray,
+                             bbox): 
+    """Add bbox to the multitracker as a new tracker
+    """
+      try:
+          multi_tracker.add(newTracker=self.add_tracker(),
+                            image=frame,
+                            boundingBox=tuple(bbox))
+      except AssertionError as error: 
+          # convert bbox
+          if self.verbose:
+              print(error)
+              print("Retrying with bbox format conversion...")
+
+          if (bbox[0] <= bbox[2]) and (bbox[1] <= bbox[3]):
+              bbox = bbox_cvlib_to_bboxcv2(bbox)
+              multi_tracker.add(newTracker=self.add_tracker(),
+                                image=frame,
+                                boundingBox=tuple(bbox))
+          else: 
+              raise 
+
     def detect_and_track_objects(self,
                                  video: np.ndarray,
                                  video_name: str,
@@ -190,23 +214,9 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         # Create MultiTracker object using bboxes, initialize multitracker
         multi_tracker = cv2.MultiTracker_create()
         for bbox in bboxes:
-            try:
-                multi_tracker.add(newTracker=self.add_tracker(),
-                                  image=first_frame,
-                                  boundingBox=tuple(bbox))
-            except AssertionError as error: 
-                # convert bbox
-                if self.verbose:
-                    print(error)
-                    print("Retrying with bbox format conversion...")
-
-                if (bbox[0] <= bbox[2]) and (bbox[1] <= bbox[3]):
-                    bbox = bbox_cvlib_to_bboxcv2(bbox)
-                    multi_tracker.add(newTracker=self.add_tracker(),
-                                      image=first_frame,
-                                      boundingBox=tuple(bbox))
-                else: 
-                    raise 
+            self.add_to_multi_tracker(multi_tracker=multi_tracker,
+                                      frame=first_frame,
+                                      bbox=bbox)
 
         if make_video:
             processed_video = []
@@ -266,9 +276,9 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
                     # iterate through new bboxes
                     for new_bbox in new_bboxes:
-                        multi_tracker.add(newTracker=self.add_tracker(),
-                                          image=frame,
-                                          boundingBox=tuple(new_bbox))
+                        self.add_to_multi_tracker(multi_tracker=multi_tracker,
+                                                  frame=frame,
+                                                  bbox=new_bbox)
 
             if make_video:
                 processed_video.append(frame)
