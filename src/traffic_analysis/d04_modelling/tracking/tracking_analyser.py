@@ -57,6 +57,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             self.model_initializer, self.init_data, _ = initialize_tensorflow_model(
                 params=self.params,
                 paths=self.paths,
+                detection_model=self.detection_model,
                 s3_credentials=self.s3_credentials,
                 sess=self.sess)
         self.detection_confidence_threshold = params['detection_confidence_threshold']

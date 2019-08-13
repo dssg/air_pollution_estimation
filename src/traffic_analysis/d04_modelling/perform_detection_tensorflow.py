@@ -14,7 +14,7 @@ from traffic_analysis.d04_modelling.perform_detection_opencv import label_detect
     choose_objects_of_selected_labels
 
 
-def initialize_tensorflow_model(params, paths, s3_credentials, sess):
+def initialize_tensorflow_model(params, paths, detection_model, s3_credentials, sess):
     """ uses pre-existing tensorflow ckpt (or creates one, if it does not yet exist) to initialize variables before
     passing images through neural net for detection
         Args:

@@ -37,6 +37,7 @@ data_renaming:
 
 pipeline_settings:
   dataset_ref_name: "tims_cameras_all"
+  chunk_size: 3
 
 eval_pipeline_settings:
   eval_ref_name: "annotated_videos"
@@ -55,7 +56,7 @@ modelling:
   detection_iou_threshold: 0.05
   detection_confidence_threshold: 0.2
   detection_nms_threshold: 0.2
-  GPU_number: 2
+  GPU_number: 1
 
   # tracking
   selected_labels: ["car", "truck", "bus", "motorbike"]
