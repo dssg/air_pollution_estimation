@@ -190,9 +190,23 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         # Create MultiTracker object using bboxes, initialize multitracker
         multi_tracker = cv2.MultiTracker_create()
         for bbox in bboxes:
-            multi_tracker.add(newTracker=self.add_tracker(),
-                              image=first_frame,
-                              boundingBox=tuple(bbox))
+            try:
+                multi_tracker.add(newTracker=self.add_tracker(),
+                                  image=first_frame,
+                                  boundingBox=tuple(bbox))
+            except AssertionError as error: 
+                # convert bbox
+                if self.verbose:
+                    print(error)
+                    print("Retrying with bbox format conversion...")
+
+                if (bbox[0] <= bbox[2]) and (bbox[1] <= bbox[3]):
+                    bbox = bbox_cvlib_to_bboxcv2(bbox)
+                    multi_tracker.add(newTracker=self.add_tracker(),
+                                      image=first_frame,
+                                      boundingBox=tuple(bbox))
+                else: 
+                    raise 
 
         if make_video:
             processed_video = []

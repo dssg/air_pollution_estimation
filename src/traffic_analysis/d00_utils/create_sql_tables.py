@@ -46,6 +46,7 @@ def create_primary_sql_tables(db_frame_level_name: str,
         )
         """.format(db_frame_level_name),
 
+        # TODO: change varchars 20 chars, floats to type float8
         """
         CREATE TABLE {}(
             camera_id VARCHAR(20),

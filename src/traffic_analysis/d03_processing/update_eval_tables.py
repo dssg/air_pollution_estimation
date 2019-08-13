@@ -87,7 +87,7 @@ def update_eval_tables(db_frame_level_name: str,
                                                        "sd",
                                                        "n_videos",
                                                        "creation_datetime",
-                                                       "analyser_type"
+                                                       "analyser_type",
                                                        "avg_analyser_runtime"
                                                        ]]
     dl_sql.add_to_sql(df=video_level_performance,

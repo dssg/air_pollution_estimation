@@ -29,7 +29,7 @@ def manually_draw_bboxes(frame: np.ndarray) -> (list, list):
 
 
 def bboxcvlib_to_bboxcv2(bbox_cvlib, vectorized=False):
-    """Convert bboxes from format returned by cvlib (xmin,ymin, xmin+w, ymin+H)
+    """Convert bboxes from format returned by cvlib (xmin, ymin, xmin+w, ymin+h)
     to format required by cv2 (xmin,ymin,w,h)
 
     If vectorized is set to True, will handle np arrays of bboxes. Format would be (num_bboxes, 4)
