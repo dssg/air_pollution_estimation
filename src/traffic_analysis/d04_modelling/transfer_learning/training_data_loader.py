@@ -77,7 +77,7 @@ class DataLoader(object):
             if (result):
                 y += result
 
-            if len(y) == 10:
+            if xml_file == 11: 
                 break
 
         print('Loading detrac images...')
