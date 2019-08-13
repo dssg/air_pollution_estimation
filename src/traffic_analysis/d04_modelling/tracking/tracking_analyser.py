@@ -136,25 +136,26 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                              multi_tracker: cv2.MultiTracker,
                              frame: np.ndarray,
                              bbox): 
-    """Add bbox to the multitracker as a new tracker
-    """
-      try:
-          multi_tracker.add(newTracker=self.add_tracker(),
-                            image=frame,
-                            boundingBox=tuple(bbox))
-      except AssertionError as error: 
-          # convert bbox
-          if self.verbose:
-              print(error)
-              print("Retrying with bbox format conversion...")
+        """Add bbox to the multitracker as a new tracker
+        """
+        try:
+            multi_tracker.add(newTracker=self.add_tracker(),
+                              image=frame,
+                              boundingBox=tuple(bbox))
+        except Exception as e:
+            # convert bbox
+            if self.verbose:
+                print(e)
+                print(f"bbox is {bbox}")
+                print("Retrying with bbox format conversion...")
 
-          if (bbox[0] <= bbox[2]) and (bbox[1] <= bbox[3]):
-              bbox = bbox_cvlib_to_bboxcv2(bbox)
-              multi_tracker.add(newTracker=self.add_tracker(),
-                                image=frame,
-                                boundingBox=tuple(bbox))
-          else: 
-              raise 
+            if (bbox[0] <= bbox[2]) and (bbox[1] <= bbox[3]):
+                bbox = bbox_cvlib_to_bboxcv2(bbox)
+                multi_tracker.add(newTracker=self.add_tracker(),
+                                  image=frame,
+                                  boundingBox=tuple(bbox))
+            else: 
+                raise 
 
     def detect_and_track_objects(self,
                                  video: np.ndarray,
