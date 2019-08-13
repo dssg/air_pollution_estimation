@@ -1,4 +1,5 @@
 import datetime
+import pandas as pd 
 
 from traffic_analysis.d05_evaluation.chunk_evaluator import ChunkEvaluator
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
