@@ -14,39 +14,6 @@ from traffic_analysis.d04_modelling.perform_detection_opencv import label_detect
     choose_objects_of_selected_labels
 
 
-def perform_detections_in_single_image(image_capture, params, paths, s3_credentials, selected_labels=None):
-    """ unifying function (for testing only) w/ tensorflow implementation of yolo to detect objects in a frame
-    contains initialization step in each image that is passed through model, which reduces throughput
-        Args:
-            image_capture (nparray): numpy array containing the captured image (width, height, rbg)
-            params (dict): dictionary of parameters from yml file
-            paths (dict): dictionary of paths from yml file
-            s3_credentials :
-            selected_labels :
-
-        Returns:
-            bboxes(list(list(int))): list of width, height, and bottom-left coordinates of detection bboxes
-            labels (list(str)): list of detection labels
-            confs (list(float)): list of detection scores
-    """
-
-    sess = tf.Session()
-    model_initializer, init_data, detection_model = initialize_tensorflow_model(params=params,
-                                                                                paths=paths,
-                                                                                s3_credentials=s3_credentials,
-                                                                                sess=sess)
-    boxes, labels, confs = detect_objects_in_images(image_capture=image_capture,
-                                                    paths=paths,
-                                                    detection_model=detection_model,
-                                                    model_initializer=model_initializer,
-                                                    init_data=init_data,
-                                                    sess=sess,
-                                                    selected_labels=selected_labels)
-    sess.close()
-
-    return boxes, labels, confs
-
-
 def initialize_tensorflow_model(params, paths, s3_credentials, sess):
     """ uses pre-existing tensorflow ckpt (or creates one, if it does not yet exist) to initialize variables before
     passing images through neural net for detection
