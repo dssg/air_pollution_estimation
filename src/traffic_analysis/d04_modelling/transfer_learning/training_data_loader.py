@@ -72,13 +72,15 @@ class DataLoader(object):
         print('Parsing detrac xmls...')
         y = []
         xml_files = self.data_loader_s3.list_objects(prefix=self.paths['s3_detrac_annotations'])
+        count = 0
         for xml_file in xml_files:
             result = self.parse_detrac_xml_file(xml_file)
             if (result):
                 y += result
 
-            if xml_file == 11: 
+            if count == 10:
                 break
+            count += 1
 
         print('Loading detrac images...')
         x = []
