@@ -28,8 +28,7 @@ def create_traffic_analysers(params: dict,
         for key, value in param_set.items():
             param_copy[key] = value
 
-        print(param_copy['tracker_type'])
-        traffic_analysers[ f"tracking_analyser_{tracker_type}"] = \
+        traffic_analysers["tracking_analyser_" + param_copy["tracker_type"]] = \
             [TrackingAnalyser(params=param_copy,
                               paths=paths,
                               s3_credentials=s3_credentials,
