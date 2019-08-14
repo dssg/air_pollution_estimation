@@ -1,5 +1,5 @@
 import time
-
+import datetime
 import cv2
 import numpy as np
 import pandas as pd
@@ -296,7 +296,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             fleet = self.detect_and_track_objects(video, video_name)
             camera_id, date_time = parse_video_or_annotation_name(video_name)
             lost_tracking[camera_id] = {}
-            lost_tracking[camera_id][date_time] = fleet.lost_tracking
+            lost_tracking[camera_id][date_time.strftime("%m/%d/%Y, %H:%M:%S")] = fleet.lost_tracking
             single_frame_level_df = fleet.report_frame_level_info()
             frame_info_list.append(single_frame_level_df)
 
@@ -310,7 +310,6 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         frame_level_df -- df returned by above function
         """
         print(lost_tracking)
-
         if frame_level_df.empty:
             return frame_level_df
 
@@ -327,10 +326,19 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             video_level_df = fleet.report_video_level_stats(fleet.compute_counts(),
                                                             *fleet.compute_stop_starts(self.stop_start_iou_threshold))
             camera_id = video_level_df['camera_id'].values[0]
-            video_upload_datetime = video_level_df['video_upload_datetime'].values[0]
+            video_upload_datetime = pd.to_datetime(str(video_level_df['video_upload_datetime'].values[0]))
             #lost_dict = lost_tracking[]
             print(camera_id)
             print(video_upload_datetime)
+            try:
+                print(lost_tracking[camera_id][video_upload_datetime.strftime("%m/%d/%Y, %H:%M:%S")])
+                try:
+                    video_level_df.loc[('camera_id' == camera_id) & ('video_upload_datetime' == video_upload_datetime), 'stops'] -= 1
+                except Exception as e:
+                    print(e)
+                    print('Failed to reduce stops')
+            except:
+                print('Could not find lost tracking data for ' + camera_id + ' ' + str(video_upload_datetime))
             video_info_list.append(video_level_df)
 
         return pd.concat(video_info_list)

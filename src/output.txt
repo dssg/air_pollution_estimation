@@ -5,243 +5,218 @@ For more information, please see:
   * https://github.com/tensorflow/addons
 If you depend on functionality not listed there, please file an issue.
 
-Video  20190715-164129_00001.02262.mp4  has been removed from processing because it may be invalid
-Video  20190715-193031_00001.02262.mp4  has been removed from processing because it may be invalid
-The number of frames is 240
-Run time of tracking analyser for one video is 5.376369953155518 seconds. 
-Skipped 3 frames.
-Number of frames is 240.
-Run time of tracking analyser for one video is 5.376388788223267 seconds
-The number of frames is 248
-Run time of tracking analyser for one video is 7.765838861465454 seconds. 
-Skipped 3 frames.
-Number of frames is 248.
-Run time of tracking analyser for one video is 7.765859365463257 seconds
-The number of frames is 248
-Run time of tracking analyser for one video is 7.314541339874268 seconds. 
-Skipped 3 frames.
-Number of frames is 248.
-Run time of tracking analyser for one video is 7.314562082290649 seconds
-The number of frames is 243
-Run time of tracking analyser for one video is 0.22948241233825684 seconds. 
-Skipped 3 frames.
-Number of frames is 243.
-Run time of tracking analyser for one video is 0.2294938564300537 seconds
-The number of frames is 236
-Run time of tracking analyser for one video is 5.181246757507324 seconds. 
-Skipped 3 frames.
-Number of frames is 236.
-Run time of tracking analyser for one video is 5.181267738342285 seconds
-The number of frames is 239
-Run time of tracking analyser for one video is 0.21857714653015137 seconds. 
-Skipped 3 frames.
-Number of frames is 239.
-Run time of tracking analyser for one video is 0.21858930587768555 seconds
-The number of frames is 229
-Run time of tracking analyser for one video is 0.21756625175476074 seconds. 
-Skipped 3 frames.
-Number of frames is 229.
-Run time of tracking analyser for one video is 0.21757817268371582 seconds
-The number of frames is 250
-Run time of tracking analyser for one video is 0.2256777286529541 seconds. 
-Skipped 3 frames.
-Number of frames is 250.
-Run time of tracking analyser for one video is 0.22569036483764648 seconds
-     camera_id video_upload_datetime vehicle_type  counts  stops  starts
-0  00001.02262   2019-07-15 09:58:04          car      12      6       3
-     camera_id video_upload_datetime vehicle_type  counts  stops  starts
-0  00001.03604   2019-07-15 02:34:19          bus       2    0.0     0.0
-1  00001.03604   2019-07-15 02:34:19          car      14   14.0     4.0
-     camera_id video_upload_datetime vehicle_type  counts  stops  starts
-0  00001.03604   2019-07-15 04:38:05          car       1      0       0
-     camera_id video_upload_datetime vehicle_type  counts  stops  starts
-0  00001.03604   2019-07-15 21:39:44          car      13     14       9
-Video  20190715-144115_00001.02262.mp4  has been removed from processing because it may be invalid
-Video  20190715-210350_00001.02262.mp4  has been removed from processing because it may be invalid
-Video  20190715-142805_00001.02262.mp4  has been removed from processing because it may be invalid
-The number of frames is 235
-Run time of tracking analyser for one video is 1.475334882736206 seconds. 
-Skipped 3 frames.
-Number of frames is 235.
-Run time of tracking analyser for one video is 1.4753563404083252 seconds
-The number of frames is 235
-Run time of tracking analyser for one video is 4.468655824661255 seconds. 
-Skipped 3 frames.
-Number of frames is 235.
-Run time of tracking analyser for one video is 4.468674421310425 seconds
-The number of frames is 237
-Run time of tracking analyser for one video is 3.9234135150909424 seconds. 
-Skipped 3 frames.
-Number of frames is 237.
-Run time of tracking analyser for one video is 3.9234325885772705 seconds
-The number of frames is 248
-Run time of tracking analyser for one video is 7.117614269256592 seconds. 
-Skipped 3 frames.
-Number of frames is 248.
-Run time of tracking analyser for one video is 7.11763334274292 seconds
-The number of frames is 243
-Run time of tracking analyser for one video is 0.22514843940734863 seconds. 
-Skipped 3 frames.
-Number of frames is 243.
-Run time of tracking analyser for one video is 0.2251598834991455 seconds
-The number of frames is 247
-Run time of tracking analyser for one video is 0.2280590534210205 seconds. 
-Skipped 3 frames.
-Number of frames is 247.
-Run time of tracking analyser for one video is 0.2280712127685547 seconds
-The number of frames is 251
-Run time of tracking analyser for one video is 0.22849702835083008 seconds. 
-Skipped 3 frames.
-Number of frames is 251.
-Run time of tracking analyser for one video is 0.22851037979125977 seconds
-     camera_id video_upload_datetime vehicle_type  counts  stops  starts
-0  00001.02262   2019-07-15 04:46:18          car       4      4       1
-     camera_id video_upload_datetime vehicle_type  counts  stops  starts
-0  00001.02262   2019-07-15 08:21:18          car      12      7       2
-     camera_id video_upload_datetime vehicle_type  counts  stops  starts
-0  00001.03604   2019-07-15 21:21:43          car       5      0       0
-     camera_id video_upload_datetime vehicle_type  counts  stops  starts
-0  00001.03604   2019-07-15 21:53:06          car       8      2       1
-Video  20190715-191725_00001.02262.mp4  has been removed from processing because it may be invalid
-Video  20190715-201031_00001.02262.mp4  has been removed from processing because it may be invalid
-The number of frames is 233
-Run time of tracking analyser for one video is 4.055223703384399 seconds. 
-Skipped 3 frames.
-Number of frames is 233.
-Run time of tracking analyser for one video is 4.055241823196411 seconds
-The number of frames is 249
-Run time of tracking analyser for one video is 0.2257072925567627 seconds. 
-Skipped 3 frames.
-Number of frames is 249.
-Run time of tracking analyser for one video is 0.22571825981140137 seconds
-The number of frames is 243
-Run time of tracking analyser for one video is 0.4116196632385254 seconds. 
-Skipped 3 frames.
-Number of frames is 243.
-Run time of tracking analyser for one video is 0.4116337299346924 seconds
-The number of frames is 240
-Run time of tracking analyser for one video is 3.9015603065490723 seconds. 
-Skipped 3 frames.
-Number of frames is 240.
-Run time of tracking analyser for one video is 3.901578664779663 seconds
-The number of frames is 253
-Run time of tracking analyser for one video is 16.041582822799683 seconds. 
-Skipped 3 frames.
-Number of frames is 253.
-Run time of tracking analyser for one video is 16.04160451889038 seconds
-The number of frames is 232
-Run time of tracking analyser for one video is 4.4819135665893555 seconds. 
-Skipped 3 frames.
-Number of frames is 232.
-Run time of tracking analyser for one video is 4.481934547424316 seconds
-The number of frames is 239
-Run time of tracking analyser for one video is 1.913294792175293 seconds. 
-Skipped 3 frames.
-Number of frames is 239.
-Run time of tracking analyser for one video is 1.9133143424987793 seconds
-The number of frames is 252
-Run time of tracking analyser for one video is 0.22782301902770996 seconds. 
-Skipped 3 frames.
-Number of frames is 252.
-Run time of tracking analyser for one video is 0.22783493995666504 seconds
-     camera_id video_upload_datetime vehicle_type  counts  stops  starts
-0  00001.02262   2019-07-15 02:16:59          car       4      6       3
-     camera_id video_upload_datetime vehicle_type  counts  stops  starts
-0  00001.02262   2019-07-15 04:24:53          car       8      8       6
-     camera_id video_upload_datetime vehicle_type  counts  stops  starts
-0  00001.03604   2019-07-15 01:00:13          car      18     10       1
-     camera_id video_upload_datetime vehicle_type  counts  stops  starts
-0  00001.03604   2019-07-15 05:16:47          car      11      6       0
-     camera_id video_upload_datetime vehicle_type  counts  stops  starts
-0  00001.03604   2019-07-15 10:33:19          car       2      0       0
-     camera_id video_upload_datetime vehicle_type  counts  stops  starts
-0  00001.03604   2019-07-15 15:39:24          car       6      1       1
-Could not convert /home/sam_blakeman/Repo/air_pollution_estimation/src/traffic_analysis/d00_utils/../../../data/temp/videos/20190715-053410_00001.02262.mp4  to numpy array due to Numpy array is empty
-Could not convert /home/sam_blakeman/Repo/air_pollution_estimation/src/traffic_analysis/d00_utils/../../../data/temp/videos/20190715-052050_00001.02262.mp4  to numpy array due to Numpy array is empty
-Video  20190715-170816_00001.02262.mp4  has been removed from processing because it may be invalid
-Video  20190715-215248_00001.02262.mp4  has been removed from processing because it may be invalid
-The number of frames is 251
-Run time of tracking analyser for one video is 9.649280071258545 seconds. 
-Skipped 3 frames.
-Number of frames is 251.
-Run time of tracking analyser for one video is 9.649300575256348 seconds
+Video  20190715-154801_00001.02262.mp4  has been removed from processing because it may be invalid
+Video  20190715-193503_00001.02262.mp4  has been removed from processing because it may be invalid
 The number of frames is 245
-Run time of tracking analyser for one video is 3.568681240081787 seconds. 
+Run time of tracking analyser for one video is 5.196818590164185 seconds. 
 Skipped 3 frames.
 Number of frames is 245.
-Run time of tracking analyser for one video is 3.5687029361724854 seconds
-The number of frames is 243
-Run time of tracking analyser for one video is 6.965659856796265 seconds. 
-Skipped 3 frames.
-Number of frames is 243.
-Run time of tracking analyser for one video is 6.965679407119751 seconds
-The number of frames is 248
-Run time of tracking analyser for one video is 5.501406192779541 seconds. 
-Skipped 3 frames.
-Number of frames is 248.
-Run time of tracking analyser for one video is 5.501426696777344 seconds
-The number of frames is 243
-Run time of tracking analyser for one video is 0.2259976863861084 seconds. 
-Skipped 3 frames.
-Number of frames is 243.
-Run time of tracking analyser for one video is 0.22600913047790527 seconds
+Run time of tracking analyser for one video is 5.1968302726745605 seconds
 The number of frames is 250
-Run time of tracking analyser for one video is 1.1272587776184082 seconds. 
+Run time of tracking analyser for one video is 0.2328169345855713 seconds. 
 Skipped 3 frames.
 Number of frames is 250.
-Run time of tracking analyser for one video is 1.127274751663208 seconds
-     camera_id video_upload_datetime vehicle_type  counts  stops  starts
-0  00001.02262   2019-07-15 04:33:33          car       9      4       2
-     camera_id video_upload_datetime vehicle_type  counts  stops  starts
-0  00001.02262   2019-07-15 07:06:19          car       7      1       1
-     camera_id video_upload_datetime vehicle_type  counts  stops  starts
-0  00001.03604   2019-07-15 03:16:52          car       9      8       3
-     camera_id video_upload_datetime vehicle_type  counts  stops  starts
-0  00001.03604   2019-07-15 09:49:33          car       4      0       0
-     camera_id video_upload_datetime vehicle_type  counts  stops  starts
-0  00001.03604   2019-07-15 22:01:44          car      11      4       2
-Video  20190715-232930_00001.02262.mp4  has been removed from processing because it may be invalid
-Video  20190715-170353_00001.02262.mp4  has been removed from processing because it may be invalid
-Video  20190715-171243_00001.02262.mp4  has been removed from processing because it may be invalid
-Video  20190715-201503_00001.02262.mp4  has been removed from processing because it may be invalid
-Video  20190715-173457_00001.02262.mp4  has been removed from processing because it may be invalid
-The number of frames is 235
-Run time of tracking analyser for one video is 4.244411468505859 seconds. 
-Skipped 3 frames.
-Number of frames is 235.
-Run time of tracking analyser for one video is 4.244431972503662 seconds
-The number of frames is 237
-Run time of tracking analyser for one video is 1.5319726467132568 seconds. 
-Skipped 3 frames.
-Number of frames is 237.
-Run time of tracking analyser for one video is 1.5319900512695312 seconds
+Run time of tracking analyser for one video is 0.23282933235168457 seconds
 The number of frames is 240
-Run time of tracking analyser for one video is 3.439805030822754 seconds. 
+Run time of tracking analyser for one video is 6.450359106063843 seconds. 
 Skipped 3 frames.
 Number of frames is 240.
-Run time of tracking analyser for one video is 3.439824104309082 seconds
-The number of frames is 233
-Run time of tracking analyser for one video is 2.76153302192688 seconds. 
+Run time of tracking analyser for one video is 6.450380086898804 seconds
+The number of frames is 238
+Run time of tracking analyser for one video is 0.8954594135284424 seconds. 
 Skipped 3 frames.
-Number of frames is 233.
-Run time of tracking analyser for one video is 2.7615532875061035 seconds
+Number of frames is 238.
+Run time of tracking analyser for one video is 0.895474910736084 seconds
+The number of frames is 250
+Run time of tracking analyser for one video is 3.7137184143066406 seconds. 
+Skipped 3 frames.
+Number of frames is 250.
+Run time of tracking analyser for one video is 3.7137367725372314 seconds
+The number of frames is 229
+Run time of tracking analyser for one video is 0.22748255729675293 seconds. 
+Skipped 3 frames.
+Number of frames is 229.
+Run time of tracking analyser for one video is 0.22749543190002441 seconds
+The number of frames is 239
+Run time of tracking analyser for one video is 0.22469353675842285 seconds. 
+Skipped 3 frames.
+Number of frames is 239.
+Run time of tracking analyser for one video is 0.22470593452453613 seconds
+The number of frames is 232
+Run time of tracking analyser for one video is 0.22639751434326172 seconds. 
+Skipped 3 frames.
+Number of frames is 232.
+Run time of tracking analyser for one video is 0.2264108657836914 seconds
+{'00001.03604': {'07/15/2019, 08:12:52': {'bbox_number': [], 'frame_number': []}}, '00001.02262': {'07/15/2019, 12:36:54': {'bbox_number': [], 'frame_number': []}}}
+00001.02262
+2019-07-15 02:08:29
+Could not find lost tracking data for 00001.02262 2019-07-15 02:08:29
+00001.02262
+2019-07-15 22:14:37
+Could not find lost tracking data for 00001.02262 2019-07-15 22:14:37
+00001.03604
+2019-07-15 22:41:22
+Could not find lost tracking data for 00001.03604 2019-07-15 22:41:22
+Could not convert /home/sam_blakeman/Repo/air_pollution_estimation/src/traffic_analysis/d00_utils/../../../data/temp/videos/20190715-052050_00001.02262.mp4  to numpy array due to Numpy array is empty
+Video  20190715-010416_00001.02262.mp4  has been removed from processing because it may be invalid
+Video  20190715-213024_00001.02262.mp4  has been removed from processing because it may be invalid
+Video  20190715-174359_00001.02262.mp4  has been removed from processing because it may be invalid
+The number of frames is 235
+Run time of tracking analyser for one video is 0.2259526252746582 seconds. 
+Skipped 3 frames.
+Number of frames is 235.
+Run time of tracking analyser for one video is 0.22596526145935059 seconds
+The number of frames is 234
+Run time of tracking analyser for one video is 4.5879974365234375 seconds. 
+Skipped 3 frames.
+Number of frames is 234.
+Run time of tracking analyser for one video is 4.588018894195557 seconds
+The number of frames is 235
+Run time of tracking analyser for one video is 6.674359560012817 seconds. 
+Skipped 3 frames.
+Number of frames is 235.
+Run time of tracking analyser for one video is 6.674381494522095 seconds
+The number of frames is 246
+Run time of tracking analyser for one video is 0.23294520378112793 seconds. 
+Skipped 3 frames.
+Number of frames is 246.
+Run time of tracking analyser for one video is 0.23295831680297852 seconds
 The number of frames is 248
-Run time of tracking analyser for one video is 0.22571563720703125 seconds. 
+Run time of tracking analyser for one video is 0.23125696182250977 seconds. 
 Skipped 3 frames.
 Number of frames is 248.
-Run time of tracking analyser for one video is 0.22572827339172363 seconds
-     camera_id video_upload_datetime vehicle_type  counts  stops  starts
-0  00001.02262   2019-07-15 08:47:52          car      10      2       2
-     camera_id video_upload_datetime vehicle_type  counts  stops  starts
-0  00001.03604   2019-07-15 05:34:26          car       6    5.0       0
-1  00001.03604   2019-07-15 05:34:26    motorbike       1    0.0       0
-     camera_id video_upload_datetime vehicle_type  counts  stops  starts
-0  00001.03604   2019-07-15 21:12:58          bus       1    0.0     0.0
-1  00001.03604   2019-07-15 21:12:58          car       7    5.0     2.0
-2  00001.03604   2019-07-15 21:12:58    motorbike       1    0.0     0.0
-     camera_id video_upload_datetime vehicle_type  counts  stops  starts
-0  00001.03604   2019-07-15 22:45:53          car       6      2       0
+Run time of tracking analyser for one video is 0.23126983642578125 seconds
+The number of frames is 229
+Run time of tracking analyser for one video is 6.045958518981934 seconds. 
+Skipped 3 frames.
+Number of frames is 229.
+Run time of tracking analyser for one video is 6.045979738235474 seconds
+{'00001.03604': {'07/15/2019, 04:29:30': {'bbox_number': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'frame_number': [168, 172, 176, 180, 184, 188, 192, 196, 200, 204, 208, 212, 216, 220, 224, 226, 227, 228]}}, '00001.02262': {'07/15/2019, 09:40:19': {'bbox_number': [], 'frame_number': []}}}
+00001.02262
+2019-07-15 09:40:19
+{'bbox_number': [], 'frame_number': []}
+False
+Failed to reduce stops
+00001.02262
+2019-07-15 18:59:37
+Could not find lost tracking data for 00001.02262 2019-07-15 18:59:37
+00001.03604
+2019-07-15 04:29:30
+{'bbox_number': [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], 'frame_number': [168, 172, 176, 180, 184, 188, 192, 196, 200, 204, 208, 212, 216, 220, 224, 226, 227, 228]}
+False
+Failed to reduce stops
 Video  20190715-175255_00001.02262.mp4  has been removed from processing because it may be invalid
-Video  20190715-000746_00001.02262.mp4  has been removed from processing because it may be invalid
-Video  20190715-014704_00001.02262.mp4  has been removed from processing because it may be invalid
+Video  20190715-132544_00001.02262.mp4  has been removed from processing because it may be invalid
+Video  20190715-155647_00001.02262.mp4  has been removed from processing because it may be invalid
+The number of frames is 243
+Run time of tracking analyser for one video is 0.42239999771118164 seconds. 
+Skipped 3 frames.
+Number of frames is 243.
+Run time of tracking analyser for one video is 0.42241621017456055 seconds
+The number of frames is 249
+Run time of tracking analyser for one video is 3.965174436569214 seconds. 
+Skipped 3 frames.
+Number of frames is 249.
+Run time of tracking analyser for one video is 3.9651947021484375 seconds
+The number of frames is 229
+Run time of tracking analyser for one video is 4.248297929763794 seconds. 
+Skipped 3 frames.
+Number of frames is 229.
+Run time of tracking analyser for one video is 4.2483203411102295 seconds
 The number of frames is 239
+Run time of tracking analyser for one video is 0.22667288780212402 seconds. 
+Skipped 3 frames.
+Number of frames is 239.
+Run time of tracking analyser for one video is 0.2266855239868164 seconds
+The number of frames is 248
+Run time of tracking analyser for one video is 0.23642659187316895 seconds. 
+Skipped 3 frames.
+Number of frames is 248.
+Run time of tracking analyser for one video is 0.23643922805786133 seconds
+The number of frames is 251
+Run time of tracking analyser for one video is 7.139875888824463 seconds. 
+Skipped 3 frames.
+Number of frames is 251.
+Run time of tracking analyser for one video is 7.139897584915161 seconds
+The number of frames is 238
+Run time of tracking analyser for one video is 5.7613232135772705 seconds. 
+Skipped 3 frames.
+Number of frames is 238.
+Run time of tracking analyser for one video is 5.761345386505127 seconds
+{'00001.03604': {'07/15/2019, 21:04:10': {'bbox_number': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 3], 'frame_number': [208, 212, 216, 220, 224, 228, 232, 236, 240, 244, 248, 249, 249, 250, 250]}}, '00001.02262': {'07/15/2019, 06:22:23': {'bbox_number': [], 'frame_number': []}}}
+00001.02262
+2019-07-15 06:22:23
+{'bbox_number': [], 'frame_number': []}
+False
+Failed to reduce stops
+00001.02262
+2019-07-15 07:19:39
+Could not find lost tracking data for 00001.02262 2019-07-15 07:19:39
+00001.03604
+2019-07-15 00:12:19
+Could not find lost tracking data for 00001.03604 2019-07-15 00:12:19
+00001.03604
+2019-07-15 10:33:19
+Could not find lost tracking data for 00001.03604 2019-07-15 10:33:19
+00001.03604
+2019-07-15 21:04:10
+{'bbox_number': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 3], 'frame_number': [208, 212, 216, 220, 224, 228, 232, 236, 240, 244, 248, 249, 249, 250, 250]}
+False
+Failed to reduce stops
+Video  20190715-231626_00001.02262.mp4  has been removed from processing because it may be invalid
+Video  20190715-005120_00001.02262.mp4  has been removed from processing because it may be invalid
+Video  20190715-160113_00001.02262.mp4  has been removed from processing because it may be invalid
+The number of frames is 237
+Run time of tracking analyser for one video is 6.029948949813843 seconds. 
+Skipped 3 frames.
+Number of frames is 237.
+Run time of tracking analyser for one video is 6.029970645904541 seconds
+The number of frames is 250
+Run time of tracking analyser for one video is 4.237536191940308 seconds. 
+Skipped 3 frames.
+Number of frames is 250.
+Run time of tracking analyser for one video is 4.237558126449585 seconds
+The number of frames is 232
+Run time of tracking analyser for one video is 4.241369962692261 seconds. 
+Skipped 3 frames.
+Number of frames is 232.
+Run time of tracking analyser for one video is 4.241389751434326 seconds
+The number of frames is 236
+Run time of tracking analyser for one video is 0.22741961479187012 seconds. 
+Skipped 3 frames.
+Number of frames is 236.
+Run time of tracking analyser for one video is 0.2274320125579834 seconds
+The number of frames is 229
+Run time of tracking analyser for one video is 0.22382688522338867 seconds. 
+Skipped 3 frames.
+Number of frames is 229.
+Run time of tracking analyser for one video is 0.22383904457092285 seconds
+The number of frames is 245
+Run time of tracking analyser for one video is 2.2261250019073486 seconds. 
+Skipped 3 frames.
+Number of frames is 245.
+Run time of tracking analyser for one video is 2.226146936416626 seconds
+The number of frames is 234
+Run time of tracking analyser for one video is 0.22803688049316406 seconds. 
+Skipped 3 frames.
+Number of frames is 234.
+Run time of tracking analyser for one video is 0.22804951667785645 seconds
+{'00001.02262': {'07/15/2019, 02:50:59': {'bbox_number': [], 'frame_number': []}}, '00001.03604': {'07/15/2019, 13:08:30': {'bbox_number': [], 'frame_number': []}}}
+00001.02262
+2019-07-15 06:00:18
+Could not find lost tracking data for 00001.02262 2019-07-15 06:00:18
+00001.02262
+2019-07-15 12:01:19
+Could not find lost tracking data for 00001.02262 2019-07-15 12:01:19
+00001.02262
+2019-07-15 12:19:12
+Could not find lost tracking data for 00001.02262 2019-07-15 12:19:12
+00001.03604
+2019-07-15 03:21:08
+Could not find lost tracking data for 00001.03604 2019-07-15 03:21:08
+The number of frames is 251
+Run time of tracking analyser for one video is 0.2342686653137207 seconds. 
+Skipped 3 frames.
+Number of frames is 251.
+Run time of tracking analyser for one video is 0.23428130149841309 seconds
+The number of frames is 241
