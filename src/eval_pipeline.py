@@ -40,26 +40,26 @@ if verbose:
 # create eval tables if they don't exist
 create_eval_sql_tables(creds=creds,
                        paths=paths,
-                       drop=True)
+                       drop=False)
 
 if verbose:
     print("Running evaluation for traffic analysers: ", traffic_analysers_params.keys())
 
 selected_videos_master = selected_videos.copy()
 for i, (analyser_name, params_to_set_dict) in enumerate(traffic_analysers_params.items()):
-    if verbose: 
+    if verbose:
         print(f"Now evaluating {analyser_name} with param set: {params_to_set_dict}")
-    
-    # initialize db names 
+
+    # initialize db names
     db_frame_level_name = f"{paths['eval_db_frame_level_prefix']}_{analyser_name}_{i}"
     db_video_level_name = f"{paths['eval_db_video_level_prefix']}_{analyser_name}_{i}"
 
     # wipe and recreate video/frame level stats tables for tracker types
     create_primary_sql_tables(db_frame_level_name=db_frame_level_name,
                               db_video_level_name=db_video_level_name,
-                              drop=True)
+                              drop=False)
 
-    # create traffic analyser 
+    # create traffic analyser
     traffic_analyser = create_traffic_analyser(params_to_set=params_to_set_dict,
                                                params=params,
                                                paths=paths,
