@@ -64,7 +64,7 @@ def populate_labels(model_name: str, paths):
     """
 
     model_file_path = paths['local_detection_model']
-    labels_file_path = os.path.join(model_file_path, 'yolov3', 'coco.names')
+    labels_file_path = os.path.join(model_file_path, 'yolov3_opencv', 'coco.names')
     f = open(labels_file_path, 'r')
     labels = [line.strip() for line in f.readlines()]
 
@@ -136,11 +136,11 @@ def pass_image_through_nn(image_capture: np.ndarray,
                                                 crop=False)
 
     # read model as deep neural network in opencv
-    if model_name == 'yolov3-tiny':
-        config_file_path = os.path.join(paths['local_detection_model'], model_name, model_name + '.cfg')
+    if model_name == 'yolov3-tiny_opencv':
+        config_file_path = os.path.join(paths['local_detection_model'], model_name, model_name[:-7] + '.cfg')
     else:
-        config_file_path = os.path.join(paths['local_detection_model'], model_name, model_name + '.config')
-    weights_file_path = os.path.join(paths['local_detection_model'], model_name, model_name + '.weights')
+        config_file_path = os.path.join(paths['local_detection_model'], model_name, model_name[:-7] + '.config')
+    weights_file_path = os.path.join(paths['local_detection_model'], model_name, model_name[:-7] + '.weights')
     net = cv2.dnn.readNetFromDarknet(config_file_path, weights_file_path)  # can use other net, see documentation
 
     # input image to neural network
@@ -252,8 +252,8 @@ def label_detections(label_idxs,
     """
 
     # import the list of labels
-    if model_name == 'yolov3_tf':
-        model_origin = 'yolov3'
+    if model_name[-2:] == 'tf':
+        model_origin = 'yolov3_opencv'
     else:
         model_origin = model_name
     label_list = populate_labels(model_name=model_origin,

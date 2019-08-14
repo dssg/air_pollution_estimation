@@ -28,8 +28,8 @@ def yolov3_darknet_to_tensorflow(paths,
         pass
 
     else:
-        if not os.path.exists(os.path.join(model_file_path, 'yolov3')):
-            download_detection_model_from_s3(model_name='yolov3',
+        if not os.path.exists(os.path.join(model_file_path, 'yolov3_opencv')):
+            download_detection_model_from_s3(model_name='yolov3_opencv',
                                              paths=paths,
                                              s3_credentials=s3_credentials)
 
@@ -38,7 +38,7 @@ def yolov3_darknet_to_tensorflow(paths,
 
         num_class = 80
         img_size = 416
-        weight_path = os.path.join(model_file_path, 'yolov3', 'yolov3.weights')
+        weight_path = os.path.join(model_file_path, 'yolov3_opencv', 'yolov3.weights')
         save_path = os.path.join(model_file_path, 'yolov3_tf', 'yolov3.ckpt')
         anchors = parse_anchors(paths)
 
@@ -69,7 +69,7 @@ def parse_anchors(paths):
     """
 
     model_file_path = paths['local_detection_model']
-    anchor_path = os.path.join(model_file_path, 'yolov3', 'yolov3_anchors.txt')
+    anchor_path = os.path.join(model_file_path, 'yolov3_opencv', 'yolov3_anchors.txt')
     anchors = np.reshape(np.asarray(open(anchor_path, 'r').read().split(','), np.float32), [-1, 2])
 
     return anchors
