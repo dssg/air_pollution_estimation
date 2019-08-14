@@ -371,9 +371,10 @@ class VehicleFleet:
         video_level_stats_df = video_level_stats_df[column_names]
         return video_level_stats_df
 
-    def record_loss_of_tracking(self, bbox_number, frame_number):
+    def record_loss_of_tracking(self, label, camera_id, date_time):
 
-        self.lost_tracking['bbox_number'].append(bbox_number)
-        self.lost_tracking['frame_number'].append(frame_number)
+        self.lost_tracking['label'].append(label)
+        self.lost_tracking['camera_id'].append(camera_id)
+        self.lost_tracking['date_time'].append(date_time)
 
         return

@@ -134,6 +134,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         start_time = time.time()
         # Create a video capture object to read videos
         n_frames = video.shape[0]
+        camera_id, date_time = parse_video_or_annotation_name(video_name)
 
         # assumes vid_length in seconds
         video_frames_per_sec = int(n_frames / video_time_length)
@@ -181,8 +182,9 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 # check for bounding box not moving
                 matching_inds = np.where((prev_bboxes_tracked ==bboxes_tracked[:prev_bboxes_tracked.shape[0], :]).all(axis=1))[0].tolist()
                 for ind in matching_inds:
-                    fleet.record_loss_of_tracking(bbox_number=ind,
-                                                  frame_number=frame_ind)
+                    fleet.record_loss_of_tracking(label=labels_detected[ind],
+                                                  camera_id=camera_id,
+                                                  date_time=date_time)
 
             for _ in range(frame_ind - previous_frame_index):
                 fleet.update_vehicles(np.array(bboxes_tracked))
@@ -327,7 +329,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                                                             *fleet.compute_stop_starts(self.stop_start_iou_threshold))
             camera_id = video_level_df['camera_id'].values[0]
             video_upload_datetime = pd.to_datetime(str(video_level_df['video_upload_datetime'].values[0]))
-            #lost_dict = lost_tracking[]
+
             print(camera_id)
             print(video_upload_datetime)
             try:
