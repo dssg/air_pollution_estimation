@@ -107,6 +107,8 @@ for i, (analyser_name, params_to_set_dict) in enumerate(traffic_analysers_params
         print(f"Successfully processed videos for traffic analyser: {analyser_name}")
         print(f"Avg runtime of one video for tracking type {analyser_name}: {avg_runtime}")
 
+    traffic_analyser.cleanup_on_finish()
+    
     # append to table
     update_eval_tables(db_frame_level_name=db_frame_level_name,
                        db_video_level_name=db_video_level_name,
