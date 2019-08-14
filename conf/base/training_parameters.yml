@@ -1,7 +1,7 @@
 training:
   num_batches : 10
   letterbox_resize : True  # Whether to use the letterbox resize, i.e., keep the original aspect ratio in the resized image.
-  total_epochs : 50
+  total_epochs : 1000
   train_evaluation_step : 100  # Evaluate on the training batch after some steps.
   val_evaluation_epoch : 2  # Evaluate on the whole validation dataset after some epochs. Set to None to evaluate every epoch.
   save_epoch : 10  # Save the model after some epochs.
@@ -11,7 +11,7 @@ training:
   warm_up_epoch : 3 # set to larger value if gradient explodes
   num_threads : 10  # Number of threads for image processing used in tf.data pipeline.
   prefetech_buffer : 5  # Prefetech_buffer used in tf.data pipeline.
-  trained_model_name : '20190812_yolov3_trained_test'
+  trained_model_name : 'yolov3_traffic'
 
 learning:
   optimizer_name : 'momentum'  # Chosen from [sgd, momentum, adam, rmsprop]

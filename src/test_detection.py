@@ -30,7 +30,7 @@ def test_detection(image_path):
         bbox, label, confidence = opencv_detect(imcap, paths=paths, params=params, s3_credentials=s3_credentials)
         end_time = time.time()
 
-    elif detection_method == '20190812_yolov3_trained_test':
+    elif detection_method == 'yolov3_traffic':
         start_time = time.time()
         bbox, label, confidence = tensorflow_detect(imcap, paths=paths, params=params, s3_credentials=s3_credentials,
                                                     selected_labels=None)
