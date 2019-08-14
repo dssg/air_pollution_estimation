@@ -26,6 +26,7 @@ class DataLoaderS3:
         return json.loads(result['Body'].read().decode())
 
     def save_json(self, data, file_path):
+        # TODO: ADD DOCUMENTATION. What type is data? 
 
         self.client.put_object(Body=(bytes(json.dumps(data).encode('UTF-8'))),
                                Bucket=self.bucket_name,
