@@ -40,7 +40,7 @@ def update_frame_level_table(analyzer,
     video_dict = load_videos_into_np(paths["temp_video"])
     delete_and_recreate_dir(paths["temp_video"])
 
-    frame_level_df = analyzer.construct_frame_level_df(video_dict)
+    frame_level_df, lost_tracking = analyzer.construct_frame_level_df(video_dict)
     if frame_level_df.empty:
         return None
     frame_level_df.dropna(how='any', inplace=True)
@@ -67,4 +67,4 @@ def update_frame_level_table(analyzer,
     db_obj.add_to_sql(df=frame_level_sql_df,
                       table_name=paths['db_frame_level'])
 
-    return frame_level_df
+    return frame_level_df, lost_tracking

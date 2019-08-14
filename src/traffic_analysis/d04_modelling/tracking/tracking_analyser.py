@@ -179,12 +179,10 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
             if(not success):
                 # check for bounding box not moving
-                matching_ind = int(np.squeeze(np.where((prev_bboxes_tracked == bboxes_tracked).all(axis=1))))
-                fleet.record_loss_of_tracking(bbox_number=matching_ind,
-                                              frame_number=frame_ind)
-                print('Matching Row: ' + str(matching_ind))
-
-            print(bboxes_tracked)
+                matching_inds = np.where((prev_bboxes_tracked ==bboxes_tracked[:prev_bboxes_tracked.shape[0], :]).all(axis=1))[0].tolist()
+                for ind in matching_inds:
+                    fleet.record_loss_of_tracking(bbox_number=ind,
+                                                  frame_number=frame_ind)
 
             for _ in range(frame_ind - previous_frame_index):
                 fleet.update_vehicles(np.array(bboxes_tracked))
@@ -300,11 +298,9 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             single_frame_level_df = fleet.report_frame_level_info()
             frame_info_list.append(single_frame_level_df)
 
-        print(lost_tracking)
+        return pd.concat(frame_info_list), lost_tracking
 
-        return pd.concat(frame_info_list)
-
-    def construct_video_level_df(self, frame_level_df) -> pd.DataFrame:
+    def construct_video_level_df(self, frame_level_df, lost_tracking) -> pd.DataFrame:
         """Construct video-level stats table using tracking techniques
 
         Keyword arguments:
@@ -326,5 +322,11 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             # fleet.plot_iou_time_series(fig_dir="data", fig_name="param_tuning", smoothed=True)
             video_level_df = fleet.report_video_level_stats(fleet.compute_counts(),
                                                             *fleet.compute_stop_starts(self.stop_start_iou_threshold))
+            camera_id = video_level_df['camera_id'].values[0]
+            video_upload_datetime = video_level_df['video_upload_datetime'].values[0]
+            #lost_dict = lost_tracking[]
+            print(camera_id)
+            print(video_upload_datetime)
             video_info_list.append(video_level_df)
+
         return pd.concat(video_info_list)

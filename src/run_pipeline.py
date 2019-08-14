@@ -41,7 +41,7 @@ analyzer = TrackingAnalyser(
 # select chunks of videos and classify objects
 chunk_size = params['chunk_size']
 while selected_videos:
-    frame_level_df = update_frame_level_table(analyzer=analyzer,
+    frame_level_df, lost_tracking = update_frame_level_table(analyzer=analyzer,
                                               file_names=selected_videos[:chunk_size],
                                               paths=paths,
                                               creds=creds)
@@ -49,6 +49,7 @@ while selected_videos:
     update_video_level_table(analyzer=analyzer,
                              frame_level_df=frame_level_df,
                              file_names=selected_videos[:chunk_size],
+                             lost_tracking=lost_tracking,
                              paths=paths,
                              creds=creds,
                              return_data=False)

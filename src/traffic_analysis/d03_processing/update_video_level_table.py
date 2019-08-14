@@ -7,6 +7,7 @@ from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 def update_video_level_table(analyzer,
                              frame_level_df=None,
                              file_names=None,
+                             lost_tracking=None,
                              paths=None,
                              creds=None,
                              return_data=False):
@@ -22,6 +23,7 @@ def update_video_level_table(analyzer,
                 Returns:
 
     """
+
     db_obj = DataLoaderSQL(creds=creds, paths=paths)
 
     if frame_level_df is None:
@@ -48,7 +50,8 @@ def update_video_level_table(analyzer,
         frame_level_df.drop('bbox_h', axis=1, inplace=True)
 
     # Create video level table and add to database
-    video_level_df = analyzer.construct_video_level_df(frame_level_df)
+    video_level_df = analyzer.construct_video_level_df(frame_level_df, lost_tracking)
+    
     if video_level_df.empty:
         return
     video_level_df['creation_datetime'] = datetime.datetime.now()
