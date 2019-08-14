@@ -14,39 +14,6 @@ from traffic_analysis.d04_modelling.perform_detection_opencv import label_detect
     choose_objects_of_selected_labels
 
 
-def perform_detections_in_single_image(image_capture, params, paths, s3_credentials, selected_labels=None):
-    """ unifying function (for testing only) w/ tensorflow implementation of yolo to detect objects in a frame
-    contains initialization step in each image that is passed through model, which reduces throughput
-        Args:
-            image_capture (nparray): numpy array containing the captured image (width, height, rbg)
-            params (dict): dictionary of parameters from yml file
-            paths (dict): dictionary of paths from yml file
-            s3_credentials :
-            selected_labels :
-
-        Returns:
-            bboxes(list(list(int))): list of width, height, and bottom-left coordinates of detection bboxes
-            labels (list(str)): list of detection labels
-            confs (list(float)): list of detection scores
-    """
-
-    sess = tf.Session()
-    model_initializer, init_data, detection_model = initialize_tensorflow_model(params=params,
-                                                                                paths=paths,
-                                                                                s3_credentials=s3_credentials,
-                                                                                sess=sess)
-    boxes, labels, confs = detect_objects_in_image(image_capture=image_capture,
-                                                   paths=paths,
-                                                   detection_model=detection_model,
-                                                   model_initializer=model_initializer,
-                                                   init_data=init_data,
-                                                   sess=sess,
-                                                   selected_labels=selected_labels)
-    sess.close()
-
-    return boxes, labels, confs
-
-
 def initialize_tensorflow_model(params, paths, s3_credentials, sess):
     """ uses pre-existing tensorflow ckpt (or creates one, if it does not yet exist) to initialize variables before
     passing images through neural net for detection
@@ -80,7 +47,7 @@ def initialize_tensorflow_model(params, paths, s3_credentials, sess):
     classes = read_class_names(class_name_path)
     n_classes = len(classes)
 
-    init_data = tf.placeholder(tf.float32, [1, 416, 416, 3], name='init_data')
+    init_data = tf.placeholder(tf.float32, [None, 416, 416, 3], name='init_data')
     yolo_model = YoloV3(n_classes, anchors)
     with tf.variable_scope('YoloV3'):
         feature_map = yolo_model.forward(init_data, False)
@@ -98,8 +65,8 @@ def initialize_tensorflow_model(params, paths, s3_credentials, sess):
     return model_initializer, init_data, detection_model
 
 
-def detect_objects_in_image(image_capture, paths, detection_model, model_initializer, init_data, sess,
-                            selected_labels=None):
+def detect_objects_tf(images, paths, detection_model, model_initializer, init_data, sess,
+                      selected_labels=None):
     """ uses a tensorflow implementation of yolo to detect objects in a frame
         Args:
             image_capture (nparray): numpy array containing the captured image (width, height, rbg)
@@ -115,25 +82,42 @@ def detect_objects_in_image(image_capture, paths, detection_model, model_initial
             labels (list(str)): list of detection labels
             confs (list(float)): list of detection scores
     """
+    formatted_images = []
+    formatting_params = []
 
-    image_array, formatting_params = format_image_for_yolo(image_capture)
-    boxes_unscaled, confs, label_idxs = sess.run(model_initializer, feed_dict={init_data: image_array})
+    for image in images:
+        image_array, params = format_image_for_yolo(image)
+        formatted_images.append(image_array)
+        formatting_params.append(params)
 
-    # rescale the coordinates to the original image
-    boxes = reformat_boxes(boxes_unscaled, formatting_params)
-    confs = confs.tolist()
+    boxes_unscaled, confs, label_idxs = sess.run(model_initializer, feed_dict={init_data: np.squeeze(np.array(formatted_images))})
 
-    labels = label_detections(label_idxs=label_idxs,
-                              model_name=detection_model,
-                              paths=paths)
+    all_boxes = []
+    all_labels = []
+    all_confs = []
 
-    if selected_labels is not None:
-        boxes, labels, confs = choose_objects_of_selected_labels(bboxes_in=boxes,
-                                                                 labels_in=labels,
-                                                                 confs_in=confs,
-                                                                 selected_labels=selected_labels)
+    for boxes, params, con, labels in zip(boxes_unscaled, formatting_params, confs, label_idxs):
+        # rescale the coordinates to the original image
+        boxes = np.expand_dims(boxes, axis=0)
+        labels = np.expand_dims(labels, axis=0)
+        con = np.expand_dims(con, axis=0)
+        boxes = reformat_boxes(boxes, params)
+        con = con.tolist()
+        
+        labels = label_detections(label_idxs=labels,
+                                  model_name=detection_model,
+                                  paths=paths)
 
-    return boxes, labels, confs
+        if selected_labels is not None:
+            boxes, labels, con = choose_objects_of_selected_labels(bboxes_in=boxes,
+                                                                     labels_in=labels,
+                                                                     confs_in=con,
+                                                                     selected_labels=selected_labels)
+        all_boxes.append(boxes)
+        all_labels.append(labels)
+        all_confs.append(confs)
+
+    return all_boxes, all_labels, all_confs
 
 
 def format_image_for_yolo(image_capture):
