@@ -38,11 +38,10 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         """
         super().__init__(params, paths)
         self.detection_model = params['detection_model']
-        self.detection_implementation = params['detection_implementation']
+        self.detection_implementation = params['detection_model'].split('_')[-1]
         self.iou_threshold = params['iou_threshold']
         self.detection_frequency = params['detection_frequency']
         self.detection_confidence_threshold = params['detection_confidence_threshold']
-        self.detection_nms_threshold = params['detection_nms_threshold']
         self.selected_labels = params['selected_labels']
         self.tracker_type = params['opencv_tracker_type']
         self.trackers = []
@@ -54,7 +53,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         self.paths = paths
         self.s3_credentials = s3_credentials
 
-        if self.detection_model == 'yolov3_tf':
+        if self.detection_implementation == 'tf':
             self.sess = tf.Session()
             self.model_initializer, self.init_data, self.detection_model = initialize_tensorflow_model(
                 params=self.params,
@@ -244,7 +243,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         all_labels = []
         all_confs = []
 
-        if self.detection_model == 'yolov3' or self.detection_model == 'yolov3-tiny':
+        if self.detection_implementation == 'opencv':
             for frame in frames:
                 bboxes, labels, confs = detect_objects_cv(image_capture=frame,
                                                           params=self.params,
@@ -256,7 +255,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 all_labels.append(labels)
                 all_confs.append(confs)
 
-        elif self.detection_model == 'yolov3_tf':
+        elif self.detection_implementation == 'tf':
             all_bboxes, all_labels, all_confs = detect_objects_tf(images=frames,
                                                       paths=self.paths,
                                                       detection_model=self.detection_model,
