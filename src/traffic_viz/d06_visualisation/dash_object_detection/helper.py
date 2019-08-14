@@ -4,6 +4,7 @@ import pandas as pd
 import sys
 import os
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
+from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 from traffic_viz.d06_visualisation.dash_object_detection.server import server
 from traffic_analysis.d00_utils.load_confs import load_app_parameters, load_parameters, load_paths, load_credentials
 from traffic_analysis.d00_utils.get_project_directory import get_project_directory
@@ -44,26 +45,12 @@ def get_cams():
 
 def load_camera_statistics(camera_id):
     output = pd.DataFrame()
-
-    if DEBUG:
-        filepath = os.path.join(paths["s3_video_level_stats"])
-        if not os.path.exists(filepath):
-            return output
-        df = pd.read_csv(filepath, dtype={"camera_id": "category"})
-        df["video_upload_datetime"] = pd.to_datetime(df.video_upload_datetime)
-        df.sort_values("video_upload_datetime", inplace=True)
-        df.drop_duplicates(inplace=True)
-        output = df[df.camera_id == camera_id]
+    dl = DataLoaderSQL(creds, paths)
+    sql = f"select * from {paths['db_video_level']} where camera_id = '{camera_id}';"
+    df = dl.select_from_table(sql)
+    if df is None:
         return output
 
-    dl = DataLoaderS3(s3_credentials, bucket_name=paths["bucket_name"])
-
-    camera_meta_data_path = paths["s3_video_level_stats"]
-    if not dl.file_exists(camera_meta_data_path):
-        return output
-
-    data = dict(dl.read_json(camera_meta_data_path))
-    df = pd.DataFrame(data, dtype={"camera_id": "category"})
     df["video_upload_datetime"] = pd.to_datetime(df.video_upload_datetime)
     output = df[df.camera_id == camera_id]
     return output
@@ -73,6 +60,7 @@ def load_vehicle_type_statistics(df, vehicle_type, start_date, end_date):
     df_vehicle_type = df[df.vehicle_type == vehicle_type]
     df_vehicle_type.sort_values("video_upload_datetime", inplace=True)
     df_vehicle_type = df_vehicle_type[
-        ((start_date <= df_vehicle_type.video_upload_datetime) & (df_vehicle_type.video_upload_datetime <= end_date))
+        ((start_date <= df_vehicle_type.video_upload_datetime)
+         & (df_vehicle_type.video_upload_datetime <= end_date))
     ]
     return df_vehicle_type
