@@ -1,5 +1,5 @@
 # Quantifying Traffic Dynamics from Traffic Videos 
-We present an automated traffic analysis system. Our system which uses computer vision approaches to classify and count vehicles, count vehicle starts, and count
+We present an automated traffic analysis system. Our system which uses computer vision approaches to classify vehicles. For each vehicle type, it outputs  vehicles counts,  vehicle start counts, and vehicle stop counts.
 
 ## Table of Contents
 
@@ -15,9 +15,7 @@ Better insight extraction from traffic data can aid the effort to understand/red
 
 The purpose of the project is to create an open-source library to automate the collection of live traffic video data, and extract descriptive statistics (counts, stops, and starts by vehicle type)  using computer vision techniques. With this library, project partners will be able to input traffic camera videos, and obtain real-time traffic statistics which are localized to the level of individual streets. 
 
-More details about the project goals, our technical approach, and the evaluation of our models can be found in the **Technical Report**. Please 
-
-
+More details about the project goals, our technical approach, and the evaluation of our models can be found in the **Technical Report**. 
 
 ## Code Overview
 ### Installation and setup
@@ -67,24 +65,31 @@ Current settings in `air_pollution_estimation/conf/base/` are configured to work
 
 ```
 ├── air-pollution-uk/
-│   ├── file0.mp4
-│   ├── file0.pdf
-│   ├── file0.srt
-│   ├── dir1/
-│   │   ├── file1-1.mp4
-│   │   ├── file1-1.pdf
-│   │   ├── file1-1.srt
-│   │   ├── dir1-1/
-│   │   │   ├── ...
-│   ├── dir2/
-│   │   ├── file2-1.mp4
-│   │   ├── file2-1.pdf
-│   │   ├── file2-1.srt
-│   │   ├── file2-2.mp4
-│   │   ├── file2-2.pdf
-│   │   ├── file2-2.srt
-│   │   ├── dir2-1/
-│   │   │   ├── ...
+│   ├── raw/
+│   │   ├── videos/
+│   │   │   ├── 2019-08-13/
+│   │   │   |    ├── "date-time_cameraid.mp4"
+│   │   │   |    ├── ...
+│   │   │   ├── 2019-08-14/
+│   │   │   └──  ...
+│   ├── ref/
+│   │   ├── video_names/
+│   │   │   ├── "video_list1.json"
+│   │   │   └──  ...
+│   │   ├── annotations/
+│   │   │   ├── cvat/
+│   │   │   └──  detrac/
+│   │   ├── camera_details/
+│   │   ├── model_conf/
+│   │   │   ├── yolov3-tiny/
+│   │   │   ├── yolov3/
+│   │   │   └── yolov3_traffic/
+│   ├── frame_level/
+│   │   ├── ...
+│   ├── processed_data/
+│   │   └──  ...
+│   └──
+└──   
 ```
 
 If you wish to utilize this library with an alternate S3 structure, you must change the appropriate paths in `paths.yml`. See **Configuration Files** for more details. 
@@ -192,7 +197,7 @@ Below is a partial overview of our repository tree:
         │   │   └── ...
         │   └── 
         └──
-
+```
 #### Data collection pipeline
 
 #### Video analysis pipeline
@@ -204,7 +209,7 @@ All models should inherit from the TrafficAnalyserInterface. The TrafficAnalyser
 
 - Version 1: YOLO object detection only  
 - Version 2: YOLO objects detection with tracking 
-```
+
 #### Evaluation pipeline
 
 - ChunkEvaluator is implemented using SingleEvaluator
