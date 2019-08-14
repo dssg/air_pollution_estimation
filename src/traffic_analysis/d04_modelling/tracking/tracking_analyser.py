@@ -165,14 +165,25 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
         print(f"The number of frames is {n_frames}")
         previous_frame_index = 0
+        bboxes_tracked = np.array([])
         # Process video and track objects
         for frame_ind in range(1, n_frames):
             if (frame_ind % frame_interval) and (frame_ind + frame_interval) <= n_frames:
                 continue
             frame = video[frame_ind, :, :, :]
+            prev_bboxes_tracked = np.copy(bboxes_tracked)
+
             # get updated location of objects in subsequent frames, update fleet obj
             success, bboxes_tracked = multi_tracker.update(
                 image=frame)
+
+            if(not success):
+                # check for bounding box not moving
+                matching_ind = int(np.squeeze(np.where((prev_bboxes_tracked == bboxes_tracked).all(axis=1))))
+                print('Matching Row: ' + str(matching_ind))
+
+            print(bboxes_tracked)
+
             for _ in range(frame_ind - previous_frame_index):
                 fleet.update_vehicles(np.array(bboxes_tracked))
             previous_frame_index = frame_ind
