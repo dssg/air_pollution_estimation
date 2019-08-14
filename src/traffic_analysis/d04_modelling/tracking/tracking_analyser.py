@@ -8,7 +8,7 @@ import tensorflow as tf
 from traffic_analysis.d04_modelling.traffic_analyser_interface import TrafficAnalyserInterface
 from traffic_analysis.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame, color_bboxes, \
     bbox_intersection_over_union
-from traffic_analysis.d00_utils.video_helpers import write_mp4
+from traffic_analysis.d00_utils.video_helpers import write_mp4, parse_video_or_annotation_name
 from traffic_analysis.d04_modelling.tracking.vehicle_fleet import VehicleFleet
 from traffic_analysis.d04_modelling.perform_detection_opencv import detect_objects_cv
 from traffic_analysis.d04_modelling.perform_detection_tensorflow import detect_objects_tf
@@ -294,7 +294,9 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
         for video_name, video in video_dict.items():
             fleet = self.detect_and_track_objects(video, video_name)
-            lost_tracking[video_name] = fleet.lost_tracking
+            camera_id, date_time = parse_video_or_annotation_name(video_name)
+            lost_tracking[camera_id] = {}
+            lost_tracking[camera_id][date_time] = fleet.lost_tracking
             single_frame_level_df = fleet.report_frame_level_info()
             frame_info_list.append(single_frame_level_df)
 
@@ -307,6 +309,8 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
         frame_level_df -- df returned by above function
         """
+        print(lost_tracking)
+
         if frame_level_df.empty:
             return frame_level_df
 
