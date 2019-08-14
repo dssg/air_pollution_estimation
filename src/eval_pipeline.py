@@ -95,7 +95,7 @@ for i, (analyser_name, params_to_set_dict) in enumerate(traffic_analysers_params
                     print(f"Successfully processed chunk {chunk_counter}")
         except:
             print("Analysing current chunk failed. Continuing to next chunk.")
-            continue
+            pass
 
         chunk_counter += 1
         selected_videos = selected_videos[chunk_size:]
