@@ -37,7 +37,7 @@ data_renaming:
 
 pipeline_settings:
   dataset_ref_name: "tims_cameras_all"
-  chunk_size: 3
+  chunk_size: 10
 
 eval_pipeline_settings:
   eval_ref_name: "annotated_videos"
