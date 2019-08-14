@@ -1,5 +1,5 @@
-# Quantifying Traffic Dynamics from Traffic Videos 
-We present an automated traffic analysis system. Our system which uses computer vision approaches to classify vehicles. For each vehicle type, it outputs  vehicles counts,  vehicle start counts, and vehicle stop counts.
+# Quantifying London Traffic Dynamics from Traffic Videos 
+We present an automated, live traffic analysis system, which gathers video data from  . Our system  uses computer vision to classify vehicles. For each vehicle type, it outputs  vehicles counts,  vehicle start counts, and vehicle stop counts.
 
 ## Table of Contents
 
@@ -18,10 +18,11 @@ The purpose of the project is to create an open-source library to automate the c
 More details about the project goals, our technical approach, and the evaluation of our models can be found in the **Technical Report**. 
 
 ## Code Overview
+
 ### Installation and setup
 
 #### Required software
-This project requires *Python 3.7* or later, with packages as specified in requirements.txt. You should also have a package manager such as `pip3` or `conda`. 
+This project requires *Python 3.7* or later, with packages as specified in requirements.txt. You should also have a package manager such as `pip3`. 
 
 *PostgreSQL* for storing intermediate model results, statistics outputted by the model, and evaluation results. We used version 9.5.19. 
 
@@ -35,40 +36,73 @@ This project requires *Python 3.7* or later, with packages as specified in requi
 
 *Docker / Docker Toolbox for running a docker container that contains CVAT:* See their website for more details. 
 
-#### Setup 
- 1. Set Python 3.6 as a `PATH` environment variable: 
-		- [Instructions for Windows](https://geek-university.com/python/add-python-to-the-windows-path/) (adapt instructions for Python 3.6 rather than Python 3.4)
-		- On Linux/Ubuntu systems: 
+#### Set up  machine 
+
+1. Set up a Python 3.6 virtual environment to run our library in. This will help avoid package version conflicts.  
+* [Windows 10 instructions](https://www.c-sharpcorner.com/article/steps-to-set-up-a-virtual-environment-for-python-development/)
+* [Linux/Ubuntu instructions](https://www.linode.com/docs/development/python/create-a-python-virtualenv-on-ubuntu-1610/): follow instructions for Python 3, substituting in python3.6 whereever you are supposed to type 'python3'.
+
+2. Activate the virtual environment (see links above).
+
+ 2. Set Python 3.6 as a `PYTHONPATH` system environment variable: 
+	* [Instructions for Windows](https://www.tutorialspoint.com/How-to-set-python-environment-variable-PYTHONPATH-on-Windows) (adapt instructions for Python 3.6 rather than Python 2.7)
+	* On Linux/Ubuntu systems: 
 		
-			 a) Type `which python3.6`  into the terminal to get the path to your Python executable. You should get something like `/usr/local/bin/python3.6`. 
+		* Type `which python3.6`  into the terminal to get the path to your current Python executable. You should get something like `/usr/local/bin/python3.6`. *Warning: if you have not activated your virtual environment, you will get the path to your base Python executable, rather than the path to your virtual environment's Python executable.*
 			 
-			 b) Add the following line to the end of your `~/.bashrc` file: `export PYTHONPATH=$PYTHONPATH: your_python_path`, substituting the result of the `which` command above for your_python_path		
+		* Open your `~/.bashrc` file in editing mode using the command `nano ~/.bashrc`,  or the editor of your choice. 
+		* Place the line `export PYTHONPATH=$PYTHONPATH: your_python_path` at the bottom of the file, substituting the result of the `which` command above for your_python_path		
 				   
-2. Clone this repository into desired directory using the bright green `Clone or download` dropdown button  at the top right side of the homescreen of this repository. See [link](https://help.github.com/en/articles/cloning-a-repository) for help with this step. 
-3. Enter your cloned copy of this repository using the terminal.
-4. Install packages. 
-	- If you have package manager `pip3`, run the terminal command `pip3 install -r requirements.txt`. 
-5. Create a file to store S3 and PSQL database credentials at `air_pollution_estimation\conf\local\credentials.yml`. This file should be formatted as follows: 
- <p float="left">
-  <img src ="readme_resources/images/example_credentials.png" alt="alt text" width="500" height="175"  />
-</p> 
-
-6. Edit the configuration files  in `air_pollution_estimation\conf\base\`. Here you should specify the name of your S3 bucket, paths to video data in your S3 bucket, paths to annotations in the S3 bucket, and the names of the PSQL tables you would like to write to. See sections **Configuration Files** and **Sample S3 Structure** for more details. 
-7. (Optional) If you wish to use the GOTURN tracker with the pipelines, please follow the instructions at this [link](https://www.learnopencv.com/goturn-deep-learning-based-object-tracking/) to  download/unzip the files. Place the unzipped model files in the directory `air_pollution_estimation\src\`. 
-
-#### Sample S3 Structure 
-THE BELOW FIGURE NEEDS TO BE UPDATED
-<p float="left">
-  <img src ="readme_resources/images/s3_structure.png" alt="alt text" />
-</p> 
-Current settings in `air_pollution_estimation/conf/base/` are configured to work with an S3 bucket with the following folder structure: 
+3. Clone this repository into desired directory using the bright green `Clone or download` dropdown button  at the top right side of the homescreen of this repository. See [link](https://help.github.com/en/articles/cloning-a-repository) for help with this step if required. 
+4. Enter your cloned copy of this repository using the terminal command: 
+``` cd air_pollution_estimation```. **All instructions from this point on are with the assumption that you are in the `air_pollution_estimation` directory.** 
+5. Install the Python packages in the `requirements.txt`: 
+ 	- If you have package manager `pip3`, run the terminal command `pip3 install -r requirements.txt`. 
+6. Create a file to store S3 and PSQL database credentials at `conf/local/credentials.yml`. This file should be formatted as follows: 
+```
+dev_s3:
+    aws_access_key_id: YOUR_SECRET_ACCESS_ID
+    aws_secret_access_key: YOUR_SECRET_ACCESS_KEY
+postgres:
+    user: YOUR_USERNAME
+    passphrase: YOUR_PASSPHRASE
+```
+ Tip:  you can create/edit a file from the command line using 
 
 ```
-├── air-pollution-uk/
+nano air_pollution_estimation/conf/local/credentials.yml
+```
+
+8. Edit the config file  `conf/base/paths.yml`. Change the following variables:
+* `s3 paths`: 
+	* `bucket_name`: specify name of your S3 bucket
+	* `s3_profile`: specify the name of your AWS profile here
+
+* `db_paths`:
+	* `db_host`: specify PSQL database host link   
+	* `db_name`: specify the name of your database 
+
+See section **Configuration Files**  for more details. 
+
+  ***Don't have an S3 bucket or a database ?*** *To be implemented*
+Don't worry--you can still try out our code! We've created a toy pipeline which reads in  example videos from the 
+`data/` folder, and prints output to the terminal. 
+Simply run:
+```
+python3 src/toy_pipeline.py
+```
+To run our other pipelines (which collect live traffic videos, run analysis at scale, or run evaluation) you will need the S3 bucket and a PSQL database. Continue to the steps below to see how to do this. 
+
+
+####  Set up S3 Structure 
+
+The repository is configured to work with an S3 bucket with the below folder structure. Some of these folders are created automatically but others must be manually created. Follow the below instructions to set up your bucket.  
+```
+├── your-bucket-name/
 │   ├── raw/
 │   │   ├── videos/
-│   │   │   ├── 2019-08-13/
-│   │   │   |    ├── "date-time_cameraid.mp4"
+│   │   │   ├── 2019-08-13/   # videos are stored by day
+│   │   │   |    ├── "date-time_cameraid.mp4" # videos are stored with this name format
 │   │   │   |    ├── ...
 │   │   │   ├── 2019-08-14/
 │   │   │   └──  ...
@@ -78,50 +112,51 @@ Current settings in `air_pollution_estimation/conf/base/` are configured to work
 │   │   │   └──  ...
 │   │   ├── annotations/
 │   │   │   ├── cvat/
-│   │   │   └──  detrac/
+│   │   │   |    ├── "jobid_date-time_cameraid.xml" # annotations are stored with this name format
+│   │   │   |    ├── ...
 │   │   ├── camera_details/
 │   │   ├── model_conf/
 │   │   │   ├── yolov3-tiny/
 │   │   │   ├── yolov3/
 │   │   │   └── yolov3_traffic/
-│   ├── frame_level/
-│   │   ├── ...
-│   ├── processed_data/
-│   │   └──  ...
+│   │   └──  
 │   └──
 └──   
 ```
 
-If you wish to utilize this library with an alternate S3 structure, you must change the appropriate paths in `paths.yml`. See **Configuration Files** for more details. 
+If you wish to utilize this library with an alternate S3 structure, you must change the appropriate paths in `paths.yml`.  See **Configuration Files** for more details. 
 
-#### Configuration Files
-System specifications such as model parameters and file paths are contained in `YAML` configuration files found in `air_pollution_estimation/conf/base/`. In the various pipelines in the folder `air_pollution_estimation/src/`, our system reads the conf files from the aforementioned directory into dictionaries. 
-
-Stored in this `air_pollution_estimation/conf/base/`directory are the following config files: 
-* `app_parameters.yml` contains configuration options for the web app.
-* `paths.yml` contains: 
-	* Relevant file paths for input files (from the S3 bucket)
-	* Table names for the PSQL database (to store output statistics and evaluation statistics)
-	* Paths for temp folders used for temporary downloading/uploading of data. Folders are automatically created/deleted by the pipelines at these paths.
-* `parameters.yml` defines: 
-	* Various hyperparameters for detection and tracking
-	* Configuration options for reporting.
-
-We recommend that credentials be stored in a git-ignored `YAML` file in `air_pollution_estimation/conf/local/credentials.yml`.
-* `credentials.yml` should contain credentials necessary for accessing the PostgreSQL database, and Amazon AWS services.
+1. Start with empty S3 bucket. Manually create folders so that the structure looks like below: 
+```
+├── your-bucket-name/
+│   ├── raw/
+│   │   ├── videos/
+│   ├── ref/
+│   │   ├── model_conf/
+│   │   └──  
+│   └──
+└──   
+```
 
 #### Running the pipelines
 Once the above setup has been completed, you can deploy any of the pipelines (see **Repo Structure**) by running the following terminal command from the `air_pollution_estimation` folder:
 
 ```python3 src\name_of_pipeline.py```
 
-**TODO: IMPLEMENT THIS**
-If you haven't yet set up your S3 bucket or PSQL database--don't worry! We've created a toy pipeline which reads in  example videos from the 
-`air_pollution_estimation\data\` folder, and prints output to the terminal. As above, simply run: 
+*Optional setup* 
+ If you wish to use the GOTURN tracker with the pipelines, please follow the instructions at this [link](https://www.learnopencv.com/goturn-deep-learning-based-object-tracking/) to  download/unzip the files. Place the unzipped model files in the directory `air_pollution_estimation\src\`. 
 
-```python3 src\toy_pipeline.py```
+#### Running the evaluation pipeline 
+ If you want to run the evaluation pipeline and see how well the model does on CVAT-annotated data, copy annotation `.xml` files into `your-bucket-name/ref/annotations/cvat/`. You will need to ensure that the annotations files are named ___________________
 
+
+ 
 ## Repo Structure 
+
+<p float="left">
+  <img src ="readme_resources/images/s3_structure.png" alt="alt text" />
+</p> 
+
 Below is a partial overview of our repository tree: 
 
 ```
@@ -198,6 +233,23 @@ Below is a partial overview of our repository tree:
         │   └── 
         └──
 ```
+
+#### Configuration Files
+System specifications such as model parameters and file paths are contained in `YAML` configuration files found in `air_pollution_estimation/conf/base/`. In the various pipelines in the folder `air_pollution_estimation/src/`, our system reads the conf files from the aforementioned directory into dictionaries. 
+
+Stored in this `air_pollution_estimation/conf/base/`directory are the following config files: 
+* `app_parameters.yml` contains configuration options for the web app.
+* `paths.yml` contains: 
+	* Relevant file paths for input files (from the S3 bucket)
+	* Table names for the PSQL database (to store output statistics and evaluation statistics)
+	* Paths for temp folders used for temporary downloading/uploading of data. Folders are automatically created/deleted by the pipelines at these paths.
+* `parameters.yml` defines: 
+	* Various hyperparameters for detection and tracking
+	* Configuration options for reporting.
+
+We recommend that credentials be stored in a git-ignored `YAML` file in `air_pollution_estimation/conf/local/credentials.yml`.
+* `credentials.yml` should contain credentials necessary for accessing the PostgreSQL database, and Amazon AWS services.
+
 #### Data collection pipeline
 
 #### Video analysis pipeline
