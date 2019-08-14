@@ -180,6 +180,8 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             if(not success):
                 # check for bounding box not moving
                 matching_ind = int(np.squeeze(np.where((prev_bboxes_tracked == bboxes_tracked).all(axis=1))))
+                fleet.record_loss_of_tracking(bbox_number=matching_ind,
+                                              frame_number=frame_ind)
                 print('Matching Row: ' + str(matching_ind))
 
             print(bboxes_tracked)
@@ -242,11 +244,6 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         print('Run time of tracking analyser for one video is %s seconds' %
               (time.time() - start_time))
 
-        """
-        if self.detection_model == 'yolov3_tf':
-            self.sess.close()
-        """
-
         return fleet
 
     def detect_objects_in_frames(self, frames):
@@ -295,10 +292,16 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         if not len(video_dict):
             return None
 
+        lost_tracking = {}
+
         for video_name, video in video_dict.items():
             fleet = self.detect_and_track_objects(video, video_name)
+            lost_tracking[video_name] = fleet.lost_tracking
             single_frame_level_df = fleet.report_frame_level_info()
             frame_info_list.append(single_frame_level_df)
+
+        print(lost_tracking)
+
         return pd.concat(frame_info_list)
 
     def construct_video_level_df(self, frame_level_df) -> pd.DataFrame:
