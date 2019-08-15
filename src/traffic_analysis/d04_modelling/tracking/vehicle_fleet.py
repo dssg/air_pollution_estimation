@@ -44,7 +44,7 @@ class VehicleFleet:
         # used to handle case if no vehicles detected in video
         self.fake_head_vehicle = False
 
-        self.lost_tracking = {'bbox_number': [], 'frame_number': []}
+        self.lost_tracking = {'label': [], 'camera_id': [], 'date_time': []}
 
         if load_from_pd:
             # sort to ensure that the ordering of self.labels and self.confs corresps to vehicle id
@@ -371,7 +371,8 @@ class VehicleFleet:
         video_level_stats_df = video_level_stats_df[column_names]
         return video_level_stats_df
 
-    def record_loss_of_tracking(self, label, camera_id, date_time):
+    def record_loss_of_tracking(self, bbox_number, camera_id, date_time):
+        label = self.labels[bbox_number]
 
         self.lost_tracking['label'].append(label)
         self.lost_tracking['camera_id'].append(camera_id)

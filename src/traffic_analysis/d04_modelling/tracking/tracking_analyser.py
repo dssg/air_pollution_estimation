@@ -181,8 +181,8 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             if(not success):
                 # check for bounding box not moving
                 matching_inds = np.where((prev_bboxes_tracked ==bboxes_tracked[:prev_bboxes_tracked.shape[0], :]).all(axis=1))[0].tolist()
-                for ind in matching_inds:
-                    fleet.record_loss_of_tracking(label=labels_detected[ind],
+                for matching_ind in matching_inds:
+                    fleet.record_loss_of_tracking(bbox_number=matching_ind,
                                                   camera_id=camera_id,
                                                   date_time=date_time)
 
@@ -332,6 +332,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
             print(camera_id)
             print(video_upload_datetime)
+            print(video_level_df.columns)
             try:
                 print(lost_tracking[camera_id][video_upload_datetime.strftime("%m/%d/%Y, %H:%M:%S")])
                 try:
