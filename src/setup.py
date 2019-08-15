@@ -9,7 +9,6 @@ creds = load_credentials()
 s3_credentials = creds[paths['s3_creds']]
 
 # get yolo model weights and insert to SQL 
-# TODO: debug this
 upload_yolo_weights_to_s3(s3_credentials=s3_credentials,
 						  bucket_name=paths['bucket_name'],
 						  local_dir=paths['temp_setup'],
@@ -24,14 +23,15 @@ upload_camera_details_to_s3(s3_credentials=s3_credentials,
                             target_dir_on_s3=paths['s3_camera_details']
                             )
 
-# # shutil.rmtree(paths['setup_data']) # cleanup
 
-# # create PSQL tables to insert vehicle statistics into 
-# create_primary_sql_tables(db_vehicle_types_name=paths['db_vehicle_types'],
-#                   		  db_cameras_name=paths['db_cameras'],
-#                   		  db_frame_level_name=paths['db_frame_level'], 
-#                   		  db_video_level_name=paths['db_video_level'],
-#                   		  drop=True)
+# create PSQL tables to insert vehicle statistics into 
+create_primary_sql_tables(db_vehicle_types_name=paths['db_vehicle_types'],
+                  		  db_cameras_name=paths['db_cameras'],
+                  		  db_frame_level_name=paths['db_frame_level'], 
+                  		  db_video_level_name=paths['db_video_level'],
+                  		  drop=True)
 
-# # put annotated videos in S3, put annotation xmls in right folder 
+# TODO
+# put annotated videos in S3, put annotation xmls in right folder 
+shutil.rmtree(paths['setup_data'], ignore_errors=True) # cleanup
 

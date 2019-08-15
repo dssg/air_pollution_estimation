@@ -3,14 +3,12 @@ s3_paths:
   s3_video: "raw/videos/" #path to video data in s3 bucket
   s3_annotations: "ref/annotations/"
   s3_video_names: "ref/video_names/"
-  # s3_camera_details: "ref/camera_details/camera_details.json"
-  s3_camera_details: "ref/camera_details_test/camera_details.json"
+  s3_camera_details: "ref/camera_details/camera_details.json"
 
   s3_frame_level: "frame_level/" # TODO DELETE THIS
   s3_profile: "dssg" # TODO: change this for user? 
   s3_creds: "dev_s3" # TODO: CHANGE TO JUST S3
-#  s3_detection_model: "ref/model_conf/"
-  s3_detection_model: "ref/model_conf_test/"
+  s3_detection_model: "ref/model_conf/"
 
 local_paths:
   temp_video: "data/temp/videos/"
