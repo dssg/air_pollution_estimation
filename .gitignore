@@ -17,7 +17,7 @@ results/**
 plots/**
 
 # transfer some data for GitHub
-!data/ref/setup/
+!data/setup/
 
 # also keep all .gitkeep files
 !.gitkeep

@@ -17,7 +17,7 @@ local_paths:
   temp_setup: "data/temp/setup/"
 
   video_names: "data/ref/video_names/"
-  setup_data: "data/ref/setup/"
+  setup_data: "data/setup/"
   processed_video: "results/jamcams/"
   plots: "plots/"
   annotations: "annotations/"
