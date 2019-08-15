@@ -350,7 +350,6 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             print('Bboxes that have left the frame: ' + str(unique_bboxes))
             for bbox in unique_bboxes:
                 label = labels[np.where(bbox==bboxes)[0][0]]
-                print(label)
                 if label in adjustment_dict.keys():
                     adjustment_dict[label] += 1
                 else:
@@ -358,16 +357,12 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
             print(adjustment_dict)
 
+            print(video_level_df)
 
-            #print(lost_tracking[camera_id][video_upload_datetime.strftime("%m/%d/%Y, %H:%M:%S")])
-            #video_level_df.loc[('camera_id' == camera_id) & ('video_upload_datetime' == video_upload_datetime), 'stops'] -= 1
-            """    except Exception as e:
-                    print(e)
-                    print('Failed to reduce stops')
-            except:
-                print('Could not find lost tracking data for ' + camera_id + ' ' + str(video_upload_datetime))
+            for label, value in adjustment_dict.items():
+                video_level_df.loc[(video_level_df['camera_id'] == camera_id) & (video_level_df['video_upload_datetime'] == video_upload_datetime) & (video_level_df['vehicle_type'] == label), 'stops'] -= value
 
-            """
+            print(video_level_df)
 
             video_info_list.append(video_level_df)
 
