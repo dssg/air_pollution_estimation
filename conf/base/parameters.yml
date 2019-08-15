@@ -44,7 +44,7 @@ eval_pipeline_settings:
   eval_chunk_size: 7
   eval_params_order: ['tracker_type', 'detection_model', "detection_frequency", "detection_iou_threshold", "stop_start_iou_threshold"]
   eval_tracker_types: ['kcf', 'mosse', 'csrt', 'medianflow', 'tld', 'boosting']
-  eval_detection_models: ['yolov3_tf']
+  eval_detection_models: ['yolov3-tiny', 'yolov3_tf']
   eval_detection_frequency: [4, 6]
   eval_detection_iou_threshold: [0.1, 0.05, 0.10 , 0.4, 0.45, 0.50]
   eval_stop_start_iou_threshold: [0.75, 0.80, 0.85, 0.90]
