@@ -56,13 +56,16 @@ class CronJobs:
         for d in self.cron.log:
             print(d['pid'] + " - " + d['date'])
 
-    def clear_all_jobs(self):
+    def remove_all_jobs(self):
         self.cron.remove_all()
         self.cron.write()
 
+    def remove_jobs_by_comment(self, job_comment):
+        self.cron.remove_all(comment=job_comment)
+
     def test(self):
         filename = home.joinpath("air_pollution_estimation/src/test.py")
-        filename = "python3 --version >> /tmp/cron.log"
+        filename = "env >> /tmp/cron.log"
         job = self.cron.new(
             command=f"{filename}", comment="test")
         job.minute.every(1)
@@ -73,11 +76,10 @@ if __name__ == "__main__":
     import getpass
     username = getpass.getuser()
     cron_jobs = CronJobs(username)
-    print(username)
-    cron_jobs.clear_all_jobs()
+    cron_jobs.remove_jobs_by_comment('pipeline')
+    cron_jobs.remove_jobs_by_comment('test')
+    cron_jobs.remove_all_jobs()
     cron_jobs.download_videos_job()
-    cron_jobs.test()
     cron_jobs.upload_videos_job()
     cron_jobs.pipeline_job()
     cron_jobs.view_jobs()
-    cron_jobs.view_log()
