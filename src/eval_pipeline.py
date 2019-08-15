@@ -59,7 +59,7 @@ for i, (analyser_name, params_to_set_dict) in enumerate(traffic_analysers_params
     # wipe and recreate video/frame level stats tables for tracker types
     create_primary_sql_tables(db_frame_level_name=db_frame_level_name,
                               db_video_level_name=db_video_level_name,
-                              drop=False)
+                              drop=True)
 
     # create traffic analyser
     traffic_analyser = create_traffic_analyser(params_to_set=params_to_set_dict,

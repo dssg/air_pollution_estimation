@@ -18,7 +18,7 @@ def initialize_param_sets(params: dict):
     eval_param_sets = {}
 
     for param_dict in grid: 
-        eval_param_sets["tracking_analyser_" + param_dict["tracker_type"]] = param_dict
+        eval_param_sets["tracking_analyser_" + param_dict["tracker_type"] + "_" + param_dict["detection_model"].replace("-", "_")] = param_dict
 
     return eval_param_sets
 
