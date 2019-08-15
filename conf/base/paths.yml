@@ -11,6 +11,7 @@ s3_paths:
   s3_detrac_annotations: "ref/annotations/detrac/"
   s3_detrac_images: "raw/images/detrac/"
   s3_cvat_training_annotations: "ref/annotations/cvat_train/"
+  s3_annotations: "ref/annotations/"
 
 local_paths:
   temp_video: "data/temp/videos/"
