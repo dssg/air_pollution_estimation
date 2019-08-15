@@ -21,3 +21,4 @@ pandas==0.24.2
 psycopg2
 seaborn>=0.9
 sklearn
+tqdm

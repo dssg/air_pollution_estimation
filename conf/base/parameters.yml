@@ -51,12 +51,10 @@ eval_pipeline_settings:
 
 modelling:
   # obj detection
-  default_detection_model: "yolov3_tf"
-  detection_implementation: "cvlib"
+  default_detection_model: "yolov3-tiny_opencv"  # yolov3_opencv, yolov3-tiny_opencv, yolov3_tf, traffic_tf, YOURCUSTOMMODEL_tf...
   detection_iou_threshold: 0.05
   detection_confidence_threshold: 0.2
-  detection_nms_threshold: 0.2
-  GPU_number: 2
+  # GPU_number: 0 # TODO: DELETE THIS
 
   # tracking
   selected_labels: ["car", "truck", "bus", "motorbike"]

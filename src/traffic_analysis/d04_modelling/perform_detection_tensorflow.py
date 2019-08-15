@@ -9,9 +9,10 @@ from traffic_analysis.d04_modelling.transfer_learning.tensorflow_detection_utils
     remove_overlapping_boxes, letterbox_resize
 from traffic_analysis.d04_modelling.transfer_learning.convert_darknet_to_tensorflow import parse_anchors, \
     yolov3_darknet_to_tensorflow
-from traffic_analysis.d04_modelling.transfer_learning.generate_tensorflow_model import YoloV3
+from traffic_analysis.d04_modelling.transfer_learning.tensorflow_model_loader import YoloV3
 from traffic_analysis.d04_modelling.perform_detection_opencv import label_detections, \
     choose_objects_of_selected_labels
+from traffic_analysis.d02_ref.download_detection_model_from_s3 import download_detection_model_from_s3
 
 
 def initialize_tensorflow_model(params, paths, detection_model, s3_credentials, sess):
@@ -36,13 +37,16 @@ def initialize_tensorflow_model(params, paths, detection_model, s3_credentials, 
                                      paths=paths,
                                      detection_model=detection_model,
                                      s3_credentials=s3_credentials)
+        if detection_model is not 'yolov3_tf':
+            download_detection_model_from_s3(model_name=detection_model,
+                                             paths=paths,
+                                             s3_credentials=s3_credentials)
 
     conf_thresh = params['detection_confidence_threshold']
     iou_thresh = params['detection_iou_threshold']
-    local_filepath_model = os.path.join(paths['local_detection_model'], detection_model, 'yolov3.ckpt')
 
     anchors = parse_anchors(paths)
-    class_name_path = os.path.join(paths['local_detection_model'], 'yolov3', 'coco.names')
+    class_name_path = os.path.join(paths['local_detection_model'], 'yolov3_opencv', 'coco.names')
     classes = read_class_names(class_name_path)
     n_classes = len(classes)
 

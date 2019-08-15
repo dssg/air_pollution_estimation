@@ -21,9 +21,10 @@ def upload_annotation_names_to_s3(paths,
 
     # fetch annotation filenames
     elapsed_time, annotation_files = get_names_of_folder_content_from_s3(bucket_name, prefix, s3_profile)
-    if verbose: 
+    if verbose:
         print('Extracting {} file names took {} seconds'.format(len(annotation_files),
                                                             elapsed_time))
+
     selected_files = []
     for annotation_file in annotation_files:
         if annotation_file:
