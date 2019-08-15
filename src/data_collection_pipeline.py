@@ -15,7 +15,6 @@ local_video_dir = paths['temp_video']
 
 # download camera data from tfl
 download_camera_meta_data(tfl_camera_api=tfl_camera_api,
-                          paths=paths,
                           s3_credentials=s3_credentials)
 print("Downloaded tfl camera details.")
 
@@ -29,14 +28,14 @@ def collect_camera_videos_fn():
 
 
 def upload_videos_fn():
-    upload_videos(paths=paths,
-                  iterations=iterations,
+    upload_videos(iterations=iterations,
                   delay=delay)
 
 
 def rename_videos_fn():
-    rename_videos(paths=paths,
-                  params=params,
+    rename_videos(old_path=params['old_path'],
+                  new_path=params['new_path'],
+                  date_format=params['date_format'],
                   chunk_size=1000)
 
 

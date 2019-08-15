@@ -9,10 +9,13 @@ import sys
 import dateutil.parser
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 from traffic_analysis.d00_utils.email_service import send_email_warning
+from traffic_analysis.d00_utils.load_confs import load_paths
+
+
+paths = load_paths()
 
 
 def download_camera_meta_data(tfl_camera_api: str,
-                              paths: dict,
                               s3_credentials: dict):
     """
     Gets a list of camera ids and info from tfl api
@@ -37,7 +40,6 @@ def download_camera_meta_data(tfl_camera_api: str,
 
 def collect_camera_videos(download_url: dict,
                           s3_credentials: dict,
-                          paths: dict,
                           iterations: int = None,
                           delay: int = 3):
     """
@@ -52,9 +54,9 @@ def collect_camera_videos(download_url: dict,
 
     dl = DataLoaderS3(s3_credentials,
                       bucket_name=paths['bucket_name'])
-
     video_urls_dict = dict(dl.read_json(paths['s3_camera_details']))
 
+    # continuously download videos if iterations is None, otherwise stop after n iterations
     iteration = 0
     while True:
         count = 0
@@ -89,8 +91,7 @@ def collect_camera_videos(download_url: dict,
             time.sleep(delay * 60)
 
 
-def upload_videos(paths: dict,
-                  iterations=None,
+def upload_videos(iterations=None,
                   delay: int = None):
     """
     This function uploads the video in the local_video_dir to S3. Each video is deleted after an upload.
@@ -128,11 +129,10 @@ def upload_videos(paths: dict,
             time.sleep(delay * 60)
 
 
-def rename_videos(paths, params, chunk_size=100):
+def rename_videos(old_path, new_path, date_format, chunk_size=100):
     bucket_name = paths['bucket_name']
     s3_profile = paths['s3_profile']
-    s3_folder = "s3://%s/%s" % (bucket_name, params['old_path'])
-    date_format = params['date_format']
+    s3_folder = "s3://%s/%s" % (bucket_name, old_path)
 
     if len(sys.argv) > 1:
         chunk_size = sys.argv[1]
@@ -168,7 +168,7 @@ def rename_videos(paths, params, chunk_size=100):
                     timestamp = datetime_obj.strftime(date_format)
                     new_filename = "_".join([timestamp, res[1]])
                     new_filename = "s3://%s/%s/%s/%s" % (
-                        bucket_name, params['new_path'], str(datetime_obj.date()), new_filename)
+                        bucket_name, new_path, str(datetime_obj.date()), new_filename)
                     res = subprocess.call(["aws", "s3", 'mv',
                                            old_filename,
                                            new_filename,

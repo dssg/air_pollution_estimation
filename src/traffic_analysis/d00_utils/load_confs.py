@@ -7,7 +7,7 @@ project_dir = get_project_directory()
 
 def collapse_dict_hierarchy(nested_dict: dict):
     collapsed_dict = {}
-    for name, subdict in nested_dict.items(): 
+    for name, subdict in nested_dict.items():
         collapsed_dict = {**collapsed_dict, **subdict}
     return collapsed_dict
 
