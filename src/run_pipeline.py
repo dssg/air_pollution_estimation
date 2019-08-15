@@ -35,7 +35,7 @@ analyser = TrackingAnalyser(params=params, paths=paths, s3_credentials=s3_creden
 # select chunks of videos and classify objects
 chunk_size = params['chunk_size']
 while selected_videos:
-    success, frame_level_df, _ = update_frame_level_table(analyser=analyser,
+    success, frame_level_df, _, lost_tracking  = update_frame_level_table(analyser=analyser,
                                                           db_frame_level_name=paths['db_frame_level'],
                                                           file_names=selected_videos[:chunk_size],
                                                           paths=paths,
@@ -47,6 +47,7 @@ while selected_videos:
                                db_frame_level_name=paths['db_frame_level'],
                                frame_level_df=frame_level_df,
                                file_names=selected_videos[:chunk_size],
+                               lost_tracking=lost_tracking,
                                paths=paths,
                                creds=creds,
                                return_data=False)

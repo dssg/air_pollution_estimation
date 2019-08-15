@@ -9,14 +9,15 @@ def update_video_level_table(analyser,
                              db_frame_level_name=None,
                              frame_level_df=None,
                              file_names=None,
+                             lost_tracking=None,
                              paths=None,
                              creds=None,
                              return_data=False):
     """ Update the video level table on the database based on the videos in the files list
         Args:
-            analyser: TrafficAnalyser object 
-            db_video_level_name: name of database table to read from 
-            db_frame_level_name: name of database table to read from 
+            analyser: TrafficAnalyser object
+            db_video_level_name: name of database table to read from
+            db_frame_level_name: name of database table to read from
             frame_level_df (dataframe): dataframe containing the frame level stats, if none then
             this is loaded from the database using the file names
             file_names (list): list of s3 filepaths for the videos to be processed
@@ -27,6 +28,7 @@ def update_video_level_table(analyser,
         Returns:
 
     """
+
     db_obj = DataLoaderSQL(creds=creds, paths=paths)
 
     if frame_level_df is None:
@@ -59,7 +61,8 @@ def update_video_level_table(analyser,
         frame_level_df.drop('bbox_h', axis=1, inplace=True)
 
     # Create video level table and add to database
-    video_level_df = analyser.construct_video_level_df(frame_level_df)
+    video_level_df = analyser.construct_video_level_df(frame_level_df, lost_tracking)
+
     if video_level_df.empty:
         return
     video_level_df['creation_datetime'] = datetime.datetime.now()

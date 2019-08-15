@@ -65,7 +65,7 @@ def delete_and_recreate_dir(temp_dir):
     Will wipe local_dir if already a directory
     """
     if os.path.isdir(temp_dir):
-        shutil.rmtree(temp_dir)
+        shutil.rmtree(temp_dir, ignore_errors=True)
 
     os.makedirs(temp_dir, exist_ok=True)
     return

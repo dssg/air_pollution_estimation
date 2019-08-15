@@ -46,7 +46,7 @@ def update_frame_level_table(analyser,
     if not isfilled:  # early stop
         return success, frame_level_df
 
-    frame_level_df, runtime_list = analyser.construct_frame_level_df(video_dict)
+    frame_level_df, runtime_list, lost_tracking = analyser.construct_frame_level_df(video_dict)
     if frame_level_df.empty:
         return None
     frame_level_df.dropna(how='any', inplace=True)
@@ -75,4 +75,4 @@ def update_frame_level_table(analyser,
     db_obj.add_to_sql(df=frame_level_sql_df, table_name=db_frame_level_name)
     success = True
 
-    return success, frame_level_df, runtime_list
+    return success, frame_level_df, runtime_list, lost_tracking
