@@ -64,7 +64,6 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 s3_credentials=self.s3_credentials,
                 sess=self.sess)
         self.detection_confidence_threshold = params['detection_confidence_threshold']
-        self.detection_nms_threshold = params['detection_nms_threshold']
 
         # tracking settings
         if tracker_type is not None:
@@ -410,5 +409,4 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 video_level_df.loc[(video_level_df['camera_id'] == camera_id) & (video_level_df['video_upload_datetime'] == video_upload_datetime) & (video_level_df['vehicle_type'] == label), 'stops'] -= value
 
             video_info_list.append(video_level_df)
-
         return pd.concat(video_info_list)
