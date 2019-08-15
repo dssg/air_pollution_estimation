@@ -314,7 +314,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
         frame_level_df -- df returned by above function
         """
-        print(lost_tracking)
+        
         if frame_level_df.empty:
             return frame_level_df
 
@@ -333,10 +333,6 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             camera_id = video_level_df['camera_id'].values[0]
             video_upload_datetime = pd.to_datetime(str(video_level_df['video_upload_datetime'].values[0]))
 
-            print(camera_id)
-            print(video_upload_datetime)
-            print(video_level_df.columns)
-
             adjustment_dict = {}
 
             try:
@@ -347,7 +343,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 bboxes = []
                 unique_bboxes = []
                 labels = []
-            print('Bboxes that have left the frame: ' + str(unique_bboxes))
+
             for bbox in unique_bboxes:
                 label = labels[np.where(bbox==bboxes)[0][0]]
                 if label in adjustment_dict.keys():
@@ -355,14 +351,8 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 else:
                     adjustment_dict[label] = 1
 
-            print(adjustment_dict)
-
-            print(video_level_df)
-
             for label, value in adjustment_dict.items():
                 video_level_df.loc[(video_level_df['camera_id'] == camera_id) & (video_level_df['video_upload_datetime'] == video_upload_datetime) & (video_level_df['vehicle_type'] == label), 'stops'] -= value
-
-            print(video_level_df)
 
             video_info_list.append(video_level_df)
 
