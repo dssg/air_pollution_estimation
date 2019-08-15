@@ -2,68 +2,69 @@ import urllib
 import os 
 import re
 import shutil
+import sys
 
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 from traffic_analysis.d00_utils.data_retrieval import delete_and_recreate_dir
 
 
+
 def upload_yolo_weights_to_s3(s3_credentials,
-							  bucket_name,
-							  local_dir,
-							  target_dir_on_s3,
-							  ):
+                              bucket_name,
+                              local_dir,
+                              target_dir_on_s3,
+                              ):
 
-	delete_and_recreate_dir(temp_dir=local_dir)
-######### YOLOV3-TINY
-	# get coco.names file
-	urllib.request.urlretrieve ("https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names", 
-								local_dir + "yolov3-tiny/coco.names")
+    delete_and_recreate_dir(temp_dir=local_dir)
 
-	# get yolov3-tiny.cfg file
-	urllib.request.urlretrieve ("https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3-tiny.cfg", 
-								local_dir + "yolov3-tiny/yolov3-tiny.cfg")
+    download_dict = {os.path.join(local_dir, "yolov3-tiny"): ["https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names",
+                                                              "https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3-tiny.cfg",
+                                                               "https://pjreddie.com/media/files/yolov3-tiny.weights"], 
+                    os.path.join(local_dir, "yolov3"): ["https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names",
+                                                        "https://pjreddie.com/media/files/yolov3.weights",
+                                                        "https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cfg",
+                                                        "https://raw.githubusercontent.com/wizyoung/YOLOv3_TensorFlow/master/data/yolo_anchors.txt"
+                                                        ]
+                    }
 
-	# get yolov3-tiny.weights file
-	urllib.request.urlretrieve ("https://pjreddie.com/media/files/yolov3-tiny.weights", 
-								local_dir + "yolov3-tiny/yolov3-tiny.weights")
+    for download_dir, download_urls in download_dict.items(): 
+        os.makedirs(download_dir)
+        for download_url in download_urls: 
+            filename = download_url.split("/")[-1]
+            download_path = os.path.join(download_dir, filename) 
 
-######### YOLOV3
-	# get coco.names file
-	urllib.request.urlretrieve ("https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names", 
-								local_dir + "yolov3/coco.names")
+            try: 
+                urllib.request.urlretrieve(download_url, 
+                                           download_path)
+                print(f"Successfully downloaded {download_url}")
 
-    # get yolov3.weights
-	urllib.request.urlretrieve ("https://pjreddie.com/media/files/yolov3.weights", 
-								local_dir + "yolov3/yolov3.weights")
-	# get yolov3.cfg
-	urllib.request.urlretrieve ("https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cfg", 
-								local_dir + "yolov3/yolov3.cfg")
-
-	# get yolov3_anchors.txt
-	urllib.request.urlretrieve ("https://raw.githubusercontent.com/wizyoung/YOLOv3_TensorFlow/master/data/yolo_anchors.txt", 
-								local_dir + "yolov3/yolo_anchors.txt")
-
+            except Exception as e: 
+                print(e)
+                print("Failed to download url ", download_url)
 
 ############# TENSORFLOW???
-	# TODO: GET TENSORFLOW WEIGHTS FROM STORAGE 
+    # TODO: GET TENSORFLOW WEIGHTS FROM STORAGE 
 
 ############# UPLOAD TO FOLDER
     dl = DataLoaderS3(s3_credentials,
-                      bucket_name=paths['bucket_name'])
+                      bucket_name=bucket_name)
 
-	# Set the directory you want to start from
-	for dir_path, sub_dir_list, file_list in os.walk(local_dir):
-	    print('Found directory: %s' % dir_path)
-	    dir_name = re.split(r'\\|/', dir_path)[-1]
-	    for file_name in file_list:
-	    	path_of_file_to_upload = os.path.join(dir_name, file_name)
-	    	path_to_upload_file_to = target_dir_on_s3 + dir_name +"/" + file_name
+    # Set the directory you want to start from
+    for dir_path, sub_dir_list, file_list in os.walk(local_dir):
+        print('Found directory: %s' % dir_path)
+        dir_name = re.split(r'\\|/', dir_path)[-1]
+        if dir_name == "setup": 
+            continue
 
-	    	print(f"uploading file {path_of_file_to_upload} to {path_to_upload_file_to}")
-	    	dl.upload_file(path_of_file_to_upload=path_of_file_to_upload, 
-    		               path_to_upload_file_to=path_to_upload_file_to)
+        for file_name in file_list:
+            path_of_file_to_upload = os.path.join(dir_path, file_name)
+            path_to_upload_file_to = target_dir_on_s3 + dir_name +"/" + file_name
 
-	shutil.rmtree(local_dir)
+            print(f"uploading file {path_of_file_to_upload} to {path_to_upload_file_to}")
+            dl.upload_file(path_of_file_to_upload=path_of_file_to_upload, 
+                           path_to_upload_file_to=path_to_upload_file_to)
+
+    shutil.rmtree(local_dir)
 
 
 def upload_camera_details_to_s3(s3_credentials,
@@ -72,10 +73,8 @@ def upload_camera_details_to_s3(s3_credentials,
                                 target_dir_on_s3
                                 ):
 
-	camera_details_path = local_dir + "camera_details.json"
+    camera_details_path = os.path.join(local_dir, "camera_details.json")
     dl = DataLoaderS3(s3_credentials,
-                      bucket_name=paths['bucket_name'])
+                      bucket_name=bucket_name)
     dl.upload_file(path_of_file_to_upload=camera_details_path, 
-	               path_to_upload_file_to=target_dir_on_s3)
-
-	
+                   path_to_upload_file_to=target_dir_on_s3)
