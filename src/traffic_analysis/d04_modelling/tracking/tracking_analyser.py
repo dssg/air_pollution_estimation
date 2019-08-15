@@ -297,8 +297,11 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         for video_name, video in video_dict.items():
             fleet = self.detect_and_track_objects(video, video_name)
             camera_id, date_time = parse_video_or_annotation_name(video_name)
-            lost_tracking[camera_id] = {}
-            lost_tracking[camera_id][date_time.strftime("%m/%d/%Y, %H:%M:%S")] = fleet.lost_tracking
+            if camera_id in lost_tracking.keys():
+                lost_tracking[camera_id][date_time.strftime("%m/%d/%Y, %H:%M:%S")] = fleet.lost_tracking
+            else:
+                lost_tracking[camera_id] = {}
+                lost_tracking[camera_id][date_time.strftime("%m/%d/%Y, %H:%M:%S")] = fleet.lost_tracking
             single_frame_level_df = fleet.report_frame_level_info()
             frame_info_list.append(single_frame_level_df)
 
@@ -333,15 +336,39 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             print(camera_id)
             print(video_upload_datetime)
             print(video_level_df.columns)
+
+            adjustment_dict = {}
+
             try:
-                print(lost_tracking[camera_id][video_upload_datetime.strftime("%m/%d/%Y, %H:%M:%S")])
-                try:
-                    video_level_df.loc[('camera_id' == camera_id) & ('video_upload_datetime' == video_upload_datetime), 'stops'] -= 1
-                except Exception as e:
+                bboxes = lost_tracking[camera_id][video_upload_datetime.strftime("%m/%d/%Y, %H:%M:%S")]['bbox_number']
+                unique_bboxes = np.unique(bboxes)
+                labels = np.array(lost_tracking[camera_id][video_upload_datetime.strftime("%m/%d/%Y, %H:%M:%S")]['label'])
+            except:
+                bboxes = []
+                unique_bboxes = []
+                labels = []
+            print('Bboxes that have left the frame: ' + str(unique_bboxes))
+            for bbox in unique_bboxes:
+                label = labels[np.where(bbox==bboxes)[0][0]]
+                print(label)
+                if label in adjustment_dict.keys():
+                    adjustment_dict[label] += 1
+                else:
+                    adjustment_dict[label] = 1
+
+            print(adjustment_dict)
+
+
+            #print(lost_tracking[camera_id][video_upload_datetime.strftime("%m/%d/%Y, %H:%M:%S")])
+            #video_level_df.loc[('camera_id' == camera_id) & ('video_upload_datetime' == video_upload_datetime), 'stops'] -= 1
+            """    except Exception as e:
                     print(e)
                     print('Failed to reduce stops')
             except:
                 print('Could not find lost tracking data for ' + camera_id + ' ' + str(video_upload_datetime))
+
+            """
+
             video_info_list.append(video_level_df)
 
         return pd.concat(video_info_list)
