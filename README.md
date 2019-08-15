@@ -1,3 +1,4 @@
+
 # Quantifying London Traffic Dynamics from Traffic Videos 
 We present an automated traffic analysis library. Our library provides functionality to 
 1. Collect real-time traffic videos from the Transport for London API 
@@ -27,7 +28,7 @@ More details about the project goals, our technical approach, and the evaluation
 ## Installation and setup
 
 #### Required software
-This project requires *Python 3.7* or later, with packages as specified in requirements.txt. You should also have a package manager such as `pip3`. 
+This project requires *Python 3.6* or later, with packages as specified in requirements.txt. You should also have a package manager such as `pip3`. 
 
 *PostgreSQL* for storing intermediate model results, statistics outputted by the model, and evaluation results. We used version 9.5.19. 
 
@@ -113,12 +114,12 @@ Once the above setup has been completed, you should deploy the pipelines in the 
       ```python3 src\data_collection_pipeline.py```
 2. Analysis pipeline: this pipeline gets videos from the S3 bucket for a specified range of dates/times, and a specified set of cameras. It runs our model on these videos, and appends the results to the PSQL tables.     
 
-    * If running for the first time, you will need to edit `src/run_pipeline.py`. Specify the date/time ranges and specify the camera IDs for which you would like to get videos from the S3 bucket, by changing the arguments of `retrieve_and_upload_video_names_to_s3()`. This generates a `.json` of video paths in the S3 bucket which satisfy your requirements, and saves it for future use. 
+    * If running for the first time, you will need to edit `src/run_pipeline.py`. Specify the date/time ranges and specify the camera IDs for which you would like to get videos from the S3 bucket, by changing the arguments of `retrieve_and_upload_video_names_to_s3()`. This generates a `.json` of video paths in the S3 bucket which satisfy your requirements, and saves it for future use. On subsequent runs of the pipeline you can comment out `retrieve_and_upload_video_names_to_s3()` and just load the video names directly from the `.json` on S3.
     * This pipeline relies on data collected by the `data_collection_pipeline.py`, so if you have not collected data for your specified ranges/camera IDs, the analysis cannot run.
     *  To deploy pipeline, type the following into the command line:
       ```python3 src\run_pipeline.py```
 3. Running the evaluation pipeline 
-    * If you want to run the evaluation pipeline and see how well the model does on CVAT-annotated data, copy annotation `.xml` files into `your-bucket-name/ref/annotations/cvat/`. You will need to ensure that the annotations files are named ___________________
+    * If you want to run the evaluation pipeline and see how well the model does on CVAT-annotated data, copy annotation `.xml` files into `your-bucket-name/ref/annotations/cvat/`. You will need to ensure that the annotation files are named in the same way as the raw videos (YYYYMMDD-HHMMSS_CAMERAID e.g. 20190815-020929_00001.03748).
 
 
  
