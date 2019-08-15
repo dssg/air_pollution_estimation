@@ -5,8 +5,6 @@ import json
 import time as Time
 from subprocess import Popen, PIPE
 
-from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
-
 
 def upload_json_to_s3(paths, save_name, selected_files):
     """ save json file to s3
