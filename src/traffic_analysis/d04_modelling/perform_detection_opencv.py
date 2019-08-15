@@ -136,10 +136,7 @@ def pass_image_through_nn(image_capture: np.ndarray,
                                                 crop=False)
 
     # read model as deep neural network in opencv
-    if model_name == 'yolov3-tiny':
-        config_file_path = os.path.join(paths['local_detection_model'], model_name, model_name + '.cfg')
-    else:
-        config_file_path = os.path.join(paths['local_detection_model'], model_name, model_name + '.config')
+    config_file_path = os.path.join(paths['local_detection_model'], model_name, model_name + '.cfg')
     weights_file_path = os.path.join(paths['local_detection_model'], model_name, model_name + '.weights')
     net = cv2.dnn.readNetFromDarknet(config_file_path, weights_file_path)  # can use other net, see documentation
 

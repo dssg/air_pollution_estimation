@@ -1,7 +1,7 @@
-import subprocess
 import urllib
 import os 
 import re
+import shutil
 
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 from traffic_analysis.d00_utils.data_retrieval import delete_and_recreate_dir
@@ -9,7 +9,6 @@ from traffic_analysis.d00_utils.data_retrieval import delete_and_recreate_dir
 
 def upload_yolo_weights_to_s3(s3_credentials,
 							  bucket_name,
-							  s3_profile,
 							  local_dir,
 							  target_dir_on_s3,
 							  ):
@@ -36,11 +35,17 @@ def upload_yolo_weights_to_s3(s3_credentials,
     # get yolov3.weights
 	urllib.request.urlretrieve ("https://pjreddie.com/media/files/yolov3.weights", 
 								local_dir + "yolov3/yolov3.weights")
-	# get yolov3.config
+	# get yolov3.cfg
+	urllib.request.urlretrieve ("https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cfg", 
+								local_dir + "yolov3/yolov3.cfg")
+
 	# get yolov3_anchors.txt
-	# get readme????
+	urllib.request.urlretrieve ("https://raw.githubusercontent.com/wizyoung/YOLOv3_TensorFlow/master/data/yolo_anchors.txt", 
+								local_dir + "yolov3/yolo_anchors.txt")
+
 
 ############# TENSORFLOW???
+	# TODO: GET TENSORFLOW WEIGHTS FROM STORAGE 
 
 ############# UPLOAD TO FOLDER
     dl = DataLoaderS3(s3_credentials,
@@ -53,9 +58,24 @@ def upload_yolo_weights_to_s3(s3_credentials,
 	    for file_name in file_list:
 	    	path_of_file_to_upload = os.path.join(dir_name, file_name)
 	    	path_to_upload_file_to = target_dir_on_s3 + dir_name +"/" + file_name
+
 	    	print(f"uploading file {path_of_file_to_upload} to {path_to_upload_file_to}")
 	    	dl.upload_file(path_of_file_to_upload=path_of_file_to_upload, 
     		               path_to_upload_file_to=path_to_upload_file_to)
 
-	delete_and_recreate_dir(temp_dir=local_dir)
+	shutil.rmtree(local_dir)
 
+
+def upload_camera_details_to_s3(s3_credentials,
+                                bucket_name,
+                                local_dir,
+                                target_dir_on_s3
+                                ):
+
+	camera_details_path = local_dir + "camera_details.json"
+    dl = DataLoaderS3(s3_credentials,
+                      bucket_name=paths['bucket_name'])
+    dl.upload_file(path_of_file_to_upload=camera_details_path, 
+	               path_to_upload_file_to=target_dir_on_s3)
+
+	
