@@ -211,11 +211,14 @@ Once the above setup has been completed, you should deploy the pipelines in the 
 
 1. Data collection pipeline: this pipeline queries the Transport for London (TFL) JamCam API for videos from all 911 traffic cameras, every 4 seconds. It then uploads these videos to the S3 bucket. 
 
-    * Set the number of iterations you wish to run the pipeline by specifying the `iterations` parameter in the `parameters.yml`. 
-        
-    * To deploy pipeline, type the following into the command line:
+    * To deploy data collection pipeline, type the following into the command line:
         
       ```python3 src\data_collection_pipeline.py```
+
+    * The data collection pipeline script downloads videos from TFL continuously when `iterations` is set to `0`. To stop the data collection pipeline after ` N iterations`, change the `iterations` parameter in the `parameters.yml` to `N` where `N` is a number e.g
+
+      ```iterations: 4``` 
+
 2. Analysis pipeline: this pipeline gets videos from the S3 bucket for a specified range of dates/times, and a specified set of cameras. It runs our model on these videos, and appends the results to the PSQL tables.     
 
     * If running for the first time, you will need to edit `src/run_pipeline.py`. Specify the date/time ranges and specify the camera IDs for which you would like to get videos from the S3 bucket, by changing the arguments of `retrieve_and_upload_video_names_to_s3()`. This generates a `.json` of video paths in the S3 bucket which satisfy your requirements, and saves it for future use. On subsequent runs of the pipeline you can comment out `retrieve_and_upload_video_names_to_s3()` and just load the video names directly from the `.json` on S3.
@@ -372,3 +375,4 @@ The mission of the summer fellowship program is to train aspiring data scientist
 ## License
 
 Fill in later
+
