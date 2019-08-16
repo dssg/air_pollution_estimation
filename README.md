@@ -105,8 +105,34 @@ pip install -r requirements.txt
 
 #TODO psycopg2 installation FAILED
 
+### Set Up Credentials File
 
+With the repo cloned and the packages installed the next step is to create your private credentials file that will allow you to log into the different AWS services. To create the file run the following command:
+```
+touch conf/local/credentials.yml
+```
+With the file created, you need to use your preferred text editor (e.g. ```nano conf/local/credentials.yml```) to copy the following template into the file: 
+```
+dev_s3:
+  aws_access_key_id: YOUR_ACCESS_KEY_ID_HERE
+  aws_secret_access_key: YOUR_SECRET_ACCESS_KEY_HERE
 
+email:
+  address: OUTWARD_EMAIL_ADDRESS
+  password: EMAIL_PASSWORD
+  recipients: ['RECIPIENT_1', 'RECIPIENT_2', ...]
+
+tfl:
+  id: YOUR_TFL_ID
+  key: YOUR_TFL_KEY
+
+postgres:
+  host: YOUR_HOST_ADDRESS
+  name: YOUR_DB_NAME
+  user: YOUR_DB_USER
+  passphrase: YOUR_DB_PASSWORD
+```
+With the template copied, you need to replace the placeholder values with your actual credentials.
 
 
 #### Required software
