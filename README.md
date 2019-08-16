@@ -32,7 +32,7 @@ Our project is structured into four main pipelines, each of which serves a disct
 
 ## Infrastructure
 
-All pipelines were run on an AWS EC2 instance and a combination of an AWS S3 bucket and PostGreSQL database were used to store data. The details of the EC2 instance can be found below:
+All pipelines were run on an AWS EC2 instance and a combination of an AWS S3 bucket and PostgreSQL database were used to store data. The details of the EC2 instance can be found below:
 ```
 AWS EC2 Instance Information
 + AMI: ami-07dc734dc14746eab, Ubuntu image
