@@ -149,13 +149,16 @@ python3 src/data_collection_pipeline.py
 As long as this process is running you will be downloading the latest JamCam videos and uploading them to the S3 bucket. The videos will be collected from all the camera and stored in folders based on their date of collection.
 
 ### Parameters
-* iterations: The data collection pipeline script downloads videos from TFL continuously when `iterations` is set to `0`. To stop the data collection pipeline after ` N iterations`, change the `iterations` parameter in the `parameters.yml` to `N` where ```N``` is a number e.g
+* `iterations`: The data collection pipeline script downloads videos from TFL continuously when `iterations` is set to `0`. To stop the data collection pipeline after ` N iterations`, change the `iterations` parameter in the `parameters.yml` to `N` where ```N``` is a number e.g
 
 ```
 iterations: 4
 ```
 
-* delay: The `delay` parameter is the amount of time in minutes for the data collection pipeline to wait between iterations. The default `delay` time is set to `3 mins` because TFL uploads new videos after `~4 mins`.
+* `delay`: The `delay` parameter is the amount of time in minutes for the data collection pipeline to wait between iterations. The default `delay` time is set to `3 mins` because TFL uploads new videos after `~4 mins`. E.g
+```
+delay: 3
+```
 
 
 # TODO run setup script:
