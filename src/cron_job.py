@@ -11,17 +11,10 @@ python_path = "python3"
 
 class CronJobs:
     def __init__(self, username):
-        # filename = "/tmp/crontabs/crontab.cron"
-        # if not os.path.exists(filename):
-        #     print(os.path.dirname(filename))
-        #     os.makedirs(os.path.dirname(filename), exist_ok=True)
         sys_path = os.environ.get("PATH")
         print(sys_path)
-        # with open(filename, "w+") as f:
-        #     f.write(f"\n\nPATH={sys_path}\n\n")
-
         self.cron = CronTab(user=username,
-                            log="/tmp/dssg_cron.log")
+                            log="/tmp/cron.log")
         self.cron.env['PATH'] = sys_path
 
     def pipeline_job(self):
