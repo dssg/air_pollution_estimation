@@ -162,19 +162,29 @@ delay: 3
 
 ## 1. Running The Static Pipeline
 
+Before we can run the static pipeline we need to execute the following command to complete the required infrastructure:
+
+``` python3 setup.py ```
+
+
+# TODO run setup script:
+- Create SQL tables
+- Download Model weights to s3 bucket
+- Grab from repo and put in S3
+- Grab transfer weights (from somewhere?) and put in S3
+
 The static pipeline is used to analyse a selection of JamCam videos and put the results into the PostGreSQL database.  general outline of static pipeline can be seen in the following diagram:
 
 <p float="left">
   <img src ="readme_resources/images/static_pipeline.png" alt="alt text" />
 </p> 
 
-In short, the pipeline first constructs a .json file containing a list of video file paths to be used for analysis. The video paths that are saved in the .json file are based on a particular search critera (see below). The .json file is uploaded to s3 so that we can avoid searching the videos every time we want to run the pipeline. The next step of the pipeline is to use the .json file to load the corresponding videos into memory and analyse them, producing frame and video level statistics in the PostGreSQL database. 
-
-# TODO how to avoid creating the .json each time.
+In short, the pipeline first constructs a .json file containing a list of video file paths to be used for analysis. The video paths saved in the .json file are based on a particular search critera (see below). The .json file is uploaded to s3 so that we can avoid searching the videos every time we want to run the pipeline. The next step of the pipeline is to use the .json file to load the corresponding videos into memory and analyse them, producing frame and video level statistics in the PostGreSQL database.
 
 Under 'static_pipeline' heading in the ```parameters.yml``` file is a collection of parameters that are used to control which videos are saved to the .json file. These parameters are as follows:
 
-```ref_file_name``` - The name of the ref file that will be saved<br/>
+```load_ref_file``` - Boolean for flagging whether to create a new .json file or load an existing one<br/>
+```ref_file_name``` - The name of the ref file that will be saved and/or loaded<br/>
 ```camera_list``` - A list of camera IDs specifying the camera to analyse<br/>
 ```from_date``` - The date to start analysing videos from<br/>
 ```to_date``` - The date to stop analysing videos from<br/>
@@ -183,23 +193,17 @@ Under 'static_pipeline' heading in the ```parameters.yml``` file is a collection
 
 To edit these parameters you can use your favourite text editor e.g. (e.g. ```nano conf/local/credentials.yml```). Remember this pipeline assumes that you have already collected videos that satisfy the requirements specified by your parameter settings.
 
-If any of these parameters are ```None``` then they default to the following:
+If the search parameters are ```None``` then they default to the following:
 
-```ref_file_name``` - Must be provided!
 ```camera_list``` - Defaults to all of the cameras if ```None```<br/>
 ```from_date``` - Defaults to ```"2019-06-01"``` if ```None```<br/>
 ```to_date``` - Defaults to the current date if ```None```<br/>
 ```from_time``` - Defaults to ```"00-00-00"``` if ```None```<br/>
 ```to_time``` - Defaults to ```"23-59-59"``` if ```None```
 
-Before we can run the static pipeline we need to do a few more additional steps so that we can interact with the PostGreSQL database.
 
 
-# TODO run setup script:
-- Create SQL tables
-- Download Model weights to s3 bucket
-- Grab from repo and put in S3
-- Grab transfer weights (from somewhere?) and put in S3
+# TODO Describe all the other parameters
 
 # TODO Need a GPU to run yolov3-tf
 
