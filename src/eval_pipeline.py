@@ -24,7 +24,7 @@ verbose = True
 # pipeline start
 
 # get param grids
-#traffic_analysers_params = initialize_param_sets(params=params)
+traffic_analysers_params = initialize_param_sets(params=params)
 
 # If running first time:
 # get annotation xmls from s3 saves json on s3 containing to corresponding video filepaths
