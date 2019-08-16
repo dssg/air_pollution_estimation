@@ -2,7 +2,6 @@ import urllib
 import os 
 import re
 import shutil
-import sys
 
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 from traffic_analysis.d00_utils.data_retrieval import delete_and_recreate_dir
@@ -45,7 +44,7 @@ def upload_yolo_weights_to_s3(s3_credentials,
 ############# TENSORFLOW???
     # TODO: GET TENSORFLOW WEIGHTS FROM STORAGE 
 
-############# UPLOAD TO FOLDER
+############# UPLOAD TO S3 bucket
     dl = DataLoaderS3(s3_credentials,
                       bucket_name=bucket_name)
 
