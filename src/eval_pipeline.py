@@ -78,7 +78,7 @@ for i, (analyser_name, params_to_set_dict) in enumerate(traffic_analysers_params
     selected_videos = selected_videos_master
     while selected_videos:
         try:
-            success, frame_level_df, runtime_list = update_frame_level_table(analyser=traffic_analyser,
+            success, frame_level_df, runtime_list, lost_tracking = update_frame_level_table(analyser=traffic_analyser,
                                                                              file_names=selected_videos[:chunk_size],
                                                                              db_frame_level_name=db_frame_level_name,
                                                                              paths=paths,
@@ -90,6 +90,7 @@ for i, (analyser_name, params_to_set_dict) in enumerate(traffic_analysers_params
                                                           db_video_level_name=db_video_level_name,
                                                           frame_level_df=frame_level_df,
                                                           file_names=selected_videos[:chunk_size],
+                                                          lost_tracking=lost_tracking,
                                                           paths=paths,
                                                           creds=creds,
                                                           return_data=True)
