@@ -120,7 +120,7 @@ dev_s3:
 email:
   address: OUTWARD_EMAIL_ADDRESS
   password: EMAIL_PASSWORD
-  recipients: ['RECIPIENT_1', 'RECIPIENT_2', ...]
+  recipients: ['RECIPIENT_1_EMAIL_ADDRESS', 'RECIPIENT_2_EMAIL_ADDRESS', ...]
 
 postgres:
   host: YOUR_HOST_ADDRESS
@@ -128,7 +128,13 @@ postgres:
   user: YOUR_DB_USER
   passphrase: YOUR_DB_PASSWORD
 ```
-With the template copied, you need to replace the placeholder values with your actual credentials.
+With the template copied, you need to replace the placeholder values with your actual credentials. The keys in `credentials.yml` are described below:
+* `dev_s3`: This contains the Amazon S3 credentials. Learn more about setting up an Amazon S3 <a src="https://docs.aws.amazon.com/s3/index.html?nc2=h_ql_doc">here</a>
+* `email`: The `email` parameter is used for email notification service. The email notification service is used to send warnings or messages to recipients when data collection fails.
+  * `address`: the email address used to send a mail to the recipients
+  * `password`: the password of the email address
+  * `recipients`: the list of recipients(email addresses) to be notified
+
 
 ## 
 
