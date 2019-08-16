@@ -32,7 +32,7 @@ Our project is structured into four main pipelines, each of which serves a disct
 
 ## Infrastructure
 
-All pipelines were run on an AWS EC2 instance and a combination of an AWS S3 bucket and PostGreSQL database were used to store data. The details of the EC2 instance can be found below:
+All pipelines were run on an AWS EC2 instance and a combination of an AWS S3 bucket and PostgreSQL database were used to store data. The details of the EC2 instance can be found below:
 ```
 AWS EC2 Instance Information
 + AMI: ami-07dc734dc14746eab, Ubuntu image
@@ -178,33 +178,33 @@ Before we can run the static pipeline we need to execute the following command t
 - Grab annotations (from somewhere?) and put in S3
 - Grab transfer weights (from somewhere?) and put in S3
 
-The static pipeline is used to analyse a selection of JamCam videos and put the results into the PostGreSQL database.  general outline of static pipeline can be seen in the following diagram:
+The static pipeline is used to analyse a selection of JamCam videos and put the results into the PostgreSQL database.  general outline of static pipeline can be seen in the following diagram:
 
 <p float="left">
   <img src ="readme_resources/images/static_pipeline.png" alt="alt text" />
 </p> 
 
-In short, the pipeline first constructs a .json file containing a list of video file paths to be used for analysis. The video paths saved in the .json file are based on a particular search critera (see below). The .json file is uploaded to s3 so that we can avoid searching the videos every time we want to run the pipeline. The next step of the pipeline is to use the .json file to load the corresponding videos into memory and analyse them, producing frame and video level statistics in the PostGreSQL database.
+In short, the pipeline first constructs a .json file containing a list of video file paths to be used for analysis. The video paths saved in the .json file are based on a particular search critera (see below). The .json file is uploaded to s3 so that we can avoid searching the videos every time we want to run the pipeline. The next step of the pipeline is to use the .json file to load the corresponding videos into memory and analyse them, producing frame and video level statistics in the PostgreSQL database.
 
 Under 'static_pipeline' heading in the ```parameters.yml``` file is a collection of parameters that are used to control which videos are saved to the .json file. These parameters are as follows:
 
-```load_ref_file``` - Boolean for flagging whether to create a new .json file or load an existing one<br/>
-```ref_file_name``` - The name of the ref file that will be saved and/or loaded<br/>
-```camera_list``` - A list of camera IDs specifying the camera to analyse<br/>
-```from_date``` - The date to start analysing videos from<br/>
-```to_date``` - The date to stop analysing videos from<br/>
-```from_time``` - The time of day to start analysing videos from<br/>
-```to_time``` - THe time of day to stop analysing videos from
+* `load_ref_file` - Boolean for flagging whether to create a new .json file or load an existing one
+* `ref_file_name` - The name of the ref file that will be saved and/or loaded
+* `camera_list` - A list of camera IDs specifying the camera to analyse
+* `from_date` - The date to start analysing videos from
+* `to_date` - The date to stop analysing videos from
+* `from_time` - The time of day to start analysing videos from
+* `to_time` - THe time of day to stop analysing videos from
 
-To edit these parameters you can use your favourite text editor e.g. (e.g. ```nano conf/local/credentials.yml```). Remember this pipeline assumes that you have already collected videos that satisfy the requirements specified by your parameter settings.
+To edit these parameters you can use your favourite text editor e.g. (e.g. `nano conf/local/credentials.yml`). Remember this pipeline assumes that you have already collected videos that satisfy the requirements specified by your parameter settings.
 
-If the search parameters are ```None``` then they default to the following:
+If the search parameters are `None` then they default to the following:
 
-```camera_list``` - Defaults to all of the cameras if ```None```<br/>
-```from_date``` - Defaults to ```"2019-06-01"``` if ```None```<br/>
-```to_date``` - Defaults to the current date if ```None```<br/>
-```from_time``` - Defaults to ```"00-00-00"``` if ```None```<br/>
-```to_time``` - Defaults to ```"23-59-59"``` if ```None```
+* `camera_list` - Defaults to all of the cameras if `None`<br/>
+* `from_date` - Defaults to `"2019-06-01"` if `None`<br/>
+* `to_date` - Defaults to the current date if `None`<br/>
+* `from_time` - Defaults to `"00-00-00"` if `None`<br/>
+* `to_time` - Defaults to `"23-59-59"` if `None`
 
 Aside from the parameters that define the search criteria for the videos to be analysed, there are a host of other parameters in ```parameters.yml``` that affect the static pipeline. These parameters can be found under the 'modelling' heading and are defined as follows:
 
