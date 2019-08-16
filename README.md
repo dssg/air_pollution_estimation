@@ -165,7 +165,7 @@ delay: 3
 The static pipeline is used to analyse a selection of JamCam videos and put the results into the PostGreSQL database.  general outline of static pipeline can be seen in the following diagram:
 
 <p float="left">
-  <img src ="readme_resources/images/s3_structure.png" alt="alt text" />
+  <img src ="readme_resources/images/static_pipeline.png" alt="alt text" />
 </p> 
 
 In short, the pipeline first constructs a .json file containing a list of video file paths to be used for analysis. The video paths that are saved in the .json file are based on a particular search critera (see below). The .json file is uploaded to s3 so that we can avoid searching the videos every time we want to run the pipeline. The next step of the pipeline is to use the .json file to load the corresponding videos into memory and analyse them, producing frame and video level statistics in the PostGreSQL database. 
