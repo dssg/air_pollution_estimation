@@ -154,7 +154,9 @@ python3 src/data_collection_pipeline.py
 ```
 As long as this process is running you will be downloading the latest JamCam videos and uploading them to the S3 bucket. The videos will be collected from all the camera and stored in folders based on their date of collection.
 
-### Parameters
+### Optional parameters for data collection pipeline
+The optional parameters for the data collection pipeline include:
+
 * `iterations`: The data collection pipeline script downloads videos from TFL continuously when `iterations` is set to `0`. To stop the data collection pipeline after ` N iterations`, change the `iterations` parameter in the `parameters.yml` to `N` where ```N``` is a number e.g
 
 ```
