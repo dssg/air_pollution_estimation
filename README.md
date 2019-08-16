@@ -206,11 +206,33 @@ If the search parameters are ```None``` then they default to the following:
 ```from_time``` - Defaults to ```"00-00-00"``` if ```None```<br/>
 ```to_time``` - Defaults to ```"23-59-59"``` if ```None```
 
+Aside from the parameters that define the search criteria for the videos to be analysed, there are a host of other parameters in ```parameters.yml``` that affect the static pipeline. These parameters can be found under the 'modelling' heading and are defined as follows:
+
+
+#### obj detection
+```detection_model``` - Specifies the type of object detection model used by the pipeline. Available values are: ```["yolov3-tiny_opencv", "yolov3_cv", "yolov3_tf", "traffic_tf"]```
+```detection_iou_threshold``` - 0.05
+```detection_confidence_threshold``` - 0.2
+```detection_nms_threshold``` - 0.2
+
+#### tracking
+```selected_labels``` - ["car", "truck", "bus", "motorbike"]
+```opencv_tracker_type``` - "CSRT"
+```iou_threshold``` - 0.05 #controls how much two objects' bboxes must overlap to be considered the "same"
+```detection_frequency``` - 4
+```skip_no_of_frames``` - 3
+
+#### stop starts
+```iou_convolution_window``` - 15
+```smoothing_method``` - "moving_avg"
+```stop_start_iou_threshold``` - 0.80
 
 
 # TODO Describe all the other parameters
 
 # TODO Need a GPU to run yolov3-tf
+
+# TODO Have decent default parameter values
 
 
 #### Required software
