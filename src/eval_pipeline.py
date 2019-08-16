@@ -31,7 +31,7 @@ verbose = True
 #upload_annotation_names_to_s3(paths=paths,
 #                              output_file_name=params['eval_ref_name'],
 #                              s3_credentials=s3_credentials,
-#                              verbose=verbose)
+#                             verbose=verbose)
 
 selected_videos = load_video_names_from_s3(ref_file=params['eval_ref_name'],
                                            paths=paths,
@@ -41,7 +41,7 @@ if verbose:
     print("Successfully loaded selected videos")
     print(selected_videos)
 
-sys.exit(0)
+#sys.exit(0)
 # create eval tables if they don't exist
 create_eval_sql_tables(creds=creds,
                        paths=paths,

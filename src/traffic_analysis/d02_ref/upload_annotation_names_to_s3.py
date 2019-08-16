@@ -35,7 +35,10 @@ def upload_annotation_names_to_s3(paths,
             if(video_file):
                 selected_files.append(video_file)
 
+#    print("in annotations function, tried to get selected files")
+#    print(selected_files)
     dl = DataLoaderS3(s3_credentials,
                       bucket_name=paths['bucket_name'])
     file_path = paths['s3_video_names'] + output_file_name + ".json"
+#    print("Saving json to", file_path)
     dl.save_json(data=selected_files, file_path=file_path)
