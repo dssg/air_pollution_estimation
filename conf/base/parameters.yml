@@ -37,11 +37,11 @@ data_renaming:
 
 pipeline_settings:
   dataset_ref_name: "tims_cameras_all"
-  chunk_size: 10
+  chunk_size: 2
 
 eval_pipeline_settings:
   eval_ref_name: "annotated_videos"
-  eval_chunk_size: 7
+  eval_chunk_size: 6
   eval_params_order: ['tracker_type', 'detection_model', "detection_frequency", "detection_iou_threshold", "stop_start_iou_threshold"]
   eval_tracker_types: ['kcf', 'mosse', 'csrt', 'medianflow', 'tld', 'boosting', 'mil']
   eval_detection_models: ['yolov3_tf', 'traffic_tf']
@@ -54,7 +54,6 @@ modelling:
   default_detection_model: "yolov3-tiny_opencv"  # yolov3_opencv, yolov3-tiny_opencv, yolov3_tf, traffic_tf, YOURCUSTOMMODEL_tf...
   detection_iou_threshold: 0.05
   detection_confidence_threshold: 0.2
-  # GPU_number: 0 # TODO: DELETE THIS
 
   # tracking
   selected_labels: ["car", "truck", "bus", "motorbike"]

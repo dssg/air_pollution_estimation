@@ -38,6 +38,7 @@ selected_videos = load_video_names_from_s3(ref_file=params['eval_ref_name'],
 
 if verbose:
     print("Successfully loaded selected videos")
+    print(selected_videos)
 
 # create eval tables if they don't exist
 create_eval_sql_tables(creds=creds,

@@ -37,6 +37,6 @@ db_paths:
 
   eval_db_frame_level_prefix: 'frame_stats'
   eval_db_video_level_prefix: 'video_stats'
-  eval_db_video_stats: "eval_video_performance"
-  eval_db_video_diffs: "eval_video_diffs"
-  eval_db_frame_stats: "eval_frame_stats"
+  eval_db_video_stats: "eval_video_performance_gpu"
+  eval_db_video_diffs: "eval_video_diffs_gpu"
+  eval_db_frame_stats: "eval_frame_stats_gpu"
