@@ -122,10 +122,6 @@ email:
   password: EMAIL_PASSWORD
   recipients: ['RECIPIENT_1', 'RECIPIENT_2', ...]
 
-tfl:
-  id: YOUR_TFL_ID
-  key: YOUR_TFL_KEY
-
 postgres:
   host: YOUR_HOST_ADDRESS
   name: YOUR_DB_NAME
