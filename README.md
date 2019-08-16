@@ -23,7 +23,14 @@ The purpose of the project is to create an open-source library to automate the c
 
 More details about the project goals, our technical approach, and the evaluation of our models can be found in the **Technical Report**. 
 
-## Code Overview
+## Overview
+Our project is structured into four main pipelines, each of which serves a disctinct function. These pipelines are boradly described as follows:
+
+<p float="left">
+  <img src ="readme_resources/images/pipelines.png" alt="alt text" />
+</p> 
+
+
 
 ## Installation and setup
 
