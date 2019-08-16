@@ -120,7 +120,7 @@ dev_s3:
 email:
   address: OUTWARD_EMAIL_ADDRESS
   password: EMAIL_PASSWORD
-  recipients: ['RECIPIENT_1', 'RECIPIENT_2', ...]
+  recipients: ['RECIPIENT_1_EMAIL_ADDRESS', 'RECIPIENT_2_EMAIL_ADDRESS', ...]
 
 postgres:
   host: YOUR_HOST_ADDRESS
@@ -133,7 +133,7 @@ With the template copied, you need to replace the placeholder values with your a
 * `email`: The `email` parameter is used for email notification service. The email notification service is used to send warnings or messages to recipients when data collection fails.
   * `address`: the email address used to send a mail to the recipients
   * `password`: the password of the email address
-  * `recipients`: the list of recipients to be notified
+  * `recipients`: the list of recipients(email addresses) to be notified
 
 
 ## 
