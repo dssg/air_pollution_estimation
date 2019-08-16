@@ -168,7 +168,7 @@ iterations: 4
 delay: 3
 ```
 
-## 1. Running The Static Pipeline
+## 2. Running The Static Pipeline
 
 Before we can run the static pipeline we need to execute the following command to complete the required infrastructure:
 
