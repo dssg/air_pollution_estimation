@@ -49,17 +49,12 @@ while selected_videos:
                                               file_names=file_names,
                                               paths=paths,
                                               creds=creds)
-
-    # evaluate_frame_level_table
-
     update_video_level_table(analyzer=analyzer,
                              frame_level_df=frame_level_df,
                              file_names=selected_videos[:chunk_size],
                              paths=paths,
                              creds=creds,
                              return_data=False)
-
-    # evaluate_video_level_table
 
     # move processed videos to processed folder
     for filename in file_names:
