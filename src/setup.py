@@ -19,6 +19,5 @@ upload_yolo_weights_to_s3(s3_credentials=s3_credentials,
 create_sql_tables(drop=True)
 
 # TODO
-# put annotated videos in S3, put annotation xmls in right folder 
-shutil.rmtree(paths['setup_data'], ignore_errors=True) # cleanup
+# put annotated videos in S3, put annotation xmls in right folder
 
