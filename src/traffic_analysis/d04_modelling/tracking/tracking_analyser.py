@@ -229,7 +229,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             success, bboxes_tracked = multi_tracker.update(
                 image=frame)
 
-            if(not success and prev_bboxes_tracked):
+            if(not success and prev_bboxes_tracked.size > 0):
                 # check for bounding box not moving
                 print("prev_bboxes_tracked is ", prev_bboxes_tracked)
                 print("\n bboxes_tracked is ", bboxes_tracked)
