@@ -27,7 +27,7 @@ More details about the project goals, our technical approach, and the evaluation
 Our project is structured into four main pipelines, each of which serves a disctinct function. These pipelines are boradly described as follows:
 
 <p float="left">
-  <img src ="readme_resources/images/pipelines.png" alt="alt text" />
+  <img src ="readme_resources/images/pipelines.jpg" alt="alt text" />
 </p> 
 
 
