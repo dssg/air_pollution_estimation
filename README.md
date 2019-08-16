@@ -49,6 +49,8 @@ AWS EC2 Instance Information
 
 ## Installation and setup
 
+### Setting up Ubuntu
+
 For installation and setup we are assuming that you are on a Ubuntu system. To start with you should update and upgrade your apt-get package manager.
 
 ```
@@ -61,6 +63,9 @@ sudo apt-get install python3.6
 sudo apt-get install python3-pip
 sudo apt-get install python3.6-dev
 ```
+
+### Setting Up Anaconda
+
 The next step is to set up an anaconda environment for managing all the packages needed for this project. Run the following commands to install anaconda:
 
 ```
@@ -80,7 +85,26 @@ Whenever you want to run our pipelines you need to remember to activate this env
 ```
 conda activate my_env
 ```
-Run this command now because in the next step we will download all the packages we need into the 'my_env' environment.
+Run this command now because in the next step we will clone the repo and download all the packages we need into the 'my_env' environment.
+
+### Clone The Repo
+
+To clone our repo and download all of our code run the following commands:
+```
+cd ~
+git clone https://github.com/dssg/air_pollution_estimation.git
+```
+
+### Installing Packages
+
+All of the required packages for this project are in the 'requirements.txt' file. To install the packages run the following command:
+```
+cd air_pollution_estimation/
+pip install -r requirements.txt
+```
+
+#TODO psycopg2 installation FAILED
+
 
 
 
