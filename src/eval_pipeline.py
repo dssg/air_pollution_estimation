@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 
 from traffic_analysis.d00_utils.data_retrieval import delete_and_recreate_dir
 from traffic_analysis.d00_utils.load_confs import load_parameters, load_paths, load_credentials
@@ -23,14 +24,14 @@ verbose = True
 # pipeline start
 
 # get param grids
-traffic_analysers_params = initialize_param_sets(params=params)
+#traffic_analysers_params = initialize_param_sets(params=params)
 
 # If running first time:
 # get annotation xmls from s3 saves json on s3 containing to corresponding video filepaths
-upload_annotation_names_to_s3(paths=paths,
-                              output_file_name=params['eval_ref_name'],
-                              s3_credentials=s3_credentials,
-                              verbose=verbose)
+#upload_annotation_names_to_s3(paths=paths,
+#                              output_file_name=params['eval_ref_name'],
+#                              s3_credentials=s3_credentials,
+#                              verbose=verbose)
 
 selected_videos = load_video_names_from_s3(ref_file=params['eval_ref_name'],
                                            paths=paths,
@@ -38,11 +39,13 @@ selected_videos = load_video_names_from_s3(ref_file=params['eval_ref_name'],
 
 if verbose:
     print("Successfully loaded selected videos")
+    print(selected_videos)
 
+sys.exit(0)
 # create eval tables if they don't exist
 create_eval_sql_tables(creds=creds,
                        paths=paths,
-                       drop=True)
+                       drop=False)
 
 if verbose:
     print("Running evaluation for traffic analysers: ", traffic_analysers_params.keys())

@@ -30,6 +30,7 @@ selected_videos = load_video_names_from_s3(ref_file=output_file_name,
                                            paths=paths,
                                            s3_credentials=s3_credentials)
 
+print(selected_videos)
 analyser = TrackingAnalyser(params=params, paths=paths, s3_credentials=s3_credentials)
 
 # select chunks of videos and classify objects
