@@ -188,23 +188,23 @@ In short, the pipeline first constructs a .json file containing a list of video 
 
 Under 'static_pipeline' heading in the ```parameters.yml``` file is a collection of parameters that are used to control which videos are saved to the .json file. These parameters are as follows:
 
-```load_ref_file``` - Boolean for flagging whether to create a new .json file or load an existing one<br/>
-```ref_file_name``` - The name of the ref file that will be saved and/or loaded<br/>
-```camera_list``` - A list of camera IDs specifying the camera to analyse<br/>
-```from_date``` - The date to start analysing videos from<br/>
-```to_date``` - The date to stop analysing videos from<br/>
-```from_time``` - The time of day to start analysing videos from<br/>
-```to_time``` - THe time of day to stop analysing videos from
+* `load_ref_file` - Boolean for flagging whether to create a new .json file or load an existing one
+* `ref_file_name` - The name of the ref file that will be saved and/or loaded
+* `camera_list` - A list of camera IDs specifying the camera to analyse
+* `from_date` - The date to start analysing videos from
+* `to_date` - The date to stop analysing videos from
+* `from_time` - The time of day to start analysing videos from
+* `to_time` - THe time of day to stop analysing videos from
 
-To edit these parameters you can use your favourite text editor e.g. (e.g. ```nano conf/local/credentials.yml```). Remember this pipeline assumes that you have already collected videos that satisfy the requirements specified by your parameter settings.
+To edit these parameters you can use your favourite text editor e.g. (e.g. `nano conf/local/credentials.yml`). Remember this pipeline assumes that you have already collected videos that satisfy the requirements specified by your parameter settings.
 
-If the search parameters are ```None``` then they default to the following:
+If the search parameters are `None` then they default to the following:
 
-```camera_list``` - Defaults to all of the cameras if ```None```<br/>
-```from_date``` - Defaults to ```"2019-06-01"``` if ```None```<br/>
-```to_date``` - Defaults to the current date if ```None```<br/>
-```from_time``` - Defaults to ```"00-00-00"``` if ```None```<br/>
-```to_time``` - Defaults to ```"23-59-59"``` if ```None```
+* `camera_list` - Defaults to all of the cameras if `None`<br/>
+* `from_date` - Defaults to `"2019-06-01"` if `None`<br/>
+* `to_date` - Defaults to the current date if `None`<br/>
+* `from_time` - Defaults to `"00-00-00"` if `None`<br/>
+* `to_time` - Defaults to `"23-59-59"` if `None`
 
 
 
