@@ -96,7 +96,8 @@ for i, (analyser_name, params_to_set_dict) in enumerate(traffic_analysers_params
 
                 if verbose:
                     print(f"Successfully processed chunk {chunk_counter}")
-        except:
+        except Exception as e:
+            print(e)
             print("Analysing current chunk failed. Continuing to next chunk.")
             pass
 
