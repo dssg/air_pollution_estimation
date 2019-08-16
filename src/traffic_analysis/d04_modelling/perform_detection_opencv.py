@@ -4,11 +4,11 @@ import cv2
 from traffic_analysis.d02_ref.download_detection_model_from_s3 import download_detection_model_from_s3
 
 
-def detect_objects_in_image(image_capture,
-                            params,
-                            paths,
-                            s3_credentials: dict,
-                            selected_labels: list = None) -> (list, list, list):
+def detect_objects_cv(image_capture,
+                      params,
+                      paths,
+                      s3_credentials: dict,
+                      selected_labels: list = None) -> (list, list, list):
     """ unifying function that defines the detected objects in an image
         Args:
             image_capture (nparray): numpy array containing the captured image (width, height, rbg)
@@ -136,10 +136,7 @@ def pass_image_through_nn(image_capture: np.ndarray,
                                                 crop=False)
 
     # read model as deep neural network in opencv
-    if model_name == 'yolov3-tiny':
-        config_file_path = os.path.join(paths['local_detection_model'], model_name, model_name + '.cfg')
-    else:
-        config_file_path = os.path.join(paths['local_detection_model'], model_name, model_name + '.config')
+    config_file_path = os.path.join(paths['local_detection_model'], model_name, model_name + '.cfg')
     weights_file_path = os.path.join(paths['local_detection_model'], model_name, model_name + '.weights')
     net = cv2.dnn.readNetFromDarknet(config_file_path, weights_file_path)  # can use other net, see documentation
 

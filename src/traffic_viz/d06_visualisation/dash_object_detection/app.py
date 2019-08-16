@@ -49,30 +49,33 @@ app.layout = html.Div(
                         ),
                         html.Div(
                             className="video-outer-container",
-                            children=html.Div(
-                                style={
-                                    "width": "100%",
-                                    "paddingBottom": "56.25%",
-                                    "position": "relative",
-                                },
-                                children=player.DashPlayer(
-                                    id="video-display",
+                            children=[
+                                html.H6("Select a junction to view footage."),
+                                html.Div(
                                     style={
-                                        "position": "absolute",
                                         "width": "100%",
-                                        "height": "100%",
-                                        "top": "0",
-                                        "left": "0",
-                                        "bottom": "0",
-                                        "right": "0",
+                                        "paddingBottom": "56.25%",
+                                        "position": "relative",
                                     },
-                                    controls=True,
-                                    playing=False,
-                                    volume=1,
-                                    width="100%",
-                                    height="100%",
-                                ),
-                            ),
+                                    children=player.DashPlayer(
+                                        id="video-display",
+                                        style={
+                                            "position": "absolute",
+                                            "width": "100%",
+                                            "height": "100%",
+                                            "top": "0",
+                                            "left": "0",
+                                            "bottom": "0",
+                                            "right": "0",
+                                        },
+                                        controls=True,
+                                        playing=False,
+                                        volume=1,
+                                        width="100%",
+                                        height="100%",
+                                    ),
+                                )
+                            ],
                         ),
                         html.Div(
                             className="control-section",
@@ -81,7 +84,7 @@ app.layout = html.Div(
                                     className="control-element",
                                     children=[
                                         html.Div(
-                                            children=["Footage Selection:"],
+                                            children=["Junction Selection:"],
                                             style={"width": "40%"},
                                         ),
                                         dcc.Dropdown(
