@@ -7,7 +7,6 @@ from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 from traffic_analysis.d00_utils.data_retrieval import delete_and_recreate_dir
 
 
-
 def upload_yolo_weights_to_s3(s3_credentials,
                               bucket_name,
                               local_dir,
@@ -41,10 +40,10 @@ def upload_yolo_weights_to_s3(s3_credentials,
                 print(e)
                 print("Failed to download url ", download_url)
 
-############# TENSORFLOW???
+    ############# TENSORFLOW???
     # TODO: GET TENSORFLOW WEIGHTS FROM STORAGE 
 
-############# UPLOAD TO S3 bucket
+    ############# UPLOAD TO S3 bucket
     dl = DataLoaderS3(s3_credentials,
                       bucket_name=bucket_name)
 
@@ -64,16 +63,3 @@ def upload_yolo_weights_to_s3(s3_credentials,
                            path_to_upload_file_to=path_to_upload_file_to)
 
     shutil.rmtree(local_dir)
-
-
-def upload_camera_details_to_s3(s3_credentials,
-                                bucket_name,
-                                local_dir,
-                                target_dir_on_s3
-                                ):
-
-    camera_details_path = os.path.join(local_dir, "camera_details.json")
-    dl = DataLoaderS3(s3_credentials,
-                      bucket_name=bucket_name)
-    dl.upload_file(path_of_file_to_upload=camera_details_path, 
-                   path_to_upload_file_to=target_dir_on_s3)
