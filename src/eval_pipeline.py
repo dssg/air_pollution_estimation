@@ -27,10 +27,10 @@ traffic_analysers_params = initialize_param_sets(params=params)
 
 # If running first time:
 # get annotation xmls from s3 saves json on s3 containing to corresponding video filepaths
-upload_annotation_names_to_s3(paths=paths,
-                              output_file_name=params['eval_ref_name'],
-                              s3_credentials=s3_credentials,
-                              verbose=verbose)
+#upload_annotation_names_to_s3(paths=paths,
+#                              output_file_name=params['eval_ref_name'],
+#                              s3_credentials=s3_credentials,
+#                              verbose=verbose)
 
 selected_videos = load_video_names_from_s3(ref_file=params['eval_ref_name'],
                                            paths=paths,
