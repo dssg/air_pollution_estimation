@@ -229,7 +229,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             success, bboxes_tracked = multi_tracker.update(
                 image=frame)
 
-            if(not success):
+            if(not success and prev_bboxes_tracked.size > 0):
                 # check for bounding box not moving
                 matching_inds = np.where((prev_bboxes_tracked ==bboxes_tracked[:prev_bboxes_tracked.shape[0], :]).all(axis=1))[0].tolist()
                 for matching_ind in matching_inds:
