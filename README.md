@@ -49,6 +49,42 @@ AWS EC2 Instance Information
 
 ## Installation and setup
 
+For installation and setup we are assuming that you are on a Ubuntu system. To start with you should update and upgrade your apt-get package manager.
+
+```
+sudo apt-get update
+sudo apt-get upgrade -y
+```
+Now you can install python 3.6 and the corresponding pip version. To do this run the following commands in order:
+```
+sudo apt-get install python3.6
+sudo apt-get install python3-pip
+sudo apt-get install python3.6-dev
+```
+The next step is to set up an anaconda environment for managing all the packages needed for this project. Run the following commands to install anaconda:
+
+```
+cd /tmp
+curl -O https://repo.anaconda.com/archive/Anaconda3-2019.03-Linux-x86_64.sh
+bash Anaconda3-2019.03-Linux-x86_64.sh
+```
+When prompted press ENTER until the end and then answer 'yes' when needed. Finally, to activate the installation you just need to run:
+```
+source ~/.bashrc
+```
+With anaconda installed with can create a conda environment for our packages. To do this we can run the following commands (where 'my_env' is your chosen name for the environment):
+```
+conda create --name my_env python=3
+```
+Whenever you want to run our pipelines you need to remember to activate this environment so that all the necessary packages are present. To do this you can run the command below: 
+```
+conda activate my_env
+```
+Run this command now because in the next step we will download all the packages we need into the 'my_env' environment.
+
+
+
+
 #### Required software
 This project requires *Python 3.6* or later, with packages as specified in requirements.txt. You should also have a package manager such as `pip3`. 
 
