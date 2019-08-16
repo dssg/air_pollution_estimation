@@ -24,13 +24,28 @@ The purpose of the project is to create an open-source library to automate the c
 More details about the project goals, our technical approach, and the evaluation of our models can be found in the **Technical Report**. 
 
 ## Overview
-Our project is structured into four main pipelines, each of which serves a disctinct function. These pipelines are boradly described as follows:
+Our project is structured into four main pipelines, each of which serves a disctinct function. These pipelines are broadly described as follows:
 
 <p float="left">
   <img src ="readme_resources/images/pipelines.jpg" alt="alt text" />
 </p> 
 
+## Infrastructure
 
+All pipelines were run on an AWS EC2 instance and a combination of an AWS S3 bucket and PostGreSQL database were used to store data. The details of the EC2 instance can be found below:
+```
+AWS EC2 Instance Information
++ AMI: ami-07dc734dc14746eab, Ubuntu image
++ EC2 instance: c4.4xlarge
+    + vCPU: 16
+    + RAM: 30 GB
++ OS: ubuntu 18.04 LTS
++ Volumes: 1
+    + Type: gp2
+    + Size: 100 GB
++ RDS: No
+```
+#TODO Check these details with Lily
 
 ## Installation and setup
 
