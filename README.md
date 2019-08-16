@@ -100,7 +100,7 @@ git clone https://github.com/dssg/air_pollution_estimation.git
 All of the required packages for this project are in the 'requirements.txt' file. To install the packages run the following commands:
 ```
 cd air_pollution_estimation/
-apt-get install -y libsm6 libxext6 libxrender-dev
+sudo apt-get install -y libsm6 libxext6 libxrender-dev
 pip install -r requirements.txt
 conda install psycopg2
 ```
