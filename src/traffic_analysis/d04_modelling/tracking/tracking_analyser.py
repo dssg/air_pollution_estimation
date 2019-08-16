@@ -231,8 +231,8 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
             if(not success and prev_bboxes_tracked.size > 0):
                 # check for bounding box not moving
-                print("prev_bboxes_tracked is ", prev_bboxes_tracked)
-                print("\n bboxes_tracked is ", bboxes_tracked)
+                # print("prev_bboxes_tracked is ", prev_bboxes_tracked)
+                # print("\n bbo/xes_tracked is ", bboxes_tracked)
                 matching_inds = np.where((prev_bboxes_tracked == bboxes_tracked[:prev_bboxes_tracked.shape[0], :]).all(axis=1))[0].tolist()
                 for matching_ind in matching_inds:
                     fleet.record_loss_of_tracking(bbox_number=matching_ind,
