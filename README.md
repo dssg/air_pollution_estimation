@@ -130,9 +130,23 @@ postgres:
 ```
 With the template copied, you need to replace the placeholder values with your actual credentials.
 
+## 
+
 ## 1. Running The Data Collection Pipeline
 
+Both the static and live pipelines rely on the collection of raw video data from the TFL API. You therefore need to run the data collection pipeline before either of these pipelines will work. The data collection pipeline continuously grabs videos from the TFL API and puts them in the S3 bucket for future analysis. The longer you leave the data collection pipeline to run the more data you will have to analyse!
 
+To run the pipeline you first need to set up your AWS credentials for the AWS command line tool. To do this run the following command:
+```
+aws configure --profile dssg
+```
+When prompted enter your AWS access key ID and your secret access key (these will be the same as the ones you entered in the ```credentials.yml``` file). For the default region name and output format just press enter to leave them blank.
+
+You are now ready to run the data collection pipeline! Run the following command to run the pipeline: 
+```
+python3 src/data_collection_pipeline.py
+```
+As long as this process is running you will be downloading the latest JamCam videos and uploading them to the S3 bucket. The videos will be collected from all the camera and stored in folders based on their date of collection.
 
 
 # TODO run setup script:
@@ -224,14 +238,11 @@ Once the above setup has been completed, you should deploy the pipelines in the 
 
 1. Data collection pipeline: this pipeline queries the Transport for London (TFL) JamCam API for videos from all 911 traffic cameras, every 4 seconds. It then uploads these videos to the S3 bucket. 
 
-    * To deploy data collection pipeline, type the following into the command line:
+    * Set the number of iterations you wish to run the pipeline by specifying the `iterations` parameter in the `parameters.yml`. 
+        
+    * To deploy pipeline, type the following into the command line:
         
       ```python3 src\data_collection_pipeline.py```
-
-    * The data collection pipeline script downloads videos from TFL continuously when `iterations` is set to `0`. To stop the data collection pipeline after ` N iterations`, change the `iterations` parameter in the `parameters.yml` to `N` where `N` is a number e.g
-
-      ```iterations: 4``` 
-
 2. Analysis pipeline: this pipeline gets videos from the S3 bucket for a specified range of dates/times, and a specified set of cameras. It runs our model on these videos, and appends the results to the PSQL tables.     
 
     * If running for the first time, you will need to edit `src/run_pipeline.py`. Specify the date/time ranges and specify the camera IDs for which you would like to get videos from the S3 bucket, by changing the arguments of `retrieve_and_upload_video_names_to_s3()`. This generates a `.json` of video paths in the S3 bucket which satisfy your requirements, and saves it for future use. On subsequent runs of the pipeline you can comment out `retrieve_and_upload_video_names_to_s3()` and just load the video names directly from the `.json` on S3.
@@ -388,4 +399,3 @@ The mission of the summer fellowship program is to train aspiring data scientist
 ## License
 
 Fill in later
-
