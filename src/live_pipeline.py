@@ -21,18 +21,16 @@ paths = load_paths()
 creds = load_credentials()
 s3_credentials = creds[paths['s3_creds']]
 
-# If running first time:
-# creates the test_seach_json. Change the camera list and output file name for full run
 current_date = datetime.now().date()
 output_file_name = f'{current_date}'
 from_date = str(current_date)
 to_date = str(current_date)
 
-# retrieve_and_upload_video_names_to_s3(output_file_name=output_file_name,
-#                                       paths=paths,
-#                                       from_date=from_date, to_date=to_date,
-#                                       s3_credentials=s3_credentials,
-#                                       camera_list=params['tims_camera_list'])
+retrieve_and_upload_video_names_to_s3(output_file_name=output_file_name,
+                                      paths=paths,
+                                      from_date=from_date, to_date=to_date,
+                                      s3_credentials=s3_credentials,
+                                      camera_list=params['tims_camera_list'])
 
 # Start from here if video names already specified
 selected_videos = load_video_names_from_s3(ref_file=output_file_name,
