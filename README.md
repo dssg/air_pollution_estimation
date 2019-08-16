@@ -32,7 +32,7 @@ Our project is structured into four main pipelines, each of which serves a disct
 
 ## Infrastructure
 
-All pipelines were run on an AWS EC2 instance and a combination of an AWS S3 bucket and PostgreSQL database were used to store data. The details of the EC2 instance can be found below:
+All pipelines were run on an AWS EC2 instance and a combination of an AWS S3 bucket and PostGreSQL database were used to store data. The details of the EC2 instance can be found below:
 ```
 AWS EC2 Instance Information
 + AMI: ami-07dc734dc14746eab, Ubuntu image
@@ -97,13 +97,13 @@ git clone https://github.com/dssg/air_pollution_estimation.git
 
 ### Installing Packages
 
-All of the required packages for this project are in the 'requirements.txt' file. To install the packages run the following command:
+All of the required packages for this project are in the 'requirements.txt' file. To install the packages run the following commands:
 ```
 cd air_pollution_estimation/
+apt-get install -y libsm6 libxext6 libxrender-dev
 pip install -r requirements.txt
+conda install psycopg2
 ```
-
-#TODO psycopg2 installation FAILED
 
 ### Set Up Credentials File
 
@@ -129,6 +129,19 @@ postgres:
   passphrase: YOUR_DB_PASSWORD
 ```
 With the template copied, you need to replace the placeholder values with your actual credentials.
+
+## 1. Running The Data Collection Pipeline
+
+
+
+
+# TODO run setup script:
+- Create SQL tables
+- Download Model weights to s3 bucket
+- Grab from repo and put in S3
+- Grab transfer weights (from somewhere?) and put in S3
+
+# TODO Need a GPU to run yolov3-tf
 
 
 #### Required software
