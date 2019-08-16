@@ -170,13 +170,10 @@ delay: 3
 
 Before we can run the static pipeline we need to execute the following command to complete the required infrastructure:
 
-``` python3 setup.py ```
+``` python3 src/setup.py```
 
-
-# TODO run setup script:
-- Create SQL tables
-- Download Model weights to s3 bucket
-- Grab from repo and put in S3
+# TODO complete setup script:
+- Grab annotations (from somewhere?) and put in S3
 - Grab transfer weights (from somewhere?) and put in S3
 
 The static pipeline is used to analyse a selection of JamCam videos and put the results into the PostGreSQL database.  general outline of static pipeline can be seen in the following diagram:
