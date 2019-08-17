@@ -326,7 +326,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         return all_bboxes, all_labels, all_confs
 
     def cleanup_on_finish(self):
-        if self.detection_model == 'yolov3_tf':
+        if self.detection_model == 'yolov3_tf' or self.detection_model == 'traffic_tf':
            self.sess.close()
 
     def construct_frame_level_df(self, video_dict) -> pd.DataFrame:
