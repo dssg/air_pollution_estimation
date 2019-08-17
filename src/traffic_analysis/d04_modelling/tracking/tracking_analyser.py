@@ -137,6 +137,8 @@ class TrackingAnalyser(TrafficAnalyserInterface):
     def add_to_multi_tracker(self,
                              multi_tracker: cv2.MultiTracker,
                              frame: np.ndarray,
+                             frame_height: int, 
+                             frame_width: int,                             
                              bbox):
         """Add bbox to the multitracker as a new tracker
         """
@@ -198,7 +200,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         """
         start_time = time.time()
         # Create a video capture object to read videos
-        n_frames = video.shape[0]
+        n_frames, frame_height, frame_width = video.shape[:3]
         camera_id, date_time = parse_video_or_annotation_name(video_name)
 
         # assumes vid_length in seconds
@@ -224,6 +226,8 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         for bbox in bboxes:
             self.add_to_multi_tracker(multi_tracker=multi_tracker,
                                       frame=video[0, :, :, :],
+                                      frame_height=frame_height, 
+                                      frame_width=frame_width,                                     
                                       bbox=bbox)
 
         if make_video:
@@ -288,6 +292,8 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                     for new_bbox in new_bboxes:
                         self.add_to_multi_tracker(multi_tracker=multi_tracker,
                                                   frame=frame,
+                                                  frame_height=frame_height, 
+                                                  frame_width=frame_width, 
                                                   bbox=new_bbox)
 
             if make_video:
