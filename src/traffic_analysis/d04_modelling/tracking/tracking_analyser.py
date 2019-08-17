@@ -149,14 +149,28 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             if self.verbose:
                 print(e)
                 print(f"bbox is {bbox}")
-                print("Retrying with bbox format conversion...")
+                print("Retrying with bbox formatting corrections...")
 
             if (bbox[0] <= bbox[2]) and (bbox[1] <= bbox[3]):
+                # format: (xmin, ymin, width, height)
                 bbox = bboxcvlib_to_bboxcv2(bbox)
+
+            for i in range(4):
+                if bbox[i] < 0:
+                    bbox[i] = 0
+
+                if i % 2 == 0: # xmin and width
+                    if bbox[i] > frame_width:
+                        bbox[i] = frame_width
+                else: # ymin and height
+                    if bbox[i] > frame_height:
+                        bbox[i] = frame_height
+
+            try:
                 multi_tracker.add(newTracker=self.add_tracker(),
                                   image=frame,
                                   boundingBox=tuple(bbox))
-            else:
+            except:
                 raise
 
     def detect_and_track_objects(self,
