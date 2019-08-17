@@ -149,14 +149,19 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             if self.verbose:
                 print(e)
                 print(f"bbox is {bbox}")
-                print("Retrying with bbox format conversion...")
+                print("Retrying with bbox formatting checks...")
+            # catch negative bbox entries
+            for i in range(4):
+                if bbox[i] < 0:
+                    bbox[i] = 0
 
             if (bbox[0] <= bbox[2]) and (bbox[1] <= bbox[3]):
                 bbox = bboxcvlib_to_bboxcv2(bbox)
+            try:
                 multi_tracker.add(newTracker=self.add_tracker(),
                                   image=frame,
                                   boundingBox=tuple(bbox))
-            else:
+            except:
                 raise
 
     def detect_and_track_objects(self,
