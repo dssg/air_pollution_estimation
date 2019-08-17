@@ -137,6 +137,8 @@ class TrackingAnalyser(TrafficAnalyserInterface):
     def add_to_multi_tracker(self,
                              multi_tracker: cv2.MultiTracker,
                              frame: np.ndarray,
+                             frame_height: int, 
+                             frame_width: int,                             
                              bbox):
         """Add bbox to the multitracker as a new tracker
         """
@@ -149,14 +151,28 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             if self.verbose:
                 print(e)
                 print(f"bbox is {bbox}")
-                print("Retrying with bbox format conversion...")
+                print("Retrying with bbox formatting corrections...")
 
             if (bbox[0] <= bbox[2]) and (bbox[1] <= bbox[3]):
+                # format: (xmin, ymin, width, height)
                 bbox = bboxcvlib_to_bboxcv2(bbox)
+
+            for i in range(4):
+                if bbox[i] < 0:
+                    bbox[i] = 0
+
+                if i % 2 == 0: # xmin and width
+                    if bbox[i] > frame_width:
+                        bbox[i] = frame_width
+                else: # ymin and height
+                    if bbox[i] > frame_height:
+                        bbox[i] = frame_height
+
+            try:
                 multi_tracker.add(newTracker=self.add_tracker(),
                                   image=frame,
                                   boundingBox=tuple(bbox))
-            else:
+            except:
                 raise
 
     def detect_and_track_objects(self,
@@ -184,7 +200,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         """
         start_time = time.time()
         # Create a video capture object to read videos
-        n_frames = video.shape[0]
+        n_frames, frame_height, frame_width = video.shape[:3]
         camera_id, date_time = parse_video_or_annotation_name(video_name)
 
         # assumes vid_length in seconds
@@ -210,6 +226,8 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         for bbox in bboxes:
             self.add_to_multi_tracker(multi_tracker=multi_tracker,
                                       frame=video[0, :, :, :],
+                                      frame_height=frame_height, 
+                                      frame_width=frame_width,                                     
                                       bbox=bbox)
 
         if make_video:
@@ -274,6 +292,8 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                     for new_bbox in new_bboxes:
                         self.add_to_multi_tracker(multi_tracker=multi_tracker,
                                                   frame=frame,
+                                                  frame_height=frame_height, 
+                                                  frame_width=frame_width, 
                                                   bbox=new_bbox)
 
             if make_video:

@@ -43,10 +43,10 @@ eval_pipeline_settings:
   eval_ref_name: "annotated_videos"
   eval_chunk_size: 5
   eval_params_order: ['tracker_type', 'detection_model', "detection_frequency", "detection_iou_threshold", "stop_start_iou_threshold"]
-  eval_tracker_types: ['kcf', 'mosse', 'csrt', 'medianflow', 'tld', 'boosting', 'mil']
-  eval_detection_models: ['yolov3_tf', 'traffic_tf']
+  eval_tracker_types: ['kcf', 'mosse', 'csrt', 'tld', 'boosting', 'mil']
+  eval_detection_models: ['yolov3_tf', 'traffic_tf', 'yolov3_opencv']
   eval_detection_frequency: [4, 6]
-  eval_detection_iou_threshold: [0.1, 0.2, 0.3 , 0.4, 0.5]
+  eval_detection_iou_threshold: [0.2, 0.3 , 0.4, 0.5]
   eval_stop_start_iou_threshold: [0.75, 0.80, 0.85, 0.90]
 
 modelling:

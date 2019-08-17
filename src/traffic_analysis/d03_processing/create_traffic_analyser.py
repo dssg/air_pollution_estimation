@@ -17,10 +17,15 @@ def initialize_param_sets(params: dict):
 
     eval_param_sets = {}
 
-    for param_dict in grid: 
-        eval_param_sets["tracking_analyser_" + param_dict["tracker_type"] + "_" + param_dict["detection_model"].replace("-", "_")] = param_dict
-
-    return eval_param_sets
+    num_params = 1
+    for param_dict in grid:
+        key =  "tracking_analyser_" + param_dict["tracker_type"] + "_" + param_dict["detection_model"].replace("-","_")
+        if key not in eval_param_sets:
+          eval_param_sets[key] = [param_dict]
+        else: 
+          eval_param_sets[key].append(param_dict)
+        num_params +=1
+    return eval_param_sets, num_params
 
 
 def create_traffic_analyser(params_to_set: dict,
