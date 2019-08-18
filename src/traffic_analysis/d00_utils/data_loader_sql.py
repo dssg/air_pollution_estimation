@@ -52,14 +52,14 @@ class DataLoaderSQL:
             col_names = list(map(lambda x: x[0], self.cursor.description))
             results = pd.DataFrame(results, columns=col_names)
             self.conn.commit()
-        except(Exception, psycopg2.errors.UndefinedTable) as error:
-            results = None
-            print('Table does not exist. Please create first. Here is the full error message:')
-            print(error)
-            self.conn.rollback()
-        except(Exception, psycopg2.DatabaseError) as error:
-            print(error)
-            self.conn.rollback()
+        # except(Exception, psycopg2.errors.UndefinedTable) as error:
+        #     results = None
+        #     print('Table does not exist. Please create first. Here is the full error message:')
+        #     print(error)
+        #     self.conn.rollback()
+        # except(Exception, psycopg2.DatabaseError) as error:
+        #     print(error)
+        #     self.conn.rollback()
         finally:
             self.cursor.close()
             if self.conn:
