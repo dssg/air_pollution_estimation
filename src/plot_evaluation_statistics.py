@@ -19,7 +19,7 @@ params = load_parameters()
 project_dir = get_project_directory()
 
 data_location = os.path.join(project_dir, 'data', 'eval')
-if not os.isdir(data_location):
+if not os.path.isdir(data_location):
     os.makedirs(data_location)
 
 sqldata = DataLoaderSQL(paths=paths, creds=creds)
