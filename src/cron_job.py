@@ -1,7 +1,6 @@
 from crontab import CronTab
 from pathlib import Path
 import os
-import sys
 from traffic_analysis.d00_utils.load_confs import load_paths
 
 paths = load_paths()
