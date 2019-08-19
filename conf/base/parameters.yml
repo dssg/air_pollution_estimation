@@ -30,7 +30,7 @@ data_collection:
   iterations: 0
   delay: 3
 
-data_renaming:
+data_renaming: # TODO: remove later when renaming finished
   old_path: "raw/video_data_new"
   new_path: "raw/videos"
   date_format: "%Y%m%d-%H%M%S"
