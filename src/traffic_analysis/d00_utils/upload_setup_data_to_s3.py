@@ -66,17 +66,15 @@ def upload_yolo_weights_to_s3(s3_credentials,
     shutil.rmtree(local_dir)
 
 def upload_annotations_to_s3(s3_credentials, paths):
-
+    
     data_loader = DataLoaderS3(s3_credentials=s3_credentials, bucket_name=paths["bucket_name"])
 
     # raw videos
     for video_file in glob.glob(paths["setup_video"] + "*.mp4"):
-        # data_loader.upload_file(path_of_file_to_upload=, path_to_upload_file_to=)
-        print(video_file)
+        data_loader.upload_file(path_of_file_to_upload=video_file, path_to_upload_file_to=paths["s3_video"] + "date_test/" + video_file.split('/')[-1])
 
     # xml files
     for xml_file in glob.glob(paths["setup_xml"] + "*.xml"):
-        # data_loader.upload_file(path_of_file_to_upload=, path_to_upload_file_to=)
-        print(xml_file)
+        data_loader.upload_file(path_of_file_to_upload=xml_file, path_to_upload_file_to=paths["s3_annotations"] + "cvat_test/" + xml_file.split('/')[-1])
 
     return

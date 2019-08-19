@@ -22,8 +22,8 @@ local_paths:
   plots: "plots/"
   annotations: "annotations/"
   local_detection_model: "data/ref/detection_model/"
-  setup_xml: "data/setup/annotations/videos/"
-  setup_video: "data/setup/annotations/xml_files/"
+  setup_xml: "data/setup/annotations/xml_files/"
+  setup_video: "data/setup/annotations/videos/"
 
 db_paths:
   db_host: "dssg-london.ck0oseycrr7s.eu-west-2.rds.amazonaws.com"
