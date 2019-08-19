@@ -6,6 +6,7 @@ import glob
 
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 from traffic_analysis.d00_utils.data_retrieval import delete_and_recreate_dir
+from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
 
 
 def upload_yolo_weights_to_s3(s3_credentials,
@@ -71,7 +72,8 @@ def upload_annotations_to_s3(s3_credentials, paths):
 
     # raw videos
     for video_file in glob.glob(paths["setup_video"] + "*.mp4"):
-        data_loader.upload_file(path_of_file_to_upload=video_file, path_to_upload_file_to=paths["s3_video"] + "date_test/" + video_file.split('/')[-1])
+        camera_id, video_upload_datetime = parse_video_or_annotation_name(video_name=video_file.split('/')[-1])
+        data_loader.upload_file(path_of_file_to_upload=video_file, path_to_upload_file_to=paths["s3_video"] + "date_test/" + str(video_upload_datetime) + "/" + video_file.split('/')[-1])
 
     # xml files
     for xml_file in glob.glob(paths["setup_xml"] + "*.xml"):
