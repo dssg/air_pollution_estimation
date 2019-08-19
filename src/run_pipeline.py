@@ -11,7 +11,6 @@ paths = load_paths()
 creds = load_credentials()
 s3_credentials = creds[paths['s3_creds']]
 
-# TODO: make from date to date and cam list a param 
 # TODO: possibly mkae it so that retrieve_upload video_names_to_s3 always happens? 
 # If running first time:
 # creates the test_seach_json. Change the camera list and output file name for full run
