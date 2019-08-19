@@ -15,7 +15,6 @@ local_paths:
   temp_raw_video: "data/temp/raw_videos/"
   temp_frame_level: "data/temp/frame_level/"
   temp_video_level: "data/temp/video_level/"
-  temp_setup: "data/temp/setup/"
 
   video_names: "data/ref/video_names/"
   processed_video: "results/jamcams/"
