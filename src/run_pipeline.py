@@ -11,7 +11,6 @@ paths = load_paths()
 creds = load_credentials()
 s3_credentials = creds[paths['s3_creds']]
 
-# TODO: make from date to date and cam list a param 
 # TODO: possibly mkae it so that retrieve_upload video_names_to_s3 always happens? 
 # If running first time:
 # creates the test_seach_json. Change the camera list and output file name for full run
@@ -30,18 +29,18 @@ selected_videos = load_video_names_from_s3(ref_file=output_file_name,
                                            paths=paths,
                                            s3_credentials=s3_credentials)
 
-analyzer = TrackingAnalyser(
+analyser = TrackingAnalyser(
     params=params, paths=paths, s3_credentials=s3_credentials)
 
 # select chunks of videos and classify objects
 chunk_size = params['chunk_size']
 while selected_videos:
-    frame_level_df = update_frame_level_table(analyzer=analyzer,
+    frame_level_df = update_frame_level_table(analyser=analyser,
                                               file_names=selected_videos[:chunk_size],
                                               paths=paths,
                                               creds=creds)
 
-    update_video_level_table(analyzer=analyzer,
+    update_video_level_table(analyser=analyser,
                              frame_level_df=frame_level_df,
                              file_names=selected_videos[:chunk_size],
                              paths=paths,

@@ -465,8 +465,8 @@ Stored in this `air_pollution_estimation/conf/base/`directory are the following 
     * Various hyperparameters for detection and tracking
     * Configuration options for reporting.
 
-We recommend that credentials be stored in a git-ignored `YAML` file in `air_pollution_estimation/conf/local/credentials.yml`.
-* `credentials.yml` should contain credentials necessary for accessing the PostgreSQL database, and Amazon AWS services.
+We recommend that credentials be stored in a git-ignored `YAML` file in `air_pollution_estimation/conf/local/credentials.yml`
+* `credentials.yml` should contain credentials necessary for accessing the PostgreSQL database, Amazon AWS services, and email notification service.
 
 #### Data collection pipeline
 
