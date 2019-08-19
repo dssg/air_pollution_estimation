@@ -31,15 +31,15 @@ class VehicleFleet:
         running object detection algs on the first frame of a video.
 
         Args:
-            load_from_pd -- if this is True, will reconstruct VehicleFleet object from a frame-level stats
-                            table. Else constructs it from scratch using bbox, label, confs, and video name
-            frame_level_df -- a pandas df corresponding to one video, which follows the schema for a
-                              frame-level stats df
             bboxes -- pass in using cv2 format (xmin, ymin, width, height). Each vehicle should be axis 0,
                       bounding boxes should be axis 1. 
             labels -- label assigned to detected objects 
-            confs -- confidence returned by detection alg 
+            confs -- confidence returned by detection algorithm
             video_name -- name of the video file from s3 bucket
+            frame_level_df -- a pandas df corresponding to one video, which follows the schema for a
+                              frame-level stats df
+            load_from_pd -- if this is True, will reconstruct VehicleFleet object from a frame-level stats
+                            table. Else constructs it from scratch using bbox, label, confs, and video name
         """
         # bool for tracking whether there is a fake head vehicle
         # used to handle case if no vehicles detected in video
@@ -208,8 +208,6 @@ class VehicleFleet:
 
             for frame_idx in range(num_frames):
                 motion_status_current = motion_array[vehicle_idx, frame_idx]
-                # TODO: get stops, starts, by vehicle types, get
-                # change in motion status
                 if motion_status_current != motion_status_prev:
                     if motion_status_prev == 0:
                         # get the type of the object that just stopped
@@ -231,7 +229,7 @@ class VehicleFleet:
     def plot_iou_time_series(self, fig_dir: str, fig_name: str, smoothed=False, vehicle_ids=None):
         """Visualize the iou_time_series as a multi-line graph
 
-        Keyword arguments: 
+        Args:
             fig_dir -- path to dir save plot to
             fig_name -- desired name of the figure; do NOT include file extension
             smoothed -- if true, plot the smoothed iou time series
@@ -318,15 +316,14 @@ class VehicleFleet:
         frame_level_info_df["confidence"] = frame_level_info_df.apply(lambda row: self.confs[row['vehicle_id']], axis = 1)
         frame_level_info_df["video_upload_datetime"] = self.video_upload_datetime
         frame_level_info_df["camera_id"] = self.camera_id
-        # TODO: change vehicle_type to vehicle_type_id, camera_id to proper integer camera_id
-        # frame_level_info_df["camera_id"] = frame_level_info_df["camera_id"].astype('int')
 
         # reorder columns
         frame_level_info_df = frame_level_info_df[column_names]
 
         return frame_level_info_df
 
-    def report_video_level_stats(self, vehicle_counts: dict,
+    def report_video_level_stats(self, 
+                                 vehicle_counts: dict,
                                  vehicle_stop_counts: dict,
                                  vehicle_start_counts: dict) -> pd.DataFrame:
         """ Combine the counting dictionaries of vehicle stops, starts, and counts into
