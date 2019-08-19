@@ -6,28 +6,29 @@ from traffic_analysis.d02_ref.ref_utils import get_names_of_folder_content_from_
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 
 
-def retrieve_and_upload_video_names_to_s3(output_file_name,
-                                          paths,
-                                          s3_credentials,
-                                          from_date='2019-06-01',
-                                          to_date=str(
+def retrieve_and_upload_video_names_to_s3(output_file_name: str,
+                                          paths: dict,
+                                          s3_credentials: dict,
+                                          from_date: str = '2019-06-01',
+                                          to_date: str = str(
                                               datetime.datetime.now().date()),
-                                          from_time='00-00-00',
-                                          to_time='23-59-59',
-                                          camera_list=None,
+                                          from_time: str = '00-00-00',
+                                          to_time: str = '23-59-59',
+                                          camera_list: list = None,
                                           return_files_flag=False):
     """Upload a json to s3 containing the filepaths for videos between the dates, times and cameras specified.
 
-        Args:
-            output_file_name (str): name of the json to be saved
-            paths (dict): dictionary containing temp_video, raw_video, s3_profile and bucket_name paths
-            s3_credentials (dict): S3 Credentials
-            from_date (str): start date (inclusive) for retrieving videos, if None then will retrieve from 2019-06-01 onwards
-            to_date (str): end date (inclusive) for retrieving vidoes, if None then will retrieve up to current day
-            from_time (str): start time for retrieving videos, if None then will retrieve from the start of the day
-            to_time (str): end time for retrieving videos, if None then will retrieve up to the end of the day
-            camera_list (list): list of cameras to retrieve from, if None then retrieve from all cameras
-        Returns:
+    Args:
+        output_file_name: name of the json to be saved
+        paths: dictionary containing temp_video, raw_video, s3_profile and bucket_name paths
+        s3_credentials: S3 Credentials
+        from_date: start date (inclusive) for retrieving videos, if None then will retrieve from 2019-06-01 onwards
+        to_date: end date (inclusive) for retrieving vidoes, if None then will retrieve up to current day
+        from_time: start time for retrieving videos, if None then will retrieve from the start of the day
+        to_time: end time for retrieving videos, if None then will retrieve up to the end of the day
+        camera_list: list of cameras to retrieve from, if None then retrieve from all cameras
+    Returns:
+        selected_files: if return_files_flag is True, will return list of S3 video paths 
 
     """
     print('From: ' + from_date + ' To: ' + to_date)

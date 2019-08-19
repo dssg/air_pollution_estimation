@@ -22,7 +22,8 @@ def load_parameters():
 
 
 def load_app_parameters():
-    filepath = os.sep.join(project_dir + 'conf/base/app_parameters.yml'.split('/'))
+    filepath = os.sep.join(
+        project_dir + 'conf/base/app_parameters.yml'.split('/'))
 
     with open(filepath) as f:
         params = yaml.safe_load(f)
@@ -31,7 +32,8 @@ def load_app_parameters():
 
 def load_credentials():
 
-    filepath = os.sep.join(project_dir + 'conf/local/credentials.yml'.split('/'))
+    filepath = os.sep.join(
+        project_dir + 'conf/local/credentials.yml'.split('/'))
 
     with open(filepath) as f:
         creds = yaml.safe_load(f)

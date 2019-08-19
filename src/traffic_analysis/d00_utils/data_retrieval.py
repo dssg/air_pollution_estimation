@@ -41,8 +41,8 @@ def download_video_and_convert_to_numpy(local_folder, s3_profile, bucket, filena
             bucket: bucket name where the videos are stored
             filenames: list of filenames to download from s3
         Returns:
-            videos: list of numpy arrays containing all the jamcam videos between the selected dates
-            names: list of video filenames
+            video_dict: dictionary of numpy arrays containing all the jamcam videos between the selected dates,
+                        with the key being the filename
         Raises:
 
     """
@@ -103,25 +103,10 @@ def connect_to_bucket(profile_dir, bucket_name):
     return my_bucket
 
 
-def retrieve_tims_from_s3():
-    return
-
-
-def retrieve_cam_details_from_database():
-    return
-
-
 def describe_s3_bucket(paths):
     """Plot the number of videos in the s3 bucket for each date.
     Plot is saved locally under plots/01_exploratory.
-
-            Args:
-
-            Returns:
-
-            Raises:
-
-        """
+    """
     my_bucket = connect_to_bucket(paths['s3_profile'], paths['bucket_name'])
 
     # Get list of all dates in the s3 bucket
