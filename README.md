@@ -131,8 +131,6 @@ For the final setup step execute the following command to complete the required 
 
 ``` python3 src/setup.py```
 
-## 
-
 ## 1. Running The Data Collection Pipeline
 
 In order to run the static pipeline you need to collect raw video data from the TFL API. **You therefore need to run the data collection pipeline before the static pipeline will work**. The data collection pipeline continuously grabs videos from the TFL API and puts them in the S3 bucket for future analysis. The longer you leave the data collection pipeline to run the more data you will have to analyse!
@@ -165,7 +163,7 @@ delay: 3
 
 ## 2. Running The Static Pipeline
 
-The static pipeline is used to analyse a selection of JamCam videos and put the results into the PostgreSQL database.  general outline of static pipeline can be seen in the following diagram:
+The static pipeline is used to analyse a selection of JamCam videos and put the results into the PostgreSQL database. A general outline of static pipeline can be seen in the following diagram:
 
 <p float="left">
   <img src ="readme_resources/images/static_pipeline.png" alt="alt text" />
@@ -214,9 +212,7 @@ Aside from the parameters that define the search criteria for the videos to be a
 ```smoothing_method``` - "moving_avg"<br/>
 ```stop_start_iou_threshold``` - 0.80
 
-# TODO complete setup script:
-- Grab annotations (from somewhere?) and put in S3
-- Grab transfer weights (from somewhere?) and put in S3
+# TODO output of the pipeline and the schemas of the tables
 
 # TODO Describe all the other parameters
 
@@ -230,7 +226,7 @@ The live pipeline integrates data collection with video analysis to provide real
 
 To run the pipeline execute the following command in the terminal:
 
-``` python3 src/live_pipeline.py```
+``` python3 src/cron_job.py.py```
 
 ## 4. Running The Evaluation Pipeline
 
@@ -264,104 +260,13 @@ In the context of our project, mean average precision could be utilized to inter
 
 Modifiable model parameters can be found in the ```parameters.yml``` file under ```modelling:```. A description of these parameters can be found in the above section (Static Pipeline).
 
+To run the evaluation pipeline you just need to execute the following command:
 
-#### Required software
-This project requires *Python 3.6* or later, with packages as specified in requirements.txt. You should also have a package manager such as `pip3`. 
+```python3 src/eval_pipeline.py```
 
-*PostgreSQL* for storing intermediate model results, statistics outputted by the model, and evaluation results. We used version 9.5.19. 
-
-*AWS S3 buckets* to store video data, neural network weights, and labelled videos data / their corresponding annotations files.
-
-#### Optional software 
-*CUDA for using GPUs:* The `YoloV3` object detection model can be run on GPU for speed improvements. During development, we utilized the AWS Ubuntu Deep Learning AMI (Version 23.1), which used CUDA 9.0.
-
-#### Other services 
-*Computer Vision Annotation Tool (CVAT)*: We used version 0.4.2 to annotate traffic videos for evaluation. Instructions on installing and running CVAT can be found on their [website](https://github.com/opencv/cvat/blob/develop/cvat/apps/documentation/installation.md#windows-10).
-
-*Docker / Docker Toolbox for running a docker container that contains CVAT:* See their website for more details. 
-
-#### Set up machine 
-
-1. Set up a Python 3.6 virtual environment to run our library in. This will help avoid package version conflicts.  
-* [Windows 10 instructions](https://www.c-sharpcorner.com/article/steps-to-set-up-a-virtual-environment-for-python-development/)
-* [Linux/Ubuntu instructions](https://www.linode.com/docs/development/python/create-a-python-virtualenv-on-ubuntu-1610/): follow instructions for Python 3, substituting in python3.6 whereever you are supposed to type 'python3'.
-
-2. Activate the virtual environment (see links above).
-
- 2. Set Python 3.6 as a `PYTHONPATH` system environment variable: 
-    * [Instructions for Windows](https://www.tutorialspoint.com/How-to-set-python-environment-variable-PYTHONPATH-on-Windows) (adapt instructions for Python 3.6 rather than Python 2.7)
-    * On Linux/Ubuntu systems: 
-        
-        * Type `which python3.6`  into the terminal to get the path to your current Python executable. You should get something like `/usr/local/bin/python3.6`. *Warning: if you have not activated your virtual environment, you will get the path to your base Python executable, rather than the path to your virtual environment's Python executable.*
-             
-        * Open your `~/.bashrc` file in editing mode using the command `nano ~/.bashrc`,  or the editor of your choice. 
-        * Place the line `export PYTHONPATH=$PYTHONPATH: your_python_path` at the bottom of the file, substituting the result of the `which` command above for your_python_path     
-                   
-3. Clone this repository into desired directory using the bright green `Clone or download` dropdown button  at the top right side of the homescreen of this repository. See [link](https://help.github.com/en/articles/cloning-a-repository) for help with this step if required. 
-4. Enter your cloned copy of this repository using the terminal command: 
-``` cd air_pollution_estimation```. **All instructions from this point on are with the assumption that you are in the `air_pollution_estimation` directory.** 
-5. Install the Python packages in the `requirements.txt`: 
-    - If you have package manager `pip3`, run the terminal command `pip3 install -r requirements.txt`. 
-6. Create a file to store S3 and PSQL database credentials at `conf/local/credentials.yml`. This file should be formatted as follows: 
-```
-dev_s3:
-    aws_access_key_id: YOUR_SECRET_ACCESS_ID
-    aws_secret_access_key: YOUR_SECRET_ACCESS_KEY
-postgres:
-    user: YOUR_USERNAME
-    passphrase: YOUR_PASSPHRASE
-```
- Tip:  you can create/edit a file from the command line using 
-
-```
-nano air_pollution_estimation/conf/local/credentials.yml
-```
-
-8. Edit the config file  `conf/base/paths.yml`. Change the following variables:
-* `s3 paths`: 
-    * `bucket_name`: specify name of your S3 bucket
-    * `s3_profile`: specify the name of your AWS profile here
-
-* `db_paths`:
-    * `db_host`: specify PSQL database host link   
-    * `db_name`: specify the name of your database 
-
-See section **Configuration Files**  for more details. 
-
-  ***Don't have an S3 bucket or a database ?*** *To be implemented*
-Don't worry--you can still try out our code! We've created a toy pipeline which reads in  example videos from the 
-`data/` folder, and prints output to the terminal. 
-Simply run:
-```
-python3 src/toy_pipeline.py
-```
-The following sections are a walk-through of how to run our pipelines (which collect live traffic videos, run analysis at scale, or run evaluation). To continue, you will need an S3 bucket and PSQL database. 
-
-9.  Run `python3 src/setup.py`. This file uploads model weights to the S3 bucket, downloads camera meta data, and creates the PSQL tables used to store the output of our traffic video analysis pipeline.  
-10. (Optional setup) If you wish to use the GOTURN tracker with the pipelines, please follow the instructions at this [link](https://www.learnopencv.com/goturn-deep-learning-based-object-tracking/) to  download/unzip the files. Place the unzipped model files in the directory `air_pollution_estimation\src\`. 
-
-#### Running the pipelines one-off
-Once the above setup has been completed, you should deploy the pipelines in the following order. 
-
-1. Data collection pipeline: this pipeline queries the Transport for London (TFL) JamCam API for videos from all 911 traffic cameras, every 4 seconds. It then uploads these videos to the S3 bucket. 
-
-    * Set the number of iterations you wish to run the pipeline by specifying the `iterations` parameter in the `parameters.yml`. 
-        
-    * To deploy pipeline, type the following into the command line:
-        
-      ```python3 src\data_collection_pipeline.py```
-2. Analysis pipeline: this pipeline gets videos from the S3 bucket for a specified range of dates/times, and a specified set of cameras. It runs our model on these videos, and appends the results to the PSQL tables.     
-
-    * If running for the first time, you will need to edit `src/run_pipeline.py`. Specify the date/time ranges and specify the camera IDs for which you would like to get videos from the S3 bucket, by changing the arguments of `retrieve_and_upload_video_names_to_s3()`. This generates a `.json` of video paths in the S3 bucket which satisfy your requirements, and saves it for future use. On subsequent runs of the pipeline you can comment out `retrieve_and_upload_video_names_to_s3()` and just load the video names directly from the `.json` on S3.
-    * This pipeline relies on data collected by the `data_collection_pipeline.py`, so if you have not collected data for your specified ranges/camera IDs, the analysis cannot run.
-    *  To deploy pipeline, type the following into the command line:
-      ```python3 src\run_pipeline.py```
-3. Running the evaluation pipeline 
-    * If you want to run the evaluation pipeline and see how well the model does on CVAT-annotated data, copy annotation `.xml` files into `your-bucket-name/ref/annotations/cvat/`. You will need to ensure that the annotation files are named in the same way as the raw videos (YYYYMMDD-HHMMSS_CAMERAID e.g. 20190815-020929_00001.03748).
-
-
+## Additional Information
  
-## Repo Structure 
+### Repo Structure 
 
 <p float="left">
   <img src ="readme_resources/images/s3_structure.png" alt="alt text" />
@@ -443,40 +348,6 @@ Below is a partial overview of our repository tree:
         │   └── 
         └──
 ```
-
-#### Configuration Files
-System specifications such as model parameters and file paths are contained in `YAML` configuration files found in `air_pollution_estimation/conf/base/`. In the various pipelines in the folder `air_pollution_estimation/src/`, our system reads the conf files from the aforementioned directory into dictionaries. 
-
-Stored in this `air_pollution_estimation/conf/base/`directory are the following config files: 
-* `app_parameters.yml` contains configuration options for the web app.
-* `paths.yml` contains: 
-    * Relevant file paths for input files (from the S3 bucket)
-    * Table names for the PSQL database (to store output statistics and evaluation statistics)
-    * Paths for temp folders used for temporary downloading/uploading of data. Folders are automatically created/deleted by the pipelines at these paths.
-* `parameters.yml` defines: 
-    * Various hyperparameters for detection and tracking
-    * Configuration options for reporting.
-
-We recommend that credentials be stored in a git-ignored `YAML` file in `air_pollution_estimation/conf/local/credentials.yml`.
-* `credentials.yml` should contain credentials necessary for accessing the PostgreSQL database, and Amazon AWS services.
-
-#### Data collection pipeline
-
-#### Video analysis pipeline
-*Main tasks: get videos from S3, initialize model, run model to construct frame level dataframes (bounding box positions) and video level dataframes of traffic statistics (counts, starts/stops).*
-
-#####  Modelling overview: 
-
-All models should inherit from the TrafficAnalyserInterface. The TrafficAnalyserInterface requires that any child classes implement  construct_frame_level_df() and construct_video_level_df() methods. 
-
-- Version 1: YOLO object detection only  
-- Version 2: YOLO objects detection with tracking 
-
-#### Evaluation pipeline
-
-- ChunkEvaluator is implemented using SingleEvaluator
-- Frame level evaluation — mean average precision
-- Video level evaluation  —mean/std dev difference, mean squared error 
 
 #### Web App
 
