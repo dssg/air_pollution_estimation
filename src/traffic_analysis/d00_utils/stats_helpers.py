@@ -5,22 +5,19 @@ def time_series_smoother(array: np.ndarray, method: str,
                          window_size=25, poly_degree=10):
     """Smoothing function for time series data 
 
-    Keyword arguments
-
-    array -- in shape (vehicle, ious over time)
-    method -- see code to see which smoothing methods are currently supported 
-    window_size -- parameter for the moving average method
-    poly_degree -- parameter fo the polynomial method 
+    Args:
+        array -- in shape (vehicle, ious over time)
+        method -- see code to see which smoothing methods are currently supported 
+        window_size -- parameter for the moving average method
+        poly_degree -- parameter fo the polynomial method 
+    Returns
+        smoothed_array 
+    Raises
     """
     assert len(array.shape) == 2
 
     # smoothing options
-    if method == "kalman_filter":
-        # TODO: explore this smoothing option in the future
-        pass
-
-    # fit a polynomial
-    elif method == "polynomial":
+    if method == "polynomial":
         smoothed_array = np.zeros(array.shape)
         x_inds = np.arange(array.shape[1])  # num frames
         powers = np.arange(poly_degree + 1)  # power array
@@ -39,15 +36,14 @@ def time_series_smoother(array: np.ndarray, method: str,
                                              deg=poly_degree))
             # copy each entry in x_inds_filt poly_degree number of times, so that we can predict on it
             # using the newly fit polynomial
-            x_inds_filt_rpted = np.tile(x_inds_filt, 
-                                       (poly_degree+1, 1)).transpose()
+            x_inds_filt_rpted = np.tile(x_inds_filt,
+                                        (poly_degree+1, 1)).transpose()
             pow_x = np.power(x_inds_filt_rpted, powers).transpose()
 
             preds = poly_coeffs @ pow_x
             # fill na locations with zeros
             preds_with_zeros = np.zeros(array.shape[1])
             np.put(preds_with_zeros, x_inds_filt, preds)
-            # insert 0 where not x inds are
             smoothed_array[i, :] = preds_with_zeros
 
     elif method == "moving_avg":

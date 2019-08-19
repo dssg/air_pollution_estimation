@@ -1,11 +1,13 @@
 s3_paths:
   bucket_name: "air-pollution-uk" #s3 bucket name
   s3_video: "raw/videos/" #path to video data in s3 bucket
+  s3_annotations: "ref/annotations/"
   s3_video_names: "ref/video_names/"
   s3_camera_details: "ref/camera_details/camera_details.json"
-  s3_frame_level: "frame_level/"
-  s3_profile: "dssg"
-  s3_creds: "dev_s3"
+
+  s3_frame_level: "frame_level/" # TODO DELETE THIS
+  s3_profile: "dssg" # TODO: change this for user?
+  s3_creds: "dev_s3" # TODO: CHANGE TO JUST S3
   s3_detection_model: "ref/model_conf/"
   s3_cvat_annotations: "ref/annotations/cvat/"
   s3_detrac_annotations: "ref/annotations/detrac/"
@@ -19,6 +21,8 @@ local_paths:
   temp_raw_video: "data/temp/raw_videos/"
   temp_frame_level: "data/temp/frame_level/"
   temp_video_level: "data/temp/video_level/"
+  temp_setup: "data/temp/setup/"
+
   temp_annotation: "data/temp/annotation/"
   video_names: "data/ref/video_names/"
   processed_video: "results/jamcams/"
@@ -32,5 +36,3 @@ db_paths:
   db_name: "airquality"
   db_frame_level: 'frame_stats'
   db_video_level: 'video_stats'
-  db_vehicle_types: 'vehicle_types'
-  db_cameras: 'cameras'

@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import xml.etree.ElementTree as ElementTree
+
 from traffic_analysis.d05_evaluation.parse_annotation import parse_annotation
 
 
@@ -24,18 +25,26 @@ class VideoLevelEvaluator:
         self.selected_labels = selected_labels
         self.stats_to_evaluate = ['counts', 'starts', 'stops']
 
-    def evaluate(self):
-        """
-        Function to perform the evaluation
-        :return: Data frame summarising the performance and data frame with raw differences of 
-        predictions vs ground truth
+    def evaluate(self) -> (pd.DataFrame, pd.DataFrame):
+        """Get video level evaluation results 
+        Returns: 
+          performance_df -- data frame summarising the performance 
+          diff_df -- data frame with raw differences of 
+                     predictions vs ground truth
         """
         self.video_level_ground_truth = self.get_ground_truth()
         diff_df = self.compute_diffs()
         performance_df = self.summarise_performance(diff_df)
         return performance_df, diff_df
 
-    def compute_diffs(self):
+    def compute_diffs(self) -> pd.DataFrame:
+        """Get raw diffs of pred minus true for each statistic we are 
+        evaluating. 
+        
+        Returns:
+            diff_df -- data frame with raw differences of 
+                       predictions vs ground truth
+        """
         # get data sets
         video_level_ground_truth = self.video_level_ground_truth
         video_level_estimates = pd.merge(left=self.videos_to_eval[['camera_id', 'video_upload_datetime']],
@@ -59,7 +68,7 @@ class VideoLevelEvaluator:
         return diff_df
 
     def summarise_performance(self, 
-                              diff_df: pd.DataFrame):
+                              diff_df: pd.DataFrame) -> pd.DataFrame:
         # reshape for convenient summarising
         id_cols = ['camera_id', 'video_upload_datetime', 'vehicle_type']
         diff_cols = [stat + '_diff' for stat in self.stats_to_evaluate]
@@ -83,6 +92,9 @@ class VideoLevelEvaluator:
         return performance_df
 
     def get_ground_truth(self):
+        """Parse ground truth XMLs into corresponding ground truth 
+        video level dataframe 
+        """
 
         video_level_ground_truth_list = []
         for idx, video in self.videos_to_eval.iterrows():
@@ -107,7 +119,10 @@ class VideoLevelEvaluator:
         return video_level_ground_truth
 
     def compute_video_level_ground_truth(self,
-                                         frame_level_ground_truth: pd.DataFrame):
+                                         frame_level_ground_truth: pd.DataFrame) -> pd.DataFrame:
+        """Parse frame level ground truth dataframe into a video level ground 
+        truth dataframe. Gets parked, starts, stops, counts
+        """
 
         # prepare for evaluation
         ground_truth = frame_level_ground_truth.sort_values(['vehicle_id', 'frame_id'])

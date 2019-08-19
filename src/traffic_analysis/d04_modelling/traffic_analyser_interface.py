@@ -1,18 +1,16 @@
 from abc import ABC, abstractmethod
 import pandas as pd
 
-# abc is abstract base class
-
 
 class TrafficAnalyserInterface(ABC):
     """
-    All video models should inherit from this interface.
+    All models should inherit from this interface.
     Should handle multiple videos for input 
     """
 
     def __init__(self, params: dict, paths: dict):
         """ 
-        Keyword arguments
+        Args: 
 
         params -- yaml with modelling parameters
         paths -- yaml with paths 
@@ -34,7 +32,7 @@ class TrafficAnalyserInterface(ABC):
         """Should return video level pandas dataframe for multiple videos with columns as specified in the project
         data tables schema
 
-        Keyword arguments: 
+        Args: 
 
         frame_level_df -- df returned by above function
         """

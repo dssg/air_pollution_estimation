@@ -13,7 +13,7 @@ s3_credentials = creds[paths['s3_creds']]
 
 local_video_dir = paths['temp_video']
 
-# download camera data from tfl
+# download TFL camera data from S3
 download_camera_meta_data(tfl_camera_api=tfl_camera_api,
                           paths=paths,
                           s3_credentials=s3_credentials)
