@@ -11,7 +11,7 @@ def upload_annotation_names_to_s3(paths,
 
                     Returns:
 
-    """
+        """
 
     bucket_name = paths['bucket_name']
     s3_profile = paths['s3_profile']
@@ -24,11 +24,15 @@ def upload_annotation_names_to_s3(paths,
 
     selected_files = []
     for file in files:
-        video_file = get_s3_video_path_from_xml_name(xml_file_name=file,
-                                                     s3_creds=s3_credentials,
-                                                     paths=paths)
-        if(video_file):
-            selected_files.append(video_file)
+        if file:
+            vals = file.split('_')
+            if len(vals) == 4:
+                vals = vals[1:]
+            date = vals[0]
+            time = vals[1].replace('-', ':')
+            name = date + ' ' + time + '_' + vals[2]
+            name = name.replace('.xml', '.mp4')
+            selected_files.append(paths['s3_video'] + date + '/' + name)
 
     dl = DataLoaderS3(s3_credentials,
                       bucket_name=paths['bucket_name'])
