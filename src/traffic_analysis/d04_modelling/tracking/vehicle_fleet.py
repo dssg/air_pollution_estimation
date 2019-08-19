@@ -1,12 +1,14 @@
+import os
+import math
+import collections
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
 from traffic_analysis.d00_utils.bbox_helpers import color_bboxes, bbox_intersection_over_union, bboxcv2_to_bboxcvlib
 from traffic_analysis.d00_utils.stats_helpers import time_series_smoother
 from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
-import os
-import numpy as np
-import pandas as pd
-import math
-import collections
-import matplotlib.pyplot as plt
 
 
 class VehicleFleet:
@@ -28,17 +30,16 @@ class VehicleFleet:
         """Initialize the vehicleFleet object, either from a saved dataframe, or from the info returned by
         running object detection algs on the first frame of a video.
 
-        Keyword arguments: 
-
-        load_from_pd -- if this is True, will reconstruct VehicleFleet object from a frame-level stats
-                        table. Else constructs it from scratch using bbox, label, confs, and video name
-        frame_level_df -- a pandas df corresponding to one video, which follows the schema for a
-                          frame-level stats df
-        bboxes -- pass in using cv2 format (xmin, ymin, width, height). Each vehicle should be axis 0,
-                  bounding boxes should be axis 1. 
-        labels -- label assigned to detected objects 
-        confs -- confidence returned by detection alg 
-        video_name -- name of the video file from s3 bucket
+        Args:
+            bboxes -- pass in using cv2 format (xmin, ymin, width, height). Each vehicle should be axis 0,
+                      bounding boxes should be axis 1. 
+            labels -- label assigned to detected objects 
+            confs -- confidence returned by detection algorithm
+            video_name -- name of the video file from s3 bucket
+            frame_level_df -- a pandas df corresponding to one video, which follows the schema for a
+                              frame-level stats df
+            load_from_pd -- if this is True, will reconstruct VehicleFleet object from a frame-level stats
+                            table. Else constructs it from scratch using bbox, label, confs, and video name
         """
         # bool for tracking whether there is a fake head vehicle
         # used to handle case if no vehicles detected in video
@@ -83,7 +84,7 @@ class VehicleFleet:
         """Adds new vehicles to the vehicleFleet, creating appropriate bbox location "history" for the 
         self.bboxes numpy array 
 
-        Keyword arguments should be in same format as for the init
+        Args: should be in same format as for the init
         """
         current_time_t = self.bboxes.shape[2]
         num_new_vehicles = new_bboxes.shape[0]
@@ -95,17 +96,16 @@ class VehicleFleet:
         self.bboxes = np.concatenate((self.bboxes, new_bboxes), axis=0)
         self.labels = np.concatenate((self.labels, new_labels), axis=0)
         self.confs = np.concatenate((self.confs, new_confs), axis=0)
-        return
 
     def update_vehicles(self, bboxes_time_t: np.ndarray):
         """Updates the bbox location for current vehicles by appending to self.bboxes in the 
         time axis for all existing vehicles. 
 
-        Keyword arguments: 
+        Args: 
 
-        bboxes_time_t -- updated location for bboxes for all existing vehicles. pass in using cv2 
-                       format (xmin, ymin, width, height). Each vehicle should be axis 0, 
-                       bounding boxes should be axis 1.
+            bboxes_time_t -- updated location for bboxes for all existing vehicles. pass in using cv2 
+                           format (xmin, ymin, width, height). Each vehicle should be axis 0, 
+                           bounding boxes should be axis 1.
         """
         # if no vehicles tracked, or all tracked objects have exited frames
         if bboxes_time_t.size == 0: 
@@ -129,7 +129,6 @@ class VehicleFleet:
 
         self.bboxes = np.concatenate((self.bboxes, np.expand_dims(bboxes_time_t, axis=2)),
                                         axis=2)
-        return
 
     def compute_counts(self) -> dict:
         """Get counts of each vehicle type 
@@ -142,10 +141,9 @@ class VehicleFleet:
     def compute_iou_time_series(self, interval: int = 15):
         """Compute a convolved IOU time series for each vehicle
 
-        Keyword arguments: 
-
-        interval -- convolution window size. Compute IOU between frames that 
-                    are separated by this window size. 
+        Args: 
+            interval -- convolution window size. Compute IOU between frames that 
+                        are separated by this window size. 
         """
         self.iou_interval = interval
 
@@ -162,21 +160,15 @@ class VehicleFleet:
                 iou_time_series[j, i] = bbox_intersection_over_union(bboxcv2_to_bboxcvlib(bboxes_time_t0[j]),
                                                                      bboxcv2_to_bboxcvlib(bboxes_time_t1[j]))
         self.iou_time_series = iou_time_series
-        # if self.fake_head_vehicle: # handle fake head vehicle
-            # if num_vehicles == 1: # no real vehicles detected
-
-            # self.iou_time_series = self.iou_time_series[1:, :, :]
-        return 
 
     def smooth_iou_time_series(self, smoothing_method: str, **smoothing_settings):
         """Wrapper function for smoothing the iou time series
 
-        Keyword arguments 
-
-        smoothing_method -- e.g. "moving_avg" (also this method is the best performing)
-        smoothing_settings -- see the time_series_smoother function; various settings for the 
-                             smoothing methods are available. Pass in whatever keyword 
-                             parameters are desired.
+        Args: 
+            smoothing_method -- e.g. "moving_avg" (also this method is the best performing)
+            smoothing_settings -- see the time_series_smoother function; various settings for the 
+                                 smoothing methods are available. Pass in whatever keyword 
+                                 parameters are desired.
         """
         # some good settings for various smoothing methods
         default_settings = {"window_size": 25}
@@ -185,17 +177,15 @@ class VehicleFleet:
         self.smoothed_iou_time_series = time_series_smoother(array=self.iou_time_series,
                                                              method=smoothing_method,
                                                              **default_settings)
-        return
 
     def compute_stop_starts(self, stop_start_iou_threshold: float = 0.85, from_smoothed=True) -> dict:
         """ Compute the stop starts by thresholding the IOU time series data. Performance is best 
         when using the smoothed IOU time series. 
 
-        Keyword arguments:
-
-        stop_start_iou_threshold -- above this threshold, IOU is rounded to 1. Under this threshold, IOU is rounded 
-                                    to 0. 1 indicates that the vehicle is in motion, 0 indicates it is stopped. 
-        from_smoothed -- Whether or not to use the smoothed IOU time series data in computing stop starts.
+        Args:
+            stop_start_iou_threshold -- above this threshold, IOU is rounded to 1. Under this threshold, IOU is rounded 
+                                        to 0. 1 indicates that the vehicle is in motion, 0 indicates it is stopped. 
+            from_smoothed -- Whether or not to use the smoothed IOU time series data in computing stop starts.
         """
         motion_array = np.copy(
             self.smoothed_iou_time_series) if from_smoothed else np.copy(self.iou_time_series)
@@ -218,8 +208,6 @@ class VehicleFleet:
 
             for frame_idx in range(num_frames):
                 motion_status_current = motion_array[vehicle_idx, frame_idx]
-                # TODO: get stops, starts, by vehicle types, get
-                # change in motion status
                 if motion_status_current != motion_status_prev:
                     if motion_status_prev == 0:
                         # get the type of the object that just stopped
@@ -241,10 +229,11 @@ class VehicleFleet:
     def plot_iou_time_series(self, fig_dir: str, fig_name: str, smoothed=False, vehicle_ids=None):
         """Visualize the iou_time_series as a multi-line graph
 
-        fig_dir -- path to dir save plot to
-        fig_name -- desired name of the figure; do NOT include file extension
-        smoothed -- if true, plot the smoothed iou time series
-        vehicle_ids -- if specified, only visualize the iou time series for these vehicles
+        Args:
+            fig_dir -- path to dir save plot to
+            fig_name -- desired name of the figure; do NOT include file extension
+            smoothed -- if true, plot the smoothed iou time series
+            vehicle_ids -- if specified, only visualize the iou time series for these vehicles
         """
         iou = self.smoothed_iou_time_series if smoothed else self.iou_time_series
 
@@ -327,25 +316,23 @@ class VehicleFleet:
         frame_level_info_df["confidence"] = frame_level_info_df.apply(lambda row: self.confs[row['vehicle_id']], axis = 1)
         frame_level_info_df["video_upload_datetime"] = self.video_upload_datetime
         frame_level_info_df["camera_id"] = self.camera_id
-        # TODO: change vehicle_type to vehicle_type_id, camera_id to proper integer camera_id
-        # frame_level_info_df["camera_id"] = frame_level_info_df["camera_id"].astype('int')
 
         # reorder columns
         frame_level_info_df = frame_level_info_df[column_names]
 
         return frame_level_info_df
 
-    def report_video_level_stats(self, vehicle_counts: dict,
+    def report_video_level_stats(self, 
+                                 vehicle_counts: dict,
                                  vehicle_stop_counts: dict,
                                  vehicle_start_counts: dict) -> pd.DataFrame:
         """ Combine the counting dictionaries of vehicle stops, starts, and counts into
         one nice pandas dataframe. 
 
-        Keyword arguments
-
-        vehicle_counts -- dict with keys as vehicle types, values as vehicle counts
-        vehicle_stop_counts -- dict with keys as vehicle types, values as vehicle stops
-        vehicle_start_counts -- dict with keys as vehicle types, values as vehicle starts
+        Args:
+            vehicle_counts -- dict with keys as vehicle types, values as vehicle counts
+            vehicle_stop_counts -- dict with keys as vehicle types, values as vehicle stops
+            vehicle_start_counts -- dict with keys as vehicle types, values as vehicle starts
         """
         column_names = ['camera_id', 'video_upload_datetime',
                         'vehicle_type', 'counts', 'stops', 'starts']

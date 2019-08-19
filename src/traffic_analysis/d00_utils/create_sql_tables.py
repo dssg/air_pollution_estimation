@@ -10,42 +10,23 @@ def create_sql_tables(drop=False):
     drop_commands = None
     if drop:
         drop_commands = [
-            "DROP TABLE {}, {}, {}, {} CASCADE;".format(paths['db_vehicle_types'],
-                                                        paths['db_cameras'],
-                                                        paths['db_frame_level'],
-                                                        paths['db_video_level'])
+            "DROP TABLE {}, {} CASCADE;".format(paths['db_frame_level'],
+                                                paths['db_video_level'])
         ]
 
     commands = [
         """
         CREATE TABLE {}(
-            id SERIAL,
-            vehicle_type VARCHAR(100),
-            vehicle_type_id INTEGER PRIMARY KEY
-        )
-        """.format(paths['db_vehicle_types']),
-        """
-        CREATE TABLE {}(
-            id SERIAL,
-            latitude FLOAT, 
-            longitude FLOAT,
-            borough INTEGER,
-            tfl_camera_id INTEGER,
-            camera_name VARCHAR(100)
-        )
-        """.format(paths['db_cameras']),
-        """
-        CREATE TABLE {}(
             camera_id VARCHAR(20),
             video_upload_datetime timestamp,
-            frame_id INTEGER,
-            vehicle_id INTEGER,
-            vehicle_type VARCHAR(100),
-            confidence FLOAT,
-            box_x INTEGER,
-            box_y INTEGER,
-            box_w INTEGER,
-            box_h INTEGER,
+            frame_id SMALLINT,
+            vehicle_id SMALLINT,
+            vehicle_type VARCHAR(20),
+            confidence REAL,
+            box_x SMALLINT,
+            box_y SMALLINT,
+            box_w SMALLINT,
+            box_h SMALLINT,
             creation_datetime timestamp
         )
         """.format(paths['db_frame_level']),
@@ -54,10 +35,10 @@ def create_sql_tables(drop=False):
         CREATE TABLE {}(
             camera_id VARCHAR(20),
             video_upload_datetime timestamp,
-            vehicle_type VARCHAR(100),
-            counts FLOAT,
-            stops FLOAT,
-            starts FLOAT,
+            vehicle_type VARCHAR(20),
+            counts REAL,
+            stops REAL,
+            starts REAL,
             creation_datetime timestamp
         )
         """.format(paths['db_video_level'])
