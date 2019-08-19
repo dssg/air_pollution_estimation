@@ -1,5 +1,3 @@
-import glob
-
 from traffic_analysis.d00_utils.load_confs import load_paths, load_parameters, load_credentials
 from traffic_analysis.d00_utils.create_sql_tables import create_sql_tables
 from traffic_analysis.d00_utils.upload_setup_data_to_s3 import upload_yolo_weights_to_s3
