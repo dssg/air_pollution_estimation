@@ -27,6 +27,7 @@ class DataLoaderS3:
         return json.loads(result['Body'].read().decode())
 
     def save_json(self, data, file_path):
+        # TODO: ADD DOCUMENTATION. What type is data? 
 
         self.client.put_object(Body=(bytes(json.dumps(data).encode('UTF-8'))),
                                Bucket=self.bucket_name,
@@ -60,6 +61,14 @@ class DataLoaderS3:
         self.client.download_file(Bucket=self.bucket_name,
                                   Key=path_of_file_to_download,
                                   Filename=path_to_download_file_to)
+
+    def upload_file(self,
+                    path_of_file_to_upload, 
+                    path_to_upload_file_to):
+
+        self.client.upload_file(Bucket=self.bucket_name,
+                                Key=path_to_upload_file_to,
+                                Filename=path_of_file_to_upload)
 
     def list_objects(self,
                      prefix=None)->list:

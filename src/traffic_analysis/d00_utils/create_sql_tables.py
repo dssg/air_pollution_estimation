@@ -8,10 +8,8 @@ def create_primary_sql_tables(db_frame_level_name: str,
                               db_cameras_name: str = None,
                               drop=False
                               ):
-    handle_vehicles_cameras_tables = False
-    if (db_vehicle_types_name is not None) and (db_cameras_name is not None): 
-        handle_vehicles_cameras_tables = True 
-
+    """Create PSQL tables for traffic analyser objects to append to 
+    """
     # create queries
     drop_commands = None
     if drop:
@@ -21,65 +19,35 @@ def create_primary_sql_tables(db_frame_level_name: str,
                                                 )
         ]
 
-        if handle_vehicles_cameras_tables: 
-            drop_commands.append(
-            "DROP TABLE {}, {} CASCADE;".format(db_vehicle_types_name,
-                                                db_cameras_name
-                                                )
-            )
-
-
     commands = [
         """
         CREATE TABLE {}(
             camera_id VARCHAR(20),
             video_upload_datetime timestamp,
-            frame_id INTEGER,
-            vehicle_id INTEGER,
-            vehicle_type VARCHAR(100),
-            confidence FLOAT,
-            bbox_x INTEGER,
-            bbox_y INTEGER,
-            bbox_w INTEGER,
-            bbox_h INTEGER,
+            frame_id SMALLINT,
+            vehicle_id SMALLINT,
+            vehicle_type VARCHAR(20),
+            confidence REAL,
+            box_x SMALLINT,
+            box_y SMALLINT,
+            box_w SMALLINT,
+            box_h SMALLINT,
             creation_datetime timestamp
         )
         """.format(db_frame_level_name),
 
-        # TODO: change varchars 20 chars, floats to type float8
         """
         CREATE TABLE {}(
             camera_id VARCHAR(20),
             video_upload_datetime timestamp,
-            vehicle_type VARCHAR(100),
-            counts FLOAT,
-            stops FLOAT,
-            starts FLOAT,
+            vehicle_type VARCHAR(20),
+            counts REAL,
+            stops REAL,
+            starts REAL,
             creation_datetime timestamp
         )
         """.format(db_video_level_name)
     ]
-
-    if handle_vehicles_cameras_tables: 
-        commands += [
-            """
-            CREATE TABLE {}(
-                id SERIAL,
-                vehicle_type VARCHAR(100),
-                vehicle_type_id INTEGER PRIMARY KEY
-            )
-            """.format(db_vehicle_types_name),
-            """
-            CREATE TABLE {}(
-                id SERIAL,
-                latitude FLOAT, 
-                longitude FLOAT,
-                borough INTEGER,
-                tfl_camera_id INTEGER,
-                camera_name VARCHAR(100)
-            )
-            """.format(db_cameras_name),
-        ]
 
     # execute queries
     dl = DataLoaderSQL(creds=load_credentials(), paths=load_paths())
@@ -95,6 +63,8 @@ def create_primary_sql_tables(db_frame_level_name: str,
 def create_eval_sql_tables(creds: dict,
                            paths: dict, 
                            drop=False):
+    """Create PSQL table to append evaluation results to 
+    """
     # create queries
     drop_commands = None
     if drop:

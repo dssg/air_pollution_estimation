@@ -1,19 +1,19 @@
 import time
+import gc
+
 import datetime
 import cv2
 import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-from traffic_analysis.d00_utils.bbox_helpers import (
-    bbox_intersection_over_union,
-    bboxcv2_to_bboxcvlib,
-    color_bboxes,
-    display_bboxes_on_frame)
+from traffic_analysis.d00_utils.bbox_helpers import (bboxcv2_to_bboxcvlib,
+                                                     bboxcvlib_to_bboxcv2,
+                                                     display_bboxes_on_frame,
+                                                     color_bboxes,
+                                                     bbox_intersection_over_union)
+from traffic_analysis.d00_utils.video_helpers import write_mp4
 from traffic_analysis.d04_modelling.traffic_analyser_interface import TrafficAnalyserInterface
-from traffic_analysis.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame, color_bboxes, \
-    bbox_intersection_over_union
-from traffic_analysis.d00_utils.video_helpers import write_mp4, parse_video_or_annotation_name
 from traffic_analysis.d04_modelling.tracking.vehicle_fleet import VehicleFleet
 from traffic_analysis.d04_modelling.perform_detection_opencv import detect_objects_cv
 from traffic_analysis.d04_modelling.perform_detection_tensorflow import detect_objects_tf
@@ -136,9 +136,9 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
     def add_to_multi_tracker(self,
                              multi_tracker: cv2.MultiTracker,
-                             frame: np.ndarray, 
-                             frame_height: int, 
-                             frame_width: int, 
+                             frame: np.ndarray,
+                             frame_height: int,
+                             frame_width: int,
                              bbox):
         """Add bbox to the multitracker as a new tracker
         """
@@ -158,15 +158,24 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 bbox = bboxcvlib_to_bboxcv2(bbox)
 
             for i in range(4):
+                # correct neg coords
                 if bbox[i] < 0:
                     bbox[i] = 0
 
+                # check ind coords don't go outside frame
                 if i % 2 == 0: # xmin and width
                     if bbox[i] > frame_width:
                         bbox[i] = frame_width
-                else: # ymin and height
+                else:  # ymin and height
                     if bbox[i] > frame_height:
                         bbox[i] = frame_height
+
+            # check sum of coords don't go outside frame
+            if bbox[0] + bbox[2] > frame_width:
+                bbox[2] = frame_width - bbox[0]
+
+            if bbox[1] + bbox[3] > frame_height:
+                bbox[3] = frame_height - bbox[1]
 
             try:
                 multi_tracker.add(newTracker=self.add_tracker(),
@@ -226,8 +235,8 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         for bbox in bboxes:
             self.add_to_multi_tracker(multi_tracker=multi_tracker,
                                       frame=video[0, :, :, :],
-                                      frame_height=frame_height, 
-                                      frame_width=frame_width, 
+                                      frame_height=frame_height,
+                                      frame_width=frame_width,
                                       bbox=bbox)
 
         if make_video:
@@ -294,8 +303,8 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                     for new_bbox in new_bboxes:
                         self.add_to_multi_tracker(multi_tracker=multi_tracker,
                                                   frame=frame,
-                                                  frame_height=frame_height, 
-                                                  frame_width=frame_width, 
+                                                  frame_height=frame_height,
+                                                  frame_width=frame_width,
                                                   bbox=new_bbox)
 
             if make_video:
@@ -348,8 +357,10 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         return all_bboxes, all_labels, all_confs
 
     def cleanup_on_finish(self):
-        if self.detection_model == 'yolov3_tf':
-           self.sess.close()
+        if self.detection_model == 'yolov3_tf' or self.detection_model == 'traffic_tf':
+            self.sess.close()
+            tf.reset_default_graph()
+        gc.collect()
 
     def construct_frame_level_df(self, video_dict) -> pd.DataFrame:
         """Construct frame level df for multiple videos

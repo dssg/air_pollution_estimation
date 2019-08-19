@@ -15,8 +15,6 @@ paths = load_paths()
 creds = load_credentials()
 s3_credentials = creds[paths['s3_creds']]
 
-# TODO: make it so that you can read in the videos/annotations from local
-
 # settings
 verbose = True
 

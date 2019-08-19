@@ -8,11 +8,9 @@ def upload_annotation_names_to_s3(paths,
                                   s3_credentials: dict,
                                   verbose=True) -> dict:
     """ Get the list of xml files from s3 and save a json on s3 containing the corresponding video filepaths
-            Args:
-                paths (dict): dictionary of paths from yml file
-                s3_credentials:
-
-            Returns: dictionary mapping the name of the annotation file to the name of the video file
+    Args:
+        paths: dictionary of paths from yml file
+        s3_credentials: dictionary of credentials from yml file
     """
 
     bucket_name = paths['bucket_name']
@@ -21,7 +19,7 @@ def upload_annotation_names_to_s3(paths,
 
     # fetch annotation filenames
     elapsed_time, annotation_files = get_names_of_folder_content_from_s3(bucket_name, prefix, s3_profile)
-    if verbose: 
+    if verbose:
         print('Extracting {} file names took {} seconds'.format(len(annotation_files),
                                                             elapsed_time))
     selected_files = []

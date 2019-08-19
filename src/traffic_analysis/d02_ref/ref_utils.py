@@ -1,22 +1,21 @@
 import datetime
-import subprocess
 import os
 import json
 import time as Time
+import subprocess
 from subprocess import Popen, PIPE
 
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 
 
-def upload_json_to_s3(paths, save_name, selected_files):
-    """ save json file to s3
-                Args:
-                    paths (dict): dictionary of paths from yml file
-                    save_name (str): name of json to be saved
-                    selected_files (list): list of file paths to be stored in json
-
-                Returns:
-
+def upload_json_to_s3(paths: dict,
+                      save_name: str,
+                      selected_files: list):
+    """Save json file to s3
+    Args:
+        paths (dict): dictionary of paths from yml file
+        save_name (str): name of json to be saved
+        selected_files (list): list of file paths to be stored in json
     """
     # Upload selected file names to s3
     filepath = os.path.join(paths["video_names"], save_name + '.json')
@@ -34,17 +33,16 @@ def upload_json_to_s3(paths, save_name, selected_files):
     # Delete the json from local
     os.remove(filepath)
 
-    return
 
-
-def generate_dates(from_date, to_date):
+def generate_dates(from_date: datetime.datetime,
+                   to_date: datetime.datetime) -> list:
     """ Generate a list of dates between two dates
-                Args:
-                    from_date (datetime): starting date
-                    to_date (datetime): end date
+    Args:
+        from_date: starting date
+        to_date: end date
 
-                Returns:
-                    dates (list): list of dates between the two dates specified
+    Returns:
+        dates: list of dates between the two dates specified
     """
     dates = []
     while from_date <= to_date:

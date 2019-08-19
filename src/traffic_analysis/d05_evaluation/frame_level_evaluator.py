@@ -46,7 +46,7 @@ class FrameLevelEvaluator:
                                               gt_video_upload_datetime)].copy()
 
             max_frame_ind = ground_truth_df["stop_frame"].iloc[0]
-            ground_truth_dict = self.reparse_bboxes_df(ground_truth_df, 
+            ground_truth_dict = self.reparse_bboxes_df(ground_truth_df,
                                                        max_frame_ind=max_frame_ind,
                                                        include_confidence=False)
             predicted_dict = self.reparse_bboxes_df(pred_df,
@@ -90,14 +90,14 @@ class FrameLevelEvaluator:
 
     def get_ground_truth(self) -> pd.DataFrame:
         """Read in annotation xmls from paths stored in self.videos_to_eval
-        Frames are 0-indexed. 
+        Frames are 0-indexed.
         """
         frame_level_ground_truth_dfs = []
         for idx, video in self.videos_to_eval.iterrows():
             # get frame level ground truth
             if self.from_s3_paths:
                 xml_root = self.dl_s3.read_xml(video['xml_path'])
-            elif self.from_local_paths: # read from local  
+            elif self.from_local_paths: # read from local
                 xml_root = ElementTree.parse(video['xml_path']).getroot()
 
             frame_level_ground_truth = parse_annotation(xml_root)
@@ -112,13 +112,13 @@ class FrameLevelEvaluator:
     def reparse_bboxes_df(self, 
                           df: pd.DataFrame, 
                           max_frame_ind: int,
-                          include_confidence: bool, 
+                          include_confidence: bool,
                           bbox_format: str = "cvlib") -> dict:
         """Restructures dfs containing bboxes for each frame (i.e. frame level df, 
         ground truth df) to a dictionary of dictionaries. This format is what 
         compute_mean_average_precision.py functions take as input. 
 
-        This function also ensures that every frame in the video has a corresponding 
+        This function also ensures that every frame in the video has a corresponding
         dict entry (even if the input df had no prediction for that frame)
 
         Args:
@@ -164,7 +164,7 @@ class FrameLevelEvaluator:
 
             frame_id = int(frame_id)
 
-            if vehicle_type not in self.selected_labels: 
+            if vehicle_type not in self.selected_labels:
                 print(f"Warning: detected vehicle type {vehicle_type} not in params[selected_labels] \
                        and will be ignored.")
                 continue
@@ -187,7 +187,7 @@ class FrameLevelEvaluator:
         Args: 
             ground_truth_dict: ground_truth_df reparsed by reparse_bboxes_df
             predicted_dict: frame_level_df reparsed by reparse_bboxes_df
-        Returns: 
+        Returns:
             map_dict: dictionary with vehicle_types as keys and maps as values 
         Raises: 
         """

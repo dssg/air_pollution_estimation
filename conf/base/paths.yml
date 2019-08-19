@@ -4,9 +4,10 @@ s3_paths:
   s3_cvat_annotations: "ref/annotations/cvat/"
   s3_video_names: "ref/video_names/"
   s3_camera_details: "ref/camera_details/camera_details.json"
-  s3_frame_level: "frame_level/"
-  s3_profile: "dssg"
-  s3_creds: "dev_s3"
+
+  s3_frame_level: "frame_level/" # TODO DELETE THIS
+  s3_profile: "dssg" # TODO: change this for user?
+  s3_creds: "dev_s3" # TODO: CHANGE TO JUST S3
   s3_detection_model: "ref/model_conf/"
 
 local_paths:
@@ -14,6 +15,8 @@ local_paths:
   temp_raw_video: "data/temp/raw_videos/"
   temp_frame_level: "data/temp/frame_level/"
   temp_video_level: "data/temp/video_level/"
+  temp_setup: "data/temp/setup/"
+
   video_names: "data/ref/video_names/"
   processed_video: "results/jamcams/"
   plots: "plots/"
@@ -25,8 +28,6 @@ db_paths:
   db_name: "airquality"
   db_frame_level: 'frame_stats'
   db_video_level: 'video_stats'
-  db_vehicle_types: 'vehicle_types'
-  db_cameras: 'cameras'
 
   eval_db_frame_level_prefix: 'frame_stats'
   eval_db_video_level_prefix: 'video_stats'

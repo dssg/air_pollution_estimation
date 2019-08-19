@@ -2,9 +2,9 @@ import pandas as pd
 import re
 
 from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
+from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 from traffic_analysis.d05_evaluation.video_level_evaluator import VideoLevelEvaluator
 from traffic_analysis.d05_evaluation.frame_level_evaluator import FrameLevelEvaluator
-from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 
 
 class ChunkEvaluator:
@@ -88,5 +88,5 @@ class ChunkEvaluator:
                                                     frame_level_df=self.frame_level_df,
                                                     selected_labels=self.selected_labels,
                                                     data_loader_s3=self.data_loader_s3)
-        frame_level_mAP = frame_level_evaluator.evaluate()
-        return frame_level_mAP
+        frame_level_map = frame_level_evaluator.evaluate()
+        return frame_level_map

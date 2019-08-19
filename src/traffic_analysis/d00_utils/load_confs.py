@@ -1,5 +1,7 @@
 import yaml
-import os 
+import os
+import re
+
 from traffic_analysis.d00_utils.get_project_directory import get_project_directory
 
 
@@ -14,27 +16,36 @@ def collapse_dict_hierarchy(nested_dict: dict):
 
 
 def load_parameters():
-    with open(project_dir + '/conf/base/parameters.yml') as f:
+    filepath = os.sep.join(project_dir + 'conf/base/parameters.yml'.split('/'))
+    with open(filepath) as f:
         params = yaml.safe_load(f)
     return collapse_dict_hierarchy(params)
 
 
 def load_app_parameters():
-    with open(project_dir + '/conf/base/app_parameters.yml') as f:
+    filepath = os.sep.join(
+        project_dir + 'conf/base/app_parameters.yml'.split('/'))
+
+    with open(filepath) as f:
         params = yaml.safe_load(f)
     return {**params['visualization']}
 
 
 def load_credentials():
 
-    with open(project_dir + '/conf/local/credentials.yml') as f:
+    filepath = os.sep.join(
+        project_dir + 'conf/local/credentials.yml'.split('/'))
+
+    with open(filepath) as f:
         creds = yaml.safe_load(f)
 
     return creds
 
 
 def load_paths():
-    with open(project_dir + '/conf/base/paths.yml') as f:
+    filepath = os.sep.join(project_dir + 'conf/base/paths.yml'.split('/'))
+
+    with open(filepath) as f:
         paths = yaml.safe_load(f)
         s3_paths = paths['s3_paths']
         local_paths = paths['local_paths']
@@ -42,9 +53,10 @@ def load_paths():
 
     for key, val in local_paths.items():
         val = os.path.normpath(val)
+        basepath = os.sep.join(project_dir + re.split(r"\\|/", val))
         if key[:4] == "temp":
-            local_paths[key] = os.path.join(project_dir, val, str(os.getpid()))  + os.sep
-        else: 
-            local_paths[key] = os.path.join(project_dir, val) + os.sep
+            local_paths[key] = os.path.join(basepath, str(os.getpid())) + os.sep
+        else:
+            local_paths[key] = basepath + os.sep
 
     return {**s3_paths, **local_paths, **db_paths}
