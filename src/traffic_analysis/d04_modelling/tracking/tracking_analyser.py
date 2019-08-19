@@ -1,4 +1,5 @@
 import time
+import gc
 
 import cv2
 import numpy as np
@@ -318,7 +319,9 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
     def cleanup_on_finish(self):
         if self.detection_model == 'yolov3_tf' or self.detection_model == 'traffic_tf':
-           self.sess.close()
+            self.sess.close()
+            tf.reset_default_graph()
+        gc.collect()
 
     def construct_frame_level_df(self, video_dict) -> pd.DataFrame:
         """Construct frame level df for multiple videos
