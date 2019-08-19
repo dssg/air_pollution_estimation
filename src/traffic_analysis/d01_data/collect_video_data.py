@@ -1,12 +1,13 @@
 import urllib.request
 import os
-import subprocess
-from subprocess import PIPE, Popen
 import time
 import json
 import datetime
 import sys
+import subprocess
+from subprocess import PIPE, Popen
 import dateutil.parser
+
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 from traffic_analysis.d00_utils.email_service import send_email_warning
 
@@ -42,6 +43,7 @@ def collect_camera_videos(download_url: dict,
                           delay: int = 3):
     """
     This function was created to download videos from cameras using the tfl api.
+    Args:
         download_url: the tfl api to download traffic camera videos
         s3_credentials: s3 credentials
         paths:

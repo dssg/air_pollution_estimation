@@ -4,7 +4,7 @@ from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_n
 from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 
 
-def update_video_level_table(analyzer,
+def update_video_level_table(analyser,
                              frame_level_df=None,
                              file_names=None,
                              paths=None,
@@ -48,7 +48,7 @@ def update_video_level_table(analyzer,
         frame_level_df.drop('bbox_h', axis=1, inplace=True)
 
     # Create video level table and add to database
-    video_level_df = analyzer.construct_video_level_df(frame_level_df)
+    video_level_df = analyser.construct_video_level_df(frame_level_df)
     if video_level_df.empty:
         return
     video_level_df['creation_datetime'] = datetime.datetime.now()
