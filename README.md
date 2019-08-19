@@ -135,12 +135,15 @@ With the template copied, you need to replace the placeholder values with your a
   * `password`: the password of the email address
   * `recipients`: the list of recipients(email addresses) to be notified
 
+For the final setup step execute the following command to complete the required infrastructure:
+
+``` python3 src/setup.py```
 
 ## 
 
 ## 1. Running The Data Collection Pipeline
 
-Both the static and live pipelines rely on the collection of raw video data from the TFL API. You therefore need to run the data collection pipeline before either of these pipelines will work. The data collection pipeline continuously grabs videos from the TFL API and puts them in the S3 bucket for future analysis. The longer you leave the data collection pipeline to run the more data you will have to analyse!
+In order to run the static pipeline you need to collect raw video data from the TFL API. **You therefore need to run the data collection pipeline before the static pipeline will work**. The data collection pipeline continuously grabs videos from the TFL API and puts them in the S3 bucket for future analysis. The longer you leave the data collection pipeline to run the more data you will have to analyse!
 
 To run the pipeline you first need to set up your AWS credentials for the AWS command line tool. To do this run the following command:
 ```
@@ -169,14 +172,6 @@ delay: 3
 ```
 
 ## 2. Running The Static Pipeline
-
-Before we can run the static pipeline we need to execute the following command to complete the required infrastructure:
-
-``` python3 src/setup.py```
-
-# TODO complete setup script:
-- Grab annotations (from somewhere?) and put in S3
-- Grab transfer weights (from somewhere?) and put in S3
 
 The static pipeline is used to analyse a selection of JamCam videos and put the results into the PostgreSQL database.  general outline of static pipeline can be seen in the following diagram:
 
@@ -210,29 +205,72 @@ Aside from the parameters that define the search criteria for the videos to be a
 
 
 #### obj detection
-```detection_model``` - Specifies the type of object detection model used by the pipeline. Available values are: ```["yolov3-tiny_opencv", "yolov3_cv", "yolov3_tf", "traffic_tf"]```
-```detection_iou_threshold``` - 0.05
-```detection_confidence_threshold``` - 0.2
+```detection_model``` - Specifies the type of object detection model used by the pipeline. Available values are: ```["yolov3-tiny_opencv", "yolov3_cv", "yolov3_tf", "traffic_tf"]```<br/>
+```detection_iou_threshold``` - 0.05<br/>
+```detection_confidence_threshold``` - 0.2<br/>
 ```detection_nms_threshold``` - 0.2
 
 #### tracking
-```selected_labels``` - ["car", "truck", "bus", "motorbike"]
-```opencv_tracker_type``` - "CSRT"
-```iou_threshold``` - 0.05 #controls how much two objects' bboxes must overlap to be considered the "same"
-```detection_frequency``` - 4
+```selected_labels``` - ["car", "truck", "bus", "motorbike"]<br/>
+```opencv_tracker_type``` - "CSRT"<br/>
+```iou_threshold``` - 0.05 #controls how much two objects' bboxes must overlap to be considered the "same"<br/>
+```detection_frequency``` - 4<br/>
 ```skip_no_of_frames``` - 3
 
 #### stop starts
-```iou_convolution_window``` - 15
-```smoothing_method``` - "moving_avg"
+```iou_convolution_window``` - 15<br/>
+```smoothing_method``` - "moving_avg"<br/>
 ```stop_start_iou_threshold``` - 0.80
 
+# TODO complete setup script:
+- Grab annotations (from somewhere?) and put in S3
+- Grab transfer weights (from somewhere?) and put in S3
 
 # TODO Describe all the other parameters
 
 # TODO Need a GPU to run yolov3-tf
 
 # TODO Have decent default parameter values
+
+## 2. Running The Live Pipeline
+
+The live pipeline integrates data collection with video analysis to provide real-time traffic statistics. Every 4 minutes the pipeline grabs the latest videos from the cameras listed in the ```parameters.yml``` file under ```data_collection: tims_camera_list:``` and analyses them. The results are stored in the frame-level and video-level tables in the PostgreSQL database.
+
+To run the pipeline execute the following command in the terminal:
+
+``` python3 src/live_pipeline.py```
+
+## 2. Running The Evaluation Pipeline
+
+The evaluation pipeline is used to evaluate the performance of different analyser models and their respective parameter settings. The pipeline relies on hand annotated videos from the computer software *Computer Vision Annotation Tool (CVAT)*. We used version 0.4.2 of CVAT to annotate traffic videos for evaluation. Instructions on installing and running CVAT can be found on their [website](https://github.com/opencv/cvat/blob/develop/cvat/apps/documentation/installation.md#windows-10). 
+
+For each video, we labelled cars, trucks, buses, motorbikes, and vans; for each object labelled, we annotated whether it was stopped or parked. For consistency we used the following instructions to annotate ground-truth videos with the CVAT tool:
+
+Use the video name as the task name so that it dumps with the same naming convention<br/>
+As a rule of thumb, label things inside the bottom 2/3rds of the image. But if a vehicle is very obvious in the top 1/3rd, label it.<br/>
+Use the following labels when creating a CVAT task:<br/>
+vehicle ~checkbox=parked:false ~checkbox=stopped:false @select=type:undefined,car,truck,bus,motorbike,van<br/>
+Set Image Quality to 95<br/>
+Draw boxes around key frames and let CVAT perform the interpolation<br/>
+Press the button that looks like an eye to specify when the object is no longer in the image<br/>
+Save work before dumping task to an xml file.<br/>
+
+Once you have the xml files containing your annotations you need to put them in your S3 bucket according to the path ```s3_annotations``` in the ```paths.yml``` file. It is important that you have the raw videos that corespond to these annotations in the S3 directory indicated by ```s3_video``` in the ```paths.yml``` file. These raw videos will be used by the pipeline to generate predictions that will then be evaluated against the annotations in the xml files.
+
+As our approach outputs both video level and frame level statistics, we perform evaluation on both the video level and the frame level. As our models did not produce statistics for vans or indicate whether a vehicle was parked, these statistics are omitted from the evaluation process. 
+
+Video level evaluation is performed for all vehicle-types (cars, trucks, buses, motorbikes) and vehicle statistics (counts, stops, starts) produced by our model. For each combination of vehicle type and vehicle statistics (e.g. car counts, car stops, car starts) we computed the following summary statistics over the evaluation data set:
+
+Mean absolute error<br/>
+Root mean square error<br/>
+
+As speed was a primary consideration for our project partners, we also evaluated the average runtime for each model. 
+
+Frame level evaluation is performed for all vehicle types produced by our model. For each vehicle type and for each video, we compute the mean average precision. Mean average precision is a standard metric used by the computer vision community to evaluate the performance of object detection/object tracking algorithms. Essentially, this performance metric assesses both how well an algorithm detects existing objects as well as how accurately placed the bounding boxes around these objects are. 
+
+In the context of our project, mean average precision could be utilized to interrogate video-level model performance and diagnose issues. However, as video level statistics were the primary deliverable to our project partners, we used video level performance to select the best models. 
+
+Modifiable model parameters can be found in the ```parameters.yml``` file under ```modelling:```. A description of these parameters can be found in the above section (Static Pipeline).
 
 
 #### Required software
