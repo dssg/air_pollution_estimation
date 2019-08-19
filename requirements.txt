@@ -20,4 +20,4 @@ sqlalchemy
 pandas==0.24.2
 psycopg2
 seaborn>=0.9
-tqdm
+tqdm==4.33.0
