@@ -14,7 +14,7 @@ from traffic_analysis.d03_processing.update_video_level_table import \
     update_video_level_table
 from traffic_analysis.d04_modelling.tracking.tracking_analyser import \
     TrackingAnalyser
-from traffic_analysis.d00_utils.move_file_within_s3_bucket import move_file
+from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 
 params = load_parameters()
 paths = load_paths()
@@ -25,6 +25,9 @@ current_date = datetime.now().date()
 output_file_name = f'{current_date}'
 from_date = str(current_date)
 to_date = str(current_date)
+
+data_loader_s3 = DataLoaderS3(
+    s3_credentials=s3_credentials, bucket_name=paths['bucket_name'])
 
 retrieve_and_upload_video_names_to_s3(output_file_name=output_file_name,
                                       paths=paths,
@@ -60,8 +63,11 @@ while selected_videos:
     for filename in file_names:
         new_filename = filename.replace(
             paths['s3_video'], paths['s3_processed_videos'])
-        print(filename, new_filename)
-        move_file(filename, new_filename)
+        data_loader_s3.move_file(filename, new_filename)
+
+    # delete processed videos if true
+    if params['delete_processed_videos'] is True:
+        data_loader_s3.delete_folder(paths['s3_processed_videos'])
 
     # Move on to next chunk
     selected_videos = selected_videos[chunk_size:]
