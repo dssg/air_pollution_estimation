@@ -1,6 +1,3 @@
-from __future__ import absolute_import, division, print_function
-from traffic_analysis.d00_utils.bbox_helpers import bbox_intersection_over_union
-
 """
 author: Timothy C. Arlen
 date: 28 Feb 2018
@@ -9,12 +6,8 @@ date: 10 Sep 2018
 url: https://gist.github.com/sadjadasghari/dc066e3fb2e70162fbb838d4acb93ffc
 Calculate Mean Average Precision (mAP) for a set of bounding boxes corresponding to specific
 image Ids. 
-Usage:
-> python calculate_mean_ap.py
-Will display a plot of precision vs recall curves at 10 distinct IoU thresholds as well as output
-summary information regarding the average precision and mAP scores.
 """
-
+from __future__ import absolute_import, division, print_function
 
 from copy import deepcopy
 import json
@@ -26,6 +19,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+
+from traffic_analysis.d00_utils.bbox_helpers import bbox_intersection_over_union
 
 sns.set_style("white")
 sns.set_context("poster")
@@ -54,14 +49,15 @@ COLORS = [
 ]
 
 
-def get_single_frame_results(gt_bboxes, pred_bboxes, iou_thr):
+def get_single_frame_results(gt_bboxes: list, 
+                             pred_bboxes: dict, 
+                             iou_thr: float) -> dict:
     """Calculates number of true_pos, false_pos, false_neg from single batch of boxes.
     Args:
         gt_bboxes (list of list of floats): list of locations of ground truth
             objects as [xmin, ymin, xmax, ymax]
-        pred_bboxes (dict): dict of dicts of 'bboxes' (formatted like `gt_bboxes`)
-            and 'scores'
-        iou_thr (float): value of IoU to consider as threshold for a
+        pred_bboxes (list of list of floats): list of list of bboxes (formatted like `gt_bboxes`)
+        iou_thr: value of IoU to consider as threshold for a
             true prediction.
     Returns:
         dict: true positives (int), false positives (int), false negatives (int)
@@ -145,10 +141,10 @@ def calc_precision_recall(frame_results):
     return precision, recall
 
 
-def get_model_scores_dict(pred_bboxes):
+def get_model_scores_dict(pred_bboxes: dict) -> dict:
     """Creates a dictionary mapping model_scores to image ids.
     Args:
-        pred_bboxes (dict): dict of dicts of 'bboxes' and 'scores'
+        pred_bboxes: dict of dicts of 'bboxes' and 'scores'
     Returns:
         dict: keys are model_scores and values are image ids (usually filenames)
     """
@@ -163,9 +159,12 @@ def get_model_scores_dict(pred_bboxes):
     return model_scores_dict
 
 
-def get_avg_precision_at_iou(gt_bboxes: dict, pred_bboxes: dict, iou_thr: float = 0.5):
+def get_avg_precision_at_iou(gt_bboxes: dict, 
+                             pred_bboxes: dict, 
+                             iou_thr: float = 0.5):
     """Calculates average precision at given IoU threshold.
     Args:
+
         gt_bboxes: dictionary with frame index as keys, and a list of 
                     bboxes of ground truth objects as values. Bboxes should be in 
                     format [xmin, ymin, xmin+width, ymin+height].
@@ -265,11 +264,13 @@ def get_avg_precision_at_iou(gt_bboxes: dict, pred_bboxes: dict, iou_thr: float 
     }
 
 
-def plot_pr_curve(
-    precisions, recalls, category="Person", label=None, color=None, ax=None
-):
+def plot_pr_curve(precisions, 
+                  recalls, 
+                  category="Person", 
+                  label=None, 
+                  color=None, 
+                  ax=None):
     """Simple plotting helper function"""
-
     if ax is None:
         plt.figure(figsize=(10, 8))
         ax = plt.gca()

@@ -11,16 +11,17 @@ from traffic_analysis.d00_utils.data_retrieval import (delete_and_recreate_dir,
 def update_frame_level_table(analyser,
                              file_names: list,
                              paths: dict,
-                             creds: dict):
-    """ Update the frame level table on s3 (pq) based on the videos in the files list
-                Args:
-                    analyser: analyser object for doing traffic analysis
-                    file_names (list): list of s3 filepaths for the videos to be processed
-                    paths (dict): dictionary of paths from yml file
-                    creds (dict): dictionary of credentials from yml file
+                             creds: dict) -> pd.DataFrame:
+    """ Update the frame level table on PSQL based on the videos in the files list
+    Args:
+        analyser: analyser object for doing traffic analysis
+        file_names: list of s3 filepaths for the videos to be processed
+        paths: dictionary of paths from yml file
+        creds: dictionary of credentials from yml file
 
-                Returns:
-
+    Returns:
+        frame_level_df: dataframe of frame level information returned by 
+                        analyser object
     """
     s3_credentials = creds[paths['s3_creds']]
     dl = DataLoaderS3(s3_credentials,
