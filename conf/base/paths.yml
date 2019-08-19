@@ -28,5 +28,3 @@ db_paths:
   db_name: "airquality"
   db_frame_level: 'frame_stats'
   db_video_level: 'video_stats'
-  db_vehicle_types: 'vehicle_types'
-  db_cameras: 'cameras'
