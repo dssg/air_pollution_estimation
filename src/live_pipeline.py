@@ -1,7 +1,7 @@
 from datetime import datetime
 from create_pipeline import create_pipeline
-from traffic_analysis.d00_utils.load_confs import (load_credentials,
-                                                   load_parameters, load_paths)
+from traffic_analysis.d00_utils.load_confs import load_parameters
+
 current_date = datetime.now().date()
 output_file_name = f"{current_date}"
 from_date = str(current_date)
