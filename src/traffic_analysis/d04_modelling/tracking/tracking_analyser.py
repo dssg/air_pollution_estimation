@@ -107,6 +107,56 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         new_bboxes_inds = list(new_bboxes_inds.difference(old_bboxes_inds))
         return new_bboxes_inds
 
+    def add_to_multi_tracker(self,
+                             multi_tracker: cv2.MultiTracker,
+                             frame: np.ndarray,
+                             frame_height: int, 
+                             frame_width: int,                             
+                             bbox):
+        """Add bbox to the multitracker as a new tracker
+        """
+        try:
+            multi_tracker.add(newTracker=self.add_tracker(),
+                              image=frame,
+                              boundingBox=tuple(bbox))
+        except Exception as e:
+            # convert bbox
+            if self.verbose:
+                print(e)
+                print(f"bbox is {bbox}")
+                print("Retrying with bbox formatting corrections...")
+
+            if (bbox[0] <= bbox[2]) and (bbox[1] <= bbox[3]):
+                # format: (xmin, ymin, width, height)
+                bbox = bboxcvlib_to_bboxcv2(bbox)
+
+            for i in range(4):
+                # correct neg coords
+                if bbox[i] < 0:
+                    bbox[i] = 0
+
+                # check ind coords don't go outside frame
+                if i % 2 == 0: # xmin and width
+                    if bbox[i] > frame_width:
+                        bbox[i] = frame_width
+                else: # ymin and height
+                    if bbox[i] > frame_height:
+                        bbox[i] = frame_height
+                        
+            # check sum of coords don't go outside frame
+            if bbox[0] + bbox[2] > frame_width: 
+                bbox[2] = frame_width - bbox[0] 
+
+            if bbox[1] + bbox[3] > frame_height: 
+                bbox[3] = frame_height - bbox[1]
+
+            try:
+                multi_tracker.add(newTracker=self.add_tracker(),
+                                  image=frame,
+                                  boundingBox=tuple(bbox))
+            except:
+                raise
+
     def detect_and_track_objects(self,
                                  video: np.ndarray,
                                  video_name: str,
@@ -133,7 +183,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
         start_time = time.time()
         # Create a video capture object to read videos
-        n_frames = video.shape[0]
+        n_frames, frame_height, frame_width = video.shape[:3]
 
         # assumes vid_length in seconds
         video_frames_per_sec = int(n_frames / video_time_length)
@@ -156,9 +206,11 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         # Create MultiTracker object using bboxes, initialize multitracker
         multi_tracker = cv2.MultiTracker_create()
         for bbox in bboxes:
-            multi_tracker.add(newTracker=self.add_tracker(),
-                              image=video[0, :, :, :],
-                              boundingBox=tuple(bbox))
+            self.add_to_multi_tracker(multi_tracker=multi_tracker,
+                                      frame=video[0, :, :, :],
+                                      frame_height=frame_height, 
+                                      frame_width=frame_width,                                     
+                                      bbox=bbox)
 
         if make_video:
             processed_video = []
@@ -208,9 +260,11 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
                     # iterate through new bboxes
                     for new_bbox in new_bboxes:
-                        multi_tracker.add(newTracker=self.add_tracker(),
-                                          image=frame,
-                                          boundingBox=tuple(new_bbox))
+                        self.add_to_multi_tracker(multi_tracker=multi_tracker,
+                                                  frame=frame,
+                                                  frame_height=frame_height, 
+                                                  frame_width=frame_width, 
+                                                  bbox=new_bbox)
 
             if make_video:
                 processed_video.append(frame)
@@ -230,11 +284,6 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             f'Run time of tracking analyser for one video is {time.time() - start_time} seconds. \nSkipped {frame_interval-1} frames.\nNumber of frames is {fleet.bboxes.shape[2]}.')
         print('Run time of tracking analyser for one video is %s seconds' %
               (time.time() - start_time))
-
-        """
-        if self.detection_model == 'yolov3_tf':
-            self.sess.close()
-        """
 
         return fleet
 
@@ -266,6 +315,10 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                                                       selected_labels=self.selected_labels)
 
         return all_bboxes, all_labels, all_confs
+
+    def cleanup_on_finish(self):
+        if self.detection_model == 'yolov3_tf' or self.detection_model == 'traffic_tf':
+           self.sess.close()
 
     def construct_frame_level_df(self, video_dict) -> pd.DataFrame:
         """Construct frame level df for multiple videos
