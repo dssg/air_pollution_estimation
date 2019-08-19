@@ -64,26 +64,19 @@ sudo apt-get install python3-pip
 sudo apt-get install python3.6-dev
 ```
 
-### Setting Up Anaconda
+### Setting Up A Virtual Environment
 
-The next step is to set up an anaconda environment for managing all the packages needed for this project. Run the following commands to install anaconda:
-
+The next step is to set up a virtual environment for managing all the packages needed for this project. Run the following commands to install virtualenv:
 ```
-cd /tmp
-curl -O https://repo.anaconda.com/archive/Anaconda3-2019.03-Linux-x86_64.sh
-bash Anaconda3-2019.03-Linux-x86_64.sh
+python3.6 -m pip install virtualenv
 ```
-When prompted press ENTER until the end and then answer 'yes' when needed. Finally, to activate the installation you just need to run:
+With virtualenv installed we can now create a new environment for our packages. To do this we can run the following commands (where 'my_env' is your chosen name for the environment):
 ```
-source ~/.bashrc
-```
-With anaconda installed with can create a conda environment for our packages. To do this we can run the following commands (where 'my_env' is your chosen name for the environment):
-```
-conda create --name my_env python=3
+python3.6 -m virtualenv my_env
 ```
 Whenever you want to run our pipelines you need to remember to activate this environment so that all the necessary packages are present. To do this you can run the command below: 
 ```
-conda activate my_env
+source my_env/bin/activate
 ```
 Run this command now because in the next step we will clone the repo and download all the packages we need into the 'my_env' environment.
 
@@ -100,9 +93,8 @@ git clone https://github.com/dssg/air_pollution_estimation.git
 All of the required packages for this project are in the 'requirements.txt' file. To install the packages run the following commands:
 ```
 cd air_pollution_estimation/
-sudo apt-get install -y libsm6 libxext6 libxrender-dev
+sudo apt-get install -y libsm6 libxext6 libxrender-dev libpq-dev
 pip install -r requirements.txt
-conda install psycopg2
 ```
 
 ### Set Up Credentials File
@@ -221,10 +213,6 @@ Aside from the parameters that define the search criteria for the videos to be a
 ```iou_convolution_window``` - 15<br/>
 ```smoothing_method``` - "moving_avg"<br/>
 ```stop_start_iou_threshold``` - 0.80
-
-# TODO complete setup script:
-- Grab annotations (from somewhere?) and put in S3
-- Grab transfer weights (from somewhere?) and put in S3
 
 # TODO Describe all the other parameters
 
@@ -465,8 +453,8 @@ Stored in this `air_pollution_estimation/conf/base/`directory are the following 
     * Various hyperparameters for detection and tracking
     * Configuration options for reporting.
 
-We recommend that credentials be stored in a git-ignored `YAML` file in `air_pollution_estimation/conf/local/credentials.yml`
-* `credentials.yml` should contain credentials necessary for accessing the PostgreSQL database, Amazon AWS services, and email notification service.
+We recommend that credentials be stored in a git-ignored `YAML` file in `air_pollution_estimation/conf/local/credentials.yml`.
+* `credentials.yml` should contain credentials necessary for accessing the PostgreSQL database, and Amazon AWS services.
 
 #### Data collection pipeline
 
