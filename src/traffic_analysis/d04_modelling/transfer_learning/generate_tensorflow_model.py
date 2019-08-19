@@ -5,17 +5,14 @@
 
 from __future__ import division, print_function
 import tensorflow as tf
+
 slim = tf.contrib.slim
 
 
 class YoloV3(object):
-
     def __init__(self, class_num, anchors, use_label_smooth=False, use_focal_loss=False, batch_norm_decay=0.999,
                  weight_decay=5e-4, use_static_shape=True):
 
-        # self.anchors = [[10, 13], [16, 30], [33, 23],
-        # [30, 61], [62, 45], [59,  119],
-        # [116, 90], [156, 198], [373,326]]
         self.class_num = class_num
         self.anchors = anchors
         self.batch_norm_decay = batch_norm_decay
@@ -85,11 +82,13 @@ class YoloV3(object):
 
     def reorg_layer(self, feature_map, anchors):
         '''
+        Args:
+
         feature_map: a feature_map from [feature_map_1, feature_map_2, feature_map_3] returned
             from `forward` function
         anchors: shape: [3, 2]
         '''
-        # NOTE: size in [h, w] format! don't get messed up!
+        # NOTE: size in [h, w] format! 
         grid_size = feature_map.get_shape().as_list()[1:3] if self.use_static_shape else tf.shape(feature_map)[
                                                                                          1:3]  # [13, 13]
         # the downscale ratio in height and weight
@@ -272,6 +271,5 @@ def yolo_block(inputs, filters):
 def upsample_layer(inputs, out_shape):
     new_height, new_width = out_shape[1], out_shape[2]
     # NOTE: here height is the first
-    # TODO: Do we need to set `align_corners` as True?
     inputs = tf.image.resize_nearest_neighbor(inputs, (new_height, new_width), name='upsampled')
     return inputs
