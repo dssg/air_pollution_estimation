@@ -7,9 +7,13 @@ import plotly.graph_objs as go
 from dash.dependencies import Input, Output
 
 from traffic_viz.d06_visualisation.dash_object_detection.helper import (
-    app_params, get_cams, get_vehicle_types, load_camera_statistics,
+    app_params, 
+    get_cams, 
+    get_vehicle_types, 
+    load_camera_statistics,
     load_vehicle_type_statistics)
 from traffic_viz.d06_visualisation.dash_object_detection.server import app
+
 
 DEBUG = app_params["debug"]
 TFL_BASE_URL = app_params["tfl_jamcams_website"]

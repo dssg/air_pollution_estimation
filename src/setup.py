@@ -20,4 +20,3 @@ create_sql_tables(drop=False)
 
 # TODO
 # put annotated videos in S3, put annotation xmls in right folder
-
