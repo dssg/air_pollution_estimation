@@ -2,6 +2,7 @@ import urllib
 import os 
 import re
 import shutil
+import glob
 
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 from traffic_analysis.d00_utils.data_retrieval import delete_and_recreate_dir
@@ -63,3 +64,19 @@ def upload_yolo_weights_to_s3(s3_credentials,
                            path_to_upload_file_to=path_to_upload_file_to)
 
     shutil.rmtree(local_dir)
+
+def upload_annotations_to_s3(s3_credentials, paths):
+
+    data_loader = DataLoaderS3(s3_credentials=s3_credentials, bucket_name=paths["bucket_name"])
+
+    # raw videos
+    for video_file in glob.glob(paths["setup_video"] + "*.mp4"):
+        # data_loader.upload_file(path_of_file_to_upload=, path_to_upload_file_to=)
+        print(video_file)
+
+    # xml files
+    for xml_file in glob.glob(paths["setup_xml"] + "*.xml"):
+        # data_loader.upload_file(path_of_file_to_upload=, path_to_upload_file_to=)
+        print(xml_file)
+
+    return
