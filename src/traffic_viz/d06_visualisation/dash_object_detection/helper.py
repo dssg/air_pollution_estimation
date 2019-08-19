@@ -1,5 +1,4 @@
 import sys
-import os
 from collections import OrderedDict
 
 from flask_caching import Cache
