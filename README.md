@@ -232,7 +232,7 @@ Aside from the parameters that define the search criteria for the videos to be a
 
 # TODO Have decent default parameter values
 
-## 2. Running The Live Pipeline
+## 3. Running The Live Pipeline
 
 The live pipeline integrates data collection with video analysis to provide real-time traffic statistics. Every 4 minutes the pipeline grabs the latest videos from the cameras listed in the ```parameters.yml``` file under ```data_collection: tims_camera_list:``` and analyses them. The results are stored in the frame-level and video-level tables in the PostgreSQL database.
 
@@ -240,29 +240,29 @@ To run the pipeline execute the following command in the terminal:
 
 ``` python3 src/live_pipeline.py```
 
-## 2. Running The Evaluation Pipeline
+## 4. Running The Evaluation Pipeline
 
 The evaluation pipeline is used to evaluate the performance of different analyser models and their respective parameter settings. The pipeline relies on hand annotated videos from the computer software *Computer Vision Annotation Tool (CVAT)*. We used version 0.4.2 of CVAT to annotate traffic videos for evaluation. Instructions on installing and running CVAT can be found on their [website](https://github.com/opencv/cvat/blob/develop/cvat/apps/documentation/installation.md#windows-10). 
 
 For each video, we labelled cars, trucks, buses, motorbikes, and vans; for each object labelled, we annotated whether it was stopped or parked. For consistency we used the following instructions to annotate ground-truth videos with the CVAT tool:
 
 Use the video name as the task name so that it dumps with the same naming convention<br/>
-As a rule of thumb, label things inside the bottom 2/3rds of the image. But if a vehicle is very obvious in the top 1/3rd, label it.<br/>
-Use the following labels when creating a CVAT task:<br/>
+- As a rule of thumb, label things inside the bottom 2/3rds of the image. But if a vehicle is very obvious in the top 1/3rd, label it.<br/>
+- Use the following labels when creating a CVAT task:<br/>
 vehicle ~checkbox=parked:false ~checkbox=stopped:false @select=type:undefined,car,truck,bus,motorbike,van<br/>
-Set Image Quality to 95<br/>
-Draw boxes around key frames and let CVAT perform the interpolation<br/>
-Press the button that looks like an eye to specify when the object is no longer in the image<br/>
-Save work before dumping task to an xml file.<br/>
+- Set Image Quality to 95<br/>
+- Draw boxes around key frames and let CVAT perform the interpolation<br/>
+- Press the button that looks like an eye to specify when the object is no longer in the image<br/>
+- Save work before dumping task to an xml file.<br/>
 
-Once you have the xml files containing your annotations you need to put them in your S3 bucket according to the path ```s3_annotations``` in the ```paths.yml``` file. It is important that you have the raw videos that corespond to these annotations in the S3 directory indicated by ```s3_video``` in the ```paths.yml``` file. These raw videos will be used by the pipeline to generate predictions that will then be evaluated against the annotations in the xml files.
+Once you have the xml files containing your annotations you need to put them in your S3 bucket according to the path ```s3_annotations``` in the ```paths.yml``` file. It is important that you have the raw videos that corespond to these annotations in the S3 directory indicated by ```s3_video``` in the ```paths.yml``` file. These raw videos will be used by the pipeline to generate predictions that will then be evaluated against the annotations in the xml files. As an example of how the evaluation process works we use the ```setup.py``` script that you ran earlier to put some example videos and annotations in your S3 bucket so that the pipeline will run.
 
 As our approach outputs both video level and frame level statistics, we perform evaluation on both the video level and the frame level. As our models did not produce statistics for vans or indicate whether a vehicle was parked, these statistics are omitted from the evaluation process. 
 
 Video level evaluation is performed for all vehicle-types (cars, trucks, buses, motorbikes) and vehicle statistics (counts, stops, starts) produced by our model. For each combination of vehicle type and vehicle statistics (e.g. car counts, car stops, car starts) we computed the following summary statistics over the evaluation data set:
 
-Mean absolute error<br/>
-Root mean square error<br/>
+- Mean absolute error<br/>
+- Root mean square error<br/>
 
 As speed was a primary consideration for our project partners, we also evaluated the average runtime for each model. 
 
