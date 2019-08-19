@@ -5,9 +5,9 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-from traffic_analysis.d04_modelling.traffic_analyser_interface import TrafficAnalyserInterface
 from traffic_analysis.d00_utils.bbox_helpers import bboxcv2_to_bboxcvlib, display_bboxes_on_frame, color_bboxes, \
     bbox_intersection_over_union
+from traffic_analysis.d04_modelling.traffic_analyser_interface import TrafficAnalyserInterface
 from traffic_analysis.d00_utils.video_helpers import write_mp4
 from traffic_analysis.d04_modelling.tracking.vehicle_fleet import VehicleFleet
 from traffic_analysis.d04_modelling.perform_detection_opencv import detect_objects_cv
@@ -16,19 +16,24 @@ from traffic_analysis.d04_modelling.perform_detection_tensorflow import initiali
 
 
 class TrackingAnalyser(TrafficAnalyserInterface):
-    def __init__(self, params, paths, s3_credentials):
+    def __init__(self, params: dict, paths: dict, s3_credentials: dict):
         """
+        (General parameters): 
+        selected_labels -- labels which we wish to detect
+
         Model-specific parameters initialized below:
 
         (Object detection arguments:)
         detection_model -- specify the name of model you want to use for detection
         detection_implementation -- specify model to use for detection
         detection_frequency -- each detection_frequency num of frames, run obj detection alg again to detect new objs
-        tracking_model -- specify name of model you want to use for tracking (currently only supports OpenCV trackers)
-        iou_threshold -- specify threshold to use to decide whether two detected objs should be considered the same
         detection_confidence_threshold -- conf above which to return label
         detection_nms_threshold -- yolo param
-        selected_labels -- labels which we wish to detect
+
+        (Object tracking parameters)
+        tracking_model -- specify name of model you want to use for tracking (currently only supports OpenCV trackers)
+        iou_threshold -- specify threshold to use to decide whether two detected objs should be considered the same
+
 
         (Stop start arguments:)
         iou_convolution_window -- frame window size to perform iou computation on (to get an IOU time
@@ -37,22 +42,19 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         stop_start_iou_threshold -- threshold to binarize the IOU time series into 0 or 1,denoting "moving" or "stopped"
         """
         super().__init__(params, paths)
-        self.detection_model = params['detection_model']
-        self.detection_implementation = params['detection_implementation']
-        self.iou_threshold = params['iou_threshold']
-        self.detection_frequency = params['detection_frequency']
-        self.detection_confidence_threshold = params['detection_confidence_threshold']
-        self.detection_nms_threshold = params['detection_nms_threshold']
-        self.selected_labels = params['selected_labels']
-        self.tracker_type = params['opencv_tracker_type']
-        self.trackers = []
-        self.skip_no_of_frames = params['skip_no_of_frames']
-        self.iou_convolution_window = params['iou_convolution_window']
-        self.smoothing_method = params['smoothing_method']
-        self.stop_start_iou_threshold = params['stop_start_iou_threshold']
+        # general settings
         self.params = params
         self.paths = paths
         self.s3_credentials = s3_credentials
+        self.selected_labels = params['selected_labels']
+
+        # object detection settings
+        self.detection_model = params['detection_model']
+        # TODO: to be replaced in transfer learning PR
+        self.detection_implementation = params['detection_implementation']
+        self.detection_frequency = params['detection_frequency']
+        self.detection_confidence_threshold = params['detection_confidence_threshold']
+        self.detection_nms_threshold = params['detection_nms_threshold']
 
         if self.detection_model == 'yolov3_tf':
             self.sess = tf.Session()
@@ -61,6 +63,19 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 paths=self.paths,
                 s3_credentials=self.s3_credentials,
                 sess=self.sess)
+
+        # tracking settings
+        self.tracker_type = params['opencv_tracker_type']
+        self.trackers = []
+        self.iou_threshold = params['iou_threshold']
+
+        # post-processing for stop-starts settings
+        self.iou_convolution_window = params['iou_convolution_window']
+        self.smoothing_method = params['smoothing_method']
+        self.stop_start_iou_threshold = params['stop_start_iou_threshold']
+
+        # speedup settings
+        self.skip_no_of_frames = params['skip_no_of_frames']
 
     def add_tracker(self):
         tracker = self.create_tracker_by_name(
@@ -71,8 +86,14 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
     def create_tracker_by_name(self, tracker_type: str):
         """Create tracker based on tracker name"""
-        tracker_types = {'BOOSTING': cv2.TrackerBoosting_create(), 'MIL': cv2.TrackerMIL_create(), 'KCF': cv2.TrackerKCF_create(), 'TLD': cv2.TrackerTLD_create(),
-                         'MEDIANFLOW': cv2.TrackerMedianFlow_create(), 'GOTURN': cv2.TrackerGOTURN_create(), 'MOSSE': cv2.TrackerMOSSE_create(), 'CSRT': cv2.TrackerCSRT_create()}
+        tracker_types = {'boosting': cv2.TrackerBoosting_create(),
+                         'mil': cv2.TrackerMIL_create(),
+                         'kcf': cv2.TrackerKCF_create(),
+                         'tld': cv2.TrackerTLD_create(),
+                         'medianflow': cv2.TrackerMedianFlow_create(),
+                         'goturn': cv2.TrackerGOTURN_create(),
+                         'mosse': cv2.TrackerMOSSE_create(),
+                         'csrt': cv2.TrackerCSRT_create()}
         try:
             return tracker_types[tracker_type]
         except Exception as e:
@@ -139,10 +160,12 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         video_frames_per_sec = int(n_frames / video_time_length)
 
         frame_interval = self.skip_no_of_frames + 1
-        frame_detection_inds = np.arange(0, n_frames, self.skip_no_of_frames * frame_interval)
+        frame_detection_inds = np.arange(
+            0, n_frames, self.skip_no_of_frames * frame_interval)
         frames = video[frame_detection_inds, :, :, :]
 
-        all_bboxes, all_labels, all_confs = self.detect_objects_in_frames(frames)
+        all_bboxes, all_labels, all_confs = self.detect_objects_in_frames(
+            frames)
         bboxes = all_bboxes[0]
         labels = all_labels[0]
         confs = all_confs[0]
@@ -185,7 +208,8 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
             # every x frames, re-detect boxes
             if frame_ind in frame_detection_inds.tolist():
-                ind = int(np.squeeze(np.where(frame_detection_inds == frame_ind)))
+                ind = int(np.squeeze(
+                    np.where(frame_detection_inds == frame_ind)))
                 if(ind >= all_bboxes.__len__()):
                     ind = -1
                 bboxes_detected = all_bboxes[ind]
@@ -258,12 +282,12 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
         elif self.detection_model == 'yolov3_tf':
             all_bboxes, all_labels, all_confs = detect_objects_tf(images=frames,
-                                                      paths=self.paths,
-                                                      detection_model=self.detection_model,
-                                                      model_initializer=self.model_initializer,
-                                                      init_data=self.init_data,
-                                                      sess=self.sess,
-                                                      selected_labels=self.selected_labels)
+                                                                  paths=self.paths,
+                                                                  detection_model=self.detection_model,
+                                                                  model_initializer=self.model_initializer,
+                                                                  init_data=self.init_data,
+                                                                  sess=self.sess,
+                                                                  selected_labels=self.selected_labels)
 
         return all_bboxes, all_labels, all_confs
 
