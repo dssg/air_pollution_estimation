@@ -1,9 +1,9 @@
 from crontab import CronTab
 import os
 from traffic_analysis.d00_utils.load_confs import load_paths
-from traffic_analysis.d00_utils.get_project_directory import get_project_directory
+from pathlib import Path
 
-project_directory = os.path.join(*get_project_directory())
+home = Path.home()
 paths = load_paths()
 python_path = "python3"
 
@@ -16,7 +16,8 @@ class CronJobs:
         self.cron.env['PATH'] = sys_path
 
     def pipeline_job(self):
-        filename = os.path.join(project_directory, "src", "live_pipeline.py")
+        filename = home.joinpath(
+            "air_pollution_estimation", "src", "live_pipeline.py")
         print(filename)
         job = self.cron.new(
             command=f"{python_path} {filename} >> /tmp/pipeline.log 2>&1", comment="pipeline")
@@ -24,14 +25,16 @@ class CronJobs:
         self.cron.write_to_user()
 
     def download_videos_job(self):
-        filename = os.path.join(project_directory, "src", "download_videos.py")
+        filename = home.joinpath(
+            "air_pollution_estimation", "src", "download_videos.py")
         job = self.cron.new(
             command=f"{python_path} {filename} >> /tmp/download.log 2>&1", comment="download")
         job.minute.every(4)
         self.cron.write()
 
     def upload_videos_job(self):
-        filename = os.path.join(project_directory, "src", "upload_videos.py")
+        filename = home.joinpath(
+            "air_pollution_estimation", "src", "upload_videos.py")
         job = self.cron.new(
             command=f"{python_path} {filename} >> /tmp/upload.log 2>&1", comment="upload")
         job.minute.every(1)
@@ -58,7 +61,7 @@ if __name__ == "__main__":
     username = getpass.getuser()
     cron_jobs = CronJobs(username)
     cron_jobs.remove_jobs_by_comment('pipeline')
-    cron_jobs.download_videos_job()
-    cron_jobs.upload_videos_job()
+    # cron_jobs.download_videos_job()
+    # cron_jobs.upload_videos_job()
     cron_jobs.pipeline_job()
     cron_jobs.view_jobs()
