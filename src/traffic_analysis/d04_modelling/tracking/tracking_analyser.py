@@ -105,12 +105,13 @@ class TrackingAnalyser(TrafficAnalyserInterface):
     def determine_new_bboxes(self, bboxes_tracked: list, bboxes_detected: list) -> list:
         """Return the indices of "new" bboxes in bboxes_detected so that a new tracker can be added for that
 
-        Keyword arguments:
-
-        bboxes_tracked: bboxes which are currently tracked. bboxes should be passed in in format (xmin,ymin,w,h)
-        bboxes_detected: bboxes which are newly detected. bboxes should be passed in in format (xmin,ymin,w,h)
-        iou_threshold: a detected bbox with iou below the iou_threshold (as compared to all existing, tracked bboxes)
-                       will be considered new.
+        Args:
+            bboxes_tracked: bboxes which are currently tracked. bboxes should be passed in in format (xmin,ymin,w,h)
+            bboxes_detected: bboxes which are newly detected. bboxes should be passed in in format (xmin,ymin,w,h)
+            iou_threshold: a detected bbox with iou below the iou_threshold (as compared to all existing, tracked bboxes)
+                           will be considered new.
+        Returns: 
+            new_bbox_inds: indices of newly detected bounding boxes
         """
 
         new_bboxes_inds = set(range(len(bboxes_detected))
@@ -143,13 +144,14 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         of the bounding boxes for each vehicle each frame. The VehicleFleet object also performs IOU computations
         on the stored bounding box information to get counts and stop starts.
 
-        Keyword arguments:
-
-        video -- np array in format (frame_count,frame_height,frame_width,3)
-        video_name -- name of video to run on (include .mp4 extension)
-        video_time_length -- specify length of video
-        make_video -- if true, will write video to local_mp4_dir with name local_mp4_name_tracked.mp4
-        local_mp4_dir -- path to directory to store video in
+        Args:
+            video -- np array in format (frame_count,frame_height,frame_width,3)
+            video_name -- name of video to run on (include .mp4 extension)
+            video_time_length -- specify length of video
+            make_video -- if true, will write video to local_mp4_dir with name local_mp4_name_tracked.mp4
+            local_mp4_dir -- path to directory to store video in
+        Returns: 
+            fleet -- VehicleFleet object containing bbox history for all vehicles tracked 
         """
 
         start_time = time.time()
@@ -255,11 +257,6 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         print('Run time of tracking analyser for one video is %s seconds' %
               (time.time() - start_time))
 
-        """
-        if self.detection_model == 'yolov3_tf':
-            self.sess.close()
-        """
-
         return fleet
 
     def detect_objects_in_frames(self, frames):
@@ -293,8 +290,11 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
     def construct_frame_level_df(self, video_dict) -> pd.DataFrame:
         """Construct frame level df for multiple videos
+        Args: 
+            video_dict: key is video filename, key is np array of videos
+        Returns:
+            pd Dataframe of all frame level info
         """
-
         # Check that video doesn't come from in-use camera (some are)
         for video_name in list(video_dict.keys()):
             n_frames = video_dict[video_name].shape[0]
@@ -317,9 +317,10 @@ class TrackingAnalyser(TrafficAnalyserInterface):
     def construct_video_level_df(self, frame_level_df) -> pd.DataFrame:
         """Construct video-level stats table using tracking techniques
 
-        Keyword arguments:
-
-        frame_level_df -- df returned by above function
+        Args:
+            frame_level_df -- df returned by above function
+        Returns: 
+            pd DataFrame of all video level info
         """
         if frame_level_df.empty:
             return frame_level_df
