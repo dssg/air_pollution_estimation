@@ -1,13 +1,14 @@
-from flask_caching import Cache
-from collections import OrderedDict
-import pandas as pd
 import sys
-import os
+from collections import OrderedDict
+
+from flask_caching import Cache
+import pandas as pd
+
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
-from traffic_viz.d06_visualisation.dash_object_detection.server import server
 from traffic_analysis.d00_utils.load_confs import load_app_parameters, load_parameters, load_paths, load_credentials
 from traffic_analysis.d00_utils.get_project_directory import get_project_directory
+from traffic_viz.d06_visualisation.dash_object_detection.server import server
 
 project_dir = get_project_directory()
 src_dir = f"{project_dir}/src"
