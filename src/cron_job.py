@@ -55,13 +55,18 @@ class CronJobs:
     def remove_jobs_by_comment(self, job_comment):
         self.cron.remove_all(comment=job_comment)
 
+    def clean_log(self):
+        open('/tmp/download.log', 'w').close()
+        open('/tmp/upload.log', 'w').close()
+        open('/tmp/pipeline.log', 'w').close()
+
 
 if __name__ == "__main__":
     import getpass
     username = getpass.getuser()
     cron_jobs = CronJobs(username)
+    cron_jobs.clean_log()
     cron_jobs.remove_all_jobs()
-    cron_jobs.remove_jobs_by_comment('pipeline')
     cron_jobs.download_videos_job()
     cron_jobs.upload_videos_job()
     cron_jobs.pipeline_job()
