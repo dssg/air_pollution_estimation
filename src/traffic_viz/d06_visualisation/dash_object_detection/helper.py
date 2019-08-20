@@ -35,13 +35,9 @@ def get_cams():
     camera_meta_data_path = paths["s3_camera_details"]
     data = dict(dl.read_json(camera_meta_data_path))
     camera_list = params["camera_list"]
-    print(camera_list)
     values = data.values()
     cam_dict = {item["id"]: item["commonName"]
                 for item in values if item["id"].replace("JamCams_", "") in camera_list}
-    print(cam_dict)
-    # [{'label': item['commonName'],  'value': item['id']}
-    # for item in values]
     cam_dict = OrderedDict(sorted(cam_dict.items(), key=lambda x: x[1]))
     return cam_dict
 
