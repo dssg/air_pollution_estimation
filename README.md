@@ -204,15 +204,35 @@ If the search parameters are `None` then they default to the following:
 
 Aside from the parameters that define the search criteria for the videos to be analysed, there are a host of other parameters in ```parameters.yml``` that affect the static pipeline. These parameters can be found under the 'modelling' heading (see the 'Key Files' section for more information about these parameters).
 
-The output of the static pipeline is appended to the frame and video level tables in the PostgreSQL database. These schemas of these two tables are as follows:
+The output of the static pipeline is appended to the frame and video level tables in the PostgreSQL database. Example data from these two tables can be seen below:
 
 <p float="left">
   <img src ="readme_resources/images/table_schemas.png" alt="alt text" />
 </p>
 
+Each field is described below:
 
-- information about the camera ID
+**Frame Level Table:**
+* `camera_id`: ID of the JamCam camera. Before the decimal is the borough ID and after the decimal is the actual camera ID.
+* `video_upload_datetime`: the date and time the video was recorded.
+* `frame_id`: the frame number of that specific video.
+* `vehicle_id`: the ID number that describes that unique vehicle.
+* `vehicle_type`: the type of vehicle.
+* `confidence`: how confident YOLO is in its type classification and bounding box prediction (between 0 and 1)
+* `box_x`: x coordinate of the top-left corner of the predicted bounding box
+* `box_y`: y coordinate of the top-left corner of the predicted bounding box
+* `box_w`: width of the predicted bounding box
+* `box_h`: height of the predicted bounding box
+* `creation_datetime`: the date and time the row was created in the database
 
+**Video Level Table:**
+* `camera_id`: ID of the JamCam camera. Before the decimal is the borough ID and after the decimal is the actual camera ID.
+* `video_upload_datetime`: the date and time the video was recorded.
+* `vehicle_type`: the type of vehicle.
+* `counts`: the number of vehicles of that type in that specific video
+* `stops`: the number of stops of that vehicle type in that specific video
+* `starts`: the number of starts of that vehicle type in that specific video
+* `creation_datetime`: the date and time the row was created in the database
 
 
 
