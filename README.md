@@ -287,7 +287,7 @@ To run the evaluation pipeline you just need to execute the following command:
 ### Parameters
 
 ```data_collection```:<br/>
-  ```jam_cam_website```: "http://jamcams.tfl.gov.uk/00001."<br/>
+>```jam_cam_website```: "http://jamcams.tfl.gov.uk/00001."<br/>
   ```tims_file_website```: "https://s3-eu-west-1.amazonaws.com/roads.data.tfl.gov.uk"<br/>
   ```tims_download_website```: "http://roads.data.tfl.gov.uk/TIMS/"<br/>
   ```tfl_camera_api```: "https://api.tfl.gov.uk/Place/Type/jamcam"<br/>
