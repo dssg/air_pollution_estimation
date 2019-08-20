@@ -282,6 +282,38 @@ To run the evaluation pipeline you just need to execute the following command:
 
 ### Paths
 
+```s3_paths```:<br/>
+>```bucket_name```: "air-pollution-uk" #s3 bucket name<br/>
+  ```s3_video```: "raw/videos/" #path to video data in s3 bucket<br/>
+  ```s3_annotations```: "ref/annotations/"<br/>
+  ```s3_video_names```: "ref/video_names/"<br/>
+  ```s3_camera_details```: "ref/camera_details/camera_details.json"<br/>
+
+>```s3_frame_level```: "frame_level/" # TODO DELETE THIS<br/>
+  ```s3_profile```: "dssg" # TODO: change this for user?<br/>
+  ```s3_creds```: "dev_s3" # TODO: CHANGE TO JUST S3<br/>
+  ```s3_detection_model```: "ref/model_conf/"<br/>
+
+```local_paths```:<br/>
+>```temp_video```: "data/temp/videos/"<br/>
+  ```temp_raw_video```: "data/temp/raw_videos/"<br/>
+  ```temp_frame_level```: "data/temp/frame_level/"<br/>
+  ```temp_video_level```: "data/temp/video_level/"<br/>
+  ```temp_setup```: "data/temp/setup/"<br/>
+
+>```video_names```: "data/ref/video_names/"<br/>
+  ```processed_video```: "results/jamcams/"<br/>
+  ```plots```: "plots/"<br/>
+  ```annotations```: "annotations/"<br/>
+  ```local_detection_model```: "data/ref/detection_model/"<br/>
+  ```setup_xml```: "data/setup/annotations/xml_files/"<br/>
+  ```setup_video```: "data/setup/annotations/videos/"<br/>
+
+```db_paths```:<br/>
+>```db_host```: "dssg-london.ck0oseycrr7s.eu-west-2.rds.amazonaws.com"<br/>
+  ```db_name```: "airquality"<br/>
+  ```db_frame_level```: 'frame_stats'<br/>
+  ```db_video_level```: 'video_stats'<br/>
 
 
 ### Parameters
