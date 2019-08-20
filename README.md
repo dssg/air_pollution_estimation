@@ -444,8 +444,17 @@ Below is a partial overview of our repository tree:
         └──
 ```
 
-#### Web App
+## 5. Web Application
 
+The web application is built using the <a src="https://dash.plot.ly/">DASH</a> framework. To run the web application, first install the required libraries by running the following command:
+```
+pip install -p src/traffic_viz/d06_visualisation/requirements.txt
+```
+
+Then, run
+```
+python src/app.py
+```
 ## Contributors and Partners
 
 <p float="left">
