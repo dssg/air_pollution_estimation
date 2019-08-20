@@ -142,6 +142,7 @@ aws configure --profile dssg
 When prompted enter your AWS access key ID and your secret access key (these will be the same as the ones you entered in the ```credentials.yml``` file). For the default region name and output format just press enter to leave them blank.
 
 For the final setup step execute the following command to complete the required infrastructure:
+
 ``` python src/setup.py```
 
 ## 1. Running The Data Collection Pipeline
@@ -310,11 +311,7 @@ To run the evaluation pipeline you just need to execute the following command:
 
 
  
-### Repo Structure 
-
-<p float="left">
-  <img src ="readme_resources/images/s3_structure.png" alt="alt text" />
-</p> 
+### Repo Structure
 
 Below is a partial overview of our repository tree: 
 
