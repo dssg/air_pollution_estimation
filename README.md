@@ -280,7 +280,7 @@ To run the evaluation pipeline you just need to execute the following command:
 
 ## Key Files
 
-### Paths
+### paths.py
 
 ```s3_paths```:<br/>
 >```bucket_name```: "air-pollution-uk" #s3 bucket name<br/>
@@ -316,7 +316,7 @@ To run the evaluation pipeline you just need to execute the following command:
   ```db_video_level```: 'video_stats'<br/>
 
 
-### Parameters
+### parameters.py
 
 ```data_collection```:<br/>
 >```jam_cam_website```: URL of website for collecting the JamCam videos<br/>
