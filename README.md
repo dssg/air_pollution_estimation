@@ -286,18 +286,18 @@ To run the evaluation pipeline you just need to execute the following command:
 
 ### Parameters
 
-```data_collection```:
-  ```jam_cam_website```: "http://jamcams.tfl.gov.uk/00001."
-  ```tims_file_website```: "https://s3-eu-west-1.amazonaws.com/roads.data.tfl.gov.uk"
-  ```tims_download_website```: "http://roads.data.tfl.gov.uk/TIMS/"
-  ```tfl_camera_api```: "https://api.tfl.gov.uk/Place/Type/jamcam"
-  ```jamcam_url```: "https://s3-eu-west-1.amazonaws.com/jamcams.tfl.gov.uk/"
-  ```iterations```: 0
-  ```delay```: 3
+```data_collection```:<br/>
+  ```jam_cam_website```: "http://jamcams.tfl.gov.uk/00001."<br/>
+  ```tims_file_website```: "https://s3-eu-west-1.amazonaws.com/roads.data.tfl.gov.uk"<br/>
+  ```tims_download_website```: "http://roads.data.tfl.gov.uk/TIMS/"<br/>
+  ```tfl_camera_api```: "https://api.tfl.gov.uk/Place/Type/jamcam"<br/>
+  ```jamcam_url```: "https://s3-eu-west-1.amazonaws.com/jamcams.tfl.gov.uk/"<br/>
+  ```iterations```: 0<br/>
+  ```delay```: 3<br/>
 
-```static_pipeline```:
-  ```load_ref_file```: False
-  ```ref_file_name```: "example_dataset"
+```static_pipeline```:<br/>
+  ```load_ref_file```: False<br/>
+  ```ref_file_name```: "example_dataset"<br/>
   ```camera_list```:
     [   
       "00001.03601",
@@ -320,43 +320,43 @@ To run the evaluation pipeline you just need to execute the following command:
       "00001.07355",
       "00001.04336",
       "00001.09560"
-    ]
-  ```from_date```: "2019-07-17" 
-  ```to_date```: "2019-07-17"
-  ```from_time```: "00-00-00"
-  ```to_time```: "23-59-59"
+    ]<br/>
+  ```from_date```: "2019-07-17"<br/> 
+  ```to_date```: "2019-07-17"<br/>
+  ```from_time```: "00-00-00"<br/>
+  ```to_time```: "23-59-59"<br/>
 
-```data_renaming```: # TODO: remove later when renaming finished
-  ```old_path```: "raw/video_data_new"
-  ```new_path```: "raw/videos"
-  ```date_format```: "%Y%m%d-%H%M%S"
+```data_renaming```: # TODO: remove later when renaming finished<br/>
+  ```old_path```: "raw/video_data_new"<br/>
+  ```new_path```: "raw/videos"<br/>
+  ```date_format```: "%Y%m%d-%H%M%S"<br/>
 
-```modelling```:
-  ```# obj detection```
-  ```detection_model```: "yolov3-tiny"
-  ```detection_implementation```: "cvlib"
-  ```detection_iou_threshold```: 0.05
-  ```detection_confidence_threshold```: 0.2
-  ```detection_nms_threshold```: 0.2
+```modelling```:<br/>
+  ```# obj detection```<br/>
+  ```detection_model```: "yolov3-tiny"<br/>
+  ```detection_implementation```: "cvlib"<br/>
+  ```detection_iou_threshold```: 0.05<br/>
+  ```detection_confidence_threshold```: 0.2<br/>
+  ```detection_nms_threshold```: 0.2<br/>
 
-  ```# tracking```
-  ```selected_labels```: ["car", "truck", "bus", "motorbike"]
-  ```opencv_tracker_type```: "csrt"
-  ```iou_threshold```: 0.05 #controls how much two objects' bboxes must overlap to be considered the "same"
-  ```detection_frequency```: 4
-  ```skip_no_of_frames```: 3
+  ```# tracking```<br/>
+  ```selected_labels```: ["car", "truck", "bus", "motorbike"]<br/>
+  ```opencv_tracker_type```: "csrt"<br/>
+  ```iou_threshold```: 0.05 #controls how much two objects' bboxes must overlap to be considered the "same"<br/>
+  ```detection_frequency```: 4<br/>
+  ```skip_no_of_frames```: 3<br/>
 
-  ```#stop starts```
-  ```iou_convolution_window```: 15
-  ```smoothing_method```: "moving_avg"
-  ```stop_start_iou_threshold```: 0.80
+  ```#stop starts```<br/>
+  ```iou_convolution_window```: 15<br/>
+  ```smoothing_method```: "moving_avg"<br/>
+  ```stop_start_iou_threshold```: 0.80<br/>
 
-```reporting```:
-  ```chunk_size```: 10
-  ```dtype```:
-    ```camera_id```: 'category'
-  ```video_level_column_order```: ["camera_id", "video_upload_datetime", "vehicle_type", "counts", "starts", "stops", "parked"]
-  ```video_level_stats```: ['counts', 'stops','starts','parked']
+```reporting```:<br/>
+  ```chunk_size```: 10<br/>
+  ```dtype```:<br/>
+    ```camera_id```: 'category'<br/>
+  ```video_level_column_order```: ["camera_id", "video_upload_datetime", "vehicle_type", "counts", "starts", "stops", "parked"]<br/>
+  ```video_level_stats```: ['counts', 'stops','starts','parked']<br/>
 
  
 ### Repo Structure
