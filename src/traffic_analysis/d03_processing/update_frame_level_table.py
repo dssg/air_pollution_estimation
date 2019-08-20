@@ -8,19 +8,20 @@ from traffic_analysis.d00_utils.data_retrieval import (delete_and_recreate_dir,
                                                        load_videos_into_np)
 
 
-def update_frame_level_table(analyzer,
+def update_frame_level_table(analyser,
                              file_names: list,
                              paths: dict,
-                             creds: dict):
-    """ Update the frame level table on s3 (pq) based on the videos in the files list
-                Args:
-                    analyzer: analyzer object for doing traffic analysis
-                    file_names (list): list of s3 filepaths for the videos to be processed
-                    paths (dict): dictionary of paths from yml file
-                    creds (dict): dictionary of credentials from yml file
+                             creds: dict) -> pd.DataFrame:
+    """ Update the frame level table on PSQL based on the videos in the files list
+    Args:
+        analyser: analyser object for doing traffic analysis
+        file_names: list of s3 filepaths for the videos to be processed
+        paths: dictionary of paths from yml file
+        creds: dictionary of credentials from yml file
 
-                Returns:
-
+    Returns:
+        frame_level_df: dataframe of frame level information returned by 
+                        analyser object
     """
     s3_credentials = creds[paths['s3_creds']]
     dl = DataLoaderS3(s3_credentials,
@@ -40,7 +41,7 @@ def update_frame_level_table(analyzer,
     video_dict = load_videos_into_np(paths["temp_video"])
     delete_and_recreate_dir(paths["temp_video"])
 
-    frame_level_df = analyzer.construct_frame_level_df(video_dict)
+    frame_level_df = analyser.construct_frame_level_df(video_dict)
     if frame_level_df.empty:
         return None
     frame_level_df.dropna(how='any', inplace=True)

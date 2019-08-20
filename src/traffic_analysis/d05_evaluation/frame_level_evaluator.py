@@ -113,8 +113,9 @@ class FrameLevelEvaluator:
                                 reparser will construct a sub-dict for this case)
             bbox_format: cvlib is cvlib (xmin,ymin, xmin+width, ymin+height), 
                          cv2 is (xmin,ymin,width,height)
-        Returns: df as a nested dictionary  
-        Raises: 
+
+        Returns: 
+            df as a nested dictionary  
         """
         # dict of dict of dicts, with outermost layer being the vehicle type
         n_frames = df["frame_id"].nunique()
@@ -164,9 +165,9 @@ class FrameLevelEvaluator:
         Args: 
             ground_truth_dict: ground_truth_df reparsed by reparse_bboxes_df
             predicted_dict: frame_level_df reparsed by reparse_bboxes_df
+        
         Returns: 
             map_dict: dictionary with vehicle_types as keys and maps as values 
-        Raises: 
         """
         map_dict = {vehicle_type: -1.0 for vehicle_type in self.selected_labels}
 

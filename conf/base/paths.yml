@@ -15,19 +15,17 @@ local_paths:
   temp_raw_video: "data/temp/raw_videos/"
   temp_frame_level: "data/temp/frame_level/"
   temp_video_level: "data/temp/video_level/"
-  temp_setup: "data/temp/setup/"
 
   video_names: "data/ref/video_names/"
-  setup_data: "data/setup/"
   processed_video: "results/jamcams/"
   plots: "plots/"
   annotations: "annotations/"
   local_detection_model: "data/ref/detection_model/"
+  setup_xml: "data/setup/annotations/xml_files/"
+  setup_video: "data/setup/annotations/videos/"
 
 db_paths:
   db_host: "dssg-london.ck0oseycrr7s.eu-west-2.rds.amazonaws.com"
   db_name: "airquality"
   db_frame_level: 'frame_stats'
   db_video_level: 'video_stats'
-  db_vehicle_types: 'vehicle_types'
-  db_cameras: 'cameras'
