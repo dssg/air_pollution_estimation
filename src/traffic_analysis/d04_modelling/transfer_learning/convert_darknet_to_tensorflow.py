@@ -4,6 +4,7 @@
 
 from __future__ import division, print_function
 import os
+
 import tensorflow as tf
 import numpy as np
 
@@ -11,16 +12,15 @@ from traffic_analysis.d04_modelling.transfer_learning.generate_tensorflow_model 
 from traffic_analysis.d02_ref.download_detection_model_from_s3 import download_detection_model_from_s3
 
 
-def yolov3_darknet_to_tensorflow(paths,
-                                 params,
-                                 s3_credentials):
-    """ saves a tensorflow model build of yolo, taken from darknet weights
-        Args:
-            params (dict): dictionary of parameters from yml file
-            paths (dict): dictionary of paths from yml file
-            s3_credentials (dict): s3 credentials
+def yolov3_darknet_to_tensorflow(paths: dict,
+                                 params: dict,
+                                 s3_credentials: dict):
+    """Saves a tensorflow model build of yolo, taken from darknet weights
+    Args:
+        params: dictionary of parameters from yml file
+        paths: dictionary of paths from yml file
+        s3_credentials: s3 credentials
     """
-
     model_file_path = paths['local_detection_model']
     detection_model = params['detection_model']
 
@@ -62,12 +62,12 @@ def yolov3_darknet_to_tensorflow(paths,
             saver.save(sess, save_path=save_path)
 
 
-def parse_anchors(paths):
-    """ parse anchors (somehow related to the desired layers?)
-        Args:
-            paths (dict): dictionary of paths from yml file
-        Returns:
-            anchors (np.array(float)): shape [N, 2] containing the anchors of the yolov3 model
+def parse_anchors(paths: dict) -> np.ndarray:
+    """Parse anchors (somehow related to the desired layers?)
+    Args:
+        paths: dictionary of paths from yml file
+    Returns:
+        anchors: shape [N, 2] containing the anchors of the yolov3 model
     """
 
     model_file_path = paths['local_detection_model']
@@ -78,13 +78,13 @@ def parse_anchors(paths):
     return anchors
 
 
-def load_weights(var_list, yolov3_weights_file):
+def load_weights(var_list, yolov3_weights_file: str) -> list:
     """ loads and converts pre-trained yolo weights to tensorflow.
-        Args:
-            var_list: list of network variables in tensorflow model.
-            yolov3_weights_file: name of the binary file containing yolo weights.
-        Returns:
-            assign_ops: assignments to tensorflow model with yolo weights
+    Args:
+        var_list: list of network variables in tensorflow model.
+        yolov3_weights_file: path to binary file containing yolo weights.
+    Returns:
+        assign_ops: assignments to tensorflow model with yolo weights
     """
 
     with open(yolov3_weights_file, "rb") as fp:
