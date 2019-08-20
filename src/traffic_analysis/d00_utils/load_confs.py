@@ -1,6 +1,7 @@
 import yaml
 import os
 import re
+
 from traffic_analysis.d00_utils.get_project_directory import get_project_directory
 
 
@@ -51,5 +52,11 @@ def load_paths():
         db_paths = paths['db_paths']
 
     for key, val in local_paths.items():
-        local_paths[key] = os.sep.join(project_dir + re.split(r"\\|/", val))
+        val = os.path.normpath(val)
+        basepath = os.sep.join(project_dir + re.split(r"\\|/", val))
+        if key[:4] == "temp":
+            local_paths[key] = os.path.join(basepath, str(os.getpid())) + os.sep
+        else:
+            local_paths[key] = basepath + os.sep
+
     return {**s3_paths, **local_paths, **db_paths}

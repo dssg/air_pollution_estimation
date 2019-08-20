@@ -11,7 +11,9 @@ paths = load_paths()
 creds = load_credentials()
 s3_credentials = creds[paths['s3_creds']]
 
-# TODO: possibly mkae it so that retrieve_upload video_names_to_s3 always happens? 
+# TODO: make from date to date and cam list a param
+# TODO: possibly mkae it so that retrieve_upload video_names_to_s3 always happens?
+
 # If running first time:
 # creates the test_seach_json. Change the camera list and output file name for full run
 output_file_name = params['ref_file_name']
@@ -35,17 +37,25 @@ analyser = TrackingAnalyser(
 # select chunks of videos and classify objects
 chunk_size = params['chunk_size']
 while selected_videos:
-    frame_level_df = update_frame_level_table(analyser=analyser,
-                                              file_names=selected_videos[:chunk_size],
-                                              paths=paths,
-                                              creds=creds)
+    success, frame_level_df, _, lost_tracking = update_frame_level_table(analyser=analyser,
+                                                                          db_frame_level_name=paths['db_frame_level'],
+                                                                          file_names=selected_videos[:chunk_size],
+                                                                          paths=paths,
+                                                                          creds=creds)
 
-    update_video_level_table(analyser=analyser,
-                             frame_level_df=frame_level_df,
-                             file_names=selected_videos[:chunk_size],
-                             paths=paths,
-                             creds=creds,
-                             return_data=False)
+    if success:
+      update_video_level_table(analyser=analyser,
+                               db_video_level_name=paths['db_video_level'],
+                               db_frame_level_name=paths['db_frame_level'],
+                               frame_level_df=frame_level_df,
+                               file_names=selected_videos[:chunk_size],
+                               lost_tracking=lost_tracking,
+                               paths=paths,
+                               creds=creds,
+                               return_data=False)
+
+    else:
+      print("Analysing current chunk failed. Continuing to next chunk.")
 
     # Move on to next chunk
     selected_videos = selected_videos[chunk_size:]

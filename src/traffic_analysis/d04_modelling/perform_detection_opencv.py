@@ -9,6 +9,7 @@ from traffic_analysis.d02_ref.download_detection_model_from_s3 import download_d
 def detect_objects_cv(image_capture: np.ndarray,
                       params: dict,
                       paths: dict,
+                      detection_model: str,
                       s3_credentials: dict,
                       selected_labels: list = None) -> (list, list, list):
     """Unifying function that defines the detected objects in an image
@@ -16,6 +17,7 @@ def detect_objects_cv(image_capture: np.ndarray,
         image_capture: numpy array containing the captured image (width, height, rbg)
         params: dictionary of parameters from yml file
         paths: dictionary of paths from yml file
+        detection_model: string name of object detection model
         s3_credentials: s3 credentials
         selected_labels: list of labels if supplied that returns only bboxes with these labels
 
@@ -27,7 +29,7 @@ def detect_objects_cv(image_capture: np.ndarray,
 
     conf_thresh = params['detection_confidence_threshold']
     detection_iou_threshold = params['detection_iou_threshold']
-    model_name = params['detection_model']
+    model_name = detection_model
 
     download_detection_model_from_s3(model_name=model_name,
                                      paths=paths,

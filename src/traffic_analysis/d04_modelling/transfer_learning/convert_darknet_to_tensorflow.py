@@ -14,16 +14,16 @@ from traffic_analysis.d02_ref.download_detection_model_from_s3 import download_d
 
 def yolov3_darknet_to_tensorflow(paths: dict,
                                  params: dict,
-                                 s3_credentials: dict):
+                                 s3_credentials: dict,
+                                 detection_model='yolov3_tf'):
     """Saves a tensorflow model build of yolo, taken from darknet weights
     Args:
         params: dictionary of parameters from yml file
         paths: dictionary of paths from yml file
         s3_credentials: s3 credentials
+        detection_model: name of object detection model
     """
     model_file_path = paths['local_detection_model']
-    detection_model = params['detection_model']
-
     if not detection_model == 'yolov3_tf':  # can only create tf model with yolov3 darknet weights
         pass
 

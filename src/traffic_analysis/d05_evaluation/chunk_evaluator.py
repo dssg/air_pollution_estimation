@@ -2,6 +2,7 @@ import pandas as pd
 import re
 
 from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
+from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 from traffic_analysis.d05_evaluation.video_level_evaluator import VideoLevelEvaluator
 from traffic_analysis.d05_evaluation.frame_level_evaluator import FrameLevelEvaluator
 
@@ -17,7 +18,8 @@ class ChunkEvaluator:
                  selected_labels: list,
                  video_level_df: pd.DataFrame = None,
                  frame_level_df: pd.DataFrame = None,
-                 video_level_column_order: list = None):
+                 data_loader_s3=None,
+                 video_level_column_order: list=None):
 
         annotations_available = {}
         for xml_path in annotation_xml_paths:
@@ -40,7 +42,7 @@ class ChunkEvaluator:
                                                        right=video_level_videos_to_eval,
                                                        on=['camera_id', 'video_upload_datetime'],
                                                        how='inner')
-
+            
             self.num_video_level_videos = len(self.video_level_videos_to_eval)
 
             assert self.num_video_level_videos > 0
@@ -64,13 +66,17 @@ class ChunkEvaluator:
 
         self.selected_labels = selected_labels
 
+        if data_loader_s3 is not None:
+            self.data_loader_s3 = data_loader_s3
+
     def evaluate_video_level(self) -> (pd.DataFrame, pd.DataFrame):
         """This function evaluates a chunk of videos with the VideoLevelEvaluator object
         """
         video_level_evaluator = VideoLevelEvaluator(videos_to_eval=self.video_level_videos_to_eval,
                                                     video_level_df=self.video_level_df,
                                                     video_level_column_order=self.video_level_column_order,
-                                                    selected_labels=self.selected_labels)
+                                                    selected_labels=self.selected_labels,
+                                                    data_loader_s3=self.data_loader_s3)
 
         video_level_performance, video_level_diff = video_level_evaluator.evaluate()
         return video_level_performance, video_level_diff
@@ -80,6 +86,7 @@ class ChunkEvaluator:
         """
         frame_level_evaluator = FrameLevelEvaluator(videos_to_eval=self.frame_level_videos_to_eval,
                                                     frame_level_df=self.frame_level_df,
-                                                    selected_labels=self.selected_labels) 
+                                                    selected_labels=self.selected_labels,
+                                                    data_loader_s3=self.data_loader_s3)
         frame_level_map = frame_level_evaluator.evaluate()
         return frame_level_map
