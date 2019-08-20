@@ -8,6 +8,7 @@ params = load_parameters()
 paths = load_paths()
 creds = load_credentials()
 s3_credentials = creds[paths['s3_creds']]
+tfl_camera_api = params['tfl_camera_api']
 
 # download camera data from tfl
 download_camera_meta_data(tfl_camera_api=tfl_camera_api,
