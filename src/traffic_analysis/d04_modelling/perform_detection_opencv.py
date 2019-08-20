@@ -256,9 +256,9 @@ def label_detections(label_idxs: list,
 
     # import the list of labels
     if model_name[-2:] == 'tf':
-        model_origin = 'yolov3_opencv'
+        model_origin = 'yolov3'
     else:
-        model_origin = model_name
+        model_origin = model_name.split('_')[0]
     label_list = populate_labels(model_origin=model_origin,
                                  paths=paths)
 
