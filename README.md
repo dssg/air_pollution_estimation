@@ -339,14 +339,14 @@ To run the evaluation pipeline you just need to execute the following command:
   ```detection_confidence_threshold```: 0.2<br/>
   ```detection_nms_threshold```: 0.2<br/>
 
-  ```# tracking```<br/>
+>```# tracking```<br/>
   ```selected_labels```: ["car", "truck", "bus", "motorbike"]<br/>
   ```opencv_tracker_type```: "csrt"<br/>
   ```iou_threshold```: 0.05 #controls how much two objects' bboxes must overlap to be considered the "same"<br/>
   ```detection_frequency```: 4<br/>
   ```skip_no_of_frames```: 3<br/>
 
-  ```#stop starts```<br/>
+>```#stop starts```<br/>
   ```iou_convolution_window```: 15<br/>
   ```smoothing_method```: "moving_avg"<br/>
   ```stop_start_iou_threshold```: 0.80<br/>
