@@ -2,6 +2,7 @@ import boto3
 import json
 from botocore.exceptions import ClientError
 from traffic_analysis.d00_utils.load_confs import load_paths
+import subprocess
 
 
 class DataLoaderS3:
