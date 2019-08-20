@@ -7,19 +7,17 @@ import plotly.graph_objs as go
 from dash.dependencies import Input, Output
 
 from traffic_viz.d06_visualisation.helper import (
-    app_params, 
-    get_cams, 
-    get_vehicle_types, 
+    app_params,
+    get_cams,
+    get_vehicle_types,
     load_camera_statistics,
     load_vehicle_type_statistics)
 from traffic_viz.d06_visualisation.server import app
-
 
 DEBUG = app_params["debug"]
 TFL_BASE_URL = app_params["tfl_jamcams_website"]
 
 cams = get_cams()
-
 
 # Main App
 app.layout = html.Div(
@@ -106,7 +104,7 @@ app.layout = html.Div(
                                     className="control-element",
                                     children=[
                                         html.Div(
-                                            children=["Objects:"],
+                                            children=["Vehicle Types:"],
                                             style={"width": "40%"},
                                         ),
                                         dcc.Dropdown(
@@ -120,7 +118,7 @@ app.layout = html.Div(
                                 html.Div(
                                     [
                                         html.Div("Date Range:", style={
-                                                 "width": "40%"}),
+                                            "width": "40%"}),
                                         html.Div(
                                             [
                                                 dcc.DatePickerRange(
@@ -180,7 +178,6 @@ def select_footage(footage):
         footage = footage.replace("JamCams_", "")
         filename = footage + ".mp4"
         url = TFL_BASE_URL + filename
-        print(url)
         return url
 
 
@@ -188,12 +185,11 @@ def select_footage(footage):
     Output("dropdown-vehicle-types", "options"),
     [Input("dropdown-footage-selection", "value")],
 )
-def update_objects(camera_id):
+def update_vehicle_types(camera_id):
     global df
     camera_id = transform_camera_id(camera_id)
     df = load_camera_statistics(camera_id)
     if df.empty:
-        print("Empty")
         return []
     if camera_id:
         vehicle_types = get_vehicle_types()
@@ -230,10 +226,8 @@ def update_trend_graph(vehicle_types, camera_id, start_date, end_date):
         obj: load_vehicle_type_statistics(df, obj, start_date, end_date)
         for obj in vehicle_types
     }
-    print(dfs)
     data = []
     for obj, df_stats in dfs.items():
-        print(df_stats.head())
         data.append(
             go.Scatter(
                 x=df_stats["video_upload_datetime"],
@@ -255,7 +249,6 @@ def update_trend_graph(vehicle_types, camera_id, start_date, end_date):
             autosize=False,
         ),
     }
-    print(figure)
     return figure
 
 
@@ -264,7 +257,6 @@ def update_trend_graph(vehicle_types, camera_id, start_date, end_date):
     [Input("dropdown-footage-selection", "value")],
 )
 def update_output(camera_id):
-    print(camera_id)
     if camera_id:
         return [
             dcc.Interval(
