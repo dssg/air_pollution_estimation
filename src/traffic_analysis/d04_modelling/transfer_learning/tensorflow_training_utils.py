@@ -14,7 +14,8 @@ PY_VERSION = sys.version_info[0]
 iter_cnt = 0
 
 
-def get_batch_data(batch_line, class_num, img_size, anchors, mode, multi_scale=False, mix_up=False, letterbox_resize=True, interval=10):
+def get_batch_data(batch_line, class_num, img_size, anchors, mode, multi_scale=False,
+                   mix_up=False, letterbox_resize=True, interval=10):
     '''
     generate a batch of imgs and labels
     param:
@@ -23,9 +24,10 @@ def get_batch_data(batch_line, class_num, img_size, anchors, mode, multi_scale=F
         img_size: the image size to be resized to. format: [width, height].
         anchors: anchors. shape: [9, 2].
         mode: 'train' or 'val'. if set to 'train', data augmentation will be applied.
-        multi_scale: whether to use multi_scale training, img_size varies from [320, 320] to [640, 640] by default. Note that it will take effect only when mode is set to 'train'.
-        letterbox_resize: whether to use the letterbox resize, i.e., keep the original aspect ratio in the resized image.
-        interval: change the scale of image every interval batches. Note that it's indeterministic because of the multi threading.
+        multi_scale: whether to use multi_scale training, img_size varies from [320, 320] to [640, 640] by default.
+        Note that it will take effect only when mode is set to 'train'.
+        letterbox_resize: whether to use the letterbox resize, i.e., keep the original aspect ratio in the resized img.
+        interval: change the scale of image every interval batches.
     '''
     global iter_cnt
     # multi_scale training
@@ -49,7 +51,8 @@ def get_batch_data(batch_line, class_num, img_size, anchors, mode, multi_scale=F
         batch_line = mix_lines
 
     for line in batch_line:
-        img_idx, img, y_true_13, y_true_26, y_true_52 = parse_data(line, class_num, img_size, anchors, mode, letterbox_resize)
+        img_idx, img, y_true_13, y_true_26, y_true_52 = parse_data(line, class_num, img_size, anchors, mode,
+                                                                   letterbox_resize)
 
         img_idx_batch.append(img_idx)
         img_batch.append(img)
@@ -57,7 +60,11 @@ def get_batch_data(batch_line, class_num, img_size, anchors, mode, multi_scale=F
         y_true_26_batch.append(y_true_26)
         y_true_52_batch.append(y_true_52)
 
-    img_idx_batch, img_batch, y_true_13_batch, y_true_26_batch, y_true_52_batch = np.asarray(img_idx_batch, np.int64), np.asarray(img_batch), np.asarray(y_true_13_batch), np.asarray(y_true_26_batch), np.asarray(y_true_52_batch)
+    img_idx_batch, img_batch, y_true_13_batch, y_true_26_batch, y_true_52_batch = np.asarray(img_idx_batch, np.int64), \
+                                                                                  np.asarray(img_batch), \
+                                                                                  np.asarray(y_true_13_batch), \
+                                                                                  np.asarray(y_true_26_batch), \
+                                                                                  np.asarray(y_true_52_batch)
 
     return img_idx_batch, img_batch, y_true_13_batch, y_true_26_batch, y_true_52_batch
 
@@ -70,7 +77,7 @@ def parse_data(line, class_num, img_size, anchors, mode, letterbox_resize):
         img_size: the size of image to be resized to. [width, height] format.
         anchors: anchors.
         mode: 'train' or 'val'. When set to 'train', data_augmentation will be applied.
-        letterbox_resize: whether to use the letterbox resize, i.e., keep the original aspect ratio in the resized image.
+        letterbox_resize: whether to use the letterbox resize, i.e., keep the original aspect ratio in the resized img.
     '''
     if not isinstance(line, list):
         img_idx, pic_path, boxes, labels, _, _ = parse_line(line)
@@ -206,13 +213,13 @@ def parse_line(line):
     if 'str' not in str(type(line)):
         line = line.decode()
     s = line.strip().split(' ')
-    assert len(s) > 8, 'Annotation error! Please check your annotation file. Make sure there is at least one target object in each image.'
+    assert len(s) > 8, 'Annotation error! Please check your file. Make sure there is an object in each image.'
     line_idx = int(s[0])
     pic_path = s[1]
     img_width = int(s[2])
     img_height = int(s[3])
     s = s[4:]
-    assert len(s) % 5 == 0, 'Annotation error! Please check your annotation file. Maybe partially missing some coordinates?'
+    assert len(s) % 5 == 0, 'Annotation error! Please check your file. Maybe partially missing some coordinates?'
     box_cnt = len(s) // 5
     boxes = []
     labels = []
@@ -609,16 +616,6 @@ def config_learning_rate(lr_decay_freq, train_batch_num, global_step):
                                             train_params['lr_decay_factor'], staircase=True,
                                             name='exponential_learning_rate')
         return tf.maximum(lr_tmp, train_params['lr_lower_bound'])
-    # elif train_params['lr_type'] == 'cosine_decay':
-    #     train_steps = (train_params['total_epoches'] - float(args.use_warm_up) * args.warm_up_epoch) * args.train_batch_num
-    #     return args.lr_lower_bound + 0.5 * (args.learning_rate_init - args.lr_lower_bound) * \
-    #         (1 + tf.cos(global_step / train_steps * np.pi))
-    # elif args.lr_type == 'cosine_decay_restart':
-    #     return tf.train.cosine_decay_restarts(args.learning_rate_init, global_step,
-    #                                           args.lr_decay_freq, t_mul=2.0, m_mul=1.0,
-    #                                           name='cosine_decay_learning_rate_restart')
-    # elif args.lr_type == 'fixed':
-    #     return tf.convert_to_tensor(args.learning_rate_init, name='fixed_learning_rate')
     elif train_params['lr_type'] == 'piecewise':
         train_params['pw_boundaries'] = [float(i) * train_batch_num +
                                          train_params['global_step'] for i in train_params['pw_boundaries']]
@@ -821,7 +818,8 @@ def evaluate_on_cpu(y_pred, y_true, num_classes, calc_now=True, max_boxes=50, sc
         # pred_labels: [N]
         # N: Detected box number of the current image
         pred_boxes, pred_confs, pred_labels = cpu_nms(pred_boxes, pred_confs * pred_probs, num_classes,
-                                                      max_boxes=max_boxes, score_thresh=score_thresh, iou_thresh=iou_thresh)
+                                                      max_boxes=max_boxes, score_thresh=score_thresh,
+                                                      iou_thresh=iou_thresh)
 
         # len: N
         pred_labels_list = [] if pred_labels is None else pred_labels.tolist()

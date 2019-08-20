@@ -7,10 +7,9 @@ import tensorflow as tf
 import numpy as np
 import logging
 from tqdm import trange
-import random
 
 from traffic_analysis.d04_modelling.transfer_learning.tensorflow_training_utils import get_batch_data, \
-    shuffle_and_overwrite, make_summary, config_learning_rate, config_optimizer, AverageMeter, \
+    make_summary, config_learning_rate, config_optimizer, AverageMeter, \
     evaluate_on_gpu, get_preds_gpu, voc_eval, parse_gt_rec, gpu_nms
 from traffic_analysis.d04_modelling.transfer_learning.tensorflow_model_loader import YoloV3
 from traffic_analysis.d04_modelling.transfer_learning.convert_darknet_to_tensorflow import parse_anchors
@@ -143,7 +142,7 @@ def transfer_learn(paths, params, train_params, train_file, test_file, selected_
         train_op = optimizer.apply_gradients(clip_grad_var, global_step=global_step)
     
     if train_params['save_optimizer']:
-        print('Saving optimizer parameters to checkpoint! Remember to restore the global_step in the fine-tuning afterwards.')
+        print('Saving optimizer parameters to checkpoint! Remember to restore global_step in fine-tuning afterwards.')
         saver_to_save = tf.train.Saver()
         saver_best = tf.train.Saver()
     
@@ -179,19 +178,23 @@ def transfer_learn(paths, params, train_params, train_file, test_file, selected_
                 loss_class.update(__loss[4], len(__y_pred[0]))
     
                 if __global_step % train_params['train_evaluation_step'] == 0 and __global_step > 0:
-                    # recall, precision = evaluate_on_cpu(__y_pred, __y_true, args.number_classes, args.nms_topk, args.score_threshold, args.nms_threshold)
                     recall, precision = evaluate_on_gpu(sess, gpu_nms_op, pred_boxes_flag, pred_scores_flag,
-                                                        __y_pred, __y_true, number_classes, train_params['nms_threshold'])
+                                                        __y_pred, __y_true, number_classes,
+                                                        train_params['nms_threshold'])
     
                     info = "Epoch: {}, global_step: {} | loss: total: {:.2f}, xy: {:.2f}, " \
-                           "wh: {:.2f}, conf: {:.2f}, class: {:.2f} | ".format(
-                            epoch, int(__global_step), loss_total.average, loss_xy.average, loss_wh.average, loss_conf.average, loss_class.average)
+                           "wh: {:.2f}, conf: {:.2f}, class: {:.2f} | ".format(epoch, int(__global_step),
+                                                                               loss_total.average, loss_xy.average,
+                                                                               loss_wh.average, loss_conf.average,
+                                                                               loss_class.average)
                     info += 'Last batch: rec: {:.3f}, prec: {:.3f} | lr: {:.5g}'.format(recall, precision, __lr)
                     print(info)
                     logging.info(info)
     
-                    writer.add_summary(make_summary('evaluation/train_batch_recall', recall), global_step=__global_step)
-                    writer.add_summary(make_summary('evaluation/train_batch_precision', precision), global_step=__global_step)
+                    writer.add_summary(make_summary('evaluation/train_batch_recall', recall),
+                                       global_step=__global_step)
+                    writer.add_summary(make_summary('evaluation/train_batch_precision', precision),
+                                       global_step=__global_step)
     
                     if np.isnan(loss_total.average):
                         print('****' * 10)
@@ -201,8 +204,10 @@ def transfer_learn(paths, params, train_params, train_file, test_file, selected_
             # NOTE: this is just demo. You can set the conditions when to save the weights.
             if epoch % train_params['save_epoch'] == 0 and epoch > 0:
                 if loss_total.average <= 2.:
-                    saver_to_save.save(sess, os.path.join(train_params['trained_model_name'],
-                                                          'model-epoch_{}_step_{}_loss_{:.4f}_lr_{:.5g}'.format(epoch, int(__global_step), loss_total.average, __lr)))
+                    saver_to_save.save(sess,
+                                       os.path.join(train_params['trained_model_name'],
+                                                    'model-epoch_{}_step_{}_loss_{:.4f}_lr_{:.5g}'.format(
+                                                        epoch, int(__global_step), loss_total.average, __lr)))
     
             # switch to validation dataset for evaluation
             if epoch % train_params['val_evaluation_epoch'] == 0 and epoch >= train_params['warm_up_epoch']:
@@ -216,7 +221,8 @@ def transfer_learn(paths, params, train_params, train_file, test_file, selected_
                 for j in trange(val_img_cnt):
                     __image_ids, __y_pred, __loss = sess.run([image_ids, y_pred, loss],
                                                              feed_dict={is_training: False})
-                    pred_content = get_preds_gpu(sess, gpu_nms_op, pred_boxes_flag, pred_scores_flag, __image_ids, __y_pred)
+                    pred_content = get_preds_gpu(sess, gpu_nms_op, pred_boxes_flag,
+                                                 pred_scores_flag, __image_ids, __y_pred)
                     val_preds.extend(pred_content)
                     val_loss_total.update(__loss[0])
                     val_loss_xy.update(__loss[1])
@@ -246,24 +252,36 @@ def transfer_learn(paths, params, train_params, train_file, test_file, selected_
                             ap_total.update(ap, 1)
 
                 mAP = ap_total.average
-                info += 'EVAL: Recall: {:.4f}, Precison: {:.4f}, mAP: {:.4f}\n'.format(rec_total.average, prec_total.average, mAP)
+                info += 'EVAL: Recall: {:.4f}, Precison: {:.4f}, mAP: {:.4f}\n'.format(
+                    rec_total.average, prec_total.average, mAP)
                 info += 'EVAL: loss: total: {:.2f}, xy: {:.2f}, wh: {:.2f}, conf: {:.2f}, class: {:.2f}\n'.format(
-                    val_loss_total.average, val_loss_xy.average, val_loss_wh.average, val_loss_conf.average, val_loss_class.average)
+                    val_loss_total.average, val_loss_xy.average, val_loss_wh.average,
+                    val_loss_conf.average, val_loss_class.average)
                 print(info)
                 logging.info(info)
     
                 if mAP > best_mAP:
                     best_mAP = mAP
-                    saver_best.save(sess, os.path.join(transfer_learn_model_dir,
-                                                       'best_model_Epoch_{}_step_{}_mAP_{:.4f}_loss_{:.4f}_lr_{:.7g}'.format(epoch, int(__global_step), best_mAP, val_loss_total.average, __lr)))
+                    saver_best.save(sess, os.path.join(
+                        transfer_learn_model_dir,
+                        'best_model_Epoch_{}_step_{}_mAP_{:.4f}_loss_{:.4f}_lr_{:.7g}'.format(
+                            epoch, int(__global_step), best_mAP, val_loss_total.average, __lr)))
     
-                writer.add_summary(make_summary('evaluation/val_mAP', mAP), global_step=epoch)
-                writer.add_summary(make_summary('evaluation/val_recall', rec_total.average), global_step=epoch)
-                writer.add_summary(make_summary('evaluation/val_precision', prec_total.average), global_step=epoch)
-                writer.add_summary(make_summary('validation_statistics/total_loss', val_loss_total.average), global_step=epoch)
-                writer.add_summary(make_summary('validation_statistics/loss_xy', val_loss_xy.average), global_step=epoch)
-                writer.add_summary(make_summary('validation_statistics/loss_wh', val_loss_wh.average), global_step=epoch)
-                writer.add_summary(make_summary('validation_statistics/loss_conf', val_loss_conf.average), global_step=epoch)
-                writer.add_summary(make_summary('validation_statistics/loss_class', val_loss_class.average), global_step=epoch)
+                writer.add_summary(make_summary('evaluation/val_mAP', mAP),
+                                   global_step=epoch)
+                writer.add_summary(make_summary('evaluation/val_recall', rec_total.average),
+                                   global_step=epoch)
+                writer.add_summary(make_summary('evaluation/val_precision', prec_total.average),
+                                   global_step=epoch)
+                writer.add_summary(make_summary('validation_statistics/total_loss', val_loss_total.average),
+                                   global_step=epoch)
+                writer.add_summary(make_summary('validation_statistics/loss_xy', val_loss_xy.average),
+                                   global_step=epoch)
+                writer.add_summary(make_summary('validation_statistics/loss_wh', val_loss_wh.average),
+                                   global_step=epoch)
+                writer.add_summary(make_summary('validation_statistics/loss_conf', val_loss_conf.average),
+                                   global_step=epoch)
+                writer.add_summary(make_summary('validation_statistics/loss_class', val_loss_class.average),
+                                   global_step=epoch)
                 
     return

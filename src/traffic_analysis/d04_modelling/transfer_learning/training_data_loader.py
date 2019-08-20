@@ -19,7 +19,7 @@ class TransferDataset(Enum):
     cvat = 2
 
 
-class DataLoader(object):
+class TrainingDataLoader(object):
 
     def __init__(self, datasets, creds, paths):
         self.datasets = datasets

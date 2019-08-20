@@ -28,7 +28,6 @@ local_paths:
   plots: "plots/"
   annotations: "annotations/"
   local_detection_model: "data/ref/detection_model/"
-  training: "data/ref/training/"
 
 db_paths:
   db_host: "dssg-london.ck0oseycrr7s.eu-west-2.rds.amazonaws.com"
