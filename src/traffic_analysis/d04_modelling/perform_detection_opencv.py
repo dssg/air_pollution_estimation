@@ -55,11 +55,11 @@ def detect_objects_cv(image_capture: np.ndarray,
     return boxes, labels, confs
 
 
-def populate_labels(model_name: str,
+def populate_labels(model_origin: str,
                     paths: dict) -> list:
     """Report full list of object labels corresponding to detection model of choice
     Args:
-        model_name: name of the model to use
+        model_origin: name of the model folder in which the names file exists (i.e., yolov3_opencv for yolov3_tf)
         paths: dictionary of paths from yml file
 
     Returns:
@@ -67,7 +67,7 @@ def populate_labels(model_name: str,
     """
 
     model_file_path = paths['local_detection_model']
-    labels_file_path = os.path.join(model_file_path, 'yolov3_opencv', 'coco.names')
+    labels_file_path = os.path.join(model_file_path, model_origin, 'coco.names')
     f = open(labels_file_path, 'r')
     labels = [line.strip() for line in f.readlines()]
 
@@ -259,7 +259,7 @@ def label_detections(label_idxs: list,
         model_origin = 'yolov3_opencv'
     else:
         model_origin = model_name
-    label_list = populate_labels(model_name=model_origin,
+    label_list = populate_labels(model_origin=model_origin,
                                  paths=paths)
 
     # initialize the output list

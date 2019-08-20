@@ -8,6 +8,7 @@ s3_paths:
   s3_frame_level: "frame_level/" # TODO DELETE THIS
   s3_profile: "dssg" # TODO: change this for user? 
   s3_creds: "dev_s3" # TODO: CHANGE TO JUST S3
+
   s3_detection_model: "ref/model_conf/"
   s3_cvat_annotations: "ref/annotations/cvat/"
   s3_detrac_annotations: "ref/annotations/detrac/"

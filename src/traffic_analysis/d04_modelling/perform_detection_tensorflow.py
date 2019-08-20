@@ -56,7 +56,6 @@ def initialize_tensorflow_model(params: dict,
                                         'yolov3.ckpt')
 
     anchors = parse_anchors(paths)
-    class_name_path = os.path.join(paths['local_detection_model'], 'yolov3_opencv', 'coco.names')
     class_name_path = os.path.join(paths['local_detection_model'],
                                    'yolov3_opencv',
                                    'coco.names')

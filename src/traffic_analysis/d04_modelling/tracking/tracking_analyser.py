@@ -29,10 +29,8 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
         (Object detection arguments:)
         detection_model -- specify the name of model you want to use for detection
-        detection_implementation -- specify model to use for detection
+        detection_implementation -- specify whether to use opencv or tensorflow (tf)
         detection_frequency -- each detection_frequency num of frames, run obj detection alg again to detect new objs
-        detection_confidence_threshold -- conf above which to return label
-        detection_nms_threshold -- yolo param
 
         (Object tracking parameters)
         tracking_model -- specify name of model you want to use for tracking (currently only supports OpenCV trackers)
@@ -56,7 +54,6 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         self.detection_model = params['detection_model']
         self.detection_implementation = params['detection_model'].split('_')[-1]
         self.detection_frequency = params['detection_frequency']
-        self.detection_confidence_threshold = params['detection_confidence_threshold']
 
         if self.detection_implementation == 'tf':
             self.sess = tf.Session()
