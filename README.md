@@ -32,7 +32,7 @@ Our project is structured into four main pipelines, each of which serves a disct
 
 ## Infrastructure
 
-All pipelines were run on an AWS EC2 instance and a combination of an AWS S3 bucket and PostGreSQL database were used to store data. The details of the EC2 instance can be found below:
+All pipelines were run on an AWS EC2 instance and a combination of an AWS S3 bucket and PostgreSQL database were used to store data. The details of the EC2 instance can be found below:
 ```
 AWS EC2 Instance Information
 + AMI: ami-07dc734dc14746eab, Ubuntu image
@@ -64,26 +64,19 @@ sudo apt-get install python3-pip
 sudo apt-get install python3.6-dev
 ```
 
-### Setting Up Anaconda
+### Setting Up A Virtual Environment
 
-The next step is to set up an anaconda environment for managing all the packages needed for this project. Run the following commands to install anaconda:
-
+The next step is to set up a virtual environment for managing all the packages needed for this project. Run the following commands to install virtualenv:
 ```
-cd /tmp
-curl -O https://repo.anaconda.com/archive/Anaconda3-2019.03-Linux-x86_64.sh
-bash Anaconda3-2019.03-Linux-x86_64.sh
+python3.6 -m pip install virtualenv
 ```
-When prompted press ENTER until the end and then answer 'yes' when needed. Finally, to activate the installation you just need to run:
+With virtualenv installed we can now create a new environment for our packages. To do this we can run the following commands (where 'my_env' is your chosen name for the environment):
 ```
-source ~/.bashrc
-```
-With anaconda installed with can create a conda environment for our packages. To do this we can run the following commands (where 'my_env' is your chosen name for the environment):
-```
-conda create --name my_env python=3
+python3.6 -m virtualenv my_env
 ```
 Whenever you want to run our pipelines you need to remember to activate this environment so that all the necessary packages are present. To do this you can run the command below: 
 ```
-conda activate my_env
+source my_env/bin/activate
 ```
 Run this command now because in the next step we will clone the repo and download all the packages we need into the 'my_env' environment.
 
@@ -100,9 +93,8 @@ git clone https://github.com/dssg/air_pollution_estimation.git
 All of the required packages for this project are in the 'requirements.txt' file. To install the packages run the following commands:
 ```
 cd air_pollution_estimation/
-apt-get install -y libsm6 libxext6 libxrender-dev
+sudo apt-get install -y libsm6 libxext6 libxrender-dev libpq-dev
 pip install -r requirements.txt
-conda install psycopg2
 ```
 
 ### Set Up Credentials File
@@ -135,12 +127,15 @@ With the template copied, you need to replace the placeholder values with your a
   * `password`: the password of the email address
   * `recipients`: the list of recipients(email addresses) to be notified
 
+For the final setup step execute the following command to complete the required infrastructure:
+
+``` python3 src/setup.py```
 
 ## 
 
 ## 1. Running The Data Collection Pipeline
 
-Both the static and live pipelines rely on the collection of raw video data from the TFL API. You therefore need to run the data collection pipeline before either of these pipelines will work. The data collection pipeline continuously grabs videos from the TFL API and puts them in the S3 bucket for future analysis. The longer you leave the data collection pipeline to run the more data you will have to analyse!
+In order to run the static pipeline you need to collect raw video data from the TFL API. **You therefore need to run the data collection pipeline before the static pipeline will work**. The data collection pipeline continuously grabs videos from the TFL API and puts them in the S3 bucket for future analysis. The longer you leave the data collection pipeline to run the more data you will have to analyse!
 
 To run the pipeline you first need to set up your AWS credentials for the AWS command line tool. To do this run the following command:
 ```
@@ -154,7 +149,9 @@ python3 src/data_collection_pipeline.py
 ```
 As long as this process is running you will be downloading the latest JamCam videos and uploading them to the S3 bucket. The videos will be collected from all the camera and stored in folders based on their date of collection.
 
-### Parameters
+### Optional parameters for data collection pipeline
+The optional parameters for the data collection pipeline include:
+
 * `iterations`: The data collection pipeline script downloads videos from TFL continuously when `iterations` is set to `0`. To stop the data collection pipeline after ` N iterations`, change the `iterations` parameter in the `parameters.yml` to `N` where ```N``` is a number e.g
 
 ```
@@ -166,49 +163,102 @@ iterations: 4
 delay: 3
 ```
 
-## 1. Running The Static Pipeline
+## 2. Running The Static Pipeline
 
-Before we can run the static pipeline we need to execute the following command to complete the required infrastructure:
-
-``` python3 src/setup.py```
-
-# TODO complete setup script:
-- Grab annotations (from somewhere?) and put in S3
-- Grab transfer weights (from somewhere?) and put in S3
-
-The static pipeline is used to analyse a selection of JamCam videos and put the results into the PostGreSQL database.  general outline of static pipeline can be seen in the following diagram:
+The static pipeline is used to analyse a selection of JamCam videos and put the results into the PostgreSQL database.  general outline of static pipeline can be seen in the following diagram:
 
 <p float="left">
   <img src ="readme_resources/images/static_pipeline.png" alt="alt text" />
 </p> 
 
-In short, the pipeline first constructs a .json file containing a list of video file paths to be used for analysis. The video paths saved in the .json file are based on a particular search critera (see below). The .json file is uploaded to s3 so that we can avoid searching the videos every time we want to run the pipeline. The next step of the pipeline is to use the .json file to load the corresponding videos into memory and analyse them, producing frame and video level statistics in the PostGreSQL database.
+In short, the pipeline first constructs a .json file containing a list of video file paths to be used for analysis. The video paths saved in the .json file are based on a particular search critera (see below). The .json file is uploaded to s3 so that we can avoid searching the videos every time we want to run the pipeline. The next step of the pipeline is to use the .json file to load the corresponding videos into memory and analyse them, producing frame and video level statistics in the PostgreSQL database.
 
 Under 'static_pipeline' heading in the ```parameters.yml``` file is a collection of parameters that are used to control which videos are saved to the .json file. These parameters are as follows:
 
-```load_ref_file``` - Boolean for flagging whether to create a new .json file or load an existing one<br/>
-```ref_file_name``` - The name of the ref file that will be saved and/or loaded<br/>
-```camera_list``` - A list of camera IDs specifying the camera to analyse<br/>
-```from_date``` - The date to start analysing videos from<br/>
-```to_date``` - The date to stop analysing videos from<br/>
-```from_time``` - The time of day to start analysing videos from<br/>
-```to_time``` - THe time of day to stop analysing videos from
+* `load_ref_file` - Boolean for flagging whether to create a new .json file or load an existing one
+* `ref_file_name` - The name of the ref file that will be saved and/or loaded
+* `camera_list` - A list of camera IDs specifying the camera to analyse
+* `from_date` - The date to start analysing videos from
+* `to_date` - The date to stop analysing videos from
+* `from_time` - The time of day to start analysing videos from
+* `to_time` - THe time of day to stop analysing videos from
 
-To edit these parameters you can use your favourite text editor e.g. (e.g. ```nano conf/local/credentials.yml```). Remember this pipeline assumes that you have already collected videos that satisfy the requirements specified by your parameter settings.
+To edit these parameters you can use your favourite text editor e.g. (e.g. `nano conf/local/credentials.yml`). Remember this pipeline assumes that you have already collected videos that satisfy the requirements specified by your parameter settings.
 
-If the search parameters are ```None``` then they default to the following:
+If the search parameters are `None` then they default to the following:
 
-```camera_list``` - Defaults to all of the cameras if ```None```<br/>
-```from_date``` - Defaults to ```"2019-06-01"``` if ```None```<br/>
-```to_date``` - Defaults to the current date if ```None```<br/>
-```from_time``` - Defaults to ```"00-00-00"``` if ```None```<br/>
-```to_time``` - Defaults to ```"23-59-59"``` if ```None```
+* `camera_list` - Defaults to all of the cameras if `None`<br/>
+* `from_date` - Defaults to `"2019-06-01"` if `None`<br/>
+* `to_date` - Defaults to the current date if `None`<br/>
+* `from_time` - Defaults to `"00-00-00"` if `None`<br/>
+* `to_time` - Defaults to `"23-59-59"` if `None`
+
+Aside from the parameters that define the search criteria for the videos to be analysed, there are a host of other parameters in ```parameters.yml``` that affect the static pipeline. These parameters can be found under the 'modelling' heading and are defined as follows:
 
 
+#### obj detection
+```detection_model``` - Specifies the type of object detection model used by the pipeline. Available values are: ```["yolov3-tiny_opencv", "yolov3_cv", "yolov3_tf", "traffic_tf"]```<br/>
+```detection_iou_threshold``` - 0.05<br/>
+```detection_confidence_threshold``` - 0.2<br/>
+```detection_nms_threshold``` - 0.2
+
+#### tracking
+```selected_labels``` - ["car", "truck", "bus", "motorbike"]<br/>
+```opencv_tracker_type``` - "CSRT"<br/>
+```iou_threshold``` - 0.05 #controls how much two objects' bboxes must overlap to be considered the "same"<br/>
+```detection_frequency``` - 4<br/>
+```skip_no_of_frames``` - 3
+
+#### stop starts
+```iou_convolution_window``` - 15<br/>
+```smoothing_method``` - "moving_avg"<br/>
+```stop_start_iou_threshold``` - 0.80
 
 # TODO Describe all the other parameters
 
 # TODO Need a GPU to run yolov3-tf
+
+# TODO Have decent default parameter values
+
+## 3. Running The Live Pipeline
+
+The live pipeline integrates data collection with video analysis to provide real-time traffic statistics. Every 4 minutes the pipeline grabs the latest videos from the cameras listed in the ```parameters.yml``` file under ```data_collection: tims_camera_list:``` and analyses them. The results are stored in the frame-level and video-level tables in the PostgreSQL database.
+
+To run the pipeline execute the following command in the terminal:
+
+``` python3 src/live_pipeline.py```
+
+## 4. Running The Evaluation Pipeline
+
+The evaluation pipeline is used to evaluate the performance of different analyser models and their respective parameter settings. The pipeline relies on hand annotated videos from the computer software *Computer Vision Annotation Tool (CVAT)*. We used version 0.4.2 of CVAT to annotate traffic videos for evaluation. Instructions on installing and running CVAT can be found on their [website](https://github.com/opencv/cvat/blob/develop/cvat/apps/documentation/installation.md#windows-10). 
+
+For each video, we labelled cars, trucks, buses, motorbikes, and vans; for each object labelled, we annotated whether it was stopped or parked. For consistency we used the following instructions to annotate ground-truth videos with the CVAT tool:
+
+Use the video name as the task name so that it dumps with the same naming convention<br/>
+- As a rule of thumb, label things inside the bottom 2/3rds of the image. But if a vehicle is very obvious in the top 1/3rd, label it.<br/>
+- Use the following labels when creating a CVAT task:<br/>
+vehicle ~checkbox=parked:false ~checkbox=stopped:false @select=type:undefined,car,truck,bus,motorbike,van<br/>
+- Set Image Quality to 95<br/>
+- Draw boxes around key frames and let CVAT perform the interpolation<br/>
+- Press the button that looks like an eye to specify when the object is no longer in the image<br/>
+- Save work before dumping task to an xml file.<br/>
+
+Once you have the xml files containing your annotations you need to put them in your S3 bucket according to the path ```s3_annotations``` in the ```paths.yml``` file. It is important that you have the raw videos that corespond to these annotations in the S3 directory indicated by ```s3_video``` in the ```paths.yml``` file. These raw videos will be used by the pipeline to generate predictions that will then be evaluated against the annotations in the xml files. As an example of how the evaluation process works we use the ```setup.py``` script that you ran earlier to put some example videos and annotations in your S3 bucket so that the pipeline will run.
+
+As our approach outputs both video level and frame level statistics, we perform evaluation on both the video level and the frame level. As our models did not produce statistics for vans or indicate whether a vehicle was parked, these statistics are omitted from the evaluation process. 
+
+Video level evaluation is performed for all vehicle-types (cars, trucks, buses, motorbikes) and vehicle statistics (counts, stops, starts) produced by our model. For each combination of vehicle type and vehicle statistics (e.g. car counts, car stops, car starts) we computed the following summary statistics over the evaluation data set:
+
+- Mean absolute error<br/>
+- Root mean square error<br/>
+
+As speed was a primary consideration for our project partners, we also evaluated the average runtime for each model. 
+
+Frame level evaluation is performed for all vehicle types produced by our model. For each vehicle type and for each video, we compute the mean average precision. Mean average precision is a standard metric used by the computer vision community to evaluate the performance of object detection/object tracking algorithms. Essentially, this performance metric assesses both how well an algorithm detects existing objects as well as how accurately placed the bounding boxes around these objects are. 
+
+In the context of our project, mean average precision could be utilized to interrogate video-level model performance and diagnose issues. However, as video level statistics were the primary deliverable to our project partners, we used video level performance to select the best models. 
+
+Modifiable model parameters can be found in the ```parameters.yml``` file under ```modelling:```. A description of these parameters can be found in the above section (Static Pipeline).
 
 
 #### Required software
@@ -403,8 +453,8 @@ Stored in this `air_pollution_estimation/conf/base/`directory are the following 
     * Various hyperparameters for detection and tracking
     * Configuration options for reporting.
 
-We recommend that credentials be stored in a git-ignored `YAML` file in `air_pollution_estimation/conf/local/credentials.yml`
-* `credentials.yml` should contain credentials necessary for accessing the PostgreSQL database, Amazon AWS services, and email notification service.
+We recommend that credentials be stored in a git-ignored `YAML` file in `air_pollution_estimation/conf/local/credentials.yml`.
+* `credentials.yml` should contain credentials necessary for accessing the PostgreSQL database, and Amazon AWS services.
 
 #### Data collection pipeline
 
