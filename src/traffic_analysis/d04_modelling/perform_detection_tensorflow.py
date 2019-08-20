@@ -50,10 +50,6 @@ def initialize_tensorflow_model(params: dict,
 
     conf_thresh = params['detection_confidence_threshold']
     iou_thresh = params['detection_iou_threshold']
-    detection_model = params['detection_model']
-    local_filepath_model = os.path.join(paths['local_detection_model'],
-                                        detection_model,
-                                        'yolov3.ckpt')
 
     anchors = parse_anchors(paths)
     class_name_path = os.path.join(paths['local_detection_model'],
