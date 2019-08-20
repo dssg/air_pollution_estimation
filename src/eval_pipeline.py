@@ -55,8 +55,8 @@ for analyser_name, params_subgrid in traffic_analysers_params.items():
             print(f"Now evaluating param set {param_counter}/{num_params}")
 
         # initialize db names
-        db_frame_level_name = f"{paths['eval_db_frame_level_prefix']}_{analyser_name}"
-        db_video_level_name = f"{paths['eval_db_video_level_prefix']}_{analyser_name}"
+        db_frame_level_name = f"{paths['eval_db_frame_level_prefix']}_{analyser_name}_test"
+        db_video_level_name = f"{paths['eval_db_video_level_prefix']}_{analyser_name}_test"
 
         # wipe and recreate video/frame level stats tables for tracker types
         create_primary_sql_tables(db_frame_level_name=db_frame_level_name,
