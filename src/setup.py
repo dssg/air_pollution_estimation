@@ -1,8 +1,7 @@
-import shutil
-
 from traffic_analysis.d00_utils.load_confs import load_paths, load_parameters, load_credentials
 from traffic_analysis.d00_utils.create_sql_tables import create_primary_sql_tables
 from traffic_analysis.d00_utils.upload_setup_data_to_s3 import upload_yolo_weights_to_s3
+from traffic_analysis.d00_utils.upload_setup_data_to_s3 import upload_annotations_to_s3
 
 params = load_parameters()
 paths = load_paths()
@@ -18,6 +17,5 @@ upload_yolo_weights_to_s3(s3_credentials=s3_credentials,
 # create PSQL tables to insert vehicle statistics into 
 create_primary_sql_tables(drop=False)
 
-# TODO
 # put annotated videos in S3, put annotation xmls in right folder
-
+upload_annotations_to_s3(s3_credentials=s3_credentials, paths=paths)

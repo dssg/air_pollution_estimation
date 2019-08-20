@@ -1,6 +1,16 @@
 data_collection:
   jam_cam_website: "http://jamcams.tfl.gov.uk/00001."
-  tims_camera_list:
+  tims_file_website: "https://s3-eu-west-1.amazonaws.com/roads.data.tfl.gov.uk"
+  tims_download_website: "http://roads.data.tfl.gov.uk/TIMS/"
+  tfl_camera_api: "https://api.tfl.gov.uk/Place/Type/jamcam"
+  jamcam_url: "https://s3-eu-west-1.amazonaws.com/jamcams.tfl.gov.uk/"
+  iterations: 0
+  delay: 3
+
+static_pipeline:
+  load_ref_file: False
+  ref_file_name: "example_dataset"
+  camera_list:
     [
       "00001.03601",
       "00001.07591",
@@ -23,21 +33,16 @@ data_collection:
       "00001.04336",
       "00001.09560"
     ]
-  tims_file_website: "https://s3-eu-west-1.amazonaws.com/roads.data.tfl.gov.uk"
-  tims_download_website: "http://roads.data.tfl.gov.uk/TIMS/"
-  tfl_camera_api: "https://api.tfl.gov.uk/Place/Type/jamcam"
-  jamcam_url: "https://s3-eu-west-1.amazonaws.com/jamcams.tfl.gov.uk/"
-  iterations: 0
-  delay: 3
+  from_date: "2019-07-17"
+  to_date: "2019-07-17"
+  from_time: "00-00-00"
+  to_time: "23-59-59"
+  chunk_size: 10
 
-data_renaming:
+data_renaming: # TODO: remove later when renaming finished
   old_path: "raw/video_data_new"
   new_path: "raw/videos"
   date_format: "%Y%m%d-%H%M%S"
-
-pipeline_settings:
-  dataset_ref_name: "tims_cameras_all"
-  chunk_size: 10
 
 eval_pipeline_settings:
   eval_ref_name: "annotated_videos"
@@ -55,8 +60,8 @@ modelling:
   detection_implementation: "cvlib"
   detection_iou_threshold: 0.05
   detection_confidence_threshold: 0.2
+  # TODO: change nms threshold to iou threshold
   detection_nms_threshold: 0.2
-  GPU_number: 2
 
   # tracking
   selected_labels: ["car", "truck", "bus", "motorbike"]

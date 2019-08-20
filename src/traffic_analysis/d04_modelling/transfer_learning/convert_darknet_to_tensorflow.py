@@ -4,6 +4,7 @@
 
 from __future__ import division, print_function
 import os
+
 import tensorflow as tf
 import numpy as np
 
@@ -11,17 +12,17 @@ from traffic_analysis.d04_modelling.transfer_learning.generate_tensorflow_model 
 from traffic_analysis.d02_ref.download_detection_model_from_s3 import download_detection_model_from_s3
 
 
-def yolov3_darknet_to_tensorflow(paths,
-                                 params,
-                                 s3_credentials,
+def yolov3_darknet_to_tensorflow(paths: dict,
+                                 params: dict,
+                                 s3_credentials: dict,
                                  detection_model='yolov3_tf'):
-    """ saves a tensorflow model build of yolo, taken from darknet weights
-        Args:
-            params (dict): dictionary of parameters from yml file
-            paths (dict): dictionary of paths from yml file
-            s3_credentials (dict): s3 credentials
+    """Saves a tensorflow model build of yolo, taken from darknet weights
+    Args:
+        params: dictionary of parameters from yml file
+        paths: dictionary of paths from yml file
+        s3_credentials: s3 credentials
+        detection_model: name of object detection model
     """
-
     model_file_path = paths['local_detection_model']
     if not detection_model == 'yolov3_tf':  # can only create tf model with yolov3 darknet weights
         pass
@@ -52,18 +53,20 @@ def yolov3_darknet_to_tensorflow(paths,
             with tf.variable_scope('YoloV3'):  # i think this generates the model output nodes (= feature_map)?
                 feature_map = model.forward(inputs)
 
-            saver = tf.train.Saver(var_list=tf.global_variables(scope='YoloV3'))
-            load_ops = load_weights(tf.global_variables(scope='YoloV3'), weight_path)
+            saver = tf.train.Saver(
+                var_list=tf.global_variables(scope='YoloV3'))
+            load_ops = load_weights(
+                tf.global_variables(scope='YoloV3'), weight_path)
             sess.run(load_ops)
             saver.save(sess, save_path=save_path)
 
 
-def parse_anchors(paths):
-    """ parse anchors (somehow related to the desired layers?)
-        Args:
-            paths (dict): dictionary of paths from yml file
-        Returns:
-            anchors (np.array(float)): shape [N, 2] containing the anchors of the yolov3 model
+def parse_anchors(paths: dict) -> np.ndarray:
+    """Parse anchors (somehow related to the desired layers?)
+    Args:
+        paths: dictionary of paths from yml file
+    Returns:
+        anchors: shape [N, 2] containing the anchors of the yolov3 model
     """
 
     model_file_path = paths['local_detection_model']
@@ -73,13 +76,13 @@ def parse_anchors(paths):
     return anchors
 
 
-def load_weights(var_list, yolov3_weights_file):
+def load_weights(var_list, yolov3_weights_file: str) -> list:
     """ loads and converts pre-trained yolo weights to tensorflow.
-        Args:
-            var_list: list of network variables in tensorflow model.
-            yolov3_weights_file: name of the binary file containing yolo weights.
-        Returns:
-            assign_ops: assignments to tensorflow model with yolo weights
+    Args:
+        var_list: list of network variables in tensorflow model.
+        yolov3_weights_file: path to binary file containing yolo weights.
+    Returns:
+        assign_ops: assignments to tensorflow model with yolo weights
     """
 
     with open(yolov3_weights_file, "rb") as fp:
@@ -104,7 +107,8 @@ def load_weights(var_list, yolov3_weights_file):
                     num_params = np.prod(shape)
                     var_weights = weights[ptr:ptr + num_params].reshape(shape)
                     ptr += num_params
-                    assign_ops.append(tf.assign(var, var_weights, validate_shape=True))
+                    assign_ops.append(
+                        tf.assign(var, var_weights, validate_shape=True))
                 # we move the pointer by 4, because we loaded 4 variables
                 i += 4
             elif 'Conv' in var2.name.split('/')[-2]:
@@ -115,7 +119,8 @@ def load_weights(var_list, yolov3_weights_file):
                 bias_weights = weights[ptr:ptr +
                                        bias_params].reshape(bias_shape)
                 ptr += bias_params
-                assign_ops.append(tf.assign(bias, bias_weights, validate_shape=True))
+                assign_ops.append(
+                    tf.assign(bias, bias_weights, validate_shape=True))
                 # we loaded 1 variable
                 i += 1
             # we can load weights of conv layer

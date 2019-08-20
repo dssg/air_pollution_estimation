@@ -35,15 +35,15 @@ def download_video_and_convert_to_numpy(local_folder, s3_profile, bucket, filena
     """Downloads videos from s3 to a local temp directory and then loads them into numpy arrays, before
     deleting the temp directory (default behavior).
 
-        Args:
-            local_folder: local folder to temporarily download the videos to.
-            s3_profile: s3 profile on amazon aws
-            bucket: bucket name where the videos are stored
-            filenames: list of filenames to download from s3
-        Returns:
-            video_dict: dictionary of numpy arrays containing all the jamcam videos between the selected dates,
-                        with the key being the filename
-        Raises:
+    Args:
+        local_folder: local folder to temporarily download the videos to.
+        s3_profile: s3 profile on amazon aws
+        bucket: bucket name where the videos are stored
+        filenames: list of filenames to download from s3
+    Returns:
+        video_dict: dictionary of numpy arrays containing all the jamcam videos between the selected dates,
+                    with the key being the filename
+    Raises:
 
     """
     my_bucket = connect_to_bucket(s3_profile, bucket)
