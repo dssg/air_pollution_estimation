@@ -68,28 +68,14 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 s3_credentials=self.s3_credentials,
                 sess=self.sess)
         self.detection_confidence_threshold = params['detection_confidence_threshold']
-        self.detection_nms_threshold = params['detection_nms_threshold']
+        # self.detection_nms_threshold = params['detection_nms_threshold']
+        self.detection_frequency = params['detection_frequency']
 
         # tracking settings
         if tracker_type is not None:
             self.tracker_type = tracker_type
         else:
             self.tracker_type = params['default_tracker_type']
-        self.trackers = []
-        self.iou_threshold = params['iou_threshold']
-
-        # speed-ups
-        self.detection_frequency = params['detection_frequency']
-        self.skip_no_of_frames = params['skip_no_of_frames']
-
-        # stop-start processing settings
-        self.iou_convolution_window = params['iou_convolution_window']
-        self.smoothing_method = params['smoothing_method']
-        self.stop_start_iou_threshold = params['stop_start_iou_threshold']
-
-
-        # tracking settings
-        self.tracker_type = params['opencv_tracker_type']
         self.trackers = []
         self.iou_threshold = params['iou_threshold']
 
