@@ -1,4 +1,4 @@
-from create_pipeline import create_pipeline
+from traffic_analysis.d07_pipelines.create_pipeline import create_pipeline
 from traffic_analysis.d00_utils.load_confs import load_parameters
 
 params = load_parameters()
@@ -9,4 +9,5 @@ create_pipeline(output_file_name=output_file_name,
                 from_time=params['from_time'], to_time=params['to_time'],
                 chunk_size=params['chunk_size'],
                 delete_processed_videos=params["delete_processed_videos"],
-                camera_list=params["camera_list"])
+                camera_list=params["camera_list"],
+                load_ref_file=params['load_ref_file'])

@@ -1,5 +1,6 @@
 from datetime import datetime
 from create_pipeline import create_pipeline
+from traffic_analysis.d07_pipelines.create_pipeline import create_pipeline
 from traffic_analysis.d00_utils.load_confs import load_parameters
 
 current_date = datetime.now().date()
