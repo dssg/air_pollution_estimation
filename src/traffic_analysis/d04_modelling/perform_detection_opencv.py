@@ -141,10 +141,12 @@ def pass_image_through_nn(image_capture: np.ndarray,
                                                 crop=False)
 
     # read model as deep neural network in opencv
+    detection_model = model_name.split('_')[0]
+
     config_file_path = os.path.join(
-        paths['local_detection_model'], model_name, model_name + '.cfg')
+        paths['local_detection_model'], model_name, detection_model + '.cfg')
     weights_file_path = os.path.join(
-        paths['local_detection_model'], model_name, model_name + '.weights')
+        paths['local_detection_model'], model_name, detection_model + '.weights')
     # can use other net, see documentation
     net = cv2.dnn.readNetFromDarknet(config_file_path, weights_file_path)
 
@@ -256,9 +258,9 @@ def label_detections(label_idxs: list,
 
     # import the list of labels
     if model_name[-2:] == 'tf':
-        model_origin = 'yolov3'
+        model_origin = 'yolov3_opencv'
     else:
-        model_origin = model_name.split('_')[0]
+        model_origin = model_name
     label_list = populate_labels(model_origin=model_origin,
                                  paths=paths)
 
