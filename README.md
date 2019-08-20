@@ -95,11 +95,14 @@ All of the required packages for this project are in the 'requirements.txt' file
 cd air_pollution_estimation/
 sudo apt-get install -y libsm6 libxext6 libxrender-dev libpq-dev
 pip install -r requirements.txt
+pip install psycopg2
 ```
 
 ### Set Up Credentials File
 
-With the repo cloned and the packages installed the next step is to create your private credentials file that will allow you to log into the different AWS services. To create the file run the following command:
+With the repo cloned and the packages installed the next step is to create your private credentials file that will allow you to log into the different AWS services. This file lives in conf/local/ and is not tracked by git because it contains personal information. General parameter and path settings live in conf/base/ and are racked by git.
+
+To create the credentials file run the following command:
 ```
 touch conf/local/credentials.yml
 ```
@@ -121,29 +124,33 @@ postgres:
   passphrase: YOUR_DB_PASSWORD
 ```
 With the template copied, you need to replace the placeholder values with your actual credentials. The keys in `credentials.yml` are described below:
-* `dev_s3`: This contains the Amazon S3 credentials. Learn more about setting up an Amazon S3 <a src="https://docs.aws.amazon.com/s3/index.html?nc2=h_ql_doc">here</a>
-* `email`: The `email` parameter is used for email notification service. The email notification service is used to send warnings or messages to recipients when data collection fails.
+* `dev_s3`: This section contains the Amazon S3 credentials. Learn more about setting up an Amazon S3 <a src="https://docs.aws.amazon.com/s3/index.html?nc2=h_ql_doc">here</a>
+  * `aws_access_key_id`: 
+  * `aws_secret_access_key`: 
+* `email`: This section is used for email notification service. The email notification service is used to send warnings or messages to recipients when data collection fails.
   * `address`: the email address used to send a mail to the recipients
   * `password`: the password of the email address
   * `recipients`: the list of recipients(email addresses) to be notified
+* `postgres`: This section contains the credentials for the PostgreSQL database.
+  * `user`: The name of the user in the PostgreSQL database
+  * `passphrase`: The passphrase of the above user for the PostgreSQL database
 
-For the final setup step execute the following command to complete the required infrastructure:
-
-``` python3 src/setup.py```
-
-## 1. Running The Data Collection Pipeline
-
-In order to run the static pipeline you need to collect raw video data from the TFL API. **You therefore need to run the data collection pipeline before the static pipeline will work**. The data collection pipeline continuously grabs videos from the TFL API and puts them in the S3 bucket for future analysis. The longer you leave the data collection pipeline to run the more data you will have to analyse!
-
-To run the pipeline you first need to set up your AWS credentials for the AWS command line tool. To do this run the following command:
+In addition to the credentials file you also need to enter your AWS credentials using the AWS command line tool. To do this run the following command:
 ```
 aws configure --profile dssg
 ```
 When prompted enter your AWS access key ID and your secret access key (these will be the same as the ones you entered in the ```credentials.yml``` file). For the default region name and output format just press enter to leave them blank.
 
-You are now ready to run the data collection pipeline! Run the following command to run the pipeline: 
+For the final setup step execute the following command to complete the required infrastructure:
+``` python src/setup.py```
+
+## 1. Running The Data Collection Pipeline
+
+In order to run the static pipeline you need to collect raw video data from the TFL API. **You therefore need to run the data collection pipeline before the static pipeline will work**. The data collection pipeline continuously grabs videos from the TFL API and puts them in the S3 bucket for future analysis. The longer you leave the data collection pipeline to run the more data you will have to analyse!
+
+Run the following command to run the pipeline: 
 ```
-python3 src/data_collection_pipeline.py
+python src/data_collection_pipeline.py
 ```
 As long as this process is running you will be downloading the latest JamCam videos and uploading them to the S3 bucket. The videos will be collected from all the camera and stored in folders based on their date of collection.
 
@@ -171,6 +178,10 @@ The static pipeline is used to analyse a selection of JamCam videos and put the 
 
 In short, the pipeline first constructs a .json file containing a list of video file paths to be used for analysis. The video paths saved in the .json file are based on a particular search critera (see below). The .json file is uploaded to s3 so that we can avoid searching the videos every time we want to run the pipeline. The next step of the pipeline is to use the .json file to load the corresponding videos into memory and analyse them, producing frame and video level statistics in the PostgreSQL database.
 
+To run the pipeline execute the following command in the terminal:
+
+``` python src/run_pipeline.py```
+
 Under 'static_pipeline' heading in the ```parameters.yml``` file is a collection of parameters that are used to control which videos are saved to the .json file. These parameters are as follows:
 
 * `load_ref_file` - Boolean for flagging whether to create a new .json file or load an existing one
@@ -191,34 +202,19 @@ If the search parameters are `None` then they default to the following:
 * `from_time` - Defaults to `"00-00-00"` if `None`<br/>
 * `to_time` - Defaults to `"23-59-59"` if `None`
 
-Aside from the parameters that define the search criteria for the videos to be analysed, there are a host of other parameters in ```parameters.yml``` that affect the static pipeline. These parameters can be found under the 'modelling' heading and are defined as follows:
+Aside from the parameters that define the search criteria for the videos to be analysed, there are a host of other parameters in ```parameters.yml``` that affect the static pipeline. These parameters can be found under the 'modelling' heading (see the 'Key Files' section for more information about these parameters).
+
+The output of the static pipeline is appended to the frame and video level tables in the PostgreSQL database. These schemas of these two tables are as follows:
+
+<p float="left">
+  <img src ="readme_resources/images/table_schemas.pdf" alt="alt text" />
+</p>
 
 
-#### obj detection
-```detection_model``` - Specifies the type of object detection model used by the pipeline. Available values are: ```["yolov3-tiny_opencv", "yolov3_cv", "yolov3_tf", "traffic_tf"]```<br/>
-```detection_iou_threshold``` - 0.05<br/>
-```detection_confidence_threshold``` - 0.2<br/>
-```detection_nms_threshold``` - 0.2
+- information about the camera ID
 
-#### tracking
-```selected_labels``` - ["car", "truck", "bus", "motorbike"]<br/>
-```opencv_tracker_type``` - "CSRT"<br/>
-```iou_threshold``` - 0.05 #controls how much two objects' bboxes must overlap to be considered the "same"<br/>
-```detection_frequency``` - 4<br/>
-```skip_no_of_frames``` - 3
 
-#### stop starts
-```iou_convolution_window``` - 15<br/>
-```smoothing_method``` - "moving_avg"<br/>
-```stop_start_iou_threshold``` - 0.80
 
-# TODO output of the pipeline and the schemas of the tables
-
-# TODO Describe all the other parameters
-
-# TODO Need a GPU to run yolov3-tf
-
-# TODO Have decent default parameter values
 
 ## 3. Running The Live Pipeline
 
@@ -226,7 +222,7 @@ The live pipeline integrates data collection with video analysis to provide real
 
 To run the pipeline execute the following command in the terminal:
 
-``` python3 src/cron_job.py.py```
+``` python src/cron_job.py```
 
 ## 4. Running The Evaluation Pipeline
 
@@ -262,9 +258,37 @@ Modifiable model parameters can be found in the ```parameters.yml``` file under 
 
 To run the evaluation pipeline you just need to execute the following command:
 
-```python3 src/eval_pipeline.py```
+```python src/eval_pipeline.py```
 
-## Additional Information
+## Key Files
+
+### Paths
+
+
+
+### Parameters
+
+#### obj detection
+```detection_model``` - Specifies the type of object detection model used by the pipeline. Available values are: ```["yolov3-tiny_opencv", "yolov3_cv", "yolov3_tf", "traffic_tf"]```<br/>
+```detection_iou_threshold``` - 0.05<br/>
+```detection_confidence_threshold``` - 0.2<br/>
+```detection_nms_threshold``` - 0.2
+
+#### tracking
+```selected_labels``` - ["car", "truck", "bus", "motorbike"]<br/>
+```opencv_tracker_type``` - "CSRT"<br/>
+```iou_threshold``` - 0.05 #controls how much two objects' bboxes must overlap to be considered the "same"<br/>
+```detection_frequency``` - 4<br/>
+```skip_no_of_frames``` - 3
+
+#### stop starts
+```iou_convolution_window``` - 15<br/>
+```smoothing_method``` - "moving_avg"<br/>
+```stop_start_iou_threshold``` - 0.80
+
+
+
+
  
 ### Repo Structure 
 
