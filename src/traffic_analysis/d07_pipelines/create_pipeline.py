@@ -22,7 +22,8 @@ def create_pipeline(output_file_name,
                     to_time,
                     camera_list,
                     chunk_size,
-                    delete_processed_videos=False):
+                    delete_processed_videos=False,
+                    load_ref_file=False):
 
     params = load_parameters()
     paths = load_paths()
@@ -30,7 +31,7 @@ def create_pipeline(output_file_name,
     s3_credentials = creds[paths['s3_creds']]
     data_loader_s3 = DataLoaderS3(
         s3_credentials=s3_credentials, bucket_name=paths['bucket_name'])
-    if(params['load_ref_file']):
+    if load_ref_file:
         retrieve_and_upload_video_names_to_s3(output_file_name=output_file_name,
                                               paths=paths,
                                               from_date=from_date, to_date=to_date,
