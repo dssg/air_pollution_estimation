@@ -446,19 +446,45 @@ Below is a partial overview of our repository tree:
 
 ## 5. Web Application
 
-The web application is built using the <a src="https://dash.plot.ly/">DASH</a> framework. To run the web application, first install the required libraries by running the following command:
+The web application is built using the <a src="https://dash.plot.ly/">DASH</a> framework. 
+<img src ="readme_resources/images/web_app.png" alt="alt text" width="500"   />
+
+The initial setup for the web application requires installing the dash libraries. To install the required libraries, run the following command:
 ```
 pip install -p src/traffic_viz/d06_visualisation/requirements.txt
 ```
 
-Then, run
+To start the application, run the following command:
 ```
 python src/app.py
 ```
+If successful, you should see something similar to the image below:
+
+<img src ="readme_resources/images/web_app_successful_launch.png" alt="alt text" width="500" height="175"  />
+
+Open the link `http://0.0.0.0:8050` on the browser.
+
+The web application contains a preview section and a graph for displaying the trends of vehicle counts. Select a junction to view the current footage uploaded by TFL. When a junction is selected, a list of vehicle types will be displayed in the `Vehicle Type` dropdown. Use the date range to change the duration of the trends of vehicle counts.
+
+The web application has a configuration file stored in `conf/base/app_parameters.yml`. An example of the configuration file is shown below:
+```
+visualization:
+  min_date_allowed: "2019-06-01"
+  start_date: "2019-06-01"
+  debug: True
+```
+The parameter are explained as below:
+
+* `min_date_allowed`: Update this parameter to change the minimum date for the date range calendar on the web application.
+* `start_date`: Update this parameter to change the start date for the historical traffic data displayed on the graph in the web application.
+* `debug`: The debug parameter is used to display errors and automatically reload web app while in development stage. Change this to `False` before deploying to production.
+
+
+
 ## Contributors and Partners
 
 <p float="left">
-  <img src ="readme_resources/images/dssg_imperial_logo.png" alt="alt text" width="500" height="175"  />
+  <img src ="readme_resources/images/dssg_imperial_logo.png" alt="alt text"  />
 </p> 
 
 ### Data Science for Social Good at Imperial College London
