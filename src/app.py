@@ -106,7 +106,7 @@ app.layout = html.Div(
                                     className="control-element",
                                     children=[
                                         html.Div(
-                                            children=["Objects:"],
+                                            children=["Vehicle Types:"],
                                             style={"width": "40%"},
                                         ),
                                         dcc.Dropdown(
@@ -187,7 +187,7 @@ def select_footage(footage):
     Output("dropdown-vehicle-types", "options"),
     [Input("dropdown-footage-selection", "value")],
 )
-def update_objects(camera_id):
+def update_vehicle_types(camera_id):
     global df
     camera_id = transform_camera_id(camera_id)
     df = load_camera_statistics(camera_id)
