@@ -5,7 +5,6 @@ params = load_parameters()
 creds = load_credentials()
 paths = load_paths()
 
-tfl_camera_api = params['tfl_camera_api']
 s3_credentials = creds[paths['s3_creds']]
 
 collect_camera_videos(download_url=params['jamcam_url'],
