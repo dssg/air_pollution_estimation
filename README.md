@@ -296,7 +296,7 @@ To run the evaluation pipeline you just need to execute the following command:
   ```delay```: 3<br/>
 
 ```static_pipeline```:<br/>
-  ```load_ref_file```: False<br/>
+>```load_ref_file```: False<br/>
   ```ref_file_name```: "example_dataset"<br/>
   ```camera_list```:
     [   
@@ -327,12 +327,12 @@ To run the evaluation pipeline you just need to execute the following command:
   ```to_time```: "23-59-59"<br/>
 
 ```data_renaming```: # TODO: remove later when renaming finished<br/>
-  ```old_path```: "raw/video_data_new"<br/>
+>```old_path```: "raw/video_data_new"<br/>
   ```new_path```: "raw/videos"<br/>
   ```date_format```: "%Y%m%d-%H%M%S"<br/>
 
 ```modelling```:<br/>
-  ```# obj detection```<br/>
+>```# obj detection```<br/>
   ```detection_model```: "yolov3-tiny"<br/>
   ```detection_implementation```: "cvlib"<br/>
   ```detection_iou_threshold```: 0.05<br/>
@@ -352,7 +352,7 @@ To run the evaluation pipeline you just need to execute the following command:
   ```stop_start_iou_threshold```: 0.80<br/>
 
 ```reporting```:<br/>
-  ```chunk_size```: 10<br/>
+>```chunk_size```: 10<br/>
   ```dtype```:<br/>
     ```camera_id```: 'category'<br/>
   ```video_level_column_order```: ["camera_id", "video_upload_datetime", "vehicle_type", "counts", "starts", "stops", "parked"]<br/>
