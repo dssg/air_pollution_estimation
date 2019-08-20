@@ -207,7 +207,7 @@ Aside from the parameters that define the search criteria for the videos to be a
 The output of the static pipeline is appended to the frame and video level tables in the PostgreSQL database. These schemas of these two tables are as follows:
 
 <p float="left">
-  <img src ="readme_resources/images/table_schemas.pdf" alt="alt text" />
+  <img src ="readme_resources/images/table_schemas.png" alt="alt text" />
 </p>
 
 
