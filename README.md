@@ -155,7 +155,6 @@ python src/data_collection_pipeline.py
 ```
 As long as this process is running you will be downloading the latest JamCam videos and uploading them to the S3 bucket. The videos will be collected from all the camera and stored in folders based on their date of collection.
 
-### Optional parameters for data collection pipeline
 The optional parameters for the data collection pipeline include:
 
 * `iterations`: The data collection pipeline script downloads videos from TFL continuously when `iterations` is set to `0`. To stop the data collection pipeline after ` N iterations`, change the `iterations` parameter in the `parameters.yml` to `N` where ```N``` is a number e.g
@@ -235,8 +234,6 @@ Each field is described below:
 * `starts`: the number of starts of that vehicle type in that specific video
 * `creation_datetime`: the date and time the row was created in the database
 
-
-
 ## 3. Running The Live Pipeline
 
 The live pipeline integrates data collection with video analysis to provide real-time traffic statistics. Every 4 minutes the pipeline grabs the latest videos from the cameras listed in the ```parameters.yml``` file under ```data_collection: tims_camera_list:``` and analyses them. The results are stored in the frame-level and video-level tables in the PostgreSQL database.
@@ -289,26 +286,77 @@ To run the evaluation pipeline you just need to execute the following command:
 
 ### Parameters
 
-#### obj detection
-```detection_model``` - Specifies the type of object detection model used by the pipeline. Available values are: ```["yolov3-tiny_opencv", "yolov3_cv", "yolov3_tf", "traffic_tf"]```<br/>
-```detection_iou_threshold``` - 0.05<br/>
-```detection_confidence_threshold``` - 0.2<br/>
-```detection_nms_threshold``` - 0.2
+```data_collection```:
+  ```jam_cam_website```: "http://jamcams.tfl.gov.uk/00001."
+  ```tims_file_website```: "https://s3-eu-west-1.amazonaws.com/roads.data.tfl.gov.uk"
+  ```tims_download_website```: "http://roads.data.tfl.gov.uk/TIMS/"
+  ```tfl_camera_api```: "https://api.tfl.gov.uk/Place/Type/jamcam"
+  ```jamcam_url```: "https://s3-eu-west-1.amazonaws.com/jamcams.tfl.gov.uk/"
+  ```iterations```: 0
+  ```delay```: 3
 
-#### tracking
-```selected_labels``` - ["car", "truck", "bus", "motorbike"]<br/>
-```opencv_tracker_type``` - "CSRT"<br/>
-```iou_threshold``` - 0.05 #controls how much two objects' bboxes must overlap to be considered the "same"<br/>
-```detection_frequency``` - 4<br/>
-```skip_no_of_frames``` - 3
+```static_pipeline```:
+  ```load_ref_file```: False
+  ```ref_file_name```: "example_dataset"
+  ```camera_list```:
+    [   
+      "00001.03601",
+      "00001.07591",
+      "00001.01252",
+      "00001.06597",
+      "00001.08853",
+      "00001.06510",
+      "00001.04280",
+      "00001.04534",
+      "00001.06590",
+      "00001.07382",
+      "00001.04328",
+      "00001.06514",
+      "00001.03604",
+      "00001.06501",
+      "00001.05900",
+      "00001.03490",
+      "00001.08926",
+      "00001.07355",
+      "00001.04336",
+      "00001.09560"
+    ]
+  ```from_date```: "2019-07-17" 
+  ```to_date```: "2019-07-17"
+  ```from_time```: "00-00-00"
+  ```to_time```: "23-59-59"
 
-#### stop starts
-```iou_convolution_window``` - 15<br/>
-```smoothing_method``` - "moving_avg"<br/>
-```stop_start_iou_threshold``` - 0.80
+```data_renaming```: # TODO: remove later when renaming finished
+  ```old_path```: "raw/video_data_new"
+  ```new_path```: "raw/videos"
+  ```date_format```: "%Y%m%d-%H%M%S"
 
+```modelling```:
+  ```# obj detection```
+  ```detection_model```: "yolov3-tiny"
+  ```detection_implementation```: "cvlib"
+  ```detection_iou_threshold```: 0.05
+  ```detection_confidence_threshold```: 0.2
+  ```detection_nms_threshold```: 0.2
 
+  ```# tracking```
+  ```selected_labels```: ["car", "truck", "bus", "motorbike"]
+  ```opencv_tracker_type```: "csrt"
+  ```iou_threshold```: 0.05 #controls how much two objects' bboxes must overlap to be considered the "same"
+  ```detection_frequency```: 4
+  ```skip_no_of_frames```: 3
 
+  ```#stop starts```
+  ```iou_convolution_window```: 15
+  ```smoothing_method```: "moving_avg"
+  ```stop_start_iou_threshold```: 0.80
+
+```reporting```:
+  ```chunk_size```: 10
+  ```dtype```:
+    ```camera_id```: 'category'
+  ```video_level_column_order```: ["camera_id", "video_upload_datetime", "vehicle_type", "counts", "starts", "stops", "parked"]
+  ```video_level_stats```: ['counts', 'stops','starts','parked']
 
  
 ### Repo Structure
