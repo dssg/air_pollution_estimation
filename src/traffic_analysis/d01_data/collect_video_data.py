@@ -131,6 +131,7 @@ def upload_videos(iterations=None,
             time.sleep(delay * 60)
 
 
+# TODO: remove unused function
 def rename_videos(old_path, new_path, date_format, chunk_size=100):
     bucket_name = paths['bucket_name']
     s3_profile = paths['s3_profile']
