@@ -1,6 +1,8 @@
 import datetime
 import pandas as pd
 
+import pandas as pd
+
 from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
 from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 

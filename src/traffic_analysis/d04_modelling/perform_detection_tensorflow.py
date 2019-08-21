@@ -9,14 +9,15 @@ from traffic_analysis.d04_modelling.transfer_learning.tensorflow_detection_utils
     remove_overlapping_boxes, letterbox_resize
 from traffic_analysis.d04_modelling.transfer_learning.convert_darknet_to_tensorflow import parse_anchors, \
     yolov3_darknet_to_tensorflow
-from traffic_analysis.d04_modelling.transfer_learning.generate_tensorflow_model import YoloV3
+from traffic_analysis.d04_modelling.transfer_learning.tensorflow_model_loader import YoloV3
 from traffic_analysis.d04_modelling.perform_detection_opencv import label_detections, \
     choose_objects_of_selected_labels
+from traffic_analysis.d02_ref.download_detection_model_from_s3 import download_detection_model_from_s3
 
 
-def initialize_tensorflow_model(params: dict, 
-                                paths: dict, 
-                                s3_credentials: dict, 
+def initialize_tensorflow_model(params: dict,
+                                paths: dict,
+                                s3_credentials: dict,
                                 sess: tf.Session) -> (list, tf.placeholder, str):
     """Uses pre-existing tensorflow ckpt (or creates one, if it does not yet exist) to initialize variables before
     passing images through neural net for detection
@@ -34,31 +35,31 @@ def initialize_tensorflow_model(params: dict,
     """
 
     detection_model = params['detection_model']
-    local_filepath_model = os.path.join(paths['local_detection_model'], 
-                                        detection_model, 
+    local_filepath_model = os.path.join(paths['local_detection_model'],
+                                        detection_model,
                                         'yolov3.ckpt')
 
     if not os.path.exists(local_filepath_model):
         yolov3_darknet_to_tensorflow(params=params,
                                      paths=paths,
                                      s3_credentials=s3_credentials)
+        if detection_model is not 'yolov3_tf':
+            download_detection_model_from_s3(model_name=detection_model,
+                                             paths=paths,
+                                             s3_credentials=s3_credentials)
 
     conf_thresh = params['detection_confidence_threshold']
     iou_thresh = params['detection_iou_threshold']
-    detection_model = params['detection_model']
-    local_filepath_model = os.path.join(paths['local_detection_model'], 
-                                        detection_model, 
-                                        'yolov3.ckpt')
 
     anchors = parse_anchors(paths)
-    class_name_path = os.path.join(paths['local_detection_model'], 
-                                   'yolov3', 
+    class_name_path = os.path.join(paths['local_detection_model'],
+                                   'yolov3_opencv',
                                    'coco.names')
     classes = read_class_names(class_name_path)
     n_classes = len(classes)
 
-    init_data = tf.placeholder(tf.float32, 
-                               [None, 416, 416, 3], 
+    init_data = tf.placeholder(tf.float32,
+                               [None, 416, 416, 3],
                                name='init_data')
     yolo_model = YoloV3(n_classes, anchors)
     with tf.variable_scope('YoloV3'):
@@ -77,11 +78,11 @@ def initialize_tensorflow_model(params: dict,
     return model_initializer, init_data, detection_model
 
 
-def detect_objects_tf(images: np.ndarray, 
-                      paths: dict, 
-                      detection_model: str, 
-                      model_initializer: list, 
-                      init_data: tf.placeholder, 
+def detect_objects_tf(images: np.ndarray,
+                      paths: dict,
+                      detection_model: str,
+                      model_initializer: list,
+                      init_data: tf.placeholder,
                       sess: tf.Session,
                       selected_labels=None) -> (list, list, list):
     """Uses a tensorflow implementation of yolo to detect objects in a frame
@@ -92,7 +93,7 @@ def detect_objects_tf(images: np.ndarray,
         model_initializer(list(list(float))): list of initialized variables bboxes, confs, labels
         init_data: initialized array of size of image to be passed through
         sess: tensorflow session (pre-load with sess = tf.Session())
-        selected_labels: labels to return 
+        selected_labels: labels to return
     Returns:
         boxes(list(list(int))): width, height, and bottom-left coordinates of detection bboxes
         labels (list(str)): detection labels
@@ -160,7 +161,7 @@ def format_image_for_yolo(image_capture: np.ndarray) -> (np.ndarray, dict):
     return image_capture_formatted, formatting_params
 
 
-def reformat_boxes(boxes_opp_coords: list, 
+def reformat_boxes(boxes_opp_coords: list,
                    formatting_params: dict) -> list:
     """Rescales bounding boxes to original size of the image
     Args:

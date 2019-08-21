@@ -12,7 +12,7 @@ def upload_annotation_names_to_s3(paths: dict,
 
     bucket_name = paths['bucket_name']
     s3_profile = paths['s3_profile']
-    prefix = "%s" % (paths['s3_annotations'])
+    prefix = "%s" % (paths['s3_cvat_annotations'])
 
     # fetch video filenames
     elapsed_time, files = get_names_of_folder_content_from_s3(bucket_name, prefix, s3_profile)
