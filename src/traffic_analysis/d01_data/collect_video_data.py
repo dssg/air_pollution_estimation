@@ -85,7 +85,7 @@ def collect_camera_videos(download_url: dict,
             try:
                 urllib.request.urlretrieve(file_path, local_path)
             except Exception as e:
-                send_email_warning(str(e), "Video download failed!", file_path)
+                send_email_warning(str(e), "Video download failed for " + file_path)
         iteration += 1
         if iteration == iterations:
             break
