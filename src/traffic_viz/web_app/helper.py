@@ -38,10 +38,8 @@ def get_cams():
     values = data.values()
     cam_dict = {item["id"]: {"name": item["commonName"], "url": {prop["key"]: prop["value"] for prop in item["additionalProperties"]}['videoUrl']}
                 for item in values if item["id"].replace("JamCams_", "") in camera_list}
-    print(cam_dict)
-    # [{'label': item['commonName'],  'value': item['id']}
-    # for item in values]
-    cam_dict = OrderedDict(sorted(cam_dict.items(), key=lambda x: x[1]["name"]))
+    cam_dict = OrderedDict(
+        sorted(cam_dict.items(), key=lambda x: x[1]["name"]))
     return cam_dict
 
 
