@@ -1,7 +1,5 @@
 data_collection:
   jam_cam_website: "http://jamcams.tfl.gov.uk/00001."
-  tims_file_website: "https://s3-eu-west-1.amazonaws.com/roads.data.tfl.gov.uk"
-  tims_download_website: "http://roads.data.tfl.gov.uk/TIMS/"
   tfl_camera_api: "https://api.tfl.gov.uk/Place/Type/jamcam"
   jamcam_url: "https://s3-eu-west-1.amazonaws.com/jamcams.tfl.gov.uk/"
   iterations: 0
@@ -49,9 +47,9 @@ modelling:
   detection_implementation: "cvlib"
   detection_iou_threshold: 0.05
   detection_confidence_threshold: 0.2
-  # TODO: change nms threshold to iou threshold
+  # TODO: change nms threshold to iou threshold	
   detection_nms_threshold: 0.2
-
+  
   # tracking
   selected_labels: ["car", "truck", "bus", "motorbike"]
   opencv_tracker_type: "csrt"
