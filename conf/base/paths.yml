@@ -15,7 +15,7 @@ s3_paths:
   s3_cvat_training_annotations: "ref/annotations/cvat_train/"
 
 local_paths:
-  temp_video: "data/temp/videos/"=
+  temp_video: "data/temp/videos/"
   temp_raw_video: "data/temp/raw_videos/"
   temp_frame_level: "data/temp/frame_level/"
   temp_video_level: "data/temp/video_level/"
