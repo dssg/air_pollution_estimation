@@ -50,7 +50,8 @@ def yolov3_darknet_to_tensorflow(paths: dict,
             # tf model initialization
             inputs = tf.placeholder(tf.float32, [1, img_size, img_size, 3])
 
-            with tf.variable_scope('YoloV3'):  # i think this generates the model output nodes (= feature_map)?
+            # i think this generates the model output nodes (= feature_map)?
+            with tf.variable_scope('YoloV3'):
                 feature_map = model.forward(inputs)
 
             saver = tf.train.Saver(
@@ -71,7 +72,8 @@ def parse_anchors(paths: dict) -> np.ndarray:
 
     model_file_path = paths['local_detection_model']
     anchor_path = os.path.join(model_file_path, 'yolov3', 'yolov3_anchors.txt')
-    anchors = np.reshape(np.asarray(open(anchor_path, 'r').read().split(','), np.float32), [-1, 2])
+    anchors = np.reshape(np.asarray(
+        open(anchor_path, 'r').read().split(','), np.float32), [-1, 2])
 
     return anchors
 
