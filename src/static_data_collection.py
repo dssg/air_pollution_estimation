@@ -7,8 +7,6 @@ creds = load_credentials()
 paths = load_paths()
 
 s3_credentials = creds[paths['s3_creds']]
-iterations = params['iterations']
-delay = params['delay']
 
 
 def collect_camera_videos_fn():
@@ -19,8 +17,8 @@ def collect_camera_videos_fn():
 
 
 def upload_videos_fn():
-    upload_videos(iterations=iterations,
-                  delay=delay)
+    upload_videos(iterations=1,
+                  delay=1)
 
 
 def run_in_parallel(*fns):
