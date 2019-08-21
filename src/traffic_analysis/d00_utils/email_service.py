@@ -23,4 +23,6 @@ def send_email_warning(msg: str = 'The script responsible for downloading the tr
             server.sendmail(sender_email, recipients, message)
         return
     except Exception as e:
-        print(f"Sending email failed. Please check that the email key is added to the credentials file. For instance, \nemail:\n\taddress:\n\tpassword:\n\trecipients:[]")
+        print(
+            f"Failed to send email {message}. Please check that the email key is added to the credentials file. For instance, \nemail:\n\taddress:\n\tpassword:\n\trecipients:[]")
+        print("Reason: ", e)
