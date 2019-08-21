@@ -216,8 +216,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         video_frames_per_sec = int(n_frames / video_time_length)
 
         frame_interval = self.skip_no_of_frames + 1
-        frame_detection_inds = np.arange(
-            0, n_frames, max(self.skip_no_of_frames * frame_interval, 1))
+        frame_detection_inds = np.arange(0, n_frames, self.skip_no_of_frames + 1)
         frames = video[frame_detection_inds, :, :, :]
 
         all_bboxes, all_labels, all_confs = self.detect_objects_in_frames(frames)
