@@ -22,6 +22,7 @@ def create_pipeline(output_file_name,
                     to_time,
                     camera_list,
                     chunk_size,
+                    move_to_processed_folder=False,
                     delete_processed_videos=False,
                     load_ref_file=False):
 
@@ -48,7 +49,6 @@ def create_pipeline(output_file_name,
         params=params, paths=paths, s3_credentials=s3_credentials)
 
     # select chunks of videos and classify objects
-    chunk_size = chunk_size
     while selected_videos:
         file_names = selected_videos[:chunk_size]
         frame_level_df = update_frame_level_table(analyser=analyser,
@@ -63,10 +63,11 @@ def create_pipeline(output_file_name,
                                  return_data=False)
 
         # move processed videos to processed folder
-        for filename in file_names:
-            new_filename = filename.replace(
-                paths['s3_video'], paths['s3_processed_videos'])
-            data_loader_s3.move_file(filename, new_filename)
+        if move_to_processed_folder:
+            for filename in file_names:
+                new_filename = filename.replace(
+                    paths['s3_video'], paths['s3_processed_videos'])
+                data_loader_s3.move_file(filename, new_filename)
 
         # delete processed videos if true
         if delete_processed_videos is True:
