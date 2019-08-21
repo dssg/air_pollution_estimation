@@ -6,13 +6,13 @@ import dash_player as player
 import plotly.graph_objs as go
 from dash.dependencies import Input, Output
 
-from traffic_viz.d06_visualisation.helper import (
+from traffic_viz.web_app.helper import (
     app_params,
     get_cams,
     get_vehicle_types,
     load_camera_statistics,
     load_vehicle_type_statistics)
-from traffic_viz.d06_visualisation.server import app
+from traffic_viz.web_app.server import app
 
 DEBUG = app_params["debug"]
 
