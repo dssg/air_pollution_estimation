@@ -311,85 +311,41 @@ To run the evaluation pipeline you just need to execute the following command:
 
 `s3_paths`:<br/>
 
-> `bucket_name`: "air-pollution-uk" #s3 bucket name<br/>
-> `s3_video`: "raw/videos/" #path to video data in s3 bucket<br/>
-> `s3_annotations`: "ref/annotations/"<br/>
-> `s3_video_names`: "ref/video_names/"<br/>
-> `s3_camera_details`: "ref/camera_details/camera_details.json"<br/>
+> `bucket_name`: "air-pollution-uk" #s3 bucket name<br/> > `s3_video`: "raw/videos/" #path to video data in s3 bucket<br/> > `s3_annotations`: "ref/annotations/"<br/> > `s3_video_names`: "ref/video_names/"<br/> > `s3_camera_details`: "ref/camera_details/camera_details.json"<br/>
 
-> `s3_frame_level`: "frame_level/" # TODO DELETE THIS<br/>
-> `s3_profile`: "dssg" # TODO: change this for user?<br/>
-> `s3_creds`: "dev_s3" # TODO: CHANGE TO JUST S3<br/>
-> `s3_detection_model`: "ref/model_conf/"<br/>
+> `s3_frame_level`: "frame_level/" # TODO DELETE THIS<br/> > `s3_profile`: "dssg" # TODO: change this for user?<br/> > `s3_creds`: "dev_s3" # TODO: CHANGE TO JUST S3<br/> > `s3_detection_model`: "ref/model_conf/"<br/>
 
 `local_paths`:<br/>
 
-> `temp_video`: "data/temp/videos/"<br/>
-> `temp_raw_video`: "data/temp/raw_videos/"<br/>
-> `temp_frame_level`: "data/temp/frame_level/"<br/>
-> `temp_video_level`: "data/temp/video_level/"<br/>
-> `temp_setup`: "data/temp/setup/"<br/>
+> `temp_video`: "data/temp/videos/"<br/> > `temp_raw_video`: "data/temp/raw_videos/"<br/> > `temp_frame_level`: "data/temp/frame_level/"<br/> > `temp_video_level`: "data/temp/video_level/"<br/> > `temp_setup`: "data/temp/setup/"<br/>
 
-> `video_names`: "data/ref/video_names/"<br/>
-> `processed_video`: "results/jamcams/"<br/>
-> `plots`: "plots/"<br/>
-> `annotations`: "annotations/"<br/>
-> `local_detection_model`: "data/ref/detection_model/"<br/>
-> `setup_xml`: "data/setup/annotations/xml_files/"<br/>
-> `setup_video`: "data/setup/annotations/videos/"<br/>
+> `video_names`: "data/ref/video_names/"<br/> > `processed_video`: "results/jamcams/"<br/> > `plots`: "plots/"<br/> > `annotations`: "annotations/"<br/> > `local_detection_model`: "data/ref/detection_model/"<br/> > `setup_xml`: "data/setup/annotations/xml_files/"<br/> > `setup_video`: "data/setup/annotations/videos/"<br/>
 
 `db_paths`:<br/>
 
-> `db_host`: "dssg-london.ck0oseycrr7s.eu-west-2.rds.amazonaws.com"<br/>
-> `db_name`: "airquality"<br/>
-> `db_frame_level`: 'frame_stats'<br/>
-> `db_video_level`: 'video_stats'<br/>
+> `db_host`: "dssg-london.ck0oseycrr7s.eu-west-2.rds.amazonaws.com"<br/> > `db_name`: "airquality"<br/> > `db_frame_level`: 'frame_stats'<br/> > `db_video_level`: 'video_stats'<br/>
 
 ### parameters.py
 
 `data_collection`:<br/>
 
-> `jam_cam_website`: URL of website for collecting the JamCam videos<br/>
-> `tfl_camera_api`: URL of API for collecting the JamCam videos<br/>
-> `jamcam_url`: URL of the S3 bucket containing the JamCam videos<br/>
-> `iterations`: The number of iterations to run the data collection pipeline for<br/>
-> `delay`: The delay in minutes between downloading the JamCam videos<br/>
+> `jam_cam_website`: URL of website for collecting the JamCam videos<br/> > `tfl_camera_api`: URL of API for collecting the JamCam videos<br/> > `jamcam_url`: URL of the S3 bucket containing the JamCam videos<br/> > `iterations`: The number of iterations to run the data collection pipeline for<br/> > `delay`: The delay in minutes between downloading the JamCam videos<br/>
 
 `static_pipeline`:<br/>
 
-> `load_ref_file`: Boolean for loading the .JSON file containing the video names<br/>
-> `ref_file_name`: The name of the .JSON file to load/save<br/>
-> `camera_list`: List of cameras to analyse data for<br/>
-> `from_date`: Start date for videos to analyse<br/>
-> `to_date`: End date for videos to analyse<br/>
-> `from_time`: Start time for videos to analyse<br/>
-> `to_time`: End time for videos to analyse<br/>
-> `chunk_size`: Number controlling the number of videos to be processed in a single batch<br/>
+> `load_ref_file`: Boolean for loading the .JSON file containing the video names<br/> > `ref_file_name`: The name of the .JSON file to load/save<br/> > `camera_list`: List of cameras to analyse data for<br/> > `from_date`: Start date for videos to analyse<br/> > `to_date`: End date for videos to analyse<br/> > `from_time`: Start time for videos to analyse<br/> > `to_time`: End time for videos to analyse<br/> > `chunk_size`: Number controlling the number of videos to be processed in a single batch<br/>
 
 `data_renaming`:<br/>
 
-> `old_path`: Path for old videos<br/>
-> `new_path`: Path for the renamed videos<br/>
-> `date_format`: Format for the date and time of the videos<br/>
+> `old_path`: Path for old videos<br/> > `new_path`: Path for the renamed videos<br/> > `date_format`: Format for the date and time of the videos<br/>
 
 `modelling`:<br/>
 
-> `# obj detection`<br/>
-> `detection_model`: Name of the model to use for object detection<br/>
-> `detection_iou_threshold`: The Intersection Over Union (IOU) threshold for separating objects<br/>
-> `detection_confidence_threshold`: The confidence threshold for accepting the prediction of the object detection algorithm<br/>
+> `# obj detection`<br/> > `detection_model`: Name of the model to use for object detection<br/> > `detection_iou_threshold`: The Intersection Over Union (IOU) threshold for separating objects<br/> > `detection_confidence_threshold`: The confidence threshold for accepting the prediction of the object detection algorithm<br/>
 
-> `# tracking`<br/>
-> `selected_labels`: List of labels to be tracked<br/>
-> `opencv_tracker_type`: The name of the tracker to be used by opencv<br/>
-> `iou_threshold`: Number controlling how much two objects' bboxes must overlap to be considered the "same"<br/>
-> `detection_frequency`: The number of tracking calls to skip between object detection calls<br/>
-> `skip_no_of_frames`: The number of frames to skip between successive tracking calls<br/>
+> `# tracking`<br/> > `selected_labels`: List of labels to be tracked<br/> > `opencv_tracker_type`: The name of the tracker to be used by opencv<br/> > `iou_threshold`: Number controlling how much two objects' bboxes must overlap to be considered the "same"<br/> > `detection_frequency`: The number of tracking calls to skip between object detection calls<br/> > `skip_no_of_frames`: The number of frames to skip between successive tracking calls<br/>
 
-> `#stop starts`<br/>
-> `iou_convolution_window`: Number controlling the window size for computing the IOU between frames n and n+`iou_convolution_window` for a single vehicle's bounding box<br/>
-> `smoothing_method`: Name of smoothing method for smoothing the IOU traces over time<br/>
-> `stop_start_iou_threshold`: IOU threshold for detemrining whether a vehicle is moving or stopped<br/>
+> `#stop starts`<br/> > `iou_convolution_window`: Number controlling the window size for computing the IOU between frames n and n+`iou_convolution_window` for a single vehicle's bounding box<br/> > `smoothing_method`: Name of smoothing method for smoothing the IOU traces over time<br/> > `stop_start_iou_threshold`: IOU threshold for detemrining whether a vehicle is moving or stopped<br/>
 
 `reporting`:<br/>
 
@@ -481,22 +437,48 @@ Below is a partial overview of our repository tree:
 
 ## 5. Web Application
 
-The web application is built using the <a src="https://dash.plot.ly/">DASH</a> framework. To run the web application, first install the required libraries by running the following command:
+The web application is built using the <a src="https://dash.plot.ly/">DASH</a> framework.
+<img src ="readme_resources/images/web_app.png" alt="alt text" width="500"   />
+
+The initial setup for the web application requires installing the dash libraries. To install the required libraries, run the following command:
 
 ```
 pip install -r src/traffic_viz/web_app/requirements.txt
 ```
 
-Then, run
+To start the application, run the following command:
 
 ```
 python src/app.py
 ```
 
+If successful, you should see something similar to the image below:
+
+<img src ="readme_resources/images/web_app_successful_launch.png" alt="alt text" width="500" height="175"  />
+
+Open the link `http://0.0.0.0:8050` on the browser.
+
+The web application contains a preview section and a graph for displaying the trends of vehicle counts. Select a junction to view the current footage uploaded by TFL. When a junction is selected, a list of vehicle types will be displayed in the `Vehicle Type` dropdown. Use the date range to change the duration of the trends of vehicle counts.
+
+The web application has a configuration file stored in `conf/base/app_parameters.yml`. An example of the configuration file is shown below:
+
+```
+visualization:
+  min_date_allowed: "2019-06-01"
+  start_date: "2019-06-01"
+  debug: True
+```
+
+The parameter are explained as below:
+
+- `min_date_allowed`: Update this parameter to change the minimum date for the date range calendar on the web application.
+- `start_date`: Update this parameter to change the start date for the historical traffic data displayed on the graph in the web application.
+- `debug`: The debug parameter is used to display errors and automatically reload web app while in development stage. Change this to `False` before deploying to production.
+
 ## Contributors and Partners
 
 <p float="left">
-  <img src ="readme_resources/images/dssg_imperial_logo.png" alt="alt text" width="500" height="175"  />
+  <img src ="readme_resources/images/dssg_imperial_logo.png" alt="alt text"  />
 </p>
 
 ### Data Science for Social Good at Imperial College London
