@@ -9,8 +9,10 @@ import logging
 from tqdm import trange
 
 from traffic_analysis.d04_modelling.transfer_learning.tensorflow_training_utils import get_batch_data, \
-    make_summary, config_learning_rate, config_optimizer, AverageMeter, \
-    evaluate_on_gpu, get_preds_gpu, voc_eval, parse_gt_rec, gpu_nms
+    make_summary, config_learning_rate, config_optimizer, AverageMeter
+from traffic_analysis.d04_modelling.transfer_learning.tensorflow_evaluation_utils import evaluate_on_gpu, \
+    get_preds_gpu, voc_eval, parse_gt_rec
+from traffic_analysis.d04_modelling.transfer_learning.tensorflow_processing_utils import gpu_nms
 from traffic_analysis.d04_modelling.transfer_learning.tensorflow_model_loader import YoloV3
 from traffic_analysis.d04_modelling.transfer_learning.convert_darknet_to_tensorflow import parse_anchors
 from traffic_analysis.d04_modelling.transfer_learning.tensorflow_detection_utils import read_class_names
