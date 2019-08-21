@@ -19,8 +19,7 @@ def collect_camera_videos_fn():
 
 
 def upload_videos_fn():
-    upload_videos(paths=paths,
-                  iterations=iterations,
+    upload_videos(iterations=iterations,
                   delay=delay)
 
 
