@@ -15,7 +15,6 @@ from traffic_viz.d06_visualisation.helper import (
 from traffic_viz.d06_visualisation.server import app
 
 DEBUG = app_params["debug"]
-TFL_BASE_URL = app_params["tfl_jamcams_website"]
 
 cams = get_cams()
 
@@ -92,7 +91,8 @@ app.layout = html.Div(
                                         dcc.Dropdown(
                                             id="dropdown-footage-selection",
                                             options=[
-                                                {"label": v, "value": k}
+                                                {"label": v["name"],
+                                                    "value": k}
                                                 for k, v in cams.items()
                                             ],
                                             clearable=False,
@@ -172,12 +172,11 @@ app.layout = html.Div(
 # Footage Selection
 @app.callback(Output("video-display", "url"),
               [Input("dropdown-footage-selection", "value")])
-def select_footage(footage):
+def select_footage(camera_id):
     # Find desired footage and update player video
-    if footage:
-        footage = footage.replace("JamCams_", "")
-        filename = footage + ".mp4"
-        url = TFL_BASE_URL + filename
+    if camera_id:
+        url = cams[camera_id]["url"]
+        print(url)
         return url
 
 
@@ -216,7 +215,7 @@ def update_trend_graph(vehicle_types, camera_id, start_date, end_date):
     global df
     if not camera_id:
         return
-    camera_name = cams[camera_id]
+    camera_name = cams[camera_id]["name"]
     title = camera_name
     camera_id = transform_camera_id(camera_id)
     df = load_camera_statistics(camera_id)
