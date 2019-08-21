@@ -45,7 +45,7 @@ data_renaming: # TODO: remove later when renaming finished
 
 modelling:
   # obj detection
-  detection_model: "yolov3_tf"  # yolov3_opencv, yolov3-tiny_opencv, yolov3_tf, traffic_tf, YOURCUSTOMMODEL_tf...
+  detection_model: "yolov3_opencv"  # yolov3_opencv, yolov3-tiny_opencv, yolov3_tf, traffic_tf, YOURCUSTOMMODEL_tf...
   detection_iou_threshold: 0.05
   detection_confidence_threshold: 0.2
 
