@@ -40,13 +40,13 @@ def initialize_tensorflow_model(params: dict,
                                         'yolov3.ckpt')
 
     if not os.path.exists(local_filepath_model):
-        yolov3_darknet_to_tensorflow(params=params,
-                                     paths=paths,
-                                     s3_credentials=s3_credentials)
-        if detection_model is not 'yolov3_tf':
-            download_detection_model_from_s3(model_name=detection_model,
-                                             paths=paths,
-                                             s3_credentials=s3_credentials)
+        # yolov3_darknet_to_tensorflow(params=params,
+        #                              paths=paths,
+        #                              s3_credentials=s3_credentials)
+        # if detection_model is not 'yolov3_tf':
+        download_detection_model_from_s3(model_name=detection_model,
+                                         paths=paths,
+                                         s3_credentials=s3_credentials)
 
     conf_thresh = params['detection_confidence_threshold']
     iou_thresh = params['detection_iou_threshold']
