@@ -14,9 +14,10 @@ from traffic_analysis.d04_modelling.perform_detection_opencv import label_detect
     choose_objects_of_selected_labels
 
 
-def initialize_tensorflow_model(params: dict, 
-                                paths: dict, 
-                                s3_credentials: dict, 
+def initialize_tensorflow_model(params: dict,
+                                paths: dict,
+                                detection_model: str,
+                                s3_credentials: dict,
                                 sess: tf.Session) -> (list, tf.placeholder, str):
     """Uses pre-existing tensorflow ckpt (or creates one, if it does not yet exist) to initialize variables before
     passing images through neural net for detection
@@ -24,6 +25,7 @@ def initialize_tensorflow_model(params: dict,
     Args:
         params: dictionary of parameters from yml file
         paths: dictionary of paths from yml file
+        detection_model: name of object detection model
         s3_credentials: dictionary of s3 creds from yml file
         sess : tensorflow session (pre-load with sess = tf.Session())
 
@@ -33,32 +35,32 @@ def initialize_tensorflow_model(params: dict,
         detection_model: detection model used in the neural network
     """
 
-    detection_model = params['detection_model']
-    local_filepath_model = os.path.join(paths['local_detection_model'], 
-                                        detection_model, 
+    local_filepath_model = os.path.join(paths['local_detection_model'],
+                                        detection_model,
                                         'yolov3.ckpt')
 
     if not os.path.exists(local_filepath_model):
         yolov3_darknet_to_tensorflow(params=params,
                                      paths=paths,
+                                     detection_model=detection_model,
                                      s3_credentials=s3_credentials)
 
     conf_thresh = params['detection_confidence_threshold']
     iou_thresh = params['detection_iou_threshold']
-    detection_model = params['detection_model']
-    local_filepath_model = os.path.join(paths['local_detection_model'], 
-                                        detection_model, 
-                                        'yolov3.ckpt')
+
+    #local_filepath_model = os.path.join(paths['local_detection_model'],
+    #                                    detection_model,
+    #                                   'yolov3.ckpt')
 
     anchors = parse_anchors(paths)
-    class_name_path = os.path.join(paths['local_detection_model'], 
-                                   'yolov3', 
+    class_name_path = os.path.join(paths['local_detection_model'],
+                                   'yolov3',
                                    'coco.names')
     classes = read_class_names(class_name_path)
     n_classes = len(classes)
 
-    init_data = tf.placeholder(tf.float32, 
-                               [None, 416, 416, 3], 
+    init_data = tf.placeholder(tf.float32,
+                               [None, 416, 416, 3],
                                name='init_data')
     yolo_model = YoloV3(n_classes, anchors)
     with tf.variable_scope('YoloV3'):
@@ -77,11 +79,11 @@ def initialize_tensorflow_model(params: dict,
     return model_initializer, init_data, detection_model
 
 
-def detect_objects_tf(images: np.ndarray, 
-                      paths: dict, 
-                      detection_model: str, 
-                      model_initializer: list, 
-                      init_data: tf.placeholder, 
+def detect_objects_tf(images: np.ndarray,
+                      paths: dict,
+                      detection_model: str,
+                      model_initializer: list,
+                      init_data: tf.placeholder,
                       sess: tf.Session,
                       selected_labels=None) -> (list, list, list):
     """Uses a tensorflow implementation of yolo to detect objects in a frame
@@ -92,7 +94,7 @@ def detect_objects_tf(images: np.ndarray,
         model_initializer(list(list(float))): list of initialized variables bboxes, confs, labels
         init_data: initialized array of size of image to be passed through
         sess: tensorflow session (pre-load with sess = tf.Session())
-        selected_labels: labels to return 
+        selected_labels: labels to return
     Returns:
         boxes(list(list(int))): width, height, and bottom-left coordinates of detection bboxes
         labels (list(str)): detection labels
@@ -153,14 +155,18 @@ def format_image_for_yolo(image_capture: np.ndarray) -> (np.ndarray, dict):
     image_capture_rgb_np = np.asarray(image_capture_rgb, np.float32)
     image_capture_formatted = image_capture_rgb_np[np.newaxis, :] / 255.
 
+    ori_height, ori_width = image_capture.shape[:2]
+
     formatting_params = {'resize_ratio': resize_ratio,
                          'dw': dw,
-                         'dh': dh}
+                         'dh': dh,
+                         'ori_height': ori_height,
+                         'ori_width': ori_width}
 
     return image_capture_formatted, formatting_params
 
 
-def reformat_boxes(boxes_opp_coords: list, 
+def reformat_boxes(boxes_opp_coords: list,
                    formatting_params: dict) -> list:
     """Rescales bounding boxes to original size of the image
     Args:
@@ -182,10 +188,13 @@ def reformat_boxes(boxes_opp_coords: list,
     boxes_width = boxes_opp_coords[:, 2] - boxes_opp_coords[:, 0]
     boxes_height = boxes_opp_coords[:, 3] - boxes_opp_coords[:, 1]
 
-    boxes_reformatted = [[boxes_opp_coords[i][0], boxes_opp_coords[i][1], boxes_width[i], boxes_height[i]]
-                         for i in range(number_of_boxes)]
+    boxes_reformatted = [[] for i in range(number_of_boxes)]
+    for i in range(number_of_boxes):
+        xmin = int(boxes_opp_coords[i][0] if boxes_opp_coords[i][0] >=0 else 0)
+        ymin = int(boxes_opp_coords[i][1] if boxes_opp_coords[i][1] >=0 else 0)
+        width = int(boxes_width[i] if boxes_width[i] <= formatting_params['ori_width'] else formatting_params['ori_width'])
+        height = int(boxes_height[i] if boxes_height[i] <= formatting_params['ori_height'] else formatting_params['ori_height'])
 
-    boxes_reformatted = [[int(i) for i in nested]
-                         for nested in boxes_reformatted]
+        boxes_reformatted[i] = [xmin, ymin, width, height]
 
     return boxes_reformatted

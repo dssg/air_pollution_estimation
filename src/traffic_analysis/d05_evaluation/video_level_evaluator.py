@@ -1,9 +1,7 @@
 import pandas as pd
 import numpy as np
-import xml.etree.ElementTree as ElementTree
 
 from traffic_analysis.d05_evaluation.parse_annotation import parse_annotation
-
 
 class VideoLevelEvaluator:
     """
@@ -13,7 +11,8 @@ class VideoLevelEvaluator:
                  videos_to_eval: pd.DataFrame,
                  video_level_df: pd.DataFrame,
                  video_level_column_order: list,
-                 selected_labels: list):
+                 selected_labels: list,
+                 data_loader_s3: None):
 
         # data frames to work with
         self.videos_to_eval = videos_to_eval
@@ -24,12 +23,17 @@ class VideoLevelEvaluator:
         self.video_level_column_order = video_level_column_order
         self.selected_labels = selected_labels
         self.stats_to_evaluate = ['counts', 'starts', 'stops']
+        if data_loader_s3 is not None:
+            self.from_s3_paths = True
+            self.dl_s3 = data_loader_s3
+        else:
+            self.from_local_paths = True
 
     def evaluate(self) -> (pd.DataFrame, pd.DataFrame):
-        """Get video level evaluation results 
-        Returns: 
-          performance_df -- data frame summarising the performance 
-          diff_df -- data frame with raw differences of 
+        """Get video level evaluation results
+        Returns:
+          performance_df -- data frame summarising the performance
+          diff_df -- data frame with raw differences of
                      predictions vs ground truth
         """
         self.video_level_ground_truth = self.get_ground_truth()
@@ -38,11 +42,11 @@ class VideoLevelEvaluator:
         return performance_df, diff_df
 
     def compute_diffs(self) -> pd.DataFrame:
-        """Get raw diffs of pred minus true for each statistic we are 
-        evaluating. 
-        
+        """Get raw diffs of pred minus true for each statistic we are
+        evaluating.
+
         Returns:
-            diff_df -- data frame with raw differences of 
+            diff_df -- data frame with raw differences of
                        predictions vs ground truth
         """
         # get data sets
@@ -92,14 +96,18 @@ class VideoLevelEvaluator:
         return performance_df
 
     def get_ground_truth(self):
-        """Parse ground truth XMLs into corresponding ground truth 
-        video level dataframe 
+        """Parse ground truth XMLs into corresponding ground truth
+        video level dataframe
         """
 
         video_level_ground_truth_list = []
         for idx, video in self.videos_to_eval.iterrows():
             # get frame level ground truth
-            xml_root = ElementTree.parse(video['xml_path']).getroot()
+            if self.from_s3_paths:
+                xml_root = self.dl_s3.read_xml(video['xml_path'])
+            elif self.from_local_paths: # read from local
+                xml_root = ElementTree.parse(video['xml_path']).getroot()
+
             frame_level_ground_truth = parse_annotation(xml_root)
 
             # get video level ground truth
@@ -120,7 +128,7 @@ class VideoLevelEvaluator:
 
     def compute_video_level_ground_truth(self,
                                          frame_level_ground_truth: pd.DataFrame) -> pd.DataFrame:
-        """Parse frame level ground truth dataframe into a video level ground 
+        """Parse frame level ground truth dataframe into a video level ground
         truth dataframe. Gets parked, starts, stops, counts
         """
 

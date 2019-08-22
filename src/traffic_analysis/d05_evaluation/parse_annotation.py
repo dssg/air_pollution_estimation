@@ -10,7 +10,17 @@ def parse_annotation(xml_root) -> pd.DataFrame:
                         'bboxes': [],
                         'vehicle_type': [],
                         'parked': [],
-                        'stopped': []}
+                        'stopped': [],
+                        'start_frame': 0,
+                        'stop_frame': 0}
+
+    for task in xml_root.iter('task'):
+        for task_info in task.iter():
+            if task_info.tag == 'start_frame': 
+                annotated_result['start_frame'] = int(task_info.text)
+            if task_info.tag == 'stop_frame':
+                annotated_result['stop_frame'] = int(task_info.text)
+            
 
     for track in xml_root.iter('track'):
         if track.attrib['label'] == 'vehicle':
@@ -32,3 +42,4 @@ def parse_annotation(xml_root) -> pd.DataFrame:
 
     ground_truth_df = pd.DataFrame.from_dict(annotated_result)
     return ground_truth_df
+

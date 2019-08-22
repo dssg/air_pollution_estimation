@@ -4,7 +4,7 @@ from random import randint
 
 
 def bboxcvlib_to_bboxcv2(bbox_cvlib, vectorized=False):
-    """Convert bboxes from format returned by cvlib (xmin,ymin, xmin+w, ymin+H)
+    """Convert bboxes from format returned by cvlib (xmin, ymin, xmin+w, ymin+h)
     to format required by cv2 (xmin,ymin,w,h)
 
     Args:

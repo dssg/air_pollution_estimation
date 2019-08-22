@@ -1,6 +1,7 @@
 import time
 import gc
 
+import datetime
 import cv2
 import numpy as np
 import pandas as pd
@@ -11,7 +12,7 @@ from traffic_analysis.d00_utils.bbox_helpers import (bboxcv2_to_bboxcvlib,
                                                      display_bboxes_on_frame,
                                                      color_bboxes,
                                                      bbox_intersection_over_union)
-from traffic_analysis.d00_utils.video_helpers import write_mp4
+from traffic_analysis.d00_utils.video_helpers import write_mp4, parse_video_or_annotation_name
 from traffic_analysis.d04_modelling.traffic_analyser_interface import TrafficAnalyserInterface
 from traffic_analysis.d04_modelling.tracking.vehicle_fleet import VehicleFleet
 from traffic_analysis.d04_modelling.perform_detection_opencv import detect_objects_cv
@@ -20,7 +21,7 @@ from traffic_analysis.d04_modelling.perform_detection_tensorflow import initiali
 
 
 class TrackingAnalyser(TrafficAnalyserInterface):
-    def __init__(self, params: dict, paths: dict, s3_credentials: dict):
+    def __init__(self, params: dict, paths: dict, s3_credentials: dict, detection_model=None, tracker_type=None, verbose=True):
         """
         (General parameters):
         selected_labels -- labels which we wish to detect
@@ -29,7 +30,6 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
         (Object detection arguments:)
         detection_model -- specify the name of model you want to use for detection
-        detection_implementation -- specify model to use for detection
         detection_frequency -- each detection_frequency num of frames, run obj detection alg again to detect new objs
         detection_confidence_threshold -- conf above which to return label
         detection_nms_threshold -- yolo param
@@ -47,29 +47,35 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         """
         super().__init__(params, paths)
         # general settings
+        self.verbose = verbose
         self.params = params
         self.paths = paths
         self.s3_credentials = s3_credentials
         self.selected_labels = params['selected_labels']
 
-        # object detection settings
-        self.detection_model = params['detection_model']
-        # TODO: to be replaced in transfer learning PR
-        self.detection_implementation = params['detection_implementation']
-        self.detection_frequency = params['detection_frequency']
-        self.detection_confidence_threshold = params['detection_confidence_threshold']
-        self.detection_nms_threshold = params['detection_nms_threshold']
+        # detection settings
+        if detection_model is not None:
+            self.detection_model = detection_model
+        else:
+            self.detection_model = params['default_detection_model']
 
         if self.detection_model == 'yolov3_tf':
             self.sess = tf.Session()
-            self.model_initializer, self.init_data, self.detection_model = initialize_tensorflow_model(
+            self.model_initializer, self.init_data, _ = initialize_tensorflow_model(
                 params=self.params,
                 paths=self.paths,
+                detection_model=self.detection_model,
                 s3_credentials=self.s3_credentials,
                 sess=self.sess)
+        self.detection_confidence_threshold = params['detection_confidence_threshold']
+        # self.detection_nms_threshold = params['detection_nms_threshold']
+        self.detection_frequency = params['detection_frequency']
 
         # tracking settings
-        self.tracker_type = params['opencv_tracker_type']
+        if tracker_type is not None:
+            self.tracker_type = tracker_type
+        else:
+            self.tracker_type = params['default_tracker_type']
         self.trackers = []
         self.iou_threshold = params['iou_threshold']
 
@@ -165,7 +171,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 if i % 2 == 0: # xmin and width
                     if bbox[i] > frame_width:
                         bbox[i] = frame_width
-                else: # ymin and height
+                else:  # ymin and height
                     if bbox[i] > frame_height:
                         bbox[i] = frame_height
 
@@ -207,10 +213,10 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         Returns:
             fleet -- VehicleFleet object containing bbox history for all vehicles tracked
         """
-
         start_time = time.time()
         # Create a video capture object to read videos
         n_frames, frame_height, frame_width = video.shape[:3]
+        camera_id, date_time = parse_video_or_annotation_name(video_name)
 
         # assumes vid_length in seconds
         video_frames_per_sec = int(n_frames / video_time_length)
@@ -245,14 +251,28 @@ class TrackingAnalyser(TrafficAnalyserInterface):
 
         print(f"The number of frames is {n_frames}")
         previous_frame_index = 0
+        bboxes_tracked = np.array([])
         # Process video and track objects
         for frame_ind in range(1, n_frames):
             if (frame_ind % frame_interval) and (frame_ind + frame_interval) <= n_frames:
                 continue
             frame = video[frame_ind, :, :, :]
+            prev_bboxes_tracked = np.copy(bboxes_tracked)
+
             # get updated location of objects in subsequent frames, update fleet obj
             success, bboxes_tracked = multi_tracker.update(
                 image=frame)
+
+            if(not success and prev_bboxes_tracked.size > 0):
+                # check for bounding box not moving
+                # print("prev_bboxes_tracked is ", prev_bboxes_tracked)
+                # print("\n bbo/xes_tracked is ", bboxes_tracked)
+                matching_inds = np.where((prev_bboxes_tracked == bboxes_tracked[:prev_bboxes_tracked.shape[0], :]).all(axis=1))[0].tolist()
+                for matching_ind in matching_inds:
+                    fleet.record_loss_of_tracking(bbox_number=matching_ind,
+                                                  camera_id=camera_id,
+                                                  date_time=date_time)
+
             for _ in range(frame_ind - previous_frame_index):
                 fleet.update_vehicles(np.array(bboxes_tracked))
             previous_frame_index = frame_ind
@@ -303,18 +323,16 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 # # quit on ESC button
                 # if cv2.waitKey(1) & 0xFF == 27:  # Esc pressed
                 #   break
+        assert fleet.bboxes.shape[2] == n_frames, \
+            f"Total num frames is {n_frames} but only {fleet.bboxes.shape[2]} have been processed."
         if make_video:
             write_mp4(local_mp4_dir=local_mp4_dir,
                       mp4_name=video_name + "_tracked.mp4",
                       video=np.array(processed_video),
                       fps=video_frames_per_sec)
-
-        print(
-            f'Run time of tracking analyser for one video is {time.time() - start_time} seconds. \nSkipped {frame_interval-1} frames.\nNumber of frames is {fleet.bboxes.shape[2]}.')
-        print('Run time of tracking analyser for one video is %s seconds' %
-              (time.time() - start_time))
-
-        return fleet
+        runtime = time.time() - start_time
+        print(f'Run time of tracking analyser for one video is {runtime} seconds. \n Frameskip {frame_interval-1}.')
+        return runtime, fleet
 
     def detect_objects_in_frames(self, frames):
 
@@ -327,6 +345,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 bboxes, labels, confs = detect_objects_cv(image_capture=frame,
                                                           params=self.params,
                                                           paths=self.paths,
+                                                          detection_model=self.detection_model,
                                                           s3_credentials=self.s3_credentials,
                                                           selected_labels=self.selected_labels)
 
@@ -367,17 +386,27 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                       " has been removed from processing because it may be invalid")
 
         frame_info_list = []
+        runtime_list = []
 
         if not len(video_dict):
             return None
 
+        lost_tracking = {}
+
         for video_name, video in video_dict.items():
-            fleet = self.detect_and_track_objects(video, video_name)
+            runtime, fleet = self.detect_and_track_objects(video, video_name)
+            camera_id, date_time = parse_video_or_annotation_name(video_name)
+            if camera_id in lost_tracking.keys():
+                lost_tracking[camera_id][date_time.strftime("%m/%d/%Y, %H:%M:%S")] = fleet.lost_tracking
+            else:
+                lost_tracking[camera_id] = {}
+                lost_tracking[camera_id][date_time.strftime("%m/%d/%Y, %H:%M:%S")] = fleet.lost_tracking
             single_frame_level_df = fleet.report_frame_level_info()
             frame_info_list.append(single_frame_level_df)
-        return pd.concat(frame_info_list)
+            runtime_list.append(runtime)
+        return pd.concat(frame_info_list), runtime_list, lost_tracking
 
-    def construct_video_level_df(self, frame_level_df) -> pd.DataFrame:
+    def construct_video_level_df(self, frame_level_df, lost_tracking) -> pd.DataFrame:
         """Construct video-level stats table using tracking techniques
 
         Args:
@@ -385,6 +414,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         Returns:
             pd DataFrame of all video level info
         """
+
         if frame_level_df.empty:
             return frame_level_df
 
@@ -400,5 +430,30 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             # fleet.plot_iou_time_series(fig_dir="data", fig_name="param_tuning", smoothed=True)
             video_level_df = fleet.report_video_level_stats(fleet.compute_counts(),
                                                             *fleet.compute_stop_starts(self.stop_start_iou_threshold))
+            camera_id = video_level_df['camera_id'].values[0]
+            video_upload_datetime = pd.to_datetime(str(video_level_df['video_upload_datetime'].values[0]))
+
+            adjustment_dict = {}
+
+            try:
+                bboxes = lost_tracking[camera_id][video_upload_datetime.strftime("%m/%d/%Y, %H:%M:%S")]['bbox_number']
+                unique_bboxes = np.unique(bboxes)
+                labels = np.array(lost_tracking[camera_id][video_upload_datetime.strftime("%m/%d/%Y, %H:%M:%S")]['label'])
+            except:
+                bboxes = []
+                unique_bboxes = []
+                labels = []
+
+            for bbox in unique_bboxes:
+                label = labels[np.where(bbox==bboxes)[0][0]]
+                if label in adjustment_dict.keys():
+                    adjustment_dict[label] += 1
+                else:
+                    adjustment_dict[label] = 1
+
+            for label, value in adjustment_dict.items():
+                video_level_df.loc[(video_level_df['camera_id'] == camera_id) & (video_level_df['video_upload_datetime'] == video_upload_datetime) & (video_level_df['vehicle_type'] == label), 'stops'] -= value
+
             video_info_list.append(video_level_df)
+
         return pd.concat(video_info_list)

@@ -10,19 +10,22 @@ from traffic_analysis.d00_utils.data_retrieval import (delete_and_recreate_dir,
 
 def update_frame_level_table(analyser,
                              file_names: list,
+                             db_frame_level_name: str,
                              paths: dict,
                              creds: dict) -> pd.DataFrame:
     """ Update the frame level table on PSQL based on the videos in the files list
     Args:
         analyser: analyser object for doing traffic analysis
         file_names: list of s3 filepaths for the videos to be processed
+        db_frame_level_name: name of db tables to append to
         paths: dictionary of paths from yml file
         creds: dictionary of credentials from yml file
 
     Returns:
-        frame_level_df: dataframe of frame level information returned by 
+        frame_level_df: dataframe of frame level information returned by
                         analyser object
     """
+    success, frame_level_df = False, pd.DataFrame({})
     s3_credentials = creds[paths['s3_creds']]
     dl = DataLoaderS3(s3_credentials,
                       bucket_name=paths['bucket_name'])
@@ -41,7 +44,11 @@ def update_frame_level_table(analyser,
     video_dict = load_videos_into_np(paths["temp_video"])
     delete_and_recreate_dir(paths["temp_video"])
 
-    frame_level_df = analyser.construct_frame_level_df(video_dict)
+    isfilled = bool(video_dict)
+    if not isfilled:  # early stop
+        return success, frame_level_df
+
+    frame_level_df, runtime_list, lost_tracking = analyser.construct_frame_level_df(video_dict)
     if frame_level_df.empty:
         return None
     frame_level_df.dropna(how='any', inplace=True)
@@ -52,6 +59,8 @@ def update_frame_level_table(analyser,
     frame_level_sql_df = pd.DataFrame.copy(frame_level_df)
     x, y, w, h = [], [], [], []
     for vals in frame_level_sql_df['bboxes'].values:
+        if isinstance(vals, str):
+            vals = vals.strip("[]").split(",")
         if isinstance(vals, list) and len(vals) > 3:
             x.append(int(vals[0]))
             y.append(int(vals[1]))
@@ -65,7 +74,7 @@ def update_frame_level_table(analyser,
     frame_level_sql_df['creation_datetime'] = datetime.datetime.now()
 
     db_obj = DataLoaderSQL(creds=creds, paths=paths)
-    db_obj.add_to_sql(df=frame_level_sql_df,
-                      table_name=paths['db_frame_level'])
+    db_obj.add_to_sql(df=frame_level_sql_df, table_name=db_frame_level_name)
+    success = True
 
-    return frame_level_df
+    return success, frame_level_df, runtime_list, lost_tracking

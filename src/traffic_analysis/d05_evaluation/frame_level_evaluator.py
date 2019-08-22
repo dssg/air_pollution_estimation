@@ -1,4 +1,4 @@
-import pandas as pd 
+import pandas as pd
 import numpy as np
 import xml.etree.ElementTree as ElementTree
 
@@ -14,20 +14,25 @@ class FrameLevelEvaluator:
     def __init__(self,
                  videos_to_eval: pd.DataFrame,
                  frame_level_df: pd.DataFrame,
-                 selected_labels: list
-                 ):
+                 selected_labels: list,
+                 data_loader_s3: None):
 
         # data frames to work with
         self.videos_to_eval = videos_to_eval
-        self.frame_level_df = frame_level_df        
+        self.frame_level_df = frame_level_df
         self.frame_level_ground_truth = pd.DataFrame({})
         self.frame_level_preds = pd.DataFrame({})
 
         # parameters
-        self.selected_labels = selected_labels 
+        self.selected_labels = selected_labels
+        if data_loader_s3 is not None:
+            self.from_s3_paths = True
+            self.dl_s3 = data_loader_s3
+        else:
+            self.from_local_paths = True
 
     def evaluate(self) -> pd.DataFrame:
-        """Compute mean average precision for each vehicle type on multiple videos 
+        """Compute mean average precision for each vehicle type on multiple videos
         """
         self.frame_level_ground_truth = self.get_ground_truth()
         self.frame_level_preds = self.filter_frame_level_df()
@@ -35,14 +40,17 @@ class FrameLevelEvaluator:
         frame_level_map_dfs = []
         for (gt_camera_id, gt_video_upload_datetime), ground_truth_df in \
             self.frame_level_ground_truth.groupby(["camera_id", "video_upload_datetime"]):
-            # get corresponding predictions for this video 
+            # get corresponding predictions for this video
             pred_df = self.frame_level_preds[(self.frame_level_preds["camera_id"] == gt_camera_id) &
                                              (self.frame_level_preds["video_upload_datetime"] ==
                                               gt_video_upload_datetime)].copy()
 
-            ground_truth_dict = self.reparse_bboxes_df(ground_truth_df, 
+            max_frame_ind = ground_truth_df["stop_frame"].iloc[0]
+            ground_truth_dict = self.reparse_bboxes_df(ground_truth_df,
+                                                       max_frame_ind=max_frame_ind,
                                                        include_confidence=False)
-            predicted_dict = self.reparse_bboxes_df(pred_df, 
+            predicted_dict = self.reparse_bboxes_df(pred_df,
+                                                    max_frame_ind=max_frame_ind,
                                                     include_confidence=True, 
                                                     bbox_format="cv2")
 
@@ -82,13 +90,17 @@ class FrameLevelEvaluator:
 
     def get_ground_truth(self) -> pd.DataFrame:
         """Read in annotation xmls from paths stored in self.videos_to_eval
+        Frames are 0-indexed.
         """
         frame_level_ground_truth_dfs = []
         for idx, video in self.videos_to_eval.iterrows():
             # get frame level ground truth
-            xml_root = ElementTree.parse(video["xml_path"]).getroot()
-            frame_level_ground_truth = parse_annotation(xml_root)
+            if self.from_s3_paths:
+                xml_root = self.dl_s3.read_xml(video['xml_path'])
+            elif self.from_local_paths: # read from local
+                xml_root = ElementTree.parse(video['xml_path']).getroot()
 
+            frame_level_ground_truth = parse_annotation(xml_root)
             frame_level_ground_truth["camera_id"] = video["camera_id"]
             frame_level_ground_truth["video_upload_datetime"] = video["video_upload_datetime"]
             frame_level_ground_truth_dfs.append(frame_level_ground_truth)
@@ -99,26 +111,30 @@ class FrameLevelEvaluator:
 
     def reparse_bboxes_df(self, 
                           df: pd.DataFrame, 
-                          include_confidence: bool, 
+                          max_frame_ind: int,
+                          include_confidence: bool,
                           bbox_format: str = "cvlib") -> dict:
         """Restructures dfs containing bboxes for each frame (i.e. frame level df, 
         ground truth df) to a dictionary of dictionaries. This format is what 
         compute_mean_average_precision.py functions take as input. 
 
-        Args: 
-            df: frame_level_df which contains bboxes corresponding to each frame of
-                a video. 
-            include_confidence: If this df contains the confidence corresponding to 
-                                the bbox predictions, this should be specified (the 
-                                reparser will construct a sub-dict for this case)
-            bbox_format: cvlib is cvlib (xmin,ymin, xmin+width, ymin+height), 
-                         cv2 is (xmin,ymin,width,height)
+        This function also ensures that every frame in the video has a corresponding
+        dict entry (even if the input df had no prediction for that frame)
 
-        Returns: 
-            df as a nested dictionary  
+        Args:
+            df: frame_level_df which contains bboxes corresponding to each frame of
+                a video.
+            max_frame_ind: index of the last frame. We assume that frames are 0 indexed, so the
+                           total num frames in the video should be max_frame_ind + 1
+            include_confidence: If this df contains the confidence corresponding to
+                                the bbox predictions, this should be specified (the
+                                reparser will construct a sub-dict for this case)
+            bbox_format: cvlib is cvlib (xmin,ymin, xmin+width, ymin+height),
+                         cv2 is (xmin,ymin,width,height)
+        Returns:
+            df as a nested dictionary
         """
         # dict of dict of dicts, with outermost layer being the vehicle type
-        n_frames = df["frame_id"].nunique()
         bboxes_np = np.array(df["bboxes"].values.tolist())
         assert bboxes_np.shape[1] == 4
 
@@ -131,24 +147,30 @@ class FrameLevelEvaluator:
         if include_confidence:
             df_as_dict = {
                 vehicle_type: {
-                    "frame" + str(i): {"bboxes": [], "scores": []}
-                    for i in range(n_frames)
+                    "frame" + str(int(i)): {"bboxes": [], "scores": []}
+                    for i in range(max_frame_ind + 1)
                 }
                 for vehicle_type in self.selected_labels
             }
 
         else:
             df_as_dict = {
-                vehicle_type: {"frame" + str(i): [] for i in range(n_frames)}
+                vehicle_type: {"frame" + str(int(i)): [] for i in range(max_frame_ind + 1)}
                 for vehicle_type in self.selected_labels
             }
 
         for (vehicle_type, frame_id), vehicle_frame_df in df.groupby(
                 ["vehicle_type", "frame_id"]):
-            if vehicle_type not in self.selected_labels: 
-                continue
 
             frame_id = int(frame_id)
+
+            if vehicle_type not in self.selected_labels:
+                print(f"Warning: detected vehicle type {vehicle_type} not in params[selected_labels] \
+                       and will be ignored.")
+                continue
+            if frame_id > max_frame_ind:
+                print("Warning: more frames in vehice_frame_df than max_frame_id")
+
             if include_confidence:
                 df_as_dict[vehicle_type]["frame" + str(frame_id)]["bboxes"] = \
                     vehicle_frame_df["bboxes"].tolist()
@@ -165,9 +187,9 @@ class FrameLevelEvaluator:
         Args: 
             ground_truth_dict: ground_truth_df reparsed by reparse_bboxes_df
             predicted_dict: frame_level_df reparsed by reparse_bboxes_df
-        
-        Returns: 
-            map_dict: dictionary with vehicle_types as keys and maps as values 
+
+        Returns:
+            map_dict: dictionary with vehicle_types as keys and maps as values
         """
         map_dict = {vehicle_type: -1.0 for vehicle_type in self.selected_labels}
 
