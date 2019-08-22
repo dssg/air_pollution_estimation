@@ -43,13 +43,13 @@ data_renaming: # TODO: remove later when renaming finished
 
 modelling:
   # obj detection
-  detection_model: "yolov3_tf"  # yolov3_opencv, yolov3-tiny_opencv, yolov3_tf, traffic_tf, YOURCUSTOMMODEL_tf...
-  detection_iou_threshold: 0.05
+  detection_model: "traffic_tf"  # yolov3_opencv, yolov3-tiny_opencv, yolov3_tf, traffic_tf, YOURCUSTOMMODEL_tf...
+  detection_iou_threshold: 0.5
   detection_confidence_threshold: 0.2
 
   # tracking
   selected_labels: ["car", "truck", "bus", "motorbike"]
-  opencv_tracker_type: "csrt"
+  opencv_tracker_type: "mosse"
   iou_threshold: 0.05 #controls how much two objects' bboxes must overlap to be considered the "same"
   detection_frequency: 4
   skip_no_of_frames: 3
@@ -57,7 +57,7 @@ modelling:
   #stop starts
   iou_convolution_window: 15
   smoothing_method: "moving_avg"
-  stop_start_iou_threshold: 0.80
+  stop_start_iou_threshold: 0.75
 
   # others
   delete_processed_videos: False
