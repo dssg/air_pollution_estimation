@@ -4,8 +4,6 @@ from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 
 def create_primary_sql_tables(db_frame_level_name: str, 
                               db_video_level_name: str,
-                              db_vehicle_types_name: str = None,
-                              db_cameras_name: str = None,
                               drop=False
                               ):
     """Create PSQL tables for traffic analyser objects to append to 

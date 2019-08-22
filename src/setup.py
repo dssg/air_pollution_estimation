@@ -15,7 +15,9 @@ upload_yolo_weights_to_s3(s3_credentials=s3_credentials,
                           target_dir_on_s3=paths['s3_detection_model'])
 
 # create PSQL tables to insert vehicle statistics into 
-create_primary_sql_tables(drop=False)
+create_primary_sql_tables(db_frame_level_name=paths["db_frame_level"],
+						  db_video_level_name=paths["db_video_level"], 
+						  drop=False)
 
 # put annotated videos in S3, put annotation xmls in right folder
 upload_annotations_to_s3(s3_credentials=s3_credentials, paths=paths)
