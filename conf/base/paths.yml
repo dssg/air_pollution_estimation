@@ -1,14 +1,13 @@
 s3_paths:
   bucket_name: "air-pollution-uk" #s3 bucket name
   s3_video: "raw/videos/" #path to video data in s3 bucket
-  s3_annotations: "ref/annotations/"
+  s3_processed_videos: "raw/processed_videos/"
   s3_video_names: "ref/video_names/"
   s3_camera_details: "ref/camera_details/camera_details.json"
 
   s3_frame_level: "frame_level/" # TODO DELETE THIS
   s3_profile: "dssg" # TODO: change this for user? 
   s3_creds: "dev_s3" # TODO: CHANGE TO JUST S3
-
   s3_detection_model: "ref/model_conf/"
   s3_cvat_annotations: "ref/annotations/cvat/"
   s3_detrac_annotations: "ref/annotations/detrac/"
@@ -17,11 +16,10 @@ s3_paths:
 
 local_paths:
   temp_video: "data/temp/videos/"
-  temp_raw_images: "data/temp/raw_images/"
   temp_raw_video: "data/temp/raw_videos/"
   temp_frame_level: "data/temp/frame_level/"
   temp_video_level: "data/temp/video_level/"
-  temp_annotation: "data/temp/annotation/"
+  temp_setup: "data/temp/setup/"
 
   video_names: "data/ref/video_names/"
   processed_video: "results/jamcams/"
@@ -30,7 +28,6 @@ local_paths:
   local_detection_model: "data/ref/detection_model/"
   setup_xml: "data/setup/annotations/xml_files/"
   setup_video: "data/setup/annotations/videos/"
-  training: "data/ref/training/"
 
 db_paths:
   db_host: "dssg-london.ck0oseycrr7s.eu-west-2.rds.amazonaws.com"

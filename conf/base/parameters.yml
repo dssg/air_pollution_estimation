@@ -1,7 +1,5 @@
 data_collection:
   jam_cam_website: "http://jamcams.tfl.gov.uk/00001."
-  tims_file_website: "https://s3-eu-west-1.amazonaws.com/roads.data.tfl.gov.uk"
-  tims_download_website: "http://roads.data.tfl.gov.uk/TIMS/"
   tfl_camera_api: "https://api.tfl.gov.uk/Place/Type/jamcam"
   jamcam_url: "https://s3-eu-west-1.amazonaws.com/jamcams.tfl.gov.uk/"
   iterations: 0
@@ -11,7 +9,7 @@ static_pipeline:
   load_ref_file: False
   ref_file_name: "example_dataset"
   camera_list:
-    [
+    [   
       "00001.03601",
       "00001.07591",
       "00001.01252",
@@ -33,7 +31,7 @@ static_pipeline:
       "00001.04336",
       "00001.09560"
     ]
-  from_date: "2019-07-17"
+  from_date: "2019-07-17" 
   to_date: "2019-07-17"
   from_time: "00-00-00"
   to_time: "23-59-59"
@@ -45,7 +43,11 @@ data_renaming: # TODO: remove later when renaming finished
 
 modelling:
   # obj detection
+<<<<<<< HEAD
   detection_model: "yolov3_opencv"  # yolov3_opencv, yolov3-tiny_opencv, yolov3_tf, traffic_tf, YOURCUSTOMMODEL_tf...
+=======
+  detection_model: "yolov3_tf"  # yolov3_opencv, yolov3-tiny_opencv, yolov3_tf, traffic_tf, YOURCUSTOMMODEL_tf...
+>>>>>>> b94da9b7c39ad847313c0e7e99e9435cbf89113a
   detection_iou_threshold: 0.05
   detection_confidence_threshold: 0.2
 
@@ -60,6 +62,9 @@ modelling:
   iou_convolution_window: 15
   smoothing_method: "moving_avg"
   stop_start_iou_threshold: 0.80
+
+  # others
+  delete_processed_videos: False
 
 reporting:
   chunk_size: 10

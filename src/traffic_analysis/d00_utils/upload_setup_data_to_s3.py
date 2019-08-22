@@ -81,6 +81,5 @@ def upload_annotations_to_s3(s3_credentials, paths):
     # xml files
     for xml_file in glob.glob(paths["setup_xml"] + "*.xml"):
         data_loader.upload_file(path_of_file_to_upload=xml_file,
-                                path_to_upload_file_to=(paths["s3_annotations"]
-                                                        + "cvat/"
+                                path_to_upload_file_to=(paths["s3_cvat_annotations"]
                                                         + xml_file.split('/')[-1]))
