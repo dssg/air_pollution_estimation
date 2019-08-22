@@ -212,8 +212,10 @@ class VehicleFleet:
                     if motion_status_prev == 0:
                         # get the type of the object that just stopped
                         stop_counter.append(self.labels[vehicle_idx])
+                        print('length of stop counter: %.f' % len(stop_counter))
                     elif motion_status_prev == 1:
                         start_counter.append(self.labels[vehicle_idx])
+                        print('length of start counter: %.f' % len(start_counter))
 
                     motion_status_prev = motion_status_current
 
@@ -341,6 +343,7 @@ class VehicleFleet:
                                           orient='index', columns=['counts'])
         stops_df = pd.DataFrame.from_dict(vehicle_stop_counts,
                                           orient='index', columns=['stops'])
+        print(stops_df)
         starts_df = pd.DataFrame.from_dict(vehicle_start_counts,
                                            orient='index', columns=['starts'])
 
@@ -352,6 +355,7 @@ class VehicleFleet:
         # rownames to a column
         video_level_stats_df.index.name = 'vehicle_type'
         video_level_stats_df.reset_index(inplace=True)
+        print(video_level_stats_df.stops)
         # reorder columns
         video_level_stats_df = video_level_stats_df[column_names]
         return video_level_stats_df
