@@ -72,6 +72,7 @@ def get_names_of_folder_content_from_s3(bucket_name, prefix, s3_profile):
 
     return elapsed_time, files
 
+
 def get_s3_video_path_from_xml_name(xml_file_name, s3_creds, paths):
 
     # Supports old and new naming conventions
