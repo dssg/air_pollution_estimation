@@ -138,7 +138,7 @@ def detect_objects_tf(images: np.ndarray,
     return all_boxes, all_labels, all_confs
 
 
-def format_image_for_yolo(image_capture: np.ndarray) -> (np.adarray, dict):
+def format_image_for_yolo(image_capture: np.ndarray) -> (np.ndarray, dict):
     """Formats image capture so it can be ingested by yolov3 model
     Args:
         image_capture: numpy array containing the captured image (width, height, rbg)

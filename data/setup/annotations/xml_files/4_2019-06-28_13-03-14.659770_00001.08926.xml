@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<annotations>
+  <version>1.1</version>
+  <meta>
+    <task>
+      <id>4</id>
+      <name>2019-06-28_13-03-14.659770_00001.08926</name>
+      <size>243</size>
+      <mode>interpolation</mode>
+      <overlap>5</overlap>
+      <bugtracker></bugtracker>
+      <created>2019-07-02 18:54:37.812997+03:00</created>
+      <updated>2019-07-02 18:54:37.813036+03:00</updated>
+      <start_frame>0</start_frame>
+      <stop_frame>242</stop_frame>
+      <frame_filter></frame_filter>
+      <labels>
+        <label>
+          <name>vehicle</name>
+          <attributes>
+            <attribute>
+              <name>parked</name>
+              <mutable>True</mutable>
+              <input_type>checkbox</input_type>
+              <default_value>false</default_value>
+              <values>false</values>
+            </attribute>
+            <attribute>
+              <name>stopped</name>
+              <mutable>True</mutable>
+              <input_type>checkbox</input_type>
+              <default_value>false</default_value>
+              <values>false</values>
+            </attribute>
+            <attribute>
+              <name>type</name>
+              <mutable>False</mutable>
+              <input_type>select</input_type>
+              <default_value>undefined</default_value>
+              <values>undefined
+car
+truck
+bus
+motorbike</values>
+            </attribute>
+          </attributes>
+        </label>
+      </labels>
+      <segments>
+        <segment>
+          <id>4</id>
+          <start>0</start>
+          <stop>242</stop>
+          <url>http://localhost:8080/?id=4</url>
+        </segment>
+      </segments>
+      <owner>
+        <username>funmi</username>
+        <email>kesaoluwafunmilola@gmail.com</email>
+      </owner>
+      <original_size>
+        <width>352</width>
+        <height>288</height>
+      </original_size>
+    </task>
+    <dumped>2019-07-02 19:42:52.099740+03:00</dumped>
+    <source>/home/django/data/4/.upload/2019-06-28_13-03-14.659770_00001.08926.mp4</source>
+  </meta>
+</annotations>

@@ -1,6 +1,7 @@
 s3_paths:
   bucket_name: "air-pollution-uk" #s3 bucket name
   s3_video: "raw/videos/" #path to video data in s3 bucket
+  s3_processed_videos: "raw/processed_videos/"
   s3_annotations: "ref/annotations/"
   s3_video_names: "ref/video_names/"
   s3_camera_details: "ref/camera_details/camera_details.json"
@@ -28,6 +29,8 @@ local_paths:
   plots: "plots/"
   annotations: "annotations/"
   local_detection_model: "data/ref/detection_model/"
+  setup_xml: "data/setup/annotations/xml_files/"
+  setup_video: "data/setup/annotations/videos/"
 
 db_paths:
   db_host: "dssg-london.ck0oseycrr7s.eu-west-2.rds.amazonaws.com"

@@ -1,13 +1,14 @@
-from flask_caching import Cache
-from collections import OrderedDict
-import pandas as pd
 import sys
-import os
+from collections import OrderedDict
+
+from flask_caching import Cache
+import pandas as pd
+
 from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
-from traffic_viz.d06_visualisation.dash_object_detection.server import server
 from traffic_analysis.d00_utils.load_confs import load_app_parameters, load_parameters, load_paths, load_credentials
 from traffic_analysis.d00_utils.get_project_directory import get_project_directory
+from traffic_viz.web_app.server import server
 
 project_dir = get_project_directory()
 src_dir = f"{project_dir}/src"
@@ -31,15 +32,14 @@ def get_vehicle_types():
 
 def get_cams():
     dl = DataLoaderS3(s3_credentials, bucket_name=paths["bucket_name"])
-
     camera_meta_data_path = paths["s3_camera_details"]
-
     data = dict(dl.read_json(camera_meta_data_path))
+    camera_list = params["camera_list"]
     values = data.values()
-    cam_dict = {item["id"]: item["commonName"] for item in values}
-    # [{'label': item['commonName'],  'value': item['id']}
-    # for item in values]
-    cam_dict = OrderedDict(sorted(cam_dict.items(), key=lambda x: x[1]))
+    cam_dict = {item["id"]: {"name": item["commonName"], "url": {prop["key"]: prop["value"] for prop in item["additionalProperties"]}['videoUrl']}
+                for item in values if item["id"].replace("JamCams_", "") in camera_list}
+    cam_dict = OrderedDict(
+        sorted(cam_dict.items(), key=lambda x: x[1]["name"]))
     return cam_dict
 
 
@@ -57,7 +57,7 @@ def load_camera_statistics(camera_id):
 
 
 def load_vehicle_type_statistics(df, vehicle_type, start_date, end_date):
-    df_vehicle_type = df[df.vehicle_type == vehicle_type]
+    df_vehicle_type = df[df.vehicle_type == vehicle_type].copy()
     df_vehicle_type.sort_values("video_upload_datetime", inplace=True)
     df_vehicle_type = df_vehicle_type[
         ((start_date <= df_vehicle_type.video_upload_datetime)
