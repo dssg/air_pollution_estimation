@@ -15,9 +15,6 @@ paths = load_paths()
 creds = load_credentials()
 s3_credentials = creds[paths['s3_creds']]
 
-# settings
-verbose = True
-
 # pipeline start
 
 # get param grids
@@ -28,13 +25,13 @@ traffic_analysers_params, num_params = initialize_param_sets(params=params)
 upload_annotation_names_to_s3(paths=paths,
                               output_file_name=params['eval_ref_name'],
                               s3_credentials=s3_credentials,
-                              verbose=verbose)
+                              verbose=params["eval_verbosity"])
 
 selected_videos = load_video_names_from_s3(ref_file=params['eval_ref_name'],
                                            paths=paths,
                                            s3_credentials=s3_credentials)
 
-if verbose:
+if params["eval_verbosity"]:
     print("Successfully loaded selected videos")
 
 # create eval tables if they don't exist
@@ -42,7 +39,7 @@ create_eval_sql_tables(creds=creds,
                        paths=paths,
                        drop=True)
 
-if verbose:
+if params["eval_verbosity"]:
     print("Running evaluation for traffic analysers: ", traffic_analysers_params.keys())
 
 selected_videos_master = selected_videos.copy()
@@ -51,7 +48,7 @@ param_counter = 1
 for analyser_name, params_subgrid in traffic_analysers_params.items():
     # iterate thru tuneable params for each combo of detection model/tracking type
     for params_to_set_dict in params_subgrid:
-        if verbose:
+        if params["eval_verbosity"]:
             print(f"Now evaluating param set {param_counter}/{num_params}")
 
         # initialize db names
@@ -68,7 +65,7 @@ for analyser_name, params_subgrid in traffic_analysers_params.items():
                                                    params=params,
                                                    paths=paths,
                                                    s3_credentials=s3_credentials,
-                                                   verbose=verbose)
+                                                   verbose=params["eval_verbosity"])
 
         # select chunks of videos and classify objects
         chunk_size = params['eval_chunk_size']
@@ -96,7 +93,7 @@ for analyser_name, params_subgrid in traffic_analysers_params.items():
                                                               creds=creds,
                                                               return_data=True)
 
-                    if verbose:
+                    if params["eval_verbosity"]:
                         print(f"Successfully processed chunk {chunk_counter}")
             except Exception as e:
                 print(e)
@@ -109,7 +106,7 @@ for analyser_name, params_subgrid in traffic_analysers_params.items():
 
         avg_runtime = np.mean(np.array(analyser_runtime))
         
-        if verbose:
+        if params["eval_verbosity"]:
             print(f"Successfully processed videos for traffic analyser {analyser_name}, param set {params_to_set_dict}")
             print(f"Avg runtime of one video: {avg_runtime}")
             print(f"Now evaluating param set {param_counter}/{num_params}")
@@ -132,7 +129,7 @@ for analyser_name, params_subgrid in traffic_analysers_params.items():
             print(f"Failed to evaluate videos for traffic_analyser {analyser_name}, param set {params_to_set_dict}")
             continue 
 
-        if verbose:
+        if params["eval_verbosity"]:
             print(f"Successfully evaluated videos for traffic_analyser {analyser_name}, param set {params_to_set_dict}")
 
         param_counter += 1

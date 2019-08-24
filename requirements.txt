@@ -20,4 +20,4 @@ sqlalchemy
 pandas==0.24.2
 psycopg2==2.6.2
 seaborn>=0.9
-sklearn
+sklearn>=0.2
