@@ -12,7 +12,7 @@ from traffic_analysis.d03_processing.update_video_level_table import \
     update_video_level_table
 from traffic_analysis.d04_modelling.tracking.tracking_analyser import \
     TrackingAnalyser
-from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
+from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderBlob
 
 
 def create_pipeline(output_file_name,
@@ -30,8 +30,8 @@ def create_pipeline(output_file_name,
     paths = load_paths()
     creds = load_credentials()
     s3_credentials = creds[paths['s3_creds']]
-    data_loader_s3 = DataLoaderS3(
-        s3_credentials=s3_credentials, bucket_name=paths['bucket_name'])
+    data_loader_s3 = DataLoaderBlob(
+        blob_credentials=s3_credentials, bucket_name=paths['bucket_name'])
     if load_ref_file:
         retrieve_and_upload_video_names_to_s3(output_file_name=output_file_name,
                                               paths=paths,

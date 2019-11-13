@@ -1,5 +1,5 @@
 import os
-from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
+from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderBlob
 
 
 def download_detection_model_from_s3(model_name: str,
@@ -19,8 +19,8 @@ def download_detection_model_from_s3(model_name: str,
         os.makedirs(local_folder_path_model)
 
     if not os.listdir(local_folder_path_model):
-        dl = DataLoaderS3(s3_credentials,
-                          bucket_name=paths['bucket_name'])
+        dl = DataLoaderBlob(s3_credentials,
+                            bucket_name=paths['bucket_name'])
 
         files_to_download = dl.list_objects(
             prefix=paths['s3_detection_model'] + model_name)

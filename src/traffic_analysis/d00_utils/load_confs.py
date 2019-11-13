@@ -46,10 +46,10 @@ def load_paths():
 
     with open(filepath) as f:
         paths = yaml.safe_load(f)
-        s3_paths = paths['s3_paths']
+        blob_paths = paths['blob_paths']
         local_paths = paths['local_paths']
         db_paths = paths['db_paths']
 
     for key, val in local_paths.items():
         local_paths[key] = os.sep.join(project_dir + re.split(r"\\|/", val))
-    return {**s3_paths, **local_paths, **db_paths}
+    return {**blob_paths, **local_paths, **db_paths}

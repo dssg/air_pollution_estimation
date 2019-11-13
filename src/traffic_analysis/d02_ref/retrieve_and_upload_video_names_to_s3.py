@@ -3,7 +3,7 @@ import dateutil.parser
 
 from traffic_analysis.d02_ref.ref_utils import generate_dates
 from traffic_analysis.d02_ref.ref_utils import get_names_of_folder_content_from_s3
-from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
+from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderBlob
 
 
 def retrieve_and_upload_video_names_to_s3(output_file_name: str,
@@ -65,8 +65,8 @@ def retrieve_and_upload_video_names_to_s3(output_file_name: str,
                 if from_time <= time_of_day <= to_time and (not camera_list or camera_id in camera_list):
                     selected_files.append("%s%s" % (prefix, filename))
 
-    dl = DataLoaderS3(s3_credentials,
-                      bucket_name=paths['bucket_name'])
+    dl = DataLoaderBlob(s3_credentials,
+                        bucket_name=paths['bucket_name'])
     file_path = paths['s3_video_names'] + output_file_name + '.json'
     dl.save_json(data=selected_files, file_path=file_path)
 

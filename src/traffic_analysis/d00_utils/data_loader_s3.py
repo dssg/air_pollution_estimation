@@ -1,24 +1,18 @@
-import boto3
 import json
-from botocore.exceptions import ClientError
 from traffic_analysis.d00_utils.load_confs import load_paths
 import subprocess
+from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 
 
-class DataLoaderS3:
+class DataLoaderBlob:
 
     def __init__(self,
-                 s3_credentials: dict,
-                 bucket_name: str):
+                 blob_credentials: dict):
 
-        self.s3_credentials = s3_credentials
-        self.bucket_name = bucket_name
+        self.blob_credentials = blob_credentials
+        self.client = BlobServiceClient.from_connection_string(blob_credentials['connection_string'])
 
-        client = boto3.client('s3',
-                              aws_access_key_id=s3_credentials['aws_access_key_id'],
-                              aws_secret_access_key=s3_credentials['aws_secret_access_key']
-                              )
-        self.client = client
+        return
 
     def read_json(self, file_path):
 
@@ -30,15 +24,19 @@ class DataLoaderS3:
     def save_json(self, data, file_path):
         # TODO: ADD DOCUMENTATION. What type is data?
 
-        self.client.put_object(Body=(bytes(json.dumps(data).encode('UTF-8'))),
-                               Bucket=self.bucket_name,
-                               Key=file_path)
+        blob_client = self.client.get_blob_client(container="pipeline", blob=file_path)
+        try:
+            blob_client.upload_blob(json.dumps(data))
+        except:
+            print("File already exists!")
 
     def file_exists(self, file_path):
 
+        """
         try:
-            self.client.get_object(Bucket=self.bucket_name,
-                                   Key=file_path)
+            with open(file_path, "rb") as data:
+                self.client.upload_blob(data)
+
             return True
 
         except ClientError as ex:
@@ -46,6 +44,7 @@ class DataLoaderS3:
                 return False
             else:
                 raise ex
+        """
 
     def download_file(self,
                       path_of_file_to_download,
@@ -59,9 +58,16 @@ class DataLoaderS3:
                     path_of_file_to_upload,
                     path_to_upload_file_to):
 
-        self.client.upload_file(Bucket=self.bucket_name,
-                                Key=path_to_upload_file_to,
-                                Filename=path_of_file_to_upload)
+        try:
+            blob_client = self.client.get_blob_client(container="pipeline", blob=path_to_upload_file_to)
+
+            with open(path_of_file_to_upload, "rb") as data:
+                blob_client.upload_blob(data)
+
+        except:
+            print("File already exists!")
+
+        return
 
     def list_objects(self,
                      prefix=None) -> list:

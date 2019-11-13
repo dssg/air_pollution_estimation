@@ -8,7 +8,7 @@ import subprocess
 from subprocess import PIPE, Popen
 import dateutil.parser
 
-from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
+from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderBlob
 from traffic_analysis.d00_utils.email_service import send_email_warning
 from traffic_analysis.d00_utils.load_confs import load_paths
 
@@ -17,15 +17,14 @@ paths = load_paths()
 
 
 def download_camera_meta_data(tfl_camera_api: str,
-                              s3_credentials: dict):
+                              blob_credentials: dict):
     """
     Gets a list of camera ids and info from tfl api
     """
 
-    dl = DataLoaderS3(s3_credentials,
-                      bucket_name=paths['bucket_name'])
+    dl = DataLoaderBlob(blob_credentials)
 
-    camera_meta_data_path = paths['s3_camera_details']
+    camera_meta_data_path = paths['blob_camera_details']
 
     if dl.file_exists(camera_meta_data_path):
         return
@@ -54,8 +53,8 @@ def collect_camera_videos(download_url: dict,
         delay: amount of time (minutes) to wait for before downloading new data
     """
 
-    dl = DataLoaderS3(s3_credentials,
-                      bucket_name=paths['bucket_name'])
+    dl = DataLoaderBlob(s3_credentials,
+                        bucket_name=paths['bucket_name'])
     video_urls_dict = dict(dl.read_json(paths['s3_camera_details']))
 
     # continuously download videos if iterations is None, otherwise stop after n iterations

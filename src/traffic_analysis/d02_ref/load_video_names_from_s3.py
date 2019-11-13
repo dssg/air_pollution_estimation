@@ -1,4 +1,4 @@
-from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
+from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderBlob
 
 
 def load_video_names_from_s3(ref_file: str,
@@ -14,8 +14,8 @@ def load_video_names_from_s3(ref_file: str,
             files: list of files to be downloaded from s3
     """
 
-    dl = DataLoaderS3(s3_credentials=s3_credentials,
-                      bucket_name=paths['bucket_name'])
+    dl = DataLoaderBlob(blob_credentials=s3_credentials,
+                        bucket_name=paths['bucket_name'])
 
     files = dl.read_json(file_path=paths['s3_video_names'] + ref_file + '.json')
 

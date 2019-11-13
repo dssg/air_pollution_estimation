@@ -1,15 +1,12 @@
-s3_paths:
-  bucket_name: "air-pollution-uk" #s3 bucket name
-  s3_video: "raw/videos/" #path to video data in s3 bucket
-  s3_processed_videos: "raw/processed_videos/"
-  s3_annotations: "ref/annotations/"
-  s3_video_names: "ref/video_names/"
-  s3_camera_details: "ref/camera_details/camera_details.json"
-
-  s3_frame_level: "frame_level/" # TODO DELETE THIS
-  s3_profile: "dssg" # TODO: change this for user? 
-  s3_creds: "dev_s3" # TODO: CHANGE TO JUST S3
-  s3_detection_model: "ref/model_conf/"
+blob_paths:
+  blob_bucket_name: "air-pollution-uk" #s3 bucket name
+  blob_video: "raw/videos/" #path to video data in s3 bucket
+  blob_processed_videos: "raw/processed_videos/"
+  blob_annotations: "ref/annotations/"
+  blob_video_names: "ref/video_names/"
+  blob_camera_details: "ref/camera_details/camera_details.json"
+  blob_creds: "blob"
+  blob_detection_model: "ref/model_conf/"
 
 local_paths:
   temp_video: "data/temp/videos/"
@@ -27,7 +24,7 @@ local_paths:
   setup_video: "data/setup/annotations/videos/"
 
 db_paths:
-  db_host: "dssg-london.ck0oseycrr7s.eu-west-2.rds.amazonaws.com"
-  db_name: "airquality"
+  db_host: "psql-cleanair-dssg-traffic.postgres.database.azure.com"
+  db_name: "db_cleanair_dssg_traffic"
   db_frame_level: 'frame_stats'
   db_video_level: 'video_stats'

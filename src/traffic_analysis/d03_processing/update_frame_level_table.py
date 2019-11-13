@@ -2,7 +2,7 @@ import datetime
 
 import pandas as pd
 
-from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
+from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderBlob
 from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 from traffic_analysis.d00_utils.data_retrieval import (delete_and_recreate_dir,
                                                        load_videos_into_np)
@@ -24,8 +24,8 @@ def update_frame_level_table(analyser,
                         analyser object
     """
     s3_credentials = creds[paths['s3_creds']]
-    dl = DataLoaderS3(s3_credentials,
-                      bucket_name=paths['bucket_name'])
+    dl = DataLoaderBlob(s3_credentials,
+                        bucket_name=paths['bucket_name'])
 
     delete_and_recreate_dir(paths["temp_video"])
     # Download the video file_names using the file list
