@@ -10,7 +10,7 @@ from_time = "00-00-00"
 to_time = "23-59-59"
 params = load_parameters()
 
-create_pipeline(load_ref_file=True,
+create_pipeline(construct_ref_file=True,
                 output_file_name=output_file_name,
                 from_date=from_date,
                 to_date=to_date,

@@ -24,14 +24,14 @@ def create_pipeline(output_file_name,
                     chunk_size,
                     move_to_processed_folder=False,
                     delete_processed_videos=False,
-                    load_ref_file=False):
+                    construct_ref_file=False):
 
     params = load_parameters()
     paths = load_paths()
     creds = load_credentials()
     blob_credentials = creds[paths['blob_creds']]
     dl = DataLoaderBlob(blob_credentials=blob_credentials)
-    if load_ref_file:
+    if construct_ref_file:
         retrieve_and_upload_video_names_to_s3(output_file_name=output_file_name,
                                               paths=paths,
                                               from_date=from_date, to_date=to_date,
