@@ -63,7 +63,7 @@ modelling:
   stop_start_iou_threshold: 0.80
 
   # others
-  delete_processed_videos: False
+  delete_processed_videos: True
 
 reporting:
   chunk_size: 10

@@ -9,7 +9,7 @@ import tensorflow as tf
 import numpy as np
 
 from traffic_analysis.d04_modelling.transfer_learning.generate_tensorflow_model import YoloV3
-from traffic_analysis.d02_ref.download_detection_model_from_s3 import download_detection_model_from_s3
+from traffic_analysis.d02_ref.download_detection_model_from_blob import download_detection_model_from_blob
 
 
 def yolov3_darknet_to_tensorflow(paths: dict,
@@ -29,9 +29,9 @@ def yolov3_darknet_to_tensorflow(paths: dict,
 
     else:
         if not os.path.exists(os.path.join(model_file_path, 'yolov3')):
-            download_detection_model_from_s3(model_name='yolov3',
-                                             paths=paths,
-                                             s3_credentials=s3_credentials)
+            download_detection_model_from_blob(model_name='yolov3',
+                                               paths=paths,
+                                               blob_credentials=s3_credentials)
 
         if not os.path.exists(os.path.join(model_file_path, detection_model)):
             os.mkdir(os.path.join(model_file_path, detection_model))

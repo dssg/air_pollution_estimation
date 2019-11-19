@@ -3,20 +3,20 @@ import os
 import numpy as np
 import cv2
 
-from traffic_analysis.d02_ref.download_detection_model_from_s3 import download_detection_model_from_s3
+from traffic_analysis.d02_ref.download_detection_model_from_blob import download_detection_model_from_blob
 
 
 def detect_objects_cv(image_capture: np.ndarray,
                       params: dict,
                       paths: dict,
-                      s3_credentials: dict,
+                      blob_credentials: dict,
                       selected_labels: list = None) -> (list, list, list):
     """Unifying function that defines the detected objects in an image
     Args:
         image_capture: numpy array containing the captured image (width, height, rbg)
         params: dictionary of parameters from yml file
         paths: dictionary of paths from yml file
-        s3_credentials: s3 credentials
+        blob_credentials: blob credentials
         selected_labels: list of labels if supplied that returns only bboxes with these labels
 
     Returns:
@@ -29,9 +29,9 @@ def detect_objects_cv(image_capture: np.ndarray,
     detection_iou_threshold = params['detection_iou_threshold']
     model_name = params['detection_model']
 
-    download_detection_model_from_s3(model_name=model_name,
-                                     paths=paths,
-                                     s3_credentials=s3_credentials)
+    download_detection_model_from_blob(model_name=model_name,
+                                       paths=paths,
+                                       blob_credentials=blob_credentials)
     network_output = pass_image_through_nn(image_capture=image_capture,
                                            model_name=model_name,
                                            paths=paths)

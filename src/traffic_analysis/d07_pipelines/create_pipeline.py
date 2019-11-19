@@ -2,8 +2,8 @@
 from traffic_analysis.d00_utils.data_retrieval import delete_and_recreate_dir
 from traffic_analysis.d00_utils.load_confs import (load_credentials,
                                                    load_parameters, load_paths)
-from traffic_analysis.d02_ref.load_video_names_from_s3 import \
-    load_video_names_from_s3
+from traffic_analysis.d02_ref.load_video_names_from_blob import \
+    load_video_names_from_blob
 from traffic_analysis.d02_ref.retrieve_and_upload_video_names_to_s3 import \
     retrieve_and_upload_video_names_to_s3
 from traffic_analysis.d03_processing.update_frame_level_table import \
@@ -12,7 +12,7 @@ from traffic_analysis.d03_processing.update_video_level_table import \
     update_video_level_table
 from traffic_analysis.d04_modelling.tracking.tracking_analyser import \
     TrackingAnalyser
-from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderBlob
+from traffic_analysis.d00_utils.data_loader_blob import DataLoaderBlob
 
 
 def create_pipeline(output_file_name,
@@ -29,24 +29,23 @@ def create_pipeline(output_file_name,
     params = load_parameters()
     paths = load_paths()
     creds = load_credentials()
-    s3_credentials = creds[paths['s3_creds']]
-    data_loader_s3 = DataLoaderBlob(
-        blob_credentials=s3_credentials, bucket_name=paths['bucket_name'])
+    blob_credentials = creds[paths['blob_creds']]
+    dl = DataLoaderBlob(blob_credentials=blob_credentials)
     if load_ref_file:
         retrieve_and_upload_video_names_to_s3(output_file_name=output_file_name,
                                               paths=paths,
                                               from_date=from_date, to_date=to_date,
                                               from_time=from_time, to_time=to_time,
-                                              s3_credentials=s3_credentials,
+                                              blob_credentials=blob_credentials,
                                               camera_list=camera_list)
 
     # Start from here if video names already specified
-    selected_videos = load_video_names_from_s3(ref_file=output_file_name,
-                                               paths=paths,
-                                               s3_credentials=s3_credentials)
+    selected_videos = load_video_names_from_blob(ref_file=output_file_name,
+                                                 paths=paths,
+                                                 blob_credentials=blob_credentials)
 
     analyser = TrackingAnalyser(
-        params=params, paths=paths, s3_credentials=s3_credentials)
+        params=params, paths=paths, blob_credentials=blob_credentials)
 
     # select chunks of videos and classify objects
     while selected_videos:
@@ -64,14 +63,19 @@ def create_pipeline(output_file_name,
 
         # move processed videos to processed folder
         if move_to_processed_folder:
+            delete_and_recreate_dir(paths["temp_video"])
+
             for filename in file_names:
-                new_filename = filename.replace(
-                    paths['s3_video'], paths['s3_processed_videos'])
-                data_loader_s3.move_file(filename, new_filename)
+                dl.copy_blob(file_to_move=filename, new_file=filename.replace(
+                    paths['blob_video'], paths['blob_processed_videos']), paths=paths)
+
+            dl.delete_blobs(blobs=file_names)
+            delete_and_recreate_dir(paths["temp_video"])
 
         # delete processed videos if true
         if delete_processed_videos is True:
-            data_loader_s3.delete_folder(paths['s3_processed_videos'])
+            blobs, elapsed_time = dl.list_blobs(prefix=paths['blob_processed_videos'])
+            dl.delete_blobs(blobs=blobs)
 
         # Move on to next chunk
         selected_videos = selected_videos[chunk_size:]

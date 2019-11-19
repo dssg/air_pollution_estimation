@@ -2,7 +2,7 @@ import datetime
 
 import pandas as pd
 
-from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderBlob
+from traffic_analysis.d00_utils.data_loader_blob import DataLoaderBlob
 from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 from traffic_analysis.d00_utils.data_retrieval import (delete_and_recreate_dir,
                                                        load_videos_into_np)
@@ -23,20 +23,16 @@ def update_frame_level_table(analyser,
         frame_level_df: dataframe of frame level information returned by 
                         analyser object
     """
-    s3_credentials = creds[paths['s3_creds']]
-    dl = DataLoaderBlob(s3_credentials,
-                        bucket_name=paths['bucket_name'])
+    blob_credentials = creds[paths['blob_creds']]
+    dl = DataLoaderBlob(blob_credentials)
 
     delete_and_recreate_dir(paths["temp_video"])
     # Download the video file_names using the file list
     for filename in file_names:
-        try:
-            path_to_download_file_to = paths["temp_video"] + \
-                filename.split('/')[-1].replace(':', '-').replace(" ", "_")
-            dl.download_file(path_of_file_to_download=filename,
-                             path_to_download_file_to=path_to_download_file_to)
-        except:
-            print("Could not download " + filename)
+        path_to_download_file_to = paths["temp_video"] + \
+            filename.split('/')[-1].replace(':', '-').replace(" ", "_")
+        dl.download_blob(path_of_file_to_download=filename,
+                         path_to_download_file_to=path_to_download_file_to)
 
     video_dict = load_videos_into_np(paths["temp_video"])
     delete_and_recreate_dir(paths["temp_video"])

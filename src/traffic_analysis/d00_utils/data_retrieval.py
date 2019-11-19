@@ -51,7 +51,7 @@ def download_video_and_convert_to_numpy(local_folder, s3_profile, bucket, filena
     # Download the files
     for filename in filenames:
         try:
-            my_bucket.download_file(filename, local_folder + filename.split('/')[-1].replace(
+            my_bucket.download_blob(filename, local_folder + filename.split('/')[-1].replace(
                 ':', '-').replace(" ", "_"))
         except:
             print("Could not download " + filename)

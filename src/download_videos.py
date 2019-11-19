@@ -8,6 +8,6 @@ paths = load_paths()
 s3_credentials = creds[paths['s3_creds']]
 
 collect_camera_videos(download_url=params['jamcam_url'],
-                      s3_credentials=s3_credentials,
+                      blob_credentials=s3_credentials,
                       iterations=1,
                       delay=0)

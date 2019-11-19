@@ -4,7 +4,7 @@ import re
 import shutil
 import glob
 
-from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderBlob
+from traffic_analysis.d00_utils.data_loader_blob import DataLoaderBlob
 from traffic_analysis.d00_utils.data_retrieval import delete_and_recreate_dir
 from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
 
@@ -56,7 +56,7 @@ def upload_yolo_weights_to_s3(blob_credentials,
             path_to_upload_file_to = target_dir_on_s3 + dir_name + "/" + file_name
 
             print(f"uploading file {path_of_file_to_upload} to {path_to_upload_file_to}")
-            dl.upload_file(path_of_file_to_upload=path_of_file_to_upload,
+            dl.upload_blob(path_of_file_to_upload=path_of_file_to_upload,
                            path_to_upload_file_to=path_to_upload_file_to)
 
     shutil.rmtree(local_dir)
@@ -68,14 +68,14 @@ def upload_annotations_to_s3(s3_credentials, paths):
     # raw videos
     for video_file in glob.glob(paths["setup_video"] + "*.mp4"):
         camera_id, video_upload_datetime = parse_video_or_annotation_name(video_name=video_file.split('/')[-1])
-        data_loader.upload_file(path_of_file_to_upload=video_file,
+        data_loader.upload_blob(path_of_file_to_upload=video_file,
                                 path_to_upload_file_to=(paths["s3_video"]
                                                         + video_upload_datetime.strftime("%Y-%m-%d")
                                                         + "/" + video_file.split('/')[-1]))
 
     # xml files
     for xml_file in glob.glob(paths["setup_xml"] + "*.xml"):
-        data_loader.upload_file(path_of_file_to_upload=xml_file,
+        data_loader.upload_blob(path_of_file_to_upload=xml_file,
                                 path_to_upload_file_to=(paths["s3_annotations"]
                                                         + "cvat/"
                                                         + xml_file.split('/')[-1]))

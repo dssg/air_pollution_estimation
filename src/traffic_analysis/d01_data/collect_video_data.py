@@ -8,9 +8,10 @@ import subprocess
 from subprocess import PIPE, Popen
 import dateutil.parser
 
-from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderBlob
+from traffic_analysis.d00_utils.data_loader_blob import DataLoaderBlob
 from traffic_analysis.d00_utils.email_service import send_email_warning
 from traffic_analysis.d00_utils.load_confs import load_paths
+from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
 
 
 paths = load_paths()
@@ -39,23 +40,22 @@ def download_camera_meta_data(tfl_camera_api: str,
 
 
 def collect_camera_videos(download_url: dict,
-                          s3_credentials: dict,
+                          blob_credentials: dict,
                           iterations: int = None,
                           delay: int = 3):
     """
     This function was created to download videos from cameras using the tfl api.
     Args:
         download_url: the tfl api to download traffic camera videos
-        s3_credentials: s3 credentials
+        blob_credentials: blob credentials
         paths:
         cam_file: stores the last time the camera was modified. The file is checked in order to download new videos
         iterations: number of times the download should run. The video are downloaded continuously if no value is supplied
         delay: amount of time (minutes) to wait for before downloading new data
     """
 
-    dl = DataLoaderBlob(s3_credentials,
-                        bucket_name=paths['bucket_name'])
-    video_urls_dict = dict(dl.read_json(paths['s3_camera_details']))
+    dl = DataLoaderBlob(blob_credentials)
+    video_urls_dict = dict(dl.read_json(paths['blob_camera_details']))
 
     # continuously download videos if iterations is None, otherwise stop after n iterations
     iteration = 0
@@ -92,13 +92,13 @@ def collect_camera_videos(download_url: dict,
             time.sleep(delay * 60)
 
 
-def upload_videos(iterations=None,
+def upload_videos(blob_credentials: dict,
+                  iterations: int =None,
                   delay: int = None):
     """
     This function uploads the video in the local_video_dir to S3. Each video is deleted after an upload.
     Args:
-        local_video_dir: local directly where the videos are stored
-        paths: Contains the s3 folder to save the videos, bucket name, and s3 profile
+        blob_credentials: blob credentials
         iterations: number of times the upload should run. The local video directory is checked continuously for new videos if no value is supplied
         delay: amount of time (minutes) to wait for before downloading new data
     """
@@ -106,20 +106,22 @@ def upload_videos(iterations=None,
     local_video_dir = paths['temp_raw_video']
     if not os.path.exists(local_video_dir):
         return
-    s3_folder = paths['s3_video']
-    bucket_name = paths['bucket_name']
-    s3_profile = paths['s3_profile']
-    target_dir_on_s3 = "s3://%s/%s" % (bucket_name, s3_folder)
+    blob_folder = paths['blob_video']
+
+    dl = DataLoaderBlob(blob_credentials)
 
     iteration = 0
     while True:
         try:
-            res = subprocess.call(["aws", "s3", 'mv',
-                                   local_video_dir,
-                                   target_dir_on_s3,
-                                   '--recursive',
-                                   '--profile',
-                                   s3_profile])
+            for r, d, f in os.walk(local_video_dir):
+                if f:
+                    for file in f:
+                        file_path_on_azure = os.path.join(blob_folder, file)
+                        file_path_on_local = os.path.join(r, file)
+                        dl.upload_blob(path_of_file_to_upload=file_path_on_local, path_to_upload_file_to=file_path_on_azure)
+                        os.remove(file_path_on_local)
+                        print('Uploaded video to ' + file_path_on_azure)
+
         except Exception as e:
             send_email_warning(str(e), "Video upload failed.")
         iteration += 1
@@ -128,6 +130,8 @@ def upload_videos(iterations=None,
         print(delay)
         if delay:
             time.sleep(delay * 60)
+
+    return
 
 
 # TODO: remove unused function
