@@ -32,7 +32,10 @@ class DataLoaderBlob:
         try:
             blob_client.upload_blob(json.dumps(data))
         except:
-            print("File already exists!")
+            print("Replacing JSON file: " + str(file_path))
+            self.delete_blobs([file_path])
+            blob_client.upload_blob(json.dumps(data))
+
 
     def file_exists(self, file_path):
 
