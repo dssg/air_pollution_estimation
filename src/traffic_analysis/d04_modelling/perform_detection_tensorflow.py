@@ -9,7 +9,7 @@ from traffic_analysis.d04_modelling.transfer_learning.tensorflow_detection_utils
     remove_overlapping_boxes, letterbox_resize
 from traffic_analysis.d04_modelling.transfer_learning.convert_darknet_to_tensorflow import parse_anchors, \
     yolov3_darknet_to_tensorflow
-from traffic_analysis.d04_modelling.transfer_learning.generate_tensorflow_model import YoloV3
+from traffic_analysis.d04_modelling.transfer_learning.tensorflow_model_loader import YoloV3
 from traffic_analysis.d04_modelling.perform_detection_opencv import label_detections, \
     choose_objects_of_selected_labels
 

@@ -43,13 +43,13 @@ data_renaming: # TODO: remove later when renaming finished
 
 modelling:
   # obj detection
-  detection_model: "yolov3-tiny"
+  detection_model: "yolov3_tf"
   detection_implementation: "cvlib"
   detection_iou_threshold: 0.05
   detection_confidence_threshold: 0.2
-  # TODO: change nms threshold to iou threshold	
+  # TODO: change nms threshold to iou threshold
   detection_nms_threshold: 0.2
-  
+
   # tracking
   selected_labels: ["car", "truck", "bus", "motorbike"]
   opencv_tracker_type: "csrt"

@@ -30,6 +30,12 @@ def load_app_parameters():
     return {**params['visualization']}
 
 
+def load_training_parameters():
+    with open(project_dir + '/conf/base/training_parameters.yml') as f:
+        params = yaml.safe_load(f)
+    return collapse_dict_hierarchy(params)
+
+
 def load_credentials():
 
     filepath = os.sep.join(
