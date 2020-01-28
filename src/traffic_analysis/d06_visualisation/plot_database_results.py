@@ -9,7 +9,7 @@ from traffic_analysis.d00_utils.load_confs import (load_credentials,
 from traffic_analysis.d02_ref.ref_utils import generate_dates
 
 from_date = "2019-11-29"
-to_date = "2019-11-29"
+to_date = "2019-12-16"
 
 print('From: ' + from_date + ' To: ' + to_date)
 
