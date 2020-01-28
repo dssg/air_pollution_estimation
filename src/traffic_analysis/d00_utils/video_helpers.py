@@ -16,8 +16,9 @@ def write_mp4(local_mp4_dir: str, mp4_name: str, video: np.ndarray, fps: int):
     Returns:
     Raises:
     """
-    imageio.mimwrite(mp4_name, video, fps=fps)
-    print('Video Saved to ' + str(mp4_name))
+    name = 'results/' + mp4_name.split('.')[0] + '.mp4'
+    imageio.mimwrite(name, video, fps=fps)
+    print('Video Saved to ' + name)
 
 
 def parse_video_or_annotation_name(video_name: str) -> (str, datetime.datetime):
