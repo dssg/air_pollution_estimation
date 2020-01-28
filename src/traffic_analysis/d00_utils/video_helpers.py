@@ -16,7 +16,7 @@ def write_mp4(local_mp4_dir: str, mp4_name: str, video: np.ndarray, fps: int):
     Returns:
     Raises:
     """
-    name = 'results/' + mp4_name.split('.')[0] + '.mp4'
+    name = mp4_name.split('.')[0] + '.mp4'
     imageio.mimwrite(name, video, fps=fps)
     print('Video Saved to ' + name)
 
