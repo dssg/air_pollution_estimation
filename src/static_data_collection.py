@@ -6,18 +6,17 @@ params = load_parameters()
 creds = load_credentials()
 paths = load_paths()
 
-s3_credentials = creds[paths['s3_creds']]
+blob_credentials = creds[paths['blob_creds']]
 
 
 def collect_camera_videos_fn():
     collect_camera_videos(download_url=params['jamcam_url'],
-                          s3_credentials=s3_credentials,
-                          iterations=params["iterations"],
+                          blob_credentials=blob_credentials,
                           delay=params["delay"])
 
 
 def upload_videos_fn():
-    upload_videos(iterations=1,
+    upload_videos(blob_credentials=blob_credentials,
                   delay=1)
 
 
@@ -33,3 +32,4 @@ def run_in_parallel(*fns):
 
 print("Running download and upload functions in parallel")
 run_in_parallel(collect_camera_videos_fn, upload_videos_fn)
+

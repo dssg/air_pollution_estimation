@@ -10,13 +10,14 @@ from_time = "00-00-00"
 to_time = "23-59-59"
 params = load_parameters()
 
-create_pipeline(output_file_name=output_file_name,
+create_pipeline(construct_ref_file=True,
+                output_file_name=output_file_name,
                 from_date=from_date,
                 to_date=to_date,
                 from_time=from_time,
                 to_time=to_time,
                 chunk_size=params['chunk_size'],
                 move_to_processed_folder=True,
-                delete_processed_videos=params["delete_processed_videos"],
+                delete_processed_videos=True,
                 camera_list=params["camera_list"]
                 )

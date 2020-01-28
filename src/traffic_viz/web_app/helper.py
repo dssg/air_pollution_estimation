@@ -4,7 +4,7 @@ from collections import OrderedDict
 from flask_caching import Cache
 import pandas as pd
 
-from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
+from traffic_analysis.d00_utils.data_loader_blob import DataLoaderBlob
 from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 from traffic_analysis.d00_utils.load_confs import load_app_parameters, load_parameters, load_paths, load_credentials
 from traffic_analysis.d00_utils.get_project_directory import get_project_directory
@@ -31,7 +31,7 @@ def get_vehicle_types():
 
 
 def get_cams():
-    dl = DataLoaderS3(s3_credentials, bucket_name=paths["bucket_name"])
+    dl = DataLoaderBlob(s3_credentials, bucket_name=paths["bucket_name"])
     camera_meta_data_path = paths["s3_camera_details"]
     data = dict(dl.read_json(camera_meta_data_path))
     camera_list = params["camera_list"]

@@ -1,5 +1,5 @@
 from traffic_analysis.d02_ref.ref_utils import get_names_of_folder_content_from_s3
-from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
+from traffic_analysis.d00_utils.data_loader_blob import DataLoaderBlob
 
 
 def upload_annotation_names_to_s3(paths: dict,
@@ -31,7 +31,7 @@ def upload_annotation_names_to_s3(paths: dict,
             name = name.replace('.xml', '.mp4')
             selected_files.append(paths['s3_video'] + date + '/' + name)
 
-    dl = DataLoaderS3(s3_credentials,
-                      bucket_name=paths['bucket_name'])
+    dl = DataLoaderBlob(s3_credentials,
+                        bucket_name=paths['bucket_name'])
     file_path = paths['s3_video_names'] + 'annotations.json'
     dl.save_json(data=selected_files, file_path=file_path)

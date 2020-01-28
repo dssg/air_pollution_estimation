@@ -20,7 +20,7 @@ from traffic_analysis.d04_modelling.perform_detection_tensorflow import initiali
 
 
 class TrackingAnalyser(TrafficAnalyserInterface):
-    def __init__(self, params: dict, paths: dict, s3_credentials: dict):
+    def __init__(self, params: dict, paths: dict, blob_credentials: dict):
         """
         (General parameters):
         selected_labels -- labels which we wish to detect
@@ -49,7 +49,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         # general settings
         self.params = params
         self.paths = paths
-        self.s3_credentials = s3_credentials
+        self.blob_credentials = blob_credentials
         self.selected_labels = params['selected_labels']
 
         # object detection settings
@@ -65,7 +65,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             self.model_initializer, self.init_data, self.detection_model = initialize_tensorflow_model(
                 params=self.params,
                 paths=self.paths,
-                s3_credentials=self.s3_credentials,
+                s3_credentials=self.blob_credentials,
                 sess=self.sess)
 
         # tracking settings
@@ -328,7 +328,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
                 bboxes, labels, confs = detect_objects_cv(image_capture=frame,
                                                           params=self.params,
                                                           paths=self.paths,
-                                                          s3_credentials=self.s3_credentials,
+                                                          blob_credentials=self.blob_credentials,
                                                           selected_labels=self.selected_labels)
 
                 all_bboxes.append(bboxes)

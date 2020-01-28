@@ -9,4 +9,4 @@ create_pipeline(output_file_name=output_file_name,
                 from_time=params['from_time'], to_time=params['to_time'],
                 chunk_size=params['chunk_size'],
                 camera_list=params["camera_list"],
-                load_ref_file=params['load_ref_file'])
+                construct_ref_file=params['load_ref_file'])
