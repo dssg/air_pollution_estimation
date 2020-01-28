@@ -21,7 +21,7 @@ class TrafficAnalyserInterface(ABC):
         self.paths = paths
 
     @abstractmethod
-    def construct_frame_level_df(self, video_dict) -> pd.DataFrame:
+    def construct_frame_level_df(self, video_dict, make_video) -> pd.DataFrame:
         """Should use the video_dict to create frame level df for multiple videos with columns 
         as specified in the project data tables schema
         """

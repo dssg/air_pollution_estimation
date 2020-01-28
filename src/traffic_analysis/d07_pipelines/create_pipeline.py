@@ -24,7 +24,8 @@ def create_pipeline(output_file_name,
                     chunk_size,
                     move_to_processed_folder=False,
                     delete_processed_videos=False,
-                    construct_ref_file=False):
+                    construct_ref_file=False,
+                    make_video=False):
 
     params = load_parameters()
     paths = load_paths()
@@ -53,7 +54,8 @@ def create_pipeline(output_file_name,
         frame_level_df = update_frame_level_table(analyser=analyser,
                                                   file_names=file_names,
                                                   paths=paths,
-                                                  creds=creds)
+                                                  creds=creds,
+                                                  make_video=make_video)
         update_video_level_table(analyser=analyser,
                                  frame_level_df=frame_level_df,
                                  file_names=selected_videos[:chunk_size],

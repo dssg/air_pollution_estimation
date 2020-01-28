@@ -11,7 +11,7 @@ from traffic_analysis.d00_utils.data_retrieval import (delete_and_recreate_dir,
 def update_frame_level_table(analyser,
                              file_names: list,
                              paths: dict,
-                             creds: dict) -> pd.DataFrame:
+                             creds: dict, make_video) -> pd.DataFrame:
     """ Update the frame level table on PSQL based on the videos in the files list
     Args:
         analyser: analyser object for doing traffic analysis
@@ -37,7 +37,7 @@ def update_frame_level_table(analyser,
     video_dict = load_videos_into_np(paths["temp_video"])
     delete_and_recreate_dir(paths["temp_video"])
 
-    frame_level_df = analyser.construct_frame_level_df(video_dict)
+    frame_level_df = analyser.construct_frame_level_df(video_dict, make_video)
     if frame_level_df.empty:
         return None
     frame_level_df.dropna(how='any', inplace=True)

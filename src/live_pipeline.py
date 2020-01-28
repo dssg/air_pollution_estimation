@@ -19,5 +19,6 @@ create_pipeline(construct_ref_file=True,
                 chunk_size=params['chunk_size'],
                 move_to_processed_folder=True,
                 delete_processed_videos=True,
-                camera_list=params["camera_list"]
+                camera_list=params["camera_list"],
+                make_video=params["make_video"]
                 )

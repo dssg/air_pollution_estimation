@@ -352,7 +352,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             tf.reset_default_graph()
         gc.collect()
 
-    def construct_frame_level_df(self, video_dict) -> pd.DataFrame:
+    def construct_frame_level_df(self, video_dict, make_video) -> pd.DataFrame:
         """Construct frame level df for multiple videos
         Args:
             video_dict: key is video filename, key is np array of videos
@@ -373,7 +373,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
             return None
 
         for video_name, video in video_dict.items():
-            fleet = self.detect_and_track_objects(video, video_name)
+            fleet = self.detect_and_track_objects(video, video_name, make_video=make_video)
             single_frame_level_df = fleet.report_frame_level_info()
             frame_info_list.append(single_frame_level_df)
         return pd.concat(frame_info_list)
