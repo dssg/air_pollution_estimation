@@ -6,7 +6,7 @@ data_collection:
   delay: 3
 
 static_pipeline:
-  load_ref_file: False
+  construct_ref_file: False
   ref_file_name: "example_dataset"
   camera_list:
     [   
@@ -63,7 +63,8 @@ modelling:
   stop_start_iou_threshold: 0.80
 
   # others
-  delete_processed_videos: False
+  delete_processed_videos: True
+  make_video: True
 
 reporting:
   chunk_size: 10
