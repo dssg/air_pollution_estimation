@@ -31,7 +31,7 @@ def initialize_param_sets(params: dict):
 def create_traffic_analyser(params_to_set: dict,
                             params: dict,
                             paths: dict,
-                            s3_credentials: dict,
+                            blob_credentials: dict,
                             verbose=True
                             ): 
     """Initialize a traffic analyser with parameters passed in params_to_set
@@ -45,7 +45,7 @@ def create_traffic_analyser(params_to_set: dict,
 
     traffic_analyser = TrackingAnalyser(params=params_copy,
                                        paths=paths,
-                                       s3_credentials=s3_credentials,
+                                       blob_credentials=blob_credentials,
                                        detection_model=params_copy['detection_model'],
                                        tracker_type=params_copy['tracker_type'],
                                        verbose=verbose)

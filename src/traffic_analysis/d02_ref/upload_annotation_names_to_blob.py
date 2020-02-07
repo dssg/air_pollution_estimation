@@ -3,9 +3,9 @@ from traffic_analysis.d00_utils.data_loader_blob import DataLoaderBlob
 from traffic_analysis.d02_ref.ref_utils import get_s3_video_path_from_xml_name
 
 
-def upload_annotation_names_to_s3(paths,
+def upload_annotation_names_to_blob(paths,
                                   output_file_name: str,
-                                  s3_credentials: dict,
+                                  blob_credentials: dict,
                                   verbose=True) -> dict:
     """ Get the list of xml files from s3 and save a json on s3 containing the corresponding video filepaths
     Args:

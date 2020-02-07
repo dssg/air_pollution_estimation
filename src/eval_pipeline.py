@@ -4,7 +4,7 @@ from traffic_analysis.d00_utils.data_retrieval import delete_and_recreate_dir
 from traffic_analysis.d00_utils.load_confs import load_parameters, load_paths, load_credentials
 from traffic_analysis.d00_utils.create_sql_tables import create_primary_sql_tables, create_eval_sql_tables
 from traffic_analysis.d02_ref.load_video_names_from_blob import load_video_names_from_blob
-from traffic_analysis.d02_ref.upload_annotation_names_to_s3 import upload_annotation_names_to_s3
+from traffic_analysis.d02_ref.upload_annotation_names_to_blob import upload_annotation_names_to_blob
 from traffic_analysis.d03_processing.update_frame_level_table import update_frame_level_table
 from traffic_analysis.d03_processing.update_video_level_table import update_video_level_table
 from traffic_analysis.d03_processing.update_eval_tables import update_eval_tables
@@ -13,7 +13,7 @@ from traffic_analysis.d03_processing.create_traffic_analyser import create_traff
 params = load_parameters()
 paths = load_paths()
 creds = load_credentials()
-s3_credentials = creds[paths['s3_creds']]
+blob_credentials = creds[paths['blob_creds']]
 
 # pipeline start
 
@@ -22,14 +22,14 @@ traffic_analysers_params, num_params = initialize_param_sets(params=params)
 
 # If running first time:
 # get annotation xmls from s3 saves json on s3 containing to corresponding video filepaths
-upload_annotation_names_to_s3(paths=paths,
+upload_annotation_names_to_blob(paths=paths,
                               output_file_name=params['eval_ref_name'],
-                              s3_credentials=s3_credentials,
+                              blob_credentials=blob_credentials,
                               verbose=params["eval_verbosity"])
 
 selected_videos = load_video_names_from_blob(ref_file=params['eval_ref_name'],
                                            paths=paths,
-                                           s3_credentials=s3_credentials)
+                                           blob_credentials=blob_credentials)
 
 if params["eval_verbosity"]:
     print("Successfully loaded selected videos")
@@ -64,7 +64,7 @@ for analyser_name, params_subgrid in traffic_analysers_params.items():
         traffic_analyser = create_traffic_analyser(params_to_set=params_to_set_dict,
                                                    params=params,
                                                    paths=paths,
-                                                   s3_credentials=s3_credentials,
+                                                   blob_credentials=blob_credentials,
                                                    verbose=params["eval_verbosity"])
 
         # select chunks of videos and classify objects
@@ -80,7 +80,7 @@ for analyser_name, params_subgrid in traffic_analysers_params.items():
                                                                                  file_names=selected_videos[:chunk_size],
                                                                                  db_frame_level_name=db_frame_level_name,
                                                                                  paths=paths,
-                                                                                 creds=creds)
+                                                                                 creds=creds, make_video=False)
                 analyser_runtime += runtime_list
 
                 if success:
