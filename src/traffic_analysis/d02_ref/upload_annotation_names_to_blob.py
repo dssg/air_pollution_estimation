@@ -33,7 +33,5 @@ def upload_annotation_names_to_blob(paths,
             if(video_file):
                 selected_files.append(video_file)
 
-    dl = DataLoaderBlob(s3_credentials,
-                        bucket_name=paths['bucket_name'])
     file_path = paths['s3_video_names'] + output_file_name + '.json'
-    dl.save_json(data=selected_files, file_path=file_path)
+    dl_blob.save_json(data=selected_files, file_path=file_path)
