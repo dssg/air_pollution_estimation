@@ -5,7 +5,7 @@ import time as Time
 import subprocess
 from subprocess import Popen, PIPE
 
-from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
+from traffic_analysis.d00_utils.data_loader_blob import DataLoaderBlob
 
 
 def upload_json_to_s3(paths: dict,
@@ -72,12 +72,11 @@ def get_names_of_folder_content_from_s3(bucket_name, prefix, s3_profile):
 
     return elapsed_time, files
 
-def get_s3_video_path_from_xml_name(xml_file_name, s3_creds, paths, verbose=False):
+def get_s3_video_path_from_xml_name(xml_file_name, blob_creds, paths, verbose=False):
 
     # Supports old and new naming conventions
     vals = xml_file_name.split('_')
-    data_loader_s3 = DataLoaderS3(s3_credentials=s3_creds,
-                                  bucket_name=paths['bucket_name'])
+    data_loader_s3 = DataLoaderBlob(blob_credentials=blob_creds)
     # cvat prefix id removed from xml name
     if (len(vals) >= 4):
         date = vals[1]
