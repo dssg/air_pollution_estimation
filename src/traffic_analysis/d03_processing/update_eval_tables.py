@@ -2,7 +2,7 @@ import datetime
 import pandas as pd 
 
 from traffic_analysis.d05_evaluation.chunk_evaluator import ChunkEvaluator
-from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
+from traffic_analysis.d00_utils.data_loader_blob import DataLoaderBlob
 from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 
 
@@ -36,8 +36,7 @@ def update_eval_tables(db_frame_level_name: str,
       video_level_diff: pandas DataFrame of video level statistics (non-summarize)
     """
     # get xmls from s3
-    dl_s3 = DataLoaderS3(s3_credentials=creds[paths['s3_creds']],
-                         bucket_name=paths['bucket_name'])
+    dl_s3 = DataLoaderBlob(blob_credentials=creds[paths['blob_creds']])
     annotation_xmls = dl_s3.list_objects(prefix=paths['s3_cvat_annotations'])
 
     # get video_level_tables and frame_level_tables for analyser type from db
