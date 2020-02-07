@@ -11,7 +11,7 @@ from traffic_analysis.d00_utils.data_loader_blob import DataLoaderBlob
 def upload_json_to_s3(paths: dict,
                       save_name: str,
                       selected_files: list):
-    """Save json file to s3
+    """Save json file to s3 
     Args:
         paths (dict): dictionary of paths from yml file
         save_name (str): name of json to be saved
