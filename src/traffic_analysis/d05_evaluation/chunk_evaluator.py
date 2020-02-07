@@ -2,7 +2,6 @@ import pandas as pd
 import re
 
 from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
-from traffic_analysis.d00_utils.data_loader_s3 import DataLoaderS3
 from traffic_analysis.d05_evaluation.video_level_evaluator import VideoLevelEvaluator
 from traffic_analysis.d05_evaluation.frame_level_evaluator import FrameLevelEvaluator
 
