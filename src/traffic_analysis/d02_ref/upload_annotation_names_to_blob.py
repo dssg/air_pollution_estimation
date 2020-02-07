@@ -18,7 +18,7 @@ def upload_annotation_names_to_blob(paths,
     dl_blob = DataLoaderBlob(blob_credentials=blob_credentials)
 
     # fetch annotation filenames
-    elapsed_time, annotation_files = dl_blob.list_blobs(prefix)
+    annotation_files, elapsed_time = dl_blob.list_blobs(prefix)
     if verbose:
         print('Extracting {} file names took {} seconds'.format(len(annotation_files),
                                                             elapsed_time))
