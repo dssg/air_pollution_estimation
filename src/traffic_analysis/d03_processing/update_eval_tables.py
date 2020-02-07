@@ -36,8 +36,8 @@ def update_eval_tables(db_frame_level_name: str,
       video_level_diff: pandas DataFrame of video level statistics (non-summarize)
     """
     # get xmls from s3
-    dl_s3 = DataLoaderBlob(blob_credentials=creds[paths['blob_creds']])
-    annotation_xmls = dl_s3.list_blobs(prefix=paths['s3_cvat_annotations'])
+    dl_blob = DataLoaderBlob(blob_credentials=creds[paths['blob_creds']])
+    annotation_xmls = dl_blob.list_blobs(prefix=paths['s3_cvat_annotations'])
 
     # get video_level_tables and frame_level_tables for analyser type from db
     dl_sql = DataLoaderSQL(creds=creds, paths=paths)
@@ -67,7 +67,7 @@ def update_eval_tables(db_frame_level_name: str,
                                      video_level_df=video_level_df,
                                      selected_labels=params["selected_labels"],
                                      video_level_column_order=params["video_level_column_order"],
-                                     data_loader_s3=dl_s3
+                                     data_loader_s3=dl_blob
                                      )
     video_level_performance, video_level_diff = chunk_evaluator.evaluate_video_level()
     # prepare for insertion into db

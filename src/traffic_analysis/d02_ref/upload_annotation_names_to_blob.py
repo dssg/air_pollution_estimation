@@ -13,11 +13,12 @@ def upload_annotation_names_to_blob(paths,
         s3_credentials: dictionary of credentials from yml file
     """
 
-    s3_profile = paths['s3_profile']
     prefix = "%s" % (paths['blob_annotations'])
 
+    dl_blob = DataLoaderBlob(blob_credentials=blob_credentials)
+
     # fetch annotation filenames
-    elapsed_time, annotation_files = get_names_of_folder_content_from_s3(bucket_name, prefix, s3_profile)
+    elapsed_time, annotation_files = dl_blob.list_blobs(prefix)
     if verbose:
         print('Extracting {} file names took {} seconds'.format(len(annotation_files),
                                                             elapsed_time))
