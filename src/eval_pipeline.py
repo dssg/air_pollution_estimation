@@ -3,7 +3,7 @@ import numpy as np
 from traffic_analysis.d00_utils.data_retrieval import delete_and_recreate_dir
 from traffic_analysis.d00_utils.load_confs import load_parameters, load_paths, load_credentials
 from traffic_analysis.d00_utils.create_sql_tables import create_primary_sql_tables, create_eval_sql_tables
-from traffic_analysis.d02_ref.load_video_names_from_s3 import load_video_names_from_s3
+from traffic_analysis.d02_ref.load_video_names_from_blob import load_video_names_from_blob
 from traffic_analysis.d02_ref.upload_annotation_names_to_s3 import upload_annotation_names_to_s3
 from traffic_analysis.d03_processing.update_frame_level_table import update_frame_level_table
 from traffic_analysis.d03_processing.update_video_level_table import update_video_level_table
@@ -27,7 +27,7 @@ upload_annotation_names_to_s3(paths=paths,
                               s3_credentials=s3_credentials,
                               verbose=params["eval_verbosity"])
 
-selected_videos = load_video_names_from_s3(ref_file=params['eval_ref_name'],
+selected_videos = load_video_names_from_blob(ref_file=params['eval_ref_name'],
                                            paths=paths,
                                            s3_credentials=s3_credentials)
 
