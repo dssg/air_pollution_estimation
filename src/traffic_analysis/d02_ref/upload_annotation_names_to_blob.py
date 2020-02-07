@@ -13,9 +13,8 @@ def upload_annotation_names_to_blob(paths,
         s3_credentials: dictionary of credentials from yml file
     """
 
-    bucket_name = paths['bucket_name']
     s3_profile = paths['s3_profile']
-    prefix = "%s" % (paths['s3_cvat_annotations'])
+    prefix = "%s" % (paths['blob_annotations'])
 
     # fetch annotation filenames
     elapsed_time, annotation_files = get_names_of_folder_content_from_s3(bucket_name, prefix, s3_profile)
