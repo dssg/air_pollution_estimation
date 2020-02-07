@@ -19,6 +19,9 @@ def upload_annotation_names_to_blob(paths,
 
     # fetch annotation filenames
     annotation_files, elapsed_time = dl_blob.list_blobs(prefix)
+
+    print(annotation_files)
+
     if verbose:
         print('Extracting {} file names took {} seconds'.format(len(annotation_files),
                                                             elapsed_time))
@@ -33,5 +36,5 @@ def upload_annotation_names_to_blob(paths,
             if(video_file):
                 selected_files.append(video_file)
 
-    file_path = paths['s3_video_names'] + output_file_name + '.json'
+    file_path = paths['blob_video_names'] + output_file_name + '.json'
     dl_blob.save_json(data=selected_files, file_path=file_path)
