@@ -5,7 +5,7 @@ revised by: Sadjad Asghari Esfeden
 date: 10 Sep 2018
 url: https://gist.github.com/sadjadasghari/dc066e3fb2e70162fbb838d4acb93ffc
 Calculate Mean Average Precision (mAP) for a set of bounding boxes corresponding to specific
-image Ids. 
+image Ids.
 """
 from __future__ import absolute_import, division, print_function
 
@@ -49,8 +49,8 @@ COLORS = [
 ]
 
 
-def get_single_frame_results(gt_bboxes: list, 
-                             pred_bboxes: dict, 
+def get_single_frame_results(gt_bboxes: list,
+                             pred_bboxes: dict,
                              iou_thr: float) -> dict:
     """Calculates number of true_pos, false_pos, false_neg from single batch of boxes.
     Args:
@@ -93,7 +93,6 @@ def get_single_frame_results(gt_bboxes: list,
         fp = len(pred_bboxes)
         fn = len(gt_bboxes)
     else:
-        # print("matches found")
         gt_match_idx = []
         pred_match_idx = []
         for idx in args_desc:
@@ -159,13 +158,13 @@ def get_model_scores_dict(pred_bboxes: dict) -> dict:
     return model_scores_dict
 
 
-def get_avg_precision_at_iou(gt_bboxes: dict, 
-                             pred_bboxes: dict, 
+def get_avg_precision_at_iou(gt_bboxes: dict,
+                             pred_bboxes: dict,
                              iou_thr: float = 0.5):
     """Calculates average precision at given IoU threshold.
     Args:
 
-        gt_bboxes: dictionary with frame index as keys, and a list of 
+        gt_bboxes: dictionary with frame index as keys, and a list of
                     bboxes of ground truth objects as values. Bboxes should be in 
                     format [xmin, ymin, xmin+width, ymin+height].
         pred_bboxes: dictionary with frame index as keys, and subdictinaries for values. 
@@ -186,6 +185,11 @@ def get_avg_precision_at_iou(gt_bboxes: dict,
                 'models_thrs' (list of floats): model threshold value that
                     precision and recall were computed for.
     """
+    n_frames_gt = len(gt_bboxes.keys())
+    n_frames_pred = len(pred_bboxes.keys())
+    assert n_frames_gt == n_frames_pred, \
+       f"Total ground truth frames, {n_frames_gt}, does not match total pred frames, {n_frames_pred}."
+
     model_scores_dict = get_model_scores_dict(pred_bboxes)
     sorted_model_scores = sorted(model_scores_dict.keys())
 
@@ -264,11 +268,11 @@ def get_avg_precision_at_iou(gt_bboxes: dict,
     }
 
 
-def plot_pr_curve(precisions, 
-                  recalls, 
-                  category="Person", 
-                  label=None, 
-                  color=None, 
+def plot_pr_curve(precisions,
+                  recalls,
+                  category="Person",
+                  label=None,
+                  color=None,
                   ax=None):
     """Simple plotting helper function"""
     if ax is None:

@@ -16,11 +16,23 @@ static_pipeline:
   to_date: "2019-07-17"
   from_time: "00-00-00"
   to_time: "23-59-59"
+  chunk_size: 10
 
 data_renaming: # TODO: remove later when renaming finished
   old_path: "raw/video_data_new"
   new_path: "raw/videos"
   date_format: "%Y%m%d-%H%M%S"
+
+eval_pipeline_settings:
+  eval_ref_name: "annotated_videos"
+  eval_chunk_size: 5
+  eval_verbosity: True
+  eval_params_order: ['tracker_type', 'detection_model', "detection_frequency", "detection_iou_threshold", "stop_start_iou_threshold"]
+  eval_tracker_types: ['kcf', 'mosse', 'csrt', 'tld', 'boosting', 'mil']
+  eval_detection_models: ['yolov3-tiny', 'yolov3']
+  eval_detection_frequency: [4, 6]
+  eval_detection_iou_threshold: [0.2, 0.3, 0.4, 0.5]
+  eval_stop_start_iou_threshold: [0.75, 0.80, 0.85, 0.90]
 
 modelling:
   # obj detection
@@ -28,9 +40,9 @@ modelling:
   detection_implementation: "cvlib"
   detection_iou_threshold: 0.05
   detection_confidence_threshold: 0.2
-  # TODO: change nms threshold to iou threshold	
+  # TODO: change nms threshold to iou threshold
   detection_nms_threshold: 0.2
-  
+
   # tracking
   selected_labels: ["car", "truck", "bus", "motorbike"]
   opencv_tracker_type: "csrt"

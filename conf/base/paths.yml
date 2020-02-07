@@ -28,3 +28,9 @@ db_paths:
   db_name: "db_cleanair_dssg_traffic"
   db_frame_level: 'frame_stats'
   db_video_level: 'video_stats'
+
+  eval_db_frame_level_prefix: 'frame_stats'
+  eval_db_video_level_prefix: 'video_stats'
+  eval_db_video_stats: "eval_video_performance_test"
+  eval_db_video_diffs: "eval_video_diffs_test"
+  eval_db_frame_stats: "eval_frame_stats_test"

@@ -19,7 +19,9 @@ plots/**
 # also keep all .gitkeep files
 !.gitkeep
 
-
+# ignore goturn caffe model 
+src/goturn.caffemodel 
+src/goturn.prototxt
 ##########################
 # Common files
 

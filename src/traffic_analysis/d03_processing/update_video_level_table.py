@@ -6,13 +6,19 @@ from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 
 
 def update_video_level_table(analyser,
+                             db_video_level_name: str,
+                             db_frame_level_name: str=None,
                              frame_level_df: pd.DataFrame=None,
                              file_names: list=None,
+                             lost_tracking=None,
                              paths: dict=None,
                              creds: dict=None,
-                             return_data: bool=False):
+                             return_data=False):
     """ Update the video level table on the database based on the videos in the files list
     Args:
+        analyser: TrafficAnalyser object
+        db_video_level_name: name of database table to write to
+        db_frame_level_name: name of database table to read from
         frame_level_df: dataframe containing the frame level stats. If None then
         this is loaded from the database using the file names
         file_names: list of s3 filepaths for the videos to be processed
@@ -21,12 +27,15 @@ def update_video_level_table(analyser,
         return_data: For debugging it might be useful to return the video level df
 
     Returns:
-        video_level_df: if return_data flag is True, will return this df. Contains 
+        video_level_df: if return_data flag is True, will return this df. Contains
                         video level information returned by analyser
     """
+
     db_obj = DataLoaderSQL(creds=creds, paths=paths)
 
     if frame_level_df is None:
+        assert db_frame_level_name is not None, \
+            "No frame level df or frame level database name specified"
         # Build the sql string
         filter_string = ''
 
@@ -37,13 +46,13 @@ def update_video_level_table(analyser,
 
         filter_string = filter_string[:-4]
         sql_string = "SELECT * FROM {} WHERE {};".format(
-            paths['db_frame_level'], filter_string)
+            db_frame_level_name, filter_string)
         frame_level_df = db_obj.select_from_table(sql=sql_string)
 
         bboxes = []
-        for x, y, w, h in zip(frame_level_df['bbox_x'].values, 
-                              frame_level_df['bbox_y'].values, 
-                              frame_level_df['bbox_w'].values, 
+        for x, y, w, h in zip(frame_level_df['bbox_x'].values,
+                              frame_level_df['bbox_y'].values,
+                              frame_level_df['bbox_w'].values,
                               frame_level_df['bbox_h'].values):
             bboxes.append([x, y, w, h])
 
@@ -54,12 +63,13 @@ def update_video_level_table(analyser,
         frame_level_df.drop('bbox_h', axis=1, inplace=True)
 
     # Create video level table and add to database
-    video_level_df = analyser.construct_video_level_df(frame_level_df)
+    video_level_df = analyser.construct_video_level_df(frame_level_df, lost_tracking)
+
     if video_level_df.empty:
         return
     video_level_df['creation_datetime'] = datetime.datetime.now()
 
-    db_obj.add_to_sql(df=video_level_df, table_name=paths['db_video_level'])
+    db_obj.add_to_sql(df=video_level_df, table_name=db_video_level_name)
 
     if return_data:
         return video_level_df
