@@ -50,17 +50,17 @@ def update_video_level_table(analyser,
         frame_level_df = db_obj.select_from_table(sql=sql_string)
 
         bboxes = []
-        for x, y, w, h in zip(frame_level_df['bbox_x'].values,
-                              frame_level_df['bbox_y'].values,
-                              frame_level_df['bbox_w'].values,
-                              frame_level_df['bbox_h'].values):
+        for x, y, w, h in zip(frame_level_df['box_x'].values,
+                              frame_level_df['box_y'].values,
+                              frame_level_df['box_w'].values,
+                              frame_level_df['box_h'].values):
             bboxes.append([x, y, w, h])
 
         frame_level_df['bboxes'] = bboxes
-        frame_level_df.drop('bbox_x', axis=1, inplace=True)
-        frame_level_df.drop('bbox_y', axis=1, inplace=True)
-        frame_level_df.drop('bbox_w', axis=1, inplace=True)
-        frame_level_df.drop('bbox_h', axis=1, inplace=True)
+        frame_level_df.drop('box_x', axis=1, inplace=True)
+        frame_level_df.drop('box_y', axis=1, inplace=True)
+        frame_level_df.drop('box_w', axis=1, inplace=True)
+        frame_level_df.drop('box_h', axis=1, inplace=True)
 
     # Create video level table and add to database
     video_level_df = analyser.construct_video_level_df(frame_level_df, lost_tracking)

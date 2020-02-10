@@ -64,10 +64,10 @@ def update_frame_level_table(analyser,
             y.append(int(vals[1]))
             w.append(int(vals[2]))
             h.append(int(vals[3]))
-    frame_level_sql_df['bbox_x'] = x
-    frame_level_sql_df['bbox_y'] = y
-    frame_level_sql_df['bbox_w'] = w
-    frame_level_sql_df['bbox_h'] = h
+    frame_level_sql_df['box_x'] = x
+    frame_level_sql_df['box_y'] = y
+    frame_level_sql_df['box_w'] = w
+    frame_level_sql_df['box_h'] = h
     frame_level_sql_df.drop('bboxes', axis=1, inplace=True)
     frame_level_sql_df['creation_datetime'] = datetime.datetime.now()
 

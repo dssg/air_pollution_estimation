@@ -50,16 +50,16 @@ def update_eval_tables(db_frame_level_name: str,
 
     # stitch bbox columns back together for frame level
     bboxes = []
-    for x, y, w, h in zip(frame_level_df['bbox_x'].values,
-                          frame_level_df['bbox_y'].values,
-                          frame_level_df['bbox_w'].values,
-                          frame_level_df['bbox_h'].values):
+    for x, y, w, h in zip(frame_level_df['box_x'].values,
+                          frame_level_df['box_y'].values,
+                          frame_level_df['box_w'].values,
+                          frame_level_df['box_h'].values):
         bboxes.append([x, y, w, h])
     frame_level_df['bboxes'] = bboxes
-    frame_level_df.drop('bbox_x', axis=1, inplace=True)
-    frame_level_df.drop('bbox_y', axis=1, inplace=True)
-    frame_level_df.drop('bbox_w', axis=1, inplace=True)
-    frame_level_df.drop('bbox_h', axis=1, inplace=True)
+    frame_level_df.drop('box_x', axis=1, inplace=True)
+    frame_level_df.drop('box_y', axis=1, inplace=True)
+    frame_level_df.drop('box_w', axis=1, inplace=True)
+    frame_level_df.drop('box_h', axis=1, inplace=True)
 
     # run evaluation for analyser type
     chunk_evaluator = ChunkEvaluator(annotation_xml_paths=annotation_xmls,
