@@ -72,11 +72,11 @@ def get_names_of_folder_content_from_s3(bucket_name, prefix, s3_profile):
 
     return elapsed_time, files
 
-def get_s3_video_path_from_xml_name(xml_file_name, blob_creds, paths, verbose=False):
+def get_blob_video_path_from_xml_name(xml_file_name, blob_creds, paths, verbose=False):
 
     # Supports old and new naming conventions
     vals = xml_file_name.split('_')
-    data_loader_s3 = DataLoaderBlob(blob_credentials=blob_creds)
+    data_loader_blob = DataLoaderBlob(blob_credentials=blob_creds)
     # cvat prefix id removed from xml name
     if (len(vals) >= 4):
         date = vals[1]
@@ -98,7 +98,7 @@ def get_s3_video_path_from_xml_name(xml_file_name, blob_creds, paths, verbose=Fa
                        date + '/' + \
                        file_names[0] + '.mp4'
 
-    if(data_loader_s3.file_exists(file_to_download)):
+    if(data_loader_blob.file_exists(file_to_download)):
         if verbose: print('Found ' + file_to_download)
         return file_to_download
 
@@ -107,7 +107,7 @@ def get_s3_video_path_from_xml_name(xml_file_name, blob_creds, paths, verbose=Fa
                            date + '/' + \
                            file_names[1] + '.mp4'
 
-        if (data_loader_s3.file_exists(file_to_download2)):
+        if (data_loader_blob.file_exists(file_to_download2)):
             if verbose: print('Found ' + file_to_download2)
             return file_to_download2
         else:

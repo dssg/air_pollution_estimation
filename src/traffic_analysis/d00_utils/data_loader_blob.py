@@ -39,19 +39,14 @@ class DataLoaderBlob:
 
     def file_exists(self, file_path):
 
-        """
-        try:
-            with open(file_path, "rb") as data:
-                self.client.upload_blob(data)
 
+        blob = self.list_blobs(prefix=file_path)
+
+        if(blob):
             return True
-
-        except ClientError as ex:
-            if ex.response['Error']['Code'] == 'NoSuchKey':
-                return False
-            else:
-                raise ex
-        """
+        else:
+            return False
+        
 
     def download_blob(self,
                       path_of_file_to_download,

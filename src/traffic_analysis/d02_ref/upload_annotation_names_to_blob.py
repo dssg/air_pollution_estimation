@@ -1,6 +1,6 @@
 from traffic_analysis.d02_ref.ref_utils import get_names_of_folder_content_from_s3
 from traffic_analysis.d00_utils.data_loader_blob import DataLoaderBlob
-from traffic_analysis.d02_ref.ref_utils import get_s3_video_path_from_xml_name
+from traffic_analysis.d02_ref.ref_utils import get_blob_video_path_from_xml_name
 
 
 def upload_annotation_names_to_blob(paths,
@@ -29,9 +29,9 @@ def upload_annotation_names_to_blob(paths,
     for annotation_file in annotation_files:
         if annotation_file:
             stripped_annotation_file = annotation_file.replace(".xml", "")
-            video_file = get_s3_video_path_from_xml_name(xml_file_name=stripped_annotation_file,
-                                                        s3_creds=s3_credentials,
-                                                        paths=paths)
+            video_file = get_blob_video_path_from_xml_name(xml_file_name=stripped_annotation_file,
+                                                           blob_creds=blob_credentials,
+                                                           paths=paths)
 
             if(video_file):
                 selected_files.append(video_file)

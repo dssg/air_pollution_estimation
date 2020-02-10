@@ -10,7 +10,6 @@ creds = load_credentials()
 blob_credentials = creds[paths['blob_creds']]
 tfl_camera_api = params['tfl_camera_api']
 
-"""
 # download camera data from tfl
 download_camera_meta_data(tfl_camera_api=tfl_camera_api,
                           blob_credentials=blob_credentials)
@@ -24,7 +23,6 @@ upload_yolo_weights_to_s3(blob_credentials=blob_credentials,
 
 # create PSQL tables to insert vehicle statistics into
 create_primary_sql_tables(drop=False)
-"""
 
 # put annotated videos in S3, put annotation xmls in right folder
 upload_annotations_to_blob(blob_credentials=blob_credentials, paths=paths)
