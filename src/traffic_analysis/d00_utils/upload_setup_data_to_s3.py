@@ -62,20 +62,20 @@ def upload_yolo_weights_to_s3(blob_credentials,
     shutil.rmtree(local_dir)
 
 
-def upload_annotations_to_s3(s3_credentials, paths):
-    data_loader = DataLoaderBlob(blob_credentials=s3_credentials)
+def upload_annotations_to_blob(blob_credentials, paths):
+    data_loader = DataLoaderBlob(blob_credentials=blob_credentials)
 
     # raw videos
     for video_file in glob.glob(paths["setup_video"] + "*.mp4"):
         camera_id, video_upload_datetime = parse_video_or_annotation_name(video_name=video_file.split('/')[-1])
         data_loader.upload_blob(path_of_file_to_upload=video_file,
-                                path_to_upload_file_to=(paths["s3_video"]
+                                path_to_upload_file_to=(paths["blob_video"]
                                                         + video_upload_datetime.strftime("%Y-%m-%d")
                                                         + "/" + video_file.split('/')[-1]))
 
     # xml files
     for xml_file in glob.glob(paths["setup_xml"] + "*.xml"):
         data_loader.upload_blob(path_of_file_to_upload=xml_file,
-                                path_to_upload_file_to=(paths["s3_annotations"]
+                                path_to_upload_file_to=(paths["blob_annotations"]
                                                         + "cvat/"
                                                         + xml_file.split('/')[-1]))
