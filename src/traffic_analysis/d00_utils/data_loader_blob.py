@@ -46,7 +46,7 @@ class DataLoaderBlob:
             return True
         else:
             return False
-        
+
 
     def download_blob(self,
                       path_of_file_to_download,

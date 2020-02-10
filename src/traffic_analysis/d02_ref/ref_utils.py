@@ -94,7 +94,7 @@ def get_blob_video_path_from_xml_name(xml_file_name, blob_creds, paths, verbose=
                       xml_file_name.split('_')[0] + ' ' +
                       xml_file_name.split('_')[1].replace('-', ':') + '_' +
                       xml_file_name.split('_')[2]]
-    file_to_download = paths['s3_video'] + \
+    file_to_download = paths['blob_video'] + \
                        date + '/' + \
                        file_names[0] + '.mp4'
 
@@ -103,7 +103,7 @@ def get_blob_video_path_from_xml_name(xml_file_name, blob_creds, paths, verbose=
         return file_to_download
 
     else:
-        file_to_download2 = paths['s3_video'] + \
+        file_to_download2 = paths['blob_video'] + \
                            date + '/' + \
                            file_names[1] + '.mp4'
 
