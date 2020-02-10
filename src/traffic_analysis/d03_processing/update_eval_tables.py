@@ -37,7 +37,7 @@ def update_eval_tables(db_frame_level_name: str,
     """
     # get xmls from s3
     dl_blob = DataLoaderBlob(blob_credentials=creds[paths['blob_creds']])
-    annotation_xmls = dl_blob.list_blobs(prefix=paths['s3_cvat_annotations'])
+    annotation_xmls = dl_blob.list_blobs(prefix=paths['blob_annotations'])
 
     # get video_level_tables and frame_level_tables for analyser type from db
     dl_sql = DataLoaderSQL(creds=creds, paths=paths)
