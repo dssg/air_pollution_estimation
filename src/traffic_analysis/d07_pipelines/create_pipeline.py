@@ -10,6 +10,8 @@ from traffic_analysis.d03_processing.update_frame_level_table import \
     update_frame_level_table
 from traffic_analysis.d03_processing.update_video_level_table import \
     update_video_level_table
+from traffic_analysis.d03_processing.update_hour_level_table import \
+    update_hour_level_table
 from traffic_analysis.d04_modelling.tracking.tracking_analyser import \
     TrackingAnalyser
 from traffic_analysis.d00_utils.data_loader_blob import DataLoaderBlob
@@ -56,12 +58,14 @@ def create_pipeline(output_file_name,
                                                   paths=paths,
                                                   creds=creds,
                                                   make_video=make_video)
-        update_video_level_table(analyser=analyser,
+        video_level_df = update_video_level_table(analyser=analyser,
                                  frame_level_df=frame_level_df,
                                  file_names=selected_videos[:chunk_size],
                                  paths=paths,
                                  creds=creds,
-                                 return_data=False)
+                                 return_data=True)
+
+        update_hour_level_table()
 
         # move processed videos to processed folder
         if move_to_processed_folder:

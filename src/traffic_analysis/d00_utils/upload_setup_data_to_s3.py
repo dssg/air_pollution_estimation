@@ -9,10 +9,10 @@ from traffic_analysis.d00_utils.data_retrieval import delete_and_recreate_dir
 from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_name
 
 
-def upload_yolo_weights_to_s3(blob_credentials,
-                              local_dir,
-                              target_dir_on_s3,
-                              ):
+def upload_yolo_weights_to_blob(blob_credentials,
+                                local_dir,
+                                target_dir_on_s3,
+                                ):
 
     delete_and_recreate_dir(temp_dir=local_dir)
 
