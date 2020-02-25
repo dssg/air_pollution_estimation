@@ -4,6 +4,7 @@ from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 
 def create_primary_sql_tables(db_frame_level_name: str, 
                               db_video_level_name: str,
+                              db_hour_level_name: str,
                               drop=False
                               ):
     """Create PSQL tables for traffic analyser objects to append to 
@@ -12,8 +13,8 @@ def create_primary_sql_tables(db_frame_level_name: str,
     drop_commands = None
     if drop:
         drop_commands = [
-            "DROP TABLE {}, {} CASCADE;".format(db_frame_level_name,
-                                                db_video_level_name
+            "DROP TABLE {}, {}, {} CASCADE;".format(db_frame_level_name,
+                                                db_video_level_name, db_hour_level_name
                                                 )
         ]
 
@@ -44,7 +45,19 @@ def create_primary_sql_tables(db_frame_level_name: str,
             starts REAL,
             creation_datetime timestamp
         )
-        """.format(db_video_level_name)
+        """.format(db_video_level_name),
+
+        """
+        CREATE TABLE {}(
+            camera_id VARCHAR(20),
+            datetime timestamp,
+            vehicle_type VARCHAR(20),
+            counts REAL,
+            stops REAL,
+            starts REAL,
+            creation_datetime timestamp
+        )
+        """.format(db_hour_level_name)
     ]
 
     # execute queries
