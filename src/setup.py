@@ -22,9 +22,9 @@ tfl_camera_api = params['tfl_camera_api']
 
 
 # create PSQL tables to insert vehicle statistics into
-create_primary_sql_tables(drop=False, db_frame_level_name=paths['frame_stats'],
-                          db_video_level_name=paths['video_stats'],
-                          db_hour_level_name=paths['hour_stats'])
+create_primary_sql_tables(drop=False, db_frame_level_name=paths['db_frame_level'],
+                          db_video_level_name=paths['db_video_level'],
+                          db_hour_level_name=paths['db_hour_level'])
 
 # # put annotated videos in S3, put annotation xmls in right folder
 # upload_annotations_to_blob(blob_credentials=blob_credentials, paths=paths)
