@@ -55,13 +55,15 @@ def create_pipeline(output_file_name,
                                                   file_names=file_names,
                                                   paths=paths,
                                                   creds=creds,
-                                                  make_video=make_video)
+                                                  make_video=make_video,
+                                                  db_frame_level_name=paths['db_frame_level'])
         update_video_level_table(analyser=analyser,
                                  frame_level_df=frame_level_df,
                                  file_names=selected_videos[:chunk_size],
                                  paths=paths,
                                  creds=creds,
-                                 return_data=False)
+                                 return_data=False,
+                                 db_video_level_name=paths['db_video_level'])
 
         # move processed videos to processed folder
         if move_to_processed_folder:
