@@ -8,10 +8,7 @@ data_collection:
 static_pipeline:
   construct_ref_file: False
   ref_file_name: "example_dataset"
-  camera_list:
-    [   
-      "00001.02002"
-    ]
+  camera_list: []
   from_date: "2019-07-17" 
   to_date: "2019-07-17"
   from_time: "00-00-00"
@@ -57,7 +54,7 @@ modelling:
 
   # others
   delete_processed_videos: True
-  make_video: True
+  make_video: False
 
 reporting:
   chunk_size: 10
