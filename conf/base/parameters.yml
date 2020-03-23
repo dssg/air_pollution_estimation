@@ -16,7 +16,7 @@ static_pipeline:
   to_date: "2019-07-17"
   from_time: "00-00-00"
   to_time: "23-59-59"
-  chunk_size: 10
+  chunk_size: 5
 
 data_renaming: # TODO: remove later when renaming finished
   old_path: "raw/video_data_new"
@@ -57,7 +57,7 @@ modelling:
 
   # others
   delete_processed_videos: True
-  make_video: True
+  make_video: False
 
 reporting:
   chunk_size: 10

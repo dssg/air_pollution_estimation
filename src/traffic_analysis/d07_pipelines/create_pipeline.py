@@ -1,3 +1,4 @@
+import pandas as pd
 
 from traffic_analysis.d00_utils.data_retrieval import delete_and_recreate_dir
 from traffic_analysis.d00_utils.load_confs import (load_credentials,
@@ -50,22 +51,32 @@ def create_pipeline(output_file_name,
     analyser = TrackingAnalyser(
         params=params, paths=paths, blob_credentials=blob_credentials)
 
+    hour_level_dfs = []
+
     # select chunks of videos and classify objects
     while selected_videos:
         file_names = selected_videos[:chunk_size]
-        frame_level_df = update_frame_level_table(analyser=analyser,
+        success, frame_level_df, runtime_list, lost_tracking = update_frame_level_table(analyser=analyser,
                                                   file_names=file_names,
+                                                  db_frame_level_name=paths['db_frame_level'],
                                                   paths=paths,
                                                   creds=creds,
                                                   make_video=make_video)
-        video_level_df = update_video_level_table(analyser=analyser,
-                                 frame_level_df=frame_level_df,
-                                 file_names=selected_videos[:chunk_size],
-                                 paths=paths,
-                                 creds=creds,
-                                 return_data=True)
 
-        update_hour_level_table()
+        video_level_df = update_video_level_table(analyser=analyser,
+                                                  db_frame_level_name=paths['db_frame_level'],
+                                                  db_video_level_name=paths['db_video_level'],
+                                                  frame_level_df=frame_level_df,
+                                                  file_names=selected_videos[:chunk_size],
+                                                  paths=paths,
+                                                  creds=creds,
+                                                  return_data=True)
+
+
+        hour_level_dfs.append(update_hour_level_table(db_hour_level_name=paths['db_hour_level'],
+                                                         video_level_df=video_level_df,
+                                                         paths=paths,
+                                                         creds=creds))
 
         # move processed videos to processed folder
         if move_to_processed_folder:
@@ -86,3 +97,6 @@ def create_pipeline(output_file_name,
         # Move on to next chunk
         selected_videos = selected_videos[chunk_size:]
         delete_and_recreate_dir(paths["temp_video"])
+
+    # Process the resulting video level dataframe
+    print('Done')

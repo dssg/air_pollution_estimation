@@ -57,7 +57,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         if detection_model is not None:
             self.detection_model = detection_model
         else:
-            self.detection_model = params['default_detection_model']
+            self.detection_model = params['detection_model']
 
         if self.detection_model == 'yolov3_tf':
             self.sess = tf.Session()
@@ -75,7 +75,7 @@ class TrackingAnalyser(TrafficAnalyserInterface):
         if tracker_type is not None:
             self.tracker_type = tracker_type
         else:
-            self.tracker_type = params['default_tracker_type']
+            self.tracker_type = params['opencv_tracker_type']
         self.trackers = []
         self.iou_threshold = params['iou_threshold']
 

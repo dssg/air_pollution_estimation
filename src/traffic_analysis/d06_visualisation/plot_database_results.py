@@ -1,3 +1,4 @@
+import os
 import dateutil
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,12 +10,14 @@ from traffic_analysis.d00_utils.load_confs import (load_credentials,
 from traffic_analysis.d02_ref.ref_utils import generate_dates
 
 from_date = "2019-11-29"
-to_date = "2019-12-16"
+to_date = "2020-03-01"
 
 print('From: ' + from_date + ' To: ' + to_date)
 
 to_date = dateutil.parser.parse(to_date).date()
 from_date = dateutil.parser.parse(from_date).date()
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
 
 results_dict = {}
 
@@ -43,7 +46,7 @@ for date in dates:
     plt.bar(np.arange(camera_ids.shape[0]), counts)
     plt.xticks(ticks=np.arange(camera_ids.shape[0]), labels=camera_ids, rotation=90)
     plt.suptitle('Number of videos for each camera on ' + date)
-    plt.savefig('video_count_per_camera_' + date + '.png')
+    plt.savefig(dir_path + '/video_count_per_camera_' + date + '.png')
     plt.close()
 
     # Number of videos per hour for that day
@@ -55,7 +58,7 @@ for date in dates:
     plt.suptitle('Number of videos over time for ' + date)
     legend = plt.legend()
     legend.remove()
-    plt.savefig('video_count_over_time_' + date + '.png')
+    plt.savefig(dir_path + '/video_count_over_time_' + date + '.png')
     plt.close()
 
     num_cols = 5
@@ -86,4 +89,4 @@ for date in dates:
 
     plt.tight_layout()
     plt.legend()
-    fig.savefig("counts_" + date + ".png")
+    fig.savefig(dir_path + "/counts_" + date + ".png")

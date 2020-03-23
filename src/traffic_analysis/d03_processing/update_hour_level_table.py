@@ -5,7 +5,8 @@ from traffic_analysis.d00_utils.video_helpers import parse_video_or_annotation_n
 from traffic_analysis.d00_utils.data_loader_sql import DataLoaderSQL
 
 
-def update_hour_level_table(video_level_df: pd.DataFrame=None,
+def update_hour_level_table(db_hour_level_name,
+                            video_level_df: pd.DataFrame=None,
                             paths: dict=None,
                             creds: dict=None):
     """ Update the video level table on the database based on the videos in the files list
@@ -27,15 +28,17 @@ def update_hour_level_table(video_level_df: pd.DataFrame=None,
 
     db_obj = DataLoaderSQL(creds=creds, paths=paths)
 
+    hour_level_df = video_level_df.copy()
 
+    date_times = hour_level_df['video_upload_datetime'].values
+    new_date_times = []
 
-    # # Create video level table and add to database
-    # video_level_df = analyser.construct_video_level_df(frame_level_df, lost_tracking)
-    #
-    # if video_level_df.empty:
-    #     return
-    # video_level_df['creation_datetime'] = datetime.datetime.now()
-    #
-    # db_obj.add_to_sql(df=video_level_df, table_name=db_video_level_name)
+    for date_time in date_times:
+        new_date_times.append(date_time.astype('datetime64[h]'))
 
-    return
+    hour_level_df['video_upload_datetime'] = new_date_times
+    hour_level_df = hour_level_df.drop(['creation_datetime'], axis=1)
+
+    #db_obj.add_to_sql(df=hour_level_df, table_name=db_hour_level_name)
+
+    return hour_level_df
