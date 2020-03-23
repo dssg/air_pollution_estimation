@@ -51,7 +51,7 @@ def create_pipeline(output_file_name,
     # select chunks of videos and classify objects
     while selected_videos:
         file_names = selected_videos[:chunk_size]
-        frame_level_df = update_frame_level_table(analyser=analyser,
+        success, frame_level_df, runtime_list, lost_tracking = update_frame_level_table(analyser=analyser,
                                                   file_names=file_names,
                                                   paths=paths,
                                                   creds=creds,
