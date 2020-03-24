@@ -9,6 +9,11 @@ blob_paths:
   blob_detection_model: "ref/model_conf/"
 
 local_paths:
+  local_video: "data/01_raw/jamcams/"
+  local_detection_model: "data/ref/detection_model/"
+  local_processed_video: "data/02_processed/jamcams/"
+  local_results: "data/03_results/"
+
   temp_video: "data/temp/videos/"
   temp_raw_video: "data/temp/raw_videos/"
   temp_frame_level: "data/temp/frame_level/"
@@ -19,7 +24,6 @@ local_paths:
   processed_video: "results/jamcams/"
   plots: "plots/"
   annotations: "annotations/"
-  local_detection_model: "data/ref/detection_model/"
   setup_xml: "data/setup/annotations/xml_files/"
   setup_video: "data/setup/annotations/videos/"
 
